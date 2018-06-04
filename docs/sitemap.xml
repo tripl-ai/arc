@@ -3,8 +3,52 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://aglenergy.github.io/arc/</loc>
-    <priority>0</priority>
+    <loc>https://aglenergy.github.io/arc/getting-started/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aglenergy.github.io/arc/tutorial/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aglenergy.github.io/arc/extract/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aglenergy.github.io/arc/transform/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aglenergy.github.io/arc/load/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aglenergy.github.io/arc/execute/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aglenergy.github.io/arc/validate/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aglenergy.github.io/arc/metadata/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aglenergy.github.io/arc/partials/</loc>
+    <lastmod>2016-03-09T00:11:02+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://aglenergy.github.io/arc/patterns/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aglenergy.github.io/arc/contributing/</loc>
+  </url>
+  
+  <url>
+    <loc>https://aglenergy.github.io/arc/license/</loc>
   </url>
   
   <url>
@@ -14,6 +58,7 @@
   
   <url>
     <loc>https://aglenergy.github.io/arc/</loc>
+    <lastmod>2016-03-09T00:11:02+01:00</lastmod>
   </url>
   
   <url>
