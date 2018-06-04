@@ -6,9 +6,143 @@
     <description>Recent content on Arc</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
+    <lastBuildDate>Wed, 09 Mar 2016 00:11:02 +0100</lastBuildDate>
     
 	<atom:link href="https://aglenergy.github.io/arc/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Getting started</title>
+      <link>https://aglenergy.github.io/arc/getting-started/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/getting-started/</guid>
+      <description>Directed Acyclic Graphs A pipeline is a Directed Acyclic Graph specified using a json file format with the sequence of transformation stages defined in the stages array.
+Consider the following data pipeline:
+The job logically executes in the following way:
+Branch One (in parallel with Branch Two)  The DelimitedExtract stage loads Comma separated files from hdfs://datalake/raw/customer/*.csv and named customerUntypedDF internally. The TypingTransform stage takes the customerUntypedDF dataset and performs data typing on it using the metadata defined at hdfs://datalake/meta/0.</description>
+    </item>
+    
+    <item>
+      <title>Tutorial</title>
+      <link>https://aglenergy.github.io/arc/tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/tutorial/</guid>
+      <description>This tutorial works through a real-world example using the New York City Taxi dataset which has been used heavliy around the web (see: Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance and A Billion Taxi Rides in Redshift) due to its 1 billion+ record count and scripted process available on github.
+It is a great dataset as it has a lot of the attributes of real-world data we want to demonstrate:</description>
+    </item>
+    
+    <item>
+      <title>Extract</title>
+      <link>https://aglenergy.github.io/arc/extract/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/extract/</guid>
+      <description>*Extract stages read in data from a database or file system.
+*Extract stages should meet this criteria:
+ Read data from local or remote filesystems and return a DataFrame. Do not transform/mutate the data. Allow for Predicate Pushdown depending on data source.  AvroExtract The AvroExtract stage reads one or more Apache Avro files and returns a DataFrame.
+Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
+    </item>
+    
+    <item>
+      <title>Transform</title>
+      <link>https://aglenergy.github.io/arc/transform/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/transform/</guid>
+      <description>*Transform stages apply a single transformation to one or more incoming datasets.
+Transformers should meet this criteria:
+ Be pure. Perform only a single function. Utilise Spark internal functionality where possible.  JSONTransform The JSONTransform stage transforms the incoming dataset to rows of json strings with the column name value. It is intended to be used before stages like HTTPLoad to prepare the data for sending externally.
+Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
+    </item>
+    
+    <item>
+      <title>Load</title>
+      <link>https://aglenergy.github.io/arc/load/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/load/</guid>
+      <description>*Load stages write out Spark datasets to a database or file system.
+*Load staages should meet this criteria:
+ Take in a single dataset. Perform target specific validation that the dataset has been written correctly.  AvroLoad The AvroLoad writes an input DataFrame to a target Apache Avro file.
+Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
+    </item>
+    
+    <item>
+      <title>Execute</title>
+      <link>https://aglenergy.github.io/arc/execute/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/execute/</guid>
+      <description>*Execute stages are used to execute arbitrary commands against external systems such as Databases and APIs.
+HTTPExecute The HTTPExecute takes an input Map[String, String] from the configuration and executes a POST request against a remote HTTP service. This could be used to initialise another process that depends on the output of data pipeline.
+Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
+    </item>
+    
+    <item>
+      <title>Validate</title>
+      <link>https://aglenergy.github.io/arc/validate/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/validate/</guid>
+      <description>*Validate stages are used to perform validation and basic workflow controls..
+EqualityValidate The EqualityValidate takes two input DataFrame and will succeed if they are identical or fail if not. This stage is useful to use in automated testing as it can be used to validate a derived dataset equals a known &amp;lsquo;good&amp;rsquo; dataset.
+This stage will validate:
+ Same number of columns. Same data type of columns. Same number of rows.</description>
+    </item>
+    
+    <item>
+      <title>Metadata</title>
+      <link>https://aglenergy.github.io/arc/metadata/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/metadata/</guid>
+      <description>The metadata format, consumed in the TypingTransform stage, is an opinionated format for specifying common data typing actions.
+It is designed to:
+ Support common data typing conversions found in business datasets. Support limited &amp;lsquo;schema evolution&amp;rsquo; of source data in the form of allowed lists of accepted input formats. Collect errors into array columns so that a user can decide how to handle errors once all have been collected.  Common Attributes    Attribute Type Required Description     id String true A unique identifier for this field.</description>
+    </item>
+    
+    <item>
+      <title>Partials</title>
+      <link>https://aglenergy.github.io/arc/partials/</link>
+      <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/partials/</guid>
+      <description>Authentication The Authentication map defines the authentication parameters for connecting to a remote service (e.g. HDFS, Blob Storage, etc.).
+Parameters    Attribute Type Required Description     method String true A value of AzureSharedKey, AzureSharedAccessSignature, AmazonAccessKey which defines which method should be used to authenticate with the remote service.   accountName String false* Required for AzureSharedKey and AzureSharedAccessSignature.   signature String false* Required for AzureSharedKey.</description>
+    </item>
+    
+    <item>
+      <title>Patterns</title>
+      <link>https://aglenergy.github.io/arc/patterns/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/patterns/</guid>
+      <description>Database Inconsistency When writing data to targets like databases using the JDBCLoad raises a risk of &amp;lsquo;stale reads&amp;rsquo; where a client is reading a dataset which is either old or one which is in the process of being updated and so is internally inconsistent. A pattern for preventing this is to:
+ create a new table each run using a JDBCLoad stage with a dynamic destination table specified as the ${JOB_RUN_DATE} environment variable the JDBCLoad will only complete successfully once the record count of source and target data have been confirmed to match execute a JDBCExecute stage to perform a change to a view on the database to point to the new version of the table in a transaction-safe manner if the job fails during any of these stages then the users will be unaware and will continue to consume the customers view which has the latest successful data  { &amp;quot;type&amp;quot;: &amp;quot;JDBCLoad&amp;quot;, &amp;quot;name&amp;quot;: &amp;quot;load active customers to web server database&amp;quot;, &amp;quot;environments&amp;quot;: [&amp;quot;production&amp;quot;, &amp;quot;test&amp;quot;], &amp;quot;inputView&amp;quot;: &amp;quot;ative_customers&amp;quot;, &amp;quot;jdbcURL&amp;quot;: &amp;quot;jdbc:mysql://localhost/mydb&amp;quot;, &amp;quot;tableName&amp;quot;: &amp;quot;customers_&amp;quot;${JOB_RUN_DATE}, &amp;quot;numPartitions&amp;quot;: 10, &amp;quot;isolationLevel&amp;quot;: &amp;quot;READ_COMMITTED&amp;quot;, &amp;quot;batchsize&amp;quot;: 10000, &amp;quot;params&amp;quot;: { &amp;quot;user&amp;quot;: &amp;quot;mydbuser&amp;quot;, &amp;quot;password&amp;quot;: &amp;quot;mydbpassword&amp;quot;, } }, { &amp;quot;type&amp;quot;: &amp;quot;JDBCExecute&amp;quot;, &amp;quot;name&amp;quot;: &amp;quot;update the current view to point to the latest version of the table&amp;quot;, &amp;quot;environments&amp;quot;: [&amp;quot;production&amp;quot;, &amp;quot;test&amp;quot;], &amp;quot;inputURI&amp;quot;: &amp;quot;hdfs://datalake/sql/update_customer_view.</description>
+    </item>
+    
+    <item>
+      <title>Contributing</title>
+      <link>https://aglenergy.github.io/arc/contributing/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/contributing/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>License</title>
+      <link>https://aglenergy.github.io/arc/license/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/license/</guid>
+      <description>Arc is released under the MIT License.
+Theme: Copyright &amp;copy; 2016 Digitalcraftsman digitalcraftsman@protonmail.com
+Copyright &amp;copy; 2016 Martin Donath martin.donath@squidfunk.com
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &amp;ldquo;Software&amp;rdquo;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</description>
+    </item>
     
     <item>
       <title>Home</title>

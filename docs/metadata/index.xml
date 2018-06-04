@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Metadata on Arc</title>
+    <link>https://aglenergy.github.io/arc/metadata/</link>
+    <description>Recent content in Metadata on Arc</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="https://aglenergy.github.io/arc/metadata/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Metadata</title>
+      <link>https://aglenergy.github.io/arc/metadata/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/metadata/</guid>
+      <description>The metadata format, consumed in the TypingTransform stage, is an opinionated format for specifying common data typing actions.
+It is designed to:
+ Support common data typing conversions found in business datasets. Support limited &amp;lsquo;schema evolution&amp;rsquo; of source data in the form of allowed lists of accepted input formats. Collect errors into array columns so that a user can decide how to handle errors once all have been collected.  Common Attributes    Attribute Type Required Description     id String true A unique identifier for this field.</description>
+    </item>
+    
+  </channel>
+</rss>

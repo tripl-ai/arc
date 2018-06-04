@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tutorials on Arc</title>
+    <link>https://aglenergy.github.io/arc/tutorial/</link>
+    <description>Recent content in Tutorials on Arc</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="https://aglenergy.github.io/arc/tutorial/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Tutorial</title>
+      <link>https://aglenergy.github.io/arc/tutorial/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/tutorial/</guid>
+      <description>This tutorial works through a real-world example using the New York City Taxi dataset which has been used heavliy around the web (see: Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance and A Billion Taxi Rides in Redshift) due to its 1 billion+ record count and scripted process available on github.
+It is a great dataset as it has a lot of the attributes of real-world data we want to demonstrate:</description>
+    </item>
+    
+  </channel>
+</rss>

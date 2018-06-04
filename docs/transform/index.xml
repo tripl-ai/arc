@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Transforms on Arc</title>
+    <link>https://aglenergy.github.io/arc/transform/</link>
+    <description>Recent content in Transforms on Arc</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="https://aglenergy.github.io/arc/transform/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Transform</title>
+      <link>https://aglenergy.github.io/arc/transform/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/transform/</guid>
+      <description>*Transform stages apply a single transformation to one or more incoming datasets.
+Transformers should meet this criteria:
+ Be pure. Perform only a single function. Utilise Spark internal functionality where possible.  JSONTransform The JSONTransform stage transforms the incoming dataset to rows of json strings with the column name value. It is intended to be used before stages like HTTPLoad to prepare the data for sending externally.
+Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
+    </item>
+    
+  </channel>
+</rss>

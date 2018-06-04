@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Getting-starteds on Arc</title>
+    <link>https://aglenergy.github.io/arc/getting-started/</link>
+    <description>Recent content in Getting-starteds on Arc</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="https://aglenergy.github.io/arc/getting-started/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Getting started</title>
+      <link>https://aglenergy.github.io/arc/getting-started/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/getting-started/</guid>
+      <description>Directed Acyclic Graphs A pipeline is a Directed Acyclic Graph specified using a json file format with the sequence of transformation stages defined in the stages array.
+Consider the following data pipeline:
+The job logically executes in the following way:
+Branch One (in parallel with Branch Two)  The DelimitedExtract stage loads Comma separated files from hdfs://datalake/raw/customer/*.csv and named customerUntypedDF internally. The TypingTransform stage takes the customerUntypedDF dataset and performs data typing on it using the metadata defined at hdfs://datalake/meta/0.</description>
+    </item>
+    
+  </channel>
+</rss>

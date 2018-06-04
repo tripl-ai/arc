@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+  
+  
+  
+  
+   <html class="no-js"> 
+
+  <head lang="en-us">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>Patterns - Arc</title>
+    <meta name="generator" content="Hugo 0.41" />
+
+    
+    <meta name="description" content="Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.">
+    
+    <link rel="canonical" href="https://aglenergy.github.io/arc/patterns/">
+    
+    <meta name="author" content="au.com.agl.arc">
+    
+
+    <meta property="og:url" content="https://aglenergy.github.io/arc/patterns/">
+    <meta property="og:title" content="Arc">
+    <meta property="og:image" content="https://aglenergy.github.io/arc/images/logo.png">
+    <meta name="apple-mobile-web-app-title" content="Arc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="shortcut icon" type="image/x-icon" href="https://aglenergy.github.io/arc/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://aglenergy.github.io/arc/images/favicon.ico">
+
+    <style>
+      @font-face {
+        font-family: 'Icon';
+        src: url('https://aglenergy.github.io/arc/fonts/icon.eot');
+        src: url('https://aglenergy.github.io/arc/fonts/icon.eot')
+               format('embedded-opentype'),
+             url('https://aglenergy.github.io/arc/fonts/icon.woff')
+               format('woff'),
+             url('https://aglenergy.github.io/arc/fonts/icon.ttf')
+               format('truetype'),
+             url('https://aglenergy.github.io/arc/fonts/icon.svg')
+               format('svg');
+        font-weight: normal;
+        font-style: normal;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://aglenergy.github.io/arc/stylesheets/application.css">
+    <link rel="stylesheet" href="https://aglenergy.github.io/arc/stylesheets/temporary.css">
+    <link rel="stylesheet" href="https://aglenergy.github.io/arc/stylesheets/palettes.css">
+    <link rel="stylesheet" href="https://aglenergy.github.io/arc/stylesheets/highlight/highlight.css">
+
+    
+    
+    
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu&#43;Mono">
+    <style>
+      body, input {
+        font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+      }
+      pre, code {
+        font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
+      }
+    </style>
+
+    
+    <script src="https://aglenergy.github.io/arc/javascripts/modernizr.js"></script>
+
+    
+
+  </head>
+  <body class="palette-primary-red palette-accent-teal">
+
+
+
+	
+	
+
+
+<div class="backdrop">
+	<div class="backdrop-paper"></div>
+</div>
+
+<input class="toggle" type="checkbox" id="toggle-drawer">
+<input class="toggle" type="checkbox" id="toggle-search">
+<label class="toggle-button overlay" for="toggle-drawer"></label>
+
+<header class="header">
+	<nav aria-label="Header">
+  <div class="bar default">
+    <div class="button button-menu" role="button" aria-label="Menu">
+      <label class="toggle-button icon icon-menu" for="toggle-drawer">
+        <span></span>
+      </label>
+    </div>
+    <div class="stretch">
+      <div class="title">
+        Patterns
+      </div>
+    </div>
+
+    
+
+    
+    
+        
+  </div>
+  <div class="bar search">
+    <div class="button button-close" role="button" aria-label="Close">
+      <label class="toggle-button icon icon-back" for="toggle-search"></label>
+    </div>
+    <div class="stretch">
+      <div class="field">
+        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+      </div>
+    </div>
+    <div class="button button-reset" role="button" aria-label="Search">
+      <button class="toggle-button icon icon-close" id="reset-search"></button>
+    </div>
+  </div>
+</nav>
+</header>
+
+<main class="main">
+	<div class="drawer">
+		<nav aria-label="Navigation">
+  <a href="https://github.com/aglenergy/arc" class="project">
+    <div class="banner">
+      
+        <div class="logo">
+          <img src="https://aglenergy.github.io/arc/images/logo.png">
+        </div>
+      
+      <div class="name">
+        <strong>Arc <span class="version">1.0.0</span></strong>
+        
+          <br>
+          aglenergy/arc
+        
+      </div>
+    </div>
+  </a>
+
+  <div class="scrollable">
+    <div class="wrapper">
+      
+        <ul class="repo">
+          <li class="repo-download">
+            <a href="https://github.com/aglenergy/arc/archive/master.zip" target="_blank" title="Download" data-action="download">
+              <i class="icon icon-download"></i> Download
+            </a>
+          </li>
+          <li class="repo-stars">
+            <a href="https://github.com/aglenergy/arc/stargazers" target="_blank" title="Stargazers" data-action="star">
+              <i class="icon icon-star"></i> Stars
+              <span class="count">&ndash;</span>
+            </a>
+          </li>
+        </ul>
+        <hr>
+      
+
+      <div class="toc">
+        
+        <ul>
+          
+
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://aglenergy.github.io/arc/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Tutorial" href="https://aglenergy.github.io/arc/tutorial/">
+	
+	Tutorial
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Extract" href="https://aglenergy.github.io/arc/extract/">
+	
+	Extract
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Transform" href="https://aglenergy.github.io/arc/transform/">
+	
+	Transform
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Load" href="https://aglenergy.github.io/arc/load/">
+	
+	Load
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Execute" href="https://aglenergy.github.io/arc/execute/">
+	
+	Execute
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Validate" href="https://aglenergy.github.io/arc/validate/">
+	
+	Validate
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Metadata" href="https://aglenergy.github.io/arc/metadata/">
+	
+	Metadata
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Partials" href="https://aglenergy.github.io/arc/partials/">
+	
+	Partials
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a class="current" title="Patterns" href="https://aglenergy.github.io/arc/patterns/">
+	
+	Patterns
+</a>
+
+
+<ul id="scrollspy">
+</ul>
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Contributing" href="https://aglenergy.github.io/arc/contributing/">
+	
+	Contributing
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="License" href="https://aglenergy.github.io/arc/license/">
+	
+	License
+</a>
+
+
+
+  
+</li>
+
+
+        </ul>
+        
+
+        
+        <hr>
+        <span class="section">The author</span>
+        
+        <ul>
+          
+
+          
+
+          
+        </ul>
+        
+      </div>
+    </div>
+  </div>
+</nav>
+
+	</div>
+
+	<article class="article">
+		<div class="wrapper">
+			<h1>Patterns </h1>
+
+			
+
+<h2 id="database-inconsistency">Database Inconsistency</h2>
+
+<p>When writing data to targets like databases using the <code>JDBCLoad</code> raises a risk of &lsquo;stale reads&rsquo; where a client is reading a dataset which is either old or one which is in the process of being updated and so is internally inconsistent. A pattern for preventing this is to:</p>
+
+<ul>
+<li>create a new table each run using a <code>JDBCLoad</code> stage with a dynamic destination table specified as the <code>${JOB_RUN_DATE}</code> environment variable</li>
+<li>the <code>JDBCLoad</code> will only complete successfully once the record count of source and target data have been confirmed to match</li>
+<li>execute a <code>JDBCExecute</code> stage to perform a change to a view on the database to point to the new version of the table in a transaction-safe manner</li>
+<li>if the job fails during any of these stages then the users will be unaware and will continue to consume the <code>customers</code> view which has the latest successful data</li>
+</ul>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;JDBCLoad&quot;,
+    &quot;name&quot;: &quot;load active customers to web server database&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputView&quot;: &quot;ative_customers&quot;,            
+    &quot;jdbcURL&quot;: &quot;jdbc:mysql://localhost/mydb&quot;,
+    &quot;tableName&quot;: &quot;customers_&quot;${JOB_RUN_DATE},
+    &quot;numPartitions&quot;: 10,
+    &quot;isolationLevel&quot;: &quot;READ_COMMITTED&quot;,
+    &quot;batchsize&quot;: 10000,
+    &quot;params&quot;: {
+        &quot;user&quot;: &quot;mydbuser&quot;,
+        &quot;password&quot;: &quot;mydbpassword&quot;,
+    }
+},
+{
+    &quot;type&quot;: &quot;JDBCExecute&quot;,
+    &quot;name&quot;: &quot;update the current view to point to the latest version of the table&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputURI&quot;: &quot;hdfs://datalake/sql/update_customer_view.sql&quot;,          
+    &quot;sqlParams&quot;: {
+        &quot;JOB_RUN_DATE&quot;: ${JOB_RUN_DATE}
+    },    
+    &quot;params&quot;: {
+        &quot;user&quot;: &quot;mydbuser&quot;,
+        &quot;password&quot;: &quot;mydbpassword&quot;,
+    }
+}
+</code></pre>
+
+<p>Where the <code>update_customer_view.sql</code> statement is:</p>
+
+<pre><code class="language-sql">CREATE OR REPLACE VIEW customers AS 
+SELECT * FROM customers_${JOB_RUN_DATE}
+</code></pre>
+
+<p>Each of the main SQL databases behaves slighly different and has slighty different syntax but most can achieve a repointing of a view to a different table in an atomic operation. A second <code>JDBCExecute</code> stage could also be added to clean up older verions of the underlying <code>customers_</code> tables.</p>
+
+<h2 id="duplicate-keys">Duplicate Keys</h2>
+
+<p>To find duplicate keys and stop the job so any issues are not propogated can be done using a <code>SQLValidate</code> stage which will fail with a list of invalid <code>customer_id</code>s if more than one are found:</p>
+
+<pre><code class="language-sql">SELECT 
+    COUNT(*) = 0
+    ,CASE   
+    TO_JSON(NAMED_STRUCT('duplicate_customer_count', COUNT(*), 'duplicate_customer', CAST(COLLECT_LIST(DISTINCT customer_id) AS STRING)))
+FROM (
+    SELECT 
+        customer_id
+        ,COUNT(customer_id) AS customer_id_count
+    FROM customer
+    GROUP BY customer_id
+) valid
+WHERE customer_id_count &gt; 1
+</code></pre>
+
+<h2 id="fixed-width-input-formats">Fixed Width Input Formats</h2>
+
+<p>It is also quite common to recieve fixed width formats from older systems like IBM Mainframes.</p>
+
+<table>
+<thead>
+<tr>
+<th>data</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>detail2016-12-1914.23</td>
+</tr>
+
+<tr>
+<td>detail2016-12-20-3.98</td>
+</tr>
+
+<tr>
+<td>detail2016-12-2118.20</td>
+</tr>
+</tbody>
+</table>
+
+<ul>
+<li>Use a <code>DelimitedExtract</code> stage with a delimiter that will not be found in the data like <code>DefaultHive</code> to return dataset of many rows but single column.</li>
+<li>Use a <code>SQLTransform</code> stage to split the data into columns.</li>
+</ul>
+
+<pre><code class="language-sql">SELECT 
+    SUBSTRING(data, 0, 6) AS _type
+    ,SUBSTRING(data, 7, 8) AS date
+    ,SUBSTRING(data, 17, 4) AS total
+FROM fixed_width_demo
+</code></pre>
+
+<ul>
+<li>Use a <code>TypingTransform</code> stage to apply data types to the string columns returned by <code>SQLTransform</code>.</li>
+</ul>
+
+<h2 id="foreign-key-constraint">Foreign Key Constraint</h2>
+
+<p>Another common data quality check is to check Foreign Key integrity, for example ensuring a customer record exists when loading an accounts dataset:</p>
+
+<h3 id="customers">Customers</h3>
+
+<table>
+<thead>
+<tr>
+<th>customer_id</th>
+<th>customer_name</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>29728375</td>
+<td>Eleazar Stehr</td>
+</tr>
+
+<tr>
+<td>69752261</td>
+<td>Lisette Roberts</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="accounts">Accounts</h3>
+
+<table>
+<thead>
+<tr>
+<th>customer_id</th>
+<th>account_id</th>
+<th>account_name</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>29728375</td>
+<td>44205457</td>
+<td>Checking Account</td>
+</tr>
+
+<tr>
+<td>51805256</td>
+<td>25102441</td>
+<td>Credit Card Account</td>
+</tr>
+
+<tr>
+<td>69752261</td>
+<td>80393015</td>
+<td>Savings Account</td>
+</tr>
+
+<tr>
+<td>69752261</td>
+<td>81704186</td>
+<td>Credit Card Account</td>
+</tr>
+
+<tr>
+<td>44953646</td>
+<td>75082852</td>
+<td>Personal Loan Account</td>
+</tr>
+</tbody>
+</table>
+
+<p>This can be done using a <code>SQLValidate</code> stage which will fail with a list of invalid accounts if any customer records are missing (be careful of not overloading your logging solution with long messages).</p>
+
+<pre><code class="language-sql">SELECT 
+    SUM(invalid_customer_id) = 0
+    ,TO_JSON(NAMED_STRUCT('customers', COUNT(DISTINCT customer_id), 'invalid_account_numbers_count', SUM(invalid_customer_id), 'invalid_account_numbers', CAST(collect_list(DISTINCT invalid_account_numbers) AS STRING)))
+FROM (
+    SELECT 
+        account.account_number
+        ,customer.customer_id
+        ,CASE 
+            WHEN customer.customer_id IS NULL THEN account.account_number 
+            ELSE null
+        END AS invalid_account_numbers
+        ,CASE 
+            WHEN customer.customer_id IS NULL THEN 1 
+            ELSE 0 
+        END AS invalid_customer_id
+    FROM account
+    LEFT JOIN customer ON account.customer_id = customer.customer_id
+) valid
+</code></pre>
+
+<h2 id="header-trailer-load-assurance">Header/Trailer Load Assurance</h2>
+
+<p>It is common to see formats like where the input dataset contains multiple record types with a trailer for some sort of load assurance/validation:</p>
+
+<table>
+<thead>
+<tr>
+<th>col0</th>
+<th>col1</th>
+<th>col2</th>
+<th>col3</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>header</td>
+<td>2016-12-21</td>
+<td>daily totals</td>
+<td></td>
+</tr>
+
+<tr>
+<td>detail</td>
+<td>2016-12-19</td>
+<td>daily total</td>
+<td>14.23</td>
+</tr>
+
+<tr>
+<td>detail</td>
+<td>2016-12-20</td>
+<td>daily total</td>
+<td>-3.98</td>
+</tr>
+
+<tr>
+<td>detail</td>
+<td>2016-12-21</td>
+<td>daily total</td>
+<td>18.20</td>
+</tr>
+
+<tr>
+<td>trailer</td>
+<td>3</td>
+<td>28.45</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<ul>
+<li>Use two <code>SQLTransform</code> stages to split the input dataset into two new <code>DataFrame</code>.</li>
+</ul>
+
+<h3 id="detail">detail</h3>
+
+<pre><code class="language-sql">SELECT 
+    col0 AS _type
+    ,col1 AS date
+    ,col2 AS description
+    ,col3 AS total
+FROM raw
+WHERE col0 = 'detail'
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>_type</th>
+<th>date</th>
+<th>description</th>
+<th>total</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>detail</td>
+<td>2016-12-19</td>
+<td>daily total</td>
+<td>14.23</td>
+</tr>
+
+<tr>
+<td>detail</td>
+<td>2016-12-20</td>
+<td>daily total</td>
+<td>-3.98</td>
+</tr>
+
+<tr>
+<td>detail</td>
+<td>2016-12-21</td>
+<td>daily total</td>
+<td>18.20</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="trailer">trailer</h3>
+
+<pre><code class="language-sql">SELECT 
+    col0 AS _type
+    ,col1 AS trailer_records
+    ,col2 AS trailer_balance
+FROM raw
+WHERE col0 = 'trailer'
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>_type</th>
+<th>trailer_records</th>
+<th>trailer_balance</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>trailer</td>
+<td>3</td>
+<td>28.45</td>
+</tr>
+</tbody>
+</table>
+
+<ul>
+<li>Use two <code>TypingTransform</code> stages to apply data correct types to the two datasets.</li>
+<li>Use a <code>SQLValidate</code> stage to ensure that the count and sum of the <code>detail</code> dataset equals that of the <code>trailer</code> dataset.</li>
+</ul>
+
+<pre><code class="language-sql">SELECT 
+    sum_total = trailer_balance AND records_total = trailer_records
+    ,TO_JSON(NAMED_STRUCT('expected_count', trailer_records, 'actual_count', records_total, 'expected_balance', trailer_balance, 'actual_balance', sum_total))
+FROM (
+    (SELECT COUNT(total) AS records_total, SUM(total) AS sum_total FROM detail) detail
+    CROSS JOIN
+    (SELECT trailer_records, trailer_balance FROM trailer) trailer
+) valid
+</code></pre>
+
+<h2 id="machine-learning-prediction-thresholds">Machine Learning Prediction Thresholds</h2>
+
+<p>When used for classification the <code>MLTransform</code> stage will add a <code>probability</code> column which exposes the highest probability score from the Spark ML probability vector which led to the predicted value. This can then be used as a boundary to prevent low probability predictions being sent to other systems if, for example, a change in input data resulted in a major change in predictions. The threshold parameter could be easily passed in as a sqlParam parameter and referenced as <code>${CUSTOMER_CHURN_PROBABILITY_THRESHOLD}</code> in the SQL code.</p>
+
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>input</th>
+<th>prediction</th>
+<th>probability</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>4</td>
+<td>spark i j k</td>
+<td>1.0</td>
+<td>0.8403592261212589</td>
+</tr>
+
+<tr>
+<td>5</td>
+<td>l m n</td>
+<td>0.0</td>
+<td>0.8378325685476612</td>
+</tr>
+
+<tr>
+<td>6</td>
+<td>spark hadoop spark</td>
+<td>1.0</td>
+<td>0.9307336686702373</td>
+</tr>
+
+<tr>
+<td>7</td>
+<td>apache hadoop</td>
+<td>0.0</td>
+<td>0.9821575333444208</td>
+</tr>
+</tbody>
+</table>
+
+<pre><code class="language-sql">SELECT 
+    SUM(low_probability) = 0
+    ,TO_JSON(NAMED_STRUCT('probability_below_threshold', SUM(low_probability), 'threshold', 0.8))
+FROM (
+    SELECT 
+        CASE 
+            WHEN customer_churn.probability &lt; 0.8 IS NULL THEN 1 
+            ELSE 0 
+        END AS low_probability
+    FROM customer_churn
+) valid
+</code></pre>
+
+<h2 id="testing">Testing</h2>
+
+<p>If you want to manually create test data to compare against a Spark DataFrame a good option is to use the <a href="https://arrow.apache.org/">Apache Arrow</a> library and the Python API to create a correctly typed Parquet. This file can then be loaded and compared with the <code>EqualityValidate</code> stage.</p>
+
+<p>Using the publicly available <a href="https://www.docker.com/">Docker</a> <a href="https://conda.io">Conda</a> image:</p>
+
+<pre><code class="language-bash">docker run -it -v $(pwd)/data:/tmp/data conda/miniconda3 python
+</code></pre>
+
+<p>Then with Python (of course normally you would install the required libraries into your own Docker image):</p>
+
+<pre><code class="language-python"># install pyarrow - build your docker image so this is already installed
+import subprocess
+subprocess.call(['conda', 'install', '-y', '-c', 'conda-forge', 'pyarrow'])
+
+# imports
+import datetime
+import pytz
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+# create two rows (columnar) of each core data type corresponding with the metadata format
+# be careful with null type here as it will be silently converted to a null IntegerType and will not match Spark's NullType
+booleanDatum = pa.array([True, False], type=pa.bool_())
+dateDatum = pa.array([datetime.date(2016, 12, 18), datetime.date(2016, 12, 19)])
+decimalDatum = pa.array([54.321, 12.345], type=pa.decimal128(38, 18))
+doubleDatum = pa.array([42.4242, 21.2121], type=pa.float64())
+integerDatum = pa.array([17, 34], type=pa.int32())
+longDatum = pa.array([1520828868, 1520828123], type=pa.int64())
+stringDatum = pa.array(['test,breakdelimiter', 'breakdelimiter,test'], type=pa.string())
+timestampDatum = pa.array([datetime.datetime(2017, 12, 20, 21, 46, 54, 0, tzinfo=pytz.UTC), datetime.datetime(2017, 12, 29, 17, 21, 49, 0, tzinfo=pytz.UTC)])
+timeDatum = pa.array(['12:34:56', '23:45:16'], type=pa.string())
+nullDatum = pa.array([None, None], type=pa.null())
+
+# create the arrow table
+# we are using an arrow table rather than a dataframe to correctly align with spark datatypes
+table = pa.Table.from_arrays([booleanDatum, dateDatum, decimalDatum, doubleDatum, integerDatum, longDatum, stringDatum, timestampDatum, timeDatum, nullDatum], 
+  ['booleanDatum', 'dateDatum', 'decimalDatum', 'doubleDatum', 'integerDatum', 'longDatum', 'stringDatum', 'timestampDatum', 'timeDatum', 'nullDatum'])
+
+# write table to disk
+pq.write_table(table, '/tmp/data/example.parquet')
+</code></pre>
+
+<p>The suggestion then is to use the <code>environments</code> key to only execute the difference test whilst in testing mode:</p>
+
+<pre><code class="language-json">{
+  &quot;environments&quot;: [&quot;test&quot;],
+  &quot;type&quot;: &quot;ParquetExtract&quot;,
+  &quot;name&quot;: &quot;Load the known valid dataset&quot;,
+  &quot;inputURI&quot;: &quot;hdfs://datalake/correct.parquet&quot;,
+  &quot;outputView&quot;: &quot;correct&quot;,            
+  &quot;persist&quot;: false,
+  &quot;authentication&quot;: {
+  }
+},
+{
+  &quot;environments&quot;: [&quot;test&quot;],
+  &quot;type&quot;: &quot;EqualityValidate&quot;,
+  &quot;name&quot;: &quot;verify calculated equals manually created dataset&quot;,
+  &quot;leftView&quot;: &quot;calculated&quot;,            
+  &quot;rightView&quot;: &quot;correct&quot;,              
+}
+</code></pre>
+
+
+			<aside class="copyright" role="note">
+				
+				&copy; 2018 Released under the MIT license &ndash;
+				
+				Documentation built with
+				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
+				using the
+				<a href="http://github.com/digitalcraftsman/hugo-material-docs" target="_blank">Material</a> theme.
+			</aside>
+
+			<footer class="footer">
+				
+
+<nav class="pagination" aria-label="Footer">
+  <div class="previous">
+  
+      <a href="https://aglenergy.github.io/arc/partials/" title="Partials">
+        <span class="direction">
+          Previous
+        </span>
+        <div class="page">
+          <div class="button button-previous" role="button" aria-label="Previous">
+            <i class="icon icon-back"></i>
+          </div>
+          <div class="stretch">
+            <div class="title">
+              Partials
+            </div>
+          </div>
+        </div>
+      </a>
+  
+  </div>
+
+  <div class="next">
+  
+      <a href="https://aglenergy.github.io/arc/contributing/" title="Contributing">
+        <span class="direction">
+          Next
+        </span>
+        <div class="page">
+          <div class="stretch">
+            <div class="title">
+              Contributing
+            </div>
+          </div>
+          <div class="button button-next" role="button" aria-label="Next">
+            <i class="icon icon-forward"></i>
+          </div>
+        </div>
+      </a>
+  
+  </div>
+</nav>
+
+
+
+
+
+			</footer>
+		</div>
+	</article>
+
+	<div class="results" role="status" aria-live="polite">
+		<div class="scrollable">
+			<div class="wrapper">
+				<div class="meta"></div>
+				<div class="list"></div>
+			</div>
+		</div>
+	</div>
+</main>
+
+    <script>
+    
+      var base_url = 'https:\/\/aglenergy.github.io\/arc\/';
+      var repo_id  = 'aglenergy\/arc';
+    
+    </script>
+
+    <script src="https://aglenergy.github.io/arc/javascripts/application.js"></script>
+    
+
+    <script>
+      /* Add headers to scrollspy */
+      var headers   = document.getElementsByTagName("h2");
+      var scrollspy = document.getElementById('scrollspy');
+
+      if(scrollspy) {
+        if(headers.length > 0) {
+          for(var i = 0; i < headers.length; i++) {
+            var li = document.createElement("li");
+            li.setAttribute("class", "anchor");
+
+            var a  = document.createElement("a");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", headers[i].innerHTML);
+            a.innerHTML = headers[i].innerHTML;
+
+            li.appendChild(a)
+            scrollspy.appendChild(li);
+          }
+        } else {
+          scrollspy.parentElement.removeChild(scrollspy)
+        }
+
+
+        /* Add permanent link next to the headers */
+        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+        for(var i = 0; i < headers.length; i++) {
+            var a = document.createElement("a");
+            a.setAttribute("class", "headerlink");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", "Permanent link")
+            a.innerHTML = "#";
+            headers[i].appendChild(a);
+        }
+      }
+    </script>
+
+    
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
+

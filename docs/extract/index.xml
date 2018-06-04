@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Extracts on Arc</title>
+    <link>https://aglenergy.github.io/arc/extract/</link>
+    <description>Recent content in Extracts on Arc</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="https://aglenergy.github.io/arc/extract/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Extract</title>
+      <link>https://aglenergy.github.io/arc/extract/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://aglenergy.github.io/arc/extract/</guid>
+      <description>*Extract stages read in data from a database or file system.
+*Extract stages should meet this criteria:
+ Read data from local or remote filesystems and return a DataFrame. Do not transform/mutate the data. Allow for Predicate Pushdown depending on data source.  AvroExtract The AvroExtract stage reads one or more Apache Avro files and returns a DataFrame.
+Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
+    </item>
+    
+  </channel>
+</rss>

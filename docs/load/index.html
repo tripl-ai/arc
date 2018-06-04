@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+  
+  
+  
+  
+   <html class="no-js"> 
+
+  <head lang="en-us">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>Load - Arc</title>
+    <meta name="generator" content="Hugo 0.41" />
+
+    
+    <meta name="description" content="Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.">
+    
+    <link rel="canonical" href="https://aglenergy.github.io/arc/load/">
+    
+    <meta name="author" content="au.com.agl.arc">
+    
+
+    <meta property="og:url" content="https://aglenergy.github.io/arc/load/">
+    <meta property="og:title" content="Arc">
+    <meta property="og:image" content="https://aglenergy.github.io/arc/images/logo.png">
+    <meta name="apple-mobile-web-app-title" content="Arc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="shortcut icon" type="image/x-icon" href="https://aglenergy.github.io/arc/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://aglenergy.github.io/arc/images/favicon.ico">
+
+    <style>
+      @font-face {
+        font-family: 'Icon';
+        src: url('https://aglenergy.github.io/arc/fonts/icon.eot');
+        src: url('https://aglenergy.github.io/arc/fonts/icon.eot')
+               format('embedded-opentype'),
+             url('https://aglenergy.github.io/arc/fonts/icon.woff')
+               format('woff'),
+             url('https://aglenergy.github.io/arc/fonts/icon.ttf')
+               format('truetype'),
+             url('https://aglenergy.github.io/arc/fonts/icon.svg')
+               format('svg');
+        font-weight: normal;
+        font-style: normal;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://aglenergy.github.io/arc/stylesheets/application.css">
+    <link rel="stylesheet" href="https://aglenergy.github.io/arc/stylesheets/temporary.css">
+    <link rel="stylesheet" href="https://aglenergy.github.io/arc/stylesheets/palettes.css">
+    <link rel="stylesheet" href="https://aglenergy.github.io/arc/stylesheets/highlight/highlight.css">
+
+    
+    
+    
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu&#43;Mono">
+    <style>
+      body, input {
+        font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+      }
+      pre, code {
+        font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
+      }
+    </style>
+
+    
+    <script src="https://aglenergy.github.io/arc/javascripts/modernizr.js"></script>
+
+    
+
+  </head>
+  <body class="palette-primary-red palette-accent-teal">
+
+
+
+	
+	
+
+
+<div class="backdrop">
+	<div class="backdrop-paper"></div>
+</div>
+
+<input class="toggle" type="checkbox" id="toggle-drawer">
+<input class="toggle" type="checkbox" id="toggle-search">
+<label class="toggle-button overlay" for="toggle-drawer"></label>
+
+<header class="header">
+	<nav aria-label="Header">
+  <div class="bar default">
+    <div class="button button-menu" role="button" aria-label="Menu">
+      <label class="toggle-button icon icon-menu" for="toggle-drawer">
+        <span></span>
+      </label>
+    </div>
+    <div class="stretch">
+      <div class="title">
+        Load
+      </div>
+    </div>
+
+    
+
+    
+    
+        
+  </div>
+  <div class="bar search">
+    <div class="button button-close" role="button" aria-label="Close">
+      <label class="toggle-button icon icon-back" for="toggle-search"></label>
+    </div>
+    <div class="stretch">
+      <div class="field">
+        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+      </div>
+    </div>
+    <div class="button button-reset" role="button" aria-label="Search">
+      <button class="toggle-button icon icon-close" id="reset-search"></button>
+    </div>
+  </div>
+</nav>
+</header>
+
+<main class="main">
+	<div class="drawer">
+		<nav aria-label="Navigation">
+  <a href="https://github.com/aglenergy/arc" class="project">
+    <div class="banner">
+      
+        <div class="logo">
+          <img src="https://aglenergy.github.io/arc/images/logo.png">
+        </div>
+      
+      <div class="name">
+        <strong>Arc <span class="version">1.0.0</span></strong>
+        
+          <br>
+          aglenergy/arc
+        
+      </div>
+    </div>
+  </a>
+
+  <div class="scrollable">
+    <div class="wrapper">
+      
+        <ul class="repo">
+          <li class="repo-download">
+            <a href="https://github.com/aglenergy/arc/archive/master.zip" target="_blank" title="Download" data-action="download">
+              <i class="icon icon-download"></i> Download
+            </a>
+          </li>
+          <li class="repo-stars">
+            <a href="https://github.com/aglenergy/arc/stargazers" target="_blank" title="Stargazers" data-action="star">
+              <i class="icon icon-star"></i> Stars
+              <span class="count">&ndash;</span>
+            </a>
+          </li>
+        </ul>
+        <hr>
+      
+
+      <div class="toc">
+        
+        <ul>
+          
+
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://aglenergy.github.io/arc/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Tutorial" href="https://aglenergy.github.io/arc/tutorial/">
+	
+	Tutorial
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Extract" href="https://aglenergy.github.io/arc/extract/">
+	
+	Extract
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Transform" href="https://aglenergy.github.io/arc/transform/">
+	
+	Transform
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a class="current" title="Load" href="https://aglenergy.github.io/arc/load/">
+	
+	Load
+</a>
+
+
+<ul id="scrollspy">
+</ul>
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Execute" href="https://aglenergy.github.io/arc/execute/">
+	
+	Execute
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Validate" href="https://aglenergy.github.io/arc/validate/">
+	
+	Validate
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Metadata" href="https://aglenergy.github.io/arc/metadata/">
+	
+	Metadata
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Partials" href="https://aglenergy.github.io/arc/partials/">
+	
+	Partials
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Patterns" href="https://aglenergy.github.io/arc/patterns/">
+	
+	Patterns
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Contributing" href="https://aglenergy.github.io/arc/contributing/">
+	
+	Contributing
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="License" href="https://aglenergy.github.io/arc/license/">
+	
+	License
+</a>
+
+
+
+  
+</li>
+
+
+        </ul>
+        
+
+        
+        <hr>
+        <span class="section">The author</span>
+        
+        <ul>
+          
+
+          
+
+          
+        </ul>
+        
+      </div>
+    </div>
+  </div>
+</nav>
+
+	</div>
+
+	<article class="article">
+		<div class="wrapper">
+			<h1>Load </h1>
+
+			
+
+<p><code>*Load</code> stages write out Spark <code>datasets</code> to a database or file system.</p>
+
+<p><code>*Load</code> staages should meet this criteria:</p>
+
+<ul>
+<li>Take in a single <code>dataset</code>.</li>
+<li>Perform target specific validation that the dataset has been written correctly.</li>
+</ul>
+
+<h2 id="avroload">AvroLoad</h2>
+
+<p>The <code>AvroLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://avro.apache.org/">Apache Avro</a> file.</p>
+
+<h3 id="parameters">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the Parquet file to write to.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition by the data prior to write.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>saveMode</td>
+<td>String</td>
+<td>false</td>
+<td>The mode for writing the output file to describe how errors are handled. Available options are: <code>Append</code>, <code>ErrorIfExists</code>, <code>Ignore</code>, <code>Overwrite</code>. Default is <code>Overwrite</code> if not specified.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;AvroLoad&quot;,
+    &quot;name&quot;: &quot;write customer records to avro&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputView&quot;: &quot;customer&quot;,
+    &quot;outputURI&quot;: &quot;hdfs://datalake/raw/customer.avro&quot;,
+    &quot;numPartitions&quot;: 100,
+    &quot;partitionBy&quot;: [
+        &quot;customer_segment&quot;,
+        &quot;customer_type&quot;
+    ],
+    &quot;authentication&quot;: {
+        ...
+    },    
+    &quot;saveMode&quot;: &quot;Append&quot;,
+    &quot;params&quot;: {}
+}
+</code></pre>
+
+<h2 id="azureeventhubsload">AzureEventHubsLoad</h2>
+
+<p>The <code>AzureEventHubsLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://azure.microsoft.com/en-gb/services/event-hubs/">Azure Event Hubs</a> stream. The input to this stage needs to be a single column dataset of signature <code>value: string</code> and is intended to be used after a <a href="https://aglenergy.github.io/arc/load/#jsontransform">JSONTransform</a> stage which would prepare the data for sending to the external server.</p>
+
+<p>In the future additional Transform stages (like <code>ProtoBufTransform</code>) could be added to prepare binary payloads instead of just <code>json</code> <code>string</code>.</p>
+
+<h3 id="parameters-1">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>namespaceName</td>
+<td>String</td>
+<td>true</td>
+<td>The Event Hubs namespace.</td>
+</tr>
+
+<tr>
+<td>eventHubName</td>
+<td>String</td>
+<td>true</td>
+<td>The Event Hubs entity.</td>
+</tr>
+
+<tr>
+<td>sharedAccessSignatureKeyName</td>
+<td>String</td>
+<td>true</td>
+<td>The Event Hubs Shared Access Signature Key Name.</td>
+</tr>
+
+<tr>
+<td>sharedAccessSignatureKey</td>
+<td>String</td>
+<td>true</td>
+<td>The Event Hubs Shared Access Signature Key.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-1">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;AzureEventHubsLoad&quot;,
+    &quot;name&quot;: &quot;write customer records to eventhub&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputView&quot;: &quot;customer&quot;,
+    &quot;namespaceName&quot;: &quot;mynamespace&quot;, 
+    &quot;eventHubName&quot;: &quot;myeventhub&quot;, 
+    &quot;sharedAccessSignatureKeyName&quot;: &quot;mysignaturename&quot;, 
+    &quot;sharedAccessSignatureKey&quot;: &quot;ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=&quot;,
+    &quot;params&quot;: {}
+}
+</code></pre>
+
+<h2 id="delimitedload">DelimitedLoad</h2>
+
+<p>The <code>DelimitedLoad</code> writes an input <code>DataFrame</code> to a target delimited file.</p>
+
+<h3 id="parameters-2">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the Delimited file to write to.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition by the data prior to write.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>delimiter</td>
+<td>String</td>
+<td>true</td>
+<td>The type of delimiter in the file. Supported values: <code>Comma</code>, <code>Pipe</code>, <code>DefaultHive</code>. <code>DefaultHive</code> is  ASCII character 1, the default delimiter for Apache Hive extracts.</td>
+</tr>
+
+<tr>
+<td>quote</td>
+<td>String</td>
+<td>true</td>
+<td>The type of quoting in the file. Supported values: <code>None</code>, <code>SingleQuote</code>, <code>DoubleQuote</code>.</td>
+</tr>
+
+<tr>
+<td>header</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named <code>_col1</code>, <code>_col2</code> &hellip; <code>_colN</code>.</td>
+</tr>
+
+<tr>
+<td>saveMode</td>
+<td>String</td>
+<td>false</td>
+<td>The mode for writing the output file to describe how errors are handled. Available options are: <code>Append</code>, <code>ErrorIfExists</code>, <code>Ignore</code>, <code>Overwrite</code>. Default is <code>Overwrite</code> if not specified.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-2">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;DelimitedLoad&quot;,
+    &quot;name&quot;: &quot;write out customer csvs&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputView&quot;: &quot;customer&quot;,            
+    &quot;outputURI&quot;: &quot;hdfs://input_data/customer/customer.csv&quot;,
+    &quot;delimiter&quot;: &quot;Comma&quot;,
+    &quot;quote&quot; : &quot;DoubleQuote&quot;,
+    &quot;header&quot;: true,
+    &quot;partitionBy&quot;: [&quot;active&quot;],
+    &quot;numPartitions&quot;: 10,
+    &quot;authentication&quot;: {
+        ...
+    },
+    &quot;saveMode&quot;: &quot;Append&quot;,
+    &quot;params&quot;: {
+    }
+}
+</code></pre>
+
+<h2 id="httpload">HTTPLoad</h2>
+
+<p>The <code>HTTPLoad</code> takes an input <code>DataFrame</code> and executes a series of <code>POST</code> requests against a remote HTTP service. The input to this stage needs to be a single column dataset of signature <code>value: string</code> and is intended to be used after a <a href="https://aglenergy.github.io/arc/load/#jsontransform">JSONTransform</a> stage which would prepare the data for sending to the external server.</p>
+
+<p>In the future additional Transform stages (like <code>ProtoBufTransform</code>) could be added to prepare binary payloads instead of just <code>json</code> <code>string</code>.</p>
+
+<h3 id="parameters-3">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the HTTP server.</td>
+</tr>
+
+<tr>
+<td>headers</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td><a href="https://en.wikipedia.org/wiki/List_of_HTTP_header_fields">HTTP Headers</a> to set for the HTTP request. These are not limited to the Internet Engineering Task Force standard headers.</td>
+</tr>
+
+<tr>
+<td>validStatusCodes</td>
+<td>Array[Integer]</td>
+<td>false</td>
+<td>A list of valid status codes which will result in a successful stage if the list contains the HTTP server response code. If not provided the default values are <code>[200, 201, 202]</code>. Note: all request response codes must be contained in this list for the stage to be successful.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-3">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;HTTPLoad&quot;,
+    &quot;name&quot;: &quot;load customers to the customer api&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputView&quot;: &quot;customer&quot;,            
+    &quot;outputURI&quot;: &quot;http://internalserver/api/customer&quot;,
+    &quot;headers&quot;: {
+        &quot;Authorization&quot;: &quot;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&quot;,
+        &quot;custom-header&quot;: &quot;payload&quot;,
+    },
+    &quot;validStatusCodes&quot;: [200],
+    &quot;params&quot;: {
+    }
+}
+</code></pre>
+
+<h2 id="jdbcload">JDBCLoad</h2>
+
+<p>The <code>JDBCLoad</code> writes an input <code>DataFrame</code> to a target JDBC Database. See <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases">Spark JDBC documentation</a>.</p>
+
+<h3 id="parameters-4">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>jdbcURL</td>
+<td>String</td>
+<td>true</td>
+<td>The JDBC URL to connect to. e.g., <code>jdbc:mysql://localhost:3306</code>. Most common JDBC drivers are in the docker image already.</td>
+</tr>
+
+<tr>
+<td>tableName</td>
+<td>String</td>
+<td>true</td>
+<td>The JDBC table that should be read. Note that anything that is valid in a <code>FROM</code> clause of a SQL query can be used, e.g. <code>(SELECT * FROM sourcetable WHERE key=value) sourcetable</code> or just <code>sourcetable</code>.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing. This also determines the maximum number of concurrent JDBC connections.</td>
+</tr>
+
+<tr>
+<td>isolationLevel</td>
+<td>String</td>
+<td>false</td>
+<td>The transaction isolation level, which applies to current connection. It can be one of NONE, READ_COMMITTED, READ_UNCOMMITTED, REPEATABLE_READ, or SERIALIZABLE, corresponding to standard transaction isolation levels defined by JDBC&rsquo;s Connection object, with default of READ_UNCOMMITTED. Please refer the documentation in <a href="https://docs.oracle.com/javase/8/docs/api/java/sql/Connection.html">java.sql.Connection</a>.</td>
+</tr>
+
+<tr>
+<td>batchsize</td>
+<td>Integer</td>
+<td>false</td>
+<td>The JDBC batch size, which determines how many rows to insert per round trip. This can help performance on JDBC drivers. It defaults to <code>1000</code>.</td>
+</tr>
+
+<tr>
+<td>truncate</td>
+<td>Boolean</td>
+<td>false</td>
+<td>This option causes Spark to truncate an existing table instead of dropping and recreating it.</td>
+</tr>
+
+<tr>
+<td>createTableOptions</td>
+<td>String</td>
+<td>false</td>
+<td>This is a JDBC writer related option. If specified, this option allows setting of database-specific table and partition options when creating a table (e.g., <code>CREATE TABLE t (name string) ENGINE=InnoDB</code>).</td>
+</tr>
+
+<tr>
+<td>createTableColumnTypes</td>
+<td>String</td>
+<td>false</td>
+<td>The database column data types to use instead of the defaults, when creating the table. Data type information should be specified in the same format as <code>CREATE TABLE</code> columns syntax (e.g: &ldquo;<code>name CHAR(64), comments VARCHAR(1024)</code>&rdquo;). The specified types should be valid spark sql data types.</td>
+</tr>
+
+<tr>
+<td>saveMode</td>
+<td>String</td>
+<td>false</td>
+<td>The mode for writing the output file to describe how errors are handled. Available options are: <code>Append</code>, <code>ErrorIfExists</code>, <code>Ignore</code>, <code>Overwrite</code>. Default is <code>Overwrite</code> if not specified.</td>
+</tr>
+
+<tr>
+<td>bulkload</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to enable a <code>bulk</code> copy. This is currently only available for <code>sqlserver</code> targets but more targets can be added as drivers become available.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>Map of configuration parameters.. Currently requires <code>user</code> and <code>password</code> to be set here - see example below.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-4">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;JDBCLoad&quot;,
+    &quot;name&quot;: &quot;load active customers to web server database&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputView&quot;: &quot;ative_customers&quot;,            
+    &quot;jdbcURL&quot;: &quot;jdbc:mysql://localhost/mydb&quot;,
+    &quot;tableName&quot;: &quot;mydatabase.myschema.customers&quot;,
+    &quot;numPartitions&quot;: 10,
+    &quot;isolationLevel&quot;: &quot;READ_COMMITTED&quot;,
+    &quot;batchsize&quot;: 10000,
+    &quot;truncate&quot;: false,
+    &quot;saveMode&quot;: &quot;Append&quot;,
+    &quot;bulkload&quot;: false,
+    &quot;params&quot;: {
+        &quot;user&quot;: &quot;mydbuser&quot;,
+        &quot;password&quot;: &quot;mydbpassword&quot;,
+    }
+}
+</code></pre>
+
+<h2 id="jsonload">JSONLoad</h2>
+
+<p>The <code>JSONLoad</code> writes an input <code>DataFrame</code> to a target JSON file.</p>
+
+<h3 id="parameters-5">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the Delimited file to write to.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>saveMode</td>
+<td>String</td>
+<td>false</td>
+<td>The mode for writing the output file to describe how errors are handled. Available options are: <code>Append</code>, <code>ErrorIfExists</code>, <code>Ignore</code>, <code>Overwrite</code>. Default is <code>Overwrite</code> if not specified.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-5">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;JSONLoad&quot;,
+    &quot;name&quot;: &quot;load customer json extract&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;outputView&quot;: &quot;customer&quot;,            
+    &quot;outputURI&quot;: &quot;hdfs://input_data/customer/customer.json&quot;,
+    &quot;authentication&quot;: {
+        ...
+    },
+    &quot;saveMode&quot;: &quot;Append&quot;,
+    &quot;params&quot;: {
+    }
+}
+</code></pre>
+
+<h2 id="orcload">ORCLoad</h2>
+
+<p>The <code>ORCLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://orc.apache.org/">Apache ORC</a> file.</p>
+
+<h3 id="parameters-6">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the ORC file to write to.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition by the data prior to write.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>saveMode</td>
+<td>String</td>
+<td>false</td>
+<td>The mode for writing the output file to describe how errors are handled. Available options are: <code>Append</code>, <code>ErrorIfExists</code>, <code>Ignore</code>, <code>Overwrite</code>. Default is <code>Overwrite</code> if not specified.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-6">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;ORCLoad&quot;,
+    &quot;name&quot;: &quot;write customer records to orc&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputView&quot;: &quot;customer&quot;,
+    &quot;outputURI&quot;: &quot;hdfs://datalake/raw/customer.orc&quot;,
+    &quot;numPartitions&quot;: 100,
+    &quot;partitionBy&quot;: [
+        &quot;customer_segment&quot;,
+        &quot;customer_type&quot;
+    ],
+    &quot;authentication&quot;: {
+        ...
+    },    
+    &quot;saveMode&quot;: &quot;Append&quot;,
+    &quot;params&quot;: {}
+}
+</code></pre>
+
+<h2 id="parquetload">ParquetLoad</h2>
+
+<p>The <code>ParquetLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://parquet.apache.org/">Apache Parquet</a> file.</p>
+
+<h3 id="parameters-7">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the Parquet file to write to.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition by the data prior to write.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>saveMode</td>
+<td>String</td>
+<td>false</td>
+<td>The mode for writing the output file to describe how errors are handled. Available options are: <code>Append</code>, <code>ErrorIfExists</code>, <code>Ignore</code>, <code>Overwrite</code>. Default is <code>Overwrite</code> if not specified.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-7">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;ParquetLoad&quot;,
+    &quot;name&quot;: &quot;write customer records to parquet&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputView&quot;: &quot;customer&quot;,
+    &quot;outputURI&quot;: &quot;hdfs://datalake/raw/customer.parquet&quot;,
+    &quot;numPartitions&quot;: 100,
+    &quot;partitionBy&quot;: [
+        &quot;customer_segment&quot;,
+        &quot;customer_type&quot;
+    ],
+    &quot;authentication&quot;: {
+        ...
+    },    
+    &quot;saveMode&quot;: &quot;Append&quot;,
+    &quot;params&quot;: {}
+}
+</code></pre>
+
+<h2 id="xmlload">XMLLoad</h2>
+
+<p>The <code>XMLLoad</code> writes an input <code>DataFrame</code> to a target XML file.</p>
+
+<h3 id="parameters-8">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the Parquet file to write to.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition by the data prior to write.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-8">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;XMLLoad&quot;,
+    &quot;name&quot;: &quot;write customer records to xml&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputView&quot;: &quot;customer&quot;,
+    &quot;outputURI&quot;: &quot;hdfs://datalake/raw/customer.xml&quot;,
+    &quot;numPartitions&quot;: 100,
+    &quot;partitionBy&quot;: [
+        &quot;customer_segment&quot;,
+        &quot;customer_type&quot;
+    ],
+    &quot;authentication&quot;: {
+        ...
+    },    
+    &quot;saveMode&quot;: &quot;Append&quot;,
+    &quot;params&quot;: {}
+}
+</code></pre>
+
+
+			<aside class="copyright" role="note">
+				
+				&copy; 2018 Released under the MIT license &ndash;
+				
+				Documentation built with
+				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
+				using the
+				<a href="http://github.com/digitalcraftsman/hugo-material-docs" target="_blank">Material</a> theme.
+			</aside>
+
+			<footer class="footer">
+				
+
+<nav class="pagination" aria-label="Footer">
+  <div class="previous">
+  
+      <a href="https://aglenergy.github.io/arc/transform/" title="Transform">
+        <span class="direction">
+          Previous
+        </span>
+        <div class="page">
+          <div class="button button-previous" role="button" aria-label="Previous">
+            <i class="icon icon-back"></i>
+          </div>
+          <div class="stretch">
+            <div class="title">
+              Transform
+            </div>
+          </div>
+        </div>
+      </a>
+  
+  </div>
+
+  <div class="next">
+  
+      <a href="https://aglenergy.github.io/arc/execute/" title="Execute">
+        <span class="direction">
+          Next
+        </span>
+        <div class="page">
+          <div class="stretch">
+            <div class="title">
+              Execute
+            </div>
+          </div>
+          <div class="button button-next" role="button" aria-label="Next">
+            <i class="icon icon-forward"></i>
+          </div>
+        </div>
+      </a>
+  
+  </div>
+</nav>
+
+
+
+
+
+			</footer>
+		</div>
+	</article>
+
+	<div class="results" role="status" aria-live="polite">
+		<div class="scrollable">
+			<div class="wrapper">
+				<div class="meta"></div>
+				<div class="list"></div>
+			</div>
+		</div>
+	</div>
+</main>
+
+    <script>
+    
+      var base_url = 'https:\/\/aglenergy.github.io\/arc\/';
+      var repo_id  = 'aglenergy\/arc';
+    
+    </script>
+
+    <script src="https://aglenergy.github.io/arc/javascripts/application.js"></script>
+    
+
+    <script>
+      /* Add headers to scrollspy */
+      var headers   = document.getElementsByTagName("h2");
+      var scrollspy = document.getElementById('scrollspy');
+
+      if(scrollspy) {
+        if(headers.length > 0) {
+          for(var i = 0; i < headers.length; i++) {
+            var li = document.createElement("li");
+            li.setAttribute("class", "anchor");
+
+            var a  = document.createElement("a");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", headers[i].innerHTML);
+            a.innerHTML = headers[i].innerHTML;
+
+            li.appendChild(a)
+            scrollspy.appendChild(li);
+          }
+        } else {
+          scrollspy.parentElement.removeChild(scrollspy)
+        }
+
+
+        /* Add permanent link next to the headers */
+        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+        for(var i = 0; i < headers.length; i++) {
+            var a = document.createElement("a");
+            a.setAttribute("class", "headerlink");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", "Permanent link")
+            a.innerHTML = "#";
+            headers[i].appendChild(a);
+        }
+      }
+    </script>
+
+    
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
+
