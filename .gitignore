@@ -10,3 +10,4 @@ spark/
 *.java-version
 *~
 derby.log
+docs-src/hugo
