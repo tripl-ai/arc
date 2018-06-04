@@ -40,7 +40,7 @@ googleAnalytics = ""
     	code = "Ubuntu Mono"
 
 [social]
-	github  = "https://github.com/aglenergy"
+	github  = "aglenergy"
 
 [[menu.main]]
 	name   = "Getting started"
