@@ -1,0 +1,6 @@
+{"payment_type": "credit", "payment_type_id": 1}
+{"payment_type": "cash", "payment_type_id": 2}
+{"payment_type": "no charge", "payment_type_id": 3}
+{"payment_type": "dispute", "payment_type_id": 4}
+{"payment_type": "unknown", "payment_type_id": 5}
+{"payment_type": "voided trip", "payment_type_id": 6}

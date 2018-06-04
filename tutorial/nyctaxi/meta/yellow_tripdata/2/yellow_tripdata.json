@@ -1,0 +1,253 @@
+[
+  {
+    "id": "01921330-e557-4ed2-a13a-4736a7e69f72",
+    "name": "vendor_id",
+    "description": "A code indicating the TPEP provider that provided the record.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "86d35c23-4138-40c1-bc3c-ae4742b41856",
+    "name": "tpep_pickup_datetime",
+    "description": "The date and time when the meter was engaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "timestamp",
+    "formatters": [
+      "yyyy-MM-dd HH:mm:ss"
+    ],
+    "timezoneId": "America/New_York",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "bf4b5372-b9d3-4702-8d52-e560cded3d83",
+    "name": "tpep_dropoff_datetime",
+    "description": "The date and time when the meter was disengaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "timestamp",
+    "formatters": [
+      "yyyy-MM-dd HH:mm:ss"
+    ],
+    "timezoneId": "America/New_York",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "df29598c-d46a-4a26-aa25-84a216290f73",
+    "name": "passenger_count",
+    "description": "The number of passengers in the vehicle. This is a driver-entered value.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "d51dc85d-5ed0-4754-baaa-b96918d8b6a1",
+    "name": "trip_distance",
+    "description": "The elapsed trip distance in miles reported by the taximeter.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "0",
+      "null"
+    ],
+    "precision": 25,
+    "scale": 15
+  },
+  {
+    "id": "26e8281d-539c-4c0b-8c54-aa3636659003",
+    "name": "rate_code_id",
+    "description": "The final rate code in effect at the end of the trip.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "289ab6ec-0c2a-439b-ac8f-b251d80db2e3",
+    "name": "store_and_fwd_flag",
+    "description": "This flag indicates whether the trip record was held in vehicle memory before sending to the vendor, aka 'store and forward', because the vehicle did not have a connection to the server.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "boolean",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "trueValues": [
+      "Y",
+      "1"
+    ],
+    "falseValues": [
+      "N",
+      "0"
+    ]
+  },
+  {
+    "id": "ebf0d188-ccbb-460f-aa19-1f05ff71cdb1",
+    "name": "pickup_location_id",
+    "description": "Location where the meter was engaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "0"
+    ]
+  },
+  {
+    "id": "93b47305-7fbf-4ef4-bf93-f9c1ad0ea666",
+    "name": "dropoff_location_id",
+    "description": "Location where the meter was disengaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "0"
+    ]
+  },
+  {
+    "id": "171f40e0-17fe-4e92-8d4c-3b26c6751dec",
+    "name": "payment_type",
+    "description": "A numeric code signifying how the passenger paid for the trip.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "47919a22-9818-460b-a7ee-4d6e3d085be8",
+    "name": "fare_amount",
+    "description": "The time-and-distance fare calculated by the meter.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "054f8133-aeab-4f6b-99d5-68e55c5501e6",
+    "name": "extra",
+    "description": "Miscellaneous extras and surcharges. Currently, this only includes the $0.50 and $1 rush hour and overnight charges.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "50eb6159-bd2c-44c9-b1ce-4f1f2bc65a5a",
+    "name": "mta_tax",
+    "description": "$0.50 MTA tax that is automatically triggered based on the metered rate in use.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "986f0272-1529-440d-a54d-bf1a8b613d21",
+    "name": "tip_amount",
+    "description": "Tip amount – This field is automatically populated for credit card tips. Cash tips are not included.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "33624d96-88ec-4611-818d-1ac085410048",
+    "name": "tolls_amount",
+    "description": "Total amount of all tolls paid in trip.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "30f9ba9b-adc1-499a-91a8-b1b94373f6f1",
+    "name": "improvement_surcharge",
+    "description": "$0.30 improvement surcharge assessed trips at the flag drop. The improvement surcharge began being levied in 2015.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "5036743f-b19d-4a2f-ab42-6272cfeb1997",
+    "name": "total_amount",
+    "description": "The total amount charged to passengers. Does not include cash tips.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  }
+]

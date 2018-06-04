@@ -1,0 +1,10 @@
+green_tripdata/0/ https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2013-08.csv
+green_tripdata/0/ https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2013-09.csv
+green_tripdata/1/ https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2015-01.csv
+green_tripdata/2/ https://s3.amazonaws.com/nyc-tlc/trip+data/green_tripdata_2016-07.csv
+yellow_tripdata/0/ https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2009-01.csv
+yellow_tripdata/1/ https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2015-01.csv
+yellow_tripdata/2/ https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2016-07.csv
+yellow_tripdata/3/ https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2017-01.csv
+uber_tripdata/0/ https://raw.githubusercontent.com/fivethirtyeight/uber-tlc-foil-response/master/uber-trip-data/uber-raw-data-apr14.csv
+central_park_weather/0/ https://raw.githubusercontent.com/toddwschneider/nyc-taxi-data/master/data/central_park_weather.csv

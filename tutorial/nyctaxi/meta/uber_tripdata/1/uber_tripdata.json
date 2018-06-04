@@ -1,0 +1,89 @@
+[
+  {
+    "id": "eeb05d86-f678-45dd-9a4f-69da5390e124",
+    "name": "pickup_datetime",
+    "description": "The date and time of the trip pick-up.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "timestamp",
+    "formatters": [
+      "MM/dd/yyyy HH:mm:ss",
+      "M/d/yyyy H:mm:ss"
+    ],
+    "timezoneId": "America/New_York",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "e39eea26-ce63-40cc-a7b8-c2b1e00727f5",
+    "name": "pickup_latitude",
+    "description": "Latitude where the meter was engaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "0"
+    ],
+    "precision": 18,
+    "scale": 14
+  },
+  {
+    "id": "81800408-4fa2-48ba-acc3-f6f1bf505c0a",
+    "name": "pickup_longitude",
+    "description": "Longitude where the meter was engaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "0"
+    ],
+    "precision": 18,
+    "scale": 14
+  },
+  {
+    "id": "2faee8f2-9c8d-465f-a66e-7a0c3f7e5a77",
+    "name": "dropoff_latitude",
+    "description": "Latitude where the meter was disengaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "0"
+    ],
+    "precision": 18,
+    "scale": 14
+  },
+  {
+    "id": "4b046260-3106-4398-95ee-3f66e3b5bbd0",
+    "name": "dropoff_longitude",
+    "description": "Longitude where the meter was disengaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "0"
+    ],
+    "precision": 18,
+    "scale": 14
+  },
+  {
+    "id": "ef6c5c57-1898-4998-a3cd-a49011361e11",
+    "name": "base_code",
+    "description": "The TLC Base License Number of the base that dispatched the trip.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "string",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  }
+]
