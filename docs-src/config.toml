@@ -39,8 +39,8 @@ googleAnalytics = ""
     	text = "Ubuntu"
     	code = "Ubuntu Mono"
 
-
 [social]
+	github  = "https://github.com/aglenergy"
 
 [[menu.main]]
 	name   = "Getting started"
