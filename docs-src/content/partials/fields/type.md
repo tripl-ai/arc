@@ -1,0 +1,1 @@
+The data type to convert the field to. Supported values: `boolean`, `date`, `decimal`, `double`, `integer`, `long`, `string`, `timestamp`.

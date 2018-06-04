@@ -1,0 +1,1 @@
+Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.

@@ -1,0 +1,1 @@
+[HTTP Headers](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) to set for the HTTP request. These are not limited to the Internet Engineering Task Force standard headers.

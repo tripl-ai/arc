@@ -1,0 +1,1 @@
+Name of the stage for logging.

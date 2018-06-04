@@ -1,0 +1,1 @@
+Trim the field prior to data typing attempts.

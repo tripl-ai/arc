@@ -1,0 +1,1 @@
+Columns to partition by the data prior to write.

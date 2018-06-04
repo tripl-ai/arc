@@ -1,0 +1,1 @@
+This option causes Spark to truncate an existing table instead of dropping and recreating it. 

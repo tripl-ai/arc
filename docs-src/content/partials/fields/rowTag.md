@@ -1,0 +1,1 @@
+The row tag of your XML files to treat as a row. For example, in this XML: ```<books><book>1</book><book>2</book></books>``` the appropriate value would be `book`.

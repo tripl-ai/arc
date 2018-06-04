@@ -1,0 +1,1 @@
+A set of Key/Value that will be encoded as JSON and send to the HTTP server.

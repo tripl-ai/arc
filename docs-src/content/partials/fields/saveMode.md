@@ -1,0 +1,1 @@
+The mode for writing the output file to describe how errors are handled. Available options are: `Append`, `ErrorIfExists`, `Ignore`, `Overwrite`. Default is `Overwrite` if not specified.

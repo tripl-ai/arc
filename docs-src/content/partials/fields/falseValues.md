@@ -1,0 +1,1 @@
+A list of values which are considered as false.

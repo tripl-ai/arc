@@ -1,0 +1,1 @@
+The database column data types to use instead of the defaults, when creating the table. Data type information should be specified in the same format as `CREATE TABLE` columns syntax (e.g: "`name CHAR(64), comments VARCHAR(1024)`"). The specified types should be valid spark sql data types.

@@ -1,0 +1,1 @@
+Whether the field is part of a Primary Key. Can be useful for duplicate detection logic.

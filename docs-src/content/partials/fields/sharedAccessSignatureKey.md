@@ -1,0 +1,1 @@
+The Event Hubs Shared Access Signature Key.

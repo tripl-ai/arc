@@ -1,0 +1,1 @@
+The formatters to try to convert this field based on the Java [DateTimeFormatter](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html) patterns. Note that a custom format `ssssssssss` has been added to support epoch time (i.e. 1527727035) and `sssssssssssss` has been added to support epoch millis time (i.e. 1527727035456).

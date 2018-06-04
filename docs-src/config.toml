@@ -1,0 +1,109 @@
+baseurl = "https://aglenergy.github.io/arc/"
+publishDir = "../docs"
+languageCode = "en-us"
+title = "Arc"
+theme = "hugo-material-docs"
+metadataformat = "yaml"
+canonifyurls = true
+# Enable Google Analytics by entering your tracking id
+googleAnalytics = ""
+
+[params]
+	# General information
+	author = "au.com.agl.arc"
+	description = "Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable."
+	copyright = "Released under the MIT license"
+
+	# Repository
+	provider = "GitHub"
+	repo_url = "https://github.com/AGLEnergy/arc"
+
+	version = "1.0.0"
+	logo = "images/logo.png"
+	favicon = ""
+
+	permalink = "#"
+
+	# Custom assets
+	custom_css = []
+	custom_js  = []
+
+	# Syntax highlighting theme
+	highlight_css  = ""
+
+	[params.palette]
+    	primary = "red"
+    	accent  = "teal"
+
+    [params.font]
+    	text = "Ubuntu"
+    	code = "Ubuntu Mono"
+
+
+[social]
+
+[[menu.main]]
+	name   = "Getting started"
+	url    = "getting-started/"
+	weight = 10
+
+[[menu.main]]
+	name   = "Tutorial"
+	url    = "tutorial/"
+	weight = 15
+
+[[menu.main]]
+	name   = "Extract"
+	url    = "extract/"
+	weight = 20
+
+[[menu.main]]
+	name   = "Transform"
+	url    = "transform/"
+	weight = 30
+
+[[menu.main]]
+	name   = "Load"
+	url    = "load/"
+	weight = 40
+
+[[menu.main]]
+	name   = "Execute"
+	url    = "execute/"
+	weight = 50	
+
+[[menu.main]]
+	name   = "Validate"
+	url    = "validate/"
+	weight = 60	
+
+[[menu.main]]
+	name   = "Metadata"
+	url    = "metadata/"
+	weight = 70	
+
+[[menu.main]]
+	name   = "Partials"
+	url    = "partials/"
+	weight = 80		
+
+[[menu.main]]
+	name   = "Patterns"
+	url    = "patterns/"
+	weight = 90	
+
+[[menu.main]]
+	name   = "Contributing"
+	url    = "contributing/"
+	weight = 100	
+
+[[menu.main]]
+	name   = "License"
+	url    = "license/"
+	weight = 110	
+
+[blackfriday]
+	smartypants	= true
+	fractions = true
+	smartDashes = true
+	plainIDAnchors = true

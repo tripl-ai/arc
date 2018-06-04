@@ -1,0 +1,1 @@
+A map of the fields to be retrieved from the TensorFlow Serving service. This map describes which fields are expected to be returned from the TensorFlow Serving call and will be appended to the `outputView`.

@@ -1,0 +1,1 @@
+A list of valid status codes which will result in a successful stage if the list contains the HTTP server response code. If not provided the default values are `[200, 201, 202]`.
