@@ -20,7 +20,7 @@ In the repository there is a directory called `tutorial`. There are two scripts 
 Run the tutorial by calling the Docker container from the directory in which you want to place the data:
 
 ```bash
-export ETL_CONF_BASE_URL=/tmp
+export ETL_CONF_BASE_URL=/tutorial
 docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e "ETL_CONF_ENV=test" \

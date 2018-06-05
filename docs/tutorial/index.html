@@ -416,7 +416,7 @@
 
 <p>Run the tutorial by calling the Docker container from the directory in which you want to place the data:</p>
 
-<pre><code class="language-bash">export ETL_CONF_BASE_URL=/tmp
+<pre><code class="language-bash">export ETL_CONF_BASE_URL=/tutorial
 docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e &quot;ETL_CONF_ENV=test&quot; \
