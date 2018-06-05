@@ -36,24 +36,33 @@ object JDBCExecute {
       .map("stage", stageDetail)      
       .log()
 
-    val conn = exec.params.get("jdbcType") match {
-      case Some("AzureSQLServerDW") => Option(getAzureSQLServerDWConnection(exec.params))
-      case Some("Derby") => Option(getDerbyConnection(exec.params))        
-      case _ => None
+    val conn = try {
+      exec.params.get("jdbcType") match {
+        case Some("SQLServer") => Option(getSQLServerConnection(exec.params))
+        case Some("Derby") => Option(getDerbyConnection(exec.params))        
+        case _ => throw new Exception (s"""unknown jdbcType: '${exec.params.get("jdbcType")}'""")
+      }
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }  
     }
+
     try {
       for (c <- conn) {
         val result = c.createStatement().execute(stmt)
       }
     } catch {
-      case e: Exception =>
-        throw e       
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }    
     } finally {
       try {
         conn.foreach(_.close())
       } catch {
-        case e: Exception =>
-          throw e
+        case e: Exception => throw new Exception(e) with DetailException {
+          override val detail = stageDetail          
+        }  
       }
     } 
 
@@ -64,7 +73,7 @@ object JDBCExecute {
       .log()   
   }
 
-  private def getAzureSQLServerDWConnection(params: Map[String, String]): Connection = {
+  private def getSQLServerConnection(params: Map[String, String]): Connection = {
     val ds = new SQLServerDataSource()
 
     for (url <- params.get("url")) {
