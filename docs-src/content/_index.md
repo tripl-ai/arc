@@ -21,10 +21,6 @@ Many of these principles have come from [12factor](https://12factor.net/):
 - **precise logging** to allow management of jobs at scale.
 - **library dependencies** are to be limited or avoided where possible.
 
-## Documentation
-
-Full documentation is available here: https://aglenergy.github.io/arc/
-
 ## Not just for data engineers
 
 The intent of the pipeline is to provide a simple way of creating Extract-Transform-Load (ETL) pipelines which are able to be maintained in production, and captures the answers to simple operational questions transparently to the user: 

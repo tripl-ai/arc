@@ -421,10 +421,6 @@
 <li><strong>library dependencies</strong> are to be limited or avoided where possible.</li>
 </ul>
 
-<h2 id="documentation">Documentation</h2>
-
-<p>Full documentation is available here: <a href="https://aglenergy.github.io/arc/">https://aglenergy.github.io/arc/</a></p>
-
 <h2 id="not-just-for-data-engineers">Not just for data engineers</h2>
 
 <p>The intent of the pipeline is to provide a simple way of creating Extract-Transform-Load (ETL) pipelines which are able to be maintained in production, and captures the answers to simple operational questions transparently to the user:</p>
@@ -465,7 +461,7 @@
 <li><p>Write out the aggreate resultset to a Parquet target.</p></li>
 </ol>
 
-<pre><code class="language-hocon">{
+<pre><code class="language-json">{
   &quot;stages&quot;: [
     {
       &quot;type&quot;: &quot;DelimitedExtract&quot;,
