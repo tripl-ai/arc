@@ -554,7 +554,7 @@
 <td>params</td>
 <td>Map[String, String]</td>
 <td>true</td>
-<td>Map of configuration parameters.. Currently requires <code>jdbcType</code>, <code>serverName</code>, <code>databaseName</code>, <code>hostNameInCertificate</code>, <code>serverPort</code>, <code>user</code> and <code>password</code> to be set here - see example below.</td>
+<td>Map of configuration parameters.. Currently requires <code>jdbcType</code>, <code>serverName</code>, <code>databaseName</code>, <code>hostNameInCertificate</code>, <code>serverPort</code>, <code>user</code> and <code>password</code> to be set here - see example below. Allowed values for <code>jdbcType</code> is currently only <code>SQLServer</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -570,7 +570,7 @@
         &quot;current_timestamp&quot;: &quot;2018-11-24 14:48:56&quot;
     },    
     &quot;params&quot;: {
-        &quot;jdbcType&quot;: &quot;AzureSQLServerDW&quot;,
+        &quot;jdbcType&quot;: &quot;SQLServer&quot;,
         &quot;serverName&quot;: &quot;myserver.database.windows.net&quot;,
         &quot;databaseName&quot;: &quot;mydatabase&quot;,
         &quot;hostNameInCertificate&quot;: &quot;myserver&quot;,

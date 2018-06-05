@@ -59,7 +59,7 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
 |inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
-|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Currently requires `jdbcType`, `serverName`, `databaseName`, `hostNameInCertificate`, `serverPort`, `user` and `password` to be set here - see example below.|
+|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Currently requires `jdbcType`, `serverName`, `databaseName`, `hostNameInCertificate`, `serverPort`, `user` and `password` to be set here - see example below. Allowed values for `jdbcType` is currently only `SQLServer`.|
 
 ### Examples
 
@@ -73,7 +73,7 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
         "current_timestamp": "2018-11-24 14:48:56"
     },    
     "params": {
-        "jdbcType": "AzureSQLServerDW",
+        "jdbcType": "SQLServer",
         "serverName": "myserver.database.windows.net",
         "databaseName": "mydatabase",
         "hostNameInCertificate": "myserver",
