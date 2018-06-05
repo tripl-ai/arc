@@ -579,7 +579,7 @@
 <td>formatters</td>
 <td>Array[String]</td>
 <td>true</td>
-<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns. Note that a custom format <code>ssssssssss</code> has been added to support epoch time (i.e. 1527727035) and <code>sssssssssssss</code> has been added to support epoch millis time (i.e. 1527727035456).</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns.</td>
 </tr>
 </tbody>
 </table>
@@ -783,7 +783,7 @@
 <td>formatters</td>
 <td>Array[String]</td>
 <td>true</td>
-<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns. Note that a custom format <code>ssssssssss</code> has been added to support epoch time (i.e. 1527727035) and <code>sssssssssssss</code> has been added to support epoch millis time (i.e. 1527727035456).</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns.</td>
 </tr>
 </tbody>
 </table>
@@ -823,14 +823,14 @@
 <td>formatters</td>
 <td>Array[String]</td>
 <td>true</td>
-<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns. Note that a custom format <code>ssssssssss</code> has been added to support epoch time (i.e. 1527727035) and <code>sssssssssssss</code> has been added to support epoch millis time (i.e. 1527727035456).</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns.</td>
 </tr>
 
 <tr>
 <td>timezoneId</td>
 <td>String</td>
 <td>true</td>
-<td>The timezone of the incoming timestamp. This uses the <a href="https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html#timezone">SimpleDateFormat</a> supported timezones. All timestamps are internally stored in <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a> to allow correctly sequenced events when dealing with events from multiple systems which may all run with different internal timezones.</td>
+<td>The timezone of the incoming timestamp. This uses the <a href="https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html#timezone">SimpleDateFormat</a> supported timezones. All timestamps are internally stored in <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a> to allow correctly sequenced events when dealing with events from multiple systems which may all run with different internal timezones.<br><br>Custom formats <code>ssssssssss</code> and <code>sssssssssssss</code> have been added to support epoch time (i.e. 1527727035) and epoch millis time (i.e. 1527727035456) respectively. Both require <code>timezoneId</code> of <code>UTC</code>.</td>
 </tr>
 
 <tr>
