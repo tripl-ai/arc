@@ -172,7 +172,7 @@ object TestDataUtils {
             "formatters": [
                 "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
             ],
-            "timezoneId": "+1100"
+            "timezoneId": "UTC"
         }       
     ]
     """

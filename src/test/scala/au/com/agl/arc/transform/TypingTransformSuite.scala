@@ -37,6 +37,9 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     session = spark
     import spark.implicits._
 
+    // set for deterministic timezone
+    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+
     // recreate test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile)) 
     // Delimited does not support writing NullType

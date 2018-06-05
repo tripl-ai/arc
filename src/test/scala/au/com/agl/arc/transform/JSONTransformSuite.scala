@@ -34,6 +34,9 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
 
     session = spark
     import spark.implicits._
+
+    // set for deterministic timezone
+    spark.conf.set("spark.sql.session.timeZone", "UTC")    
   }
 
   after {
@@ -62,6 +65,6 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
     assert(transformed.schema(0).name == "value")
 
     // check data
-    assert(transformed.first.getString(0) == """{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-21T08:46:54.000+11:00"}""")
+    assert(transformed.first.getString(0) == """{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-20T21:46:54.000Z"}""")
   }  
 }

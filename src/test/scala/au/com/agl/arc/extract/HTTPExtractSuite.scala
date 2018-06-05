@@ -200,7 +200,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown.getMessage == "Connect to localhost:1081 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused")        
+    assert(thrown.getMessage.contains("Connection refused"))
   }
        
 }
