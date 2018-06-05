@@ -820,6 +820,8 @@
 
 <p>The <code>JDBCLoad</code> writes an input <code>DataFrame</code> to a target JDBC Database. See <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases">Spark JDBC documentation</a>.</p>
 
+<p>Whilst it is possible to use <code>JDBCLoad</code> to create tables directly in the target database Spark only has a limited knowledge of the schema required in the destination database and so will translate things like <code>StringType</code> internally to a <code>TEXT</code> type in the target database (because internally Spark does not have limited length strings). The recommendation is to use a preceding <a href="../execute/#jdbcexecute">JDBCExecute</a> to execute a <code>CREATE TABLE</code> statement which creates the intended schema then inserting into that table with <code>saveMode</code> set to <code>Append</code>.</p>
+
 <h3 id="parameters-4">Parameters</h3>
 
 <table>

@@ -171,6 +171,8 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 
 The `JDBCLoad` writes an input `DataFrame` to a target JDBC Database. See [Spark JDBC documentation](https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases).
 
+Whilst it is possible to use `JDBCLoad` to create tables directly in the target database Spark only has a limited knowledge of the schema required in the destination database and so will translate things like `StringType` internally to a `TEXT` type in the target database (because internally Spark does not have limited length strings). The recommendation is to use a preceding [JDBCExecute](../execute/#jdbcexecute) to execute a `CREATE TABLE` statement which creates the intended schema then inserting into that table with `saveMode` set to `Append`.
+
 ### Parameters
 
 | Attribute | Type | Required | Description |
