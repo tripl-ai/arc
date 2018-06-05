@@ -15,7 +15,7 @@ import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.log.LoggerFactory 
 
-import au.com.agl.arc.util.TestDataUtils
+import au.com.agl.arc.util._
 
 class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
 
@@ -125,7 +125,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
-    val thrown = intercept[java.sql.SQLException] {
+    val thrown = intercept[Exception with DetailException] {
       au.com.agl.arc.execute.JDBCExecute.execute(
         JDBCExecute(
           name=outputView, 
@@ -136,6 +136,25 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown.getMessage == "Database 'invalid' not found.")
+    assert(thrown.getMessage == "java.sql.SQLException: Database 'invalid' not found.")
   }  
+
+  test("JDBCExecute: Bad jdbcType") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val thrown = intercept[Exception with DetailException] {
+      au.com.agl.arc.execute.JDBCExecute.execute(
+        JDBCExecute(
+          name=outputView, 
+          inputURI=new URI(testURI), 
+          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
+          params= Map("jdbcType" -> "unknown"), 
+          sqlParams=Map.empty
+        )
+      )
+    }
+    assert(thrown.getMessage == "java.lang.Exception: unknown jdbcType: 'unknown'")
+  }    
 }

@@ -40,7 +40,7 @@ object JDBCExecute {
       exec.params.get("jdbcType") match {
         case Some("SQLServer") => Option(getSQLServerConnection(exec.params))
         case Some("Derby") => Option(getDerbyConnection(exec.params))        
-        case _ => throw new Exception (s"""unknown jdbcType: '${exec.params.get("jdbcType")}'""")
+        case _ => throw new Exception (s"""unknown jdbcType: '${exec.params.get("jdbcType").getOrElse("")}'""")
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
