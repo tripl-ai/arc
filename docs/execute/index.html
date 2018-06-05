@@ -547,7 +547,7 @@
 <td>sqlParams</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format. For example if the sqlParams contains parameter <code>current_timestamp</code> of value <code>2018-11-24 14:48:56</code> then this statement would execute in a deterministic way: <code>SELECT * FROM customer WHERE expiry &gt; FROM_UNIXTIME(UNIX_TIMESTAMP('${current_timestamp}', 'yyyy-MM-dd HH:mm:ss'))</code> (so would be testable).</td>
+<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.<br><br>For example if the sqlParams contains parameter <code>current_timestamp</code> of value <code>2018-11-24 14:48:56</code> then this statement would execute in a deterministic way: <code>SELECT * FROM customer WHERE expiry &gt; FROM_UNIXTIME(UNIX_TIMESTAMP('${current_timestamp}', 'yyyy-MM-dd HH:mm:ss'))</code> (so would be testable).</td>
 </tr>
 
 <tr>
@@ -584,12 +584,8 @@
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2018 Released under the MIT license &ndash;
+				&copy; 2018 Released under the MIT license
 				
-				Documentation built with
-				<a href="https://www.gohugo.io" target="_blank">Hugo</a>
-				using the
-				<a href="http://github.com/digitalcraftsman/hugo-material-docs" target="_blank">Material</a> theme.
 			</aside>
 
 			<footer class="footer">
