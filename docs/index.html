@@ -9,7 +9,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Home</title>
+    <title>Arc</title>
     <meta name="generator" content="Hugo 0.41" />
 
     
@@ -97,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Home
+        Arc
       </div>
     </div>
 
@@ -396,9 +396,172 @@
 	<article class="article">
 		<div class="wrapper">
 			
-				<h1>Home </h1>
+				<h1>Arc </h1>
 
 				
+
+<h2 id="what-is-arc">What is Arc?</h2>
+
+<p>Arc is an <strong>opinionated</strong> framework for defining <strong>predictable</strong>, <strong>repeatable</strong> and <strong>manageable</strong> data transformation pipelines for data transformation tasks;</p>
+
+<ul>
+<li><strong>predictable</strong> in that data is used to define transformations - not code.</li>
+<li><strong>repeatable</strong> in that if a job is executed multiple times it will produce the same result.</li>
+<li><strong>manageable</strong> in that execution considerations and logging has been baked in from the start.</li>
+</ul>
+
+<h2 id="principles">Principles</h2>
+
+<p>Many of these principles have come from <a href="https://12factor.net/">12factor</a>:</p>
+
+<ul>
+<li><strong><a href="https://en.wikipedia.org/wiki/Single_responsibility_principle">single responsibility</a></strong> components/stages.</li>
+<li><strong>stateless</strong> jobs where possible and use of <a href="https://en.wikipedia.org/wiki/Immutable_object">immutable</a> datasets.</li>
+<li><strong>precise logging</strong> to allow management of jobs at scale.</li>
+<li><strong>library dependencies</strong> are to be limited or avoided where possible.</li>
+</ul>
+
+<h2 id="documentation">Documentation</h2>
+
+<p>Full documentation is available here: <a href="https://aglenergy.github.io/arc/">https://aglenergy.github.io/arc/</a></p>
+
+<h2 id="not-just-for-data-engineers">Not just for data engineers</h2>
+
+<p>The intent of the pipeline is to provide a simple way of creating Extract-Transform-Load (ETL) pipelines which are able to be maintained in production, and captures the answers to simple operational questions transparently to the user:</p>
+
+<ul>
+<li><strong>monitoring</strong>: is it working each time it&rsquo;s run? and how much resource was consumed in creating it?</li>
+</ul>
+
+<p>These concerns are supported at run time to ensure that as deployment grows in uses and complexity it does not become opaque and unmanageable.</p>
+
+<h2 id="why-abstract-from-code">Why abstract from code?</h2>
+
+<p>From experience a very high proportion of data pipelines perform very similar extract, transform and load actions on datasets. Unfortunately, whilst the desired outcomes are largely similar, the implementations are vastly varied resulting in higher maintenance costs, lower test-coverage and high levels of rework.</p>
+
+<p>The intention of this project is to define and implement an <strong>opinionated</strong> standard approach for declaring data pipelines which is open and extensible. Abstraction from underlying code allows rapid deployment, a consistent way of defining transformation tasks (such as data typing) and allows abstraction of the pipeline definition from the pipeline execution (to support changing of the underlying execution engines) - see <a href="https://en.wikipedia.org/wiki/Declarative_programming">declarative programming</a>.</p>
+
+<p>Currently it is tightly coupled to <a href="https://spark.apache.org">Apache Spark</a> due to its fault-tolerance, performance and solid API for standard data engineering tasks but the definitions are human and machine readable <a href="https://github.com/lightbend/config/blob/master/HOCON.md">HOCON</a> (a JSON derivative) allowing the transformation definitions to be implemented against future execution engines.</p>
+
+<h2 id="why-sql-first">Why SQL first?</h2>
+
+<p>SQL first (copied from the Mobile First UX principle) is an approach where, if possible, transformations are done using Structured Query Language (SQL) as a preference. This is because SQL is a very good way of expressing standard data transformation intent in a <a href="https://en.wikipedia.org/wiki/Declarative_programming">declarative</a> way. SQL is so widely known and taught that finding people who are able to understand the business context and able to write basic SQL is much easier than finding a Scala developer who also understands the business context (for example).</p>
+
+<p>Currently the <a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual">HIVE</a> dialect of SQL is supported as <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL</a> uses the same SQL dialect and has a lot of the same <a href="https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.functions$">functions</a> that would be expected from other SQL dialects. This could change in the future.</p>
+
+<h2 id="example-pipeline">Example pipeline</h2>
+
+<p>This is an example of a fairly standard pipeline:</p>
+
+<ol>
+<li><p>First load a set of CSV files from an input directory. Separator is a comma and the file does not have a header.</p></li>
+
+<li><p>Convert the data to the correct datatypes using metadata defined in a separate JSON.</p></li>
+
+<li><p>Execute a SQL statement that will perform custom validation to ensure the data conversion in the previous step resulted in an acceptable data conversion error rate.</p></li>
+
+<li><p>Calculate some aggregates using a SQL Transformation substituting the <code>${year}</code> variable with the value <code>2016</code>.</p></li>
+
+<li><p>Write out the aggreate resultset to a Parquet target.</p></li>
+</ol>
+
+<pre><code class="language-hocon">{
+  &quot;stages&quot;: [
+    {
+      &quot;type&quot;: &quot;DelimitedExtract&quot;,
+      &quot;name&quot;: &quot;extract data from green_tripdata/0&quot;,
+      &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+      &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/green_tripdata/0/*.csv&quot;,
+      &quot;outputView&quot;: &quot;green_tripdata0_raw&quot;,            
+      &quot;persist&quot;: false,
+      &quot;delimiter&quot;: &quot;Comma&quot;,
+      &quot;quote&quot; : &quot;DoubleQuote&quot;,
+      &quot;header&quot;: true,
+      &quot;authentication&quot;: {
+      },
+      &quot;params&quot;: {
+      }
+    },
+    {
+      &quot;type&quot;: &quot;TypingTransform&quot;,
+      &quot;name&quot;: &quot;apply green_tripdata/0 data types&quot;,
+      &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+      &quot;inputURI&quot;: &quot;/opt/tutorial/nyctaxi/meta/green_tripdata/0/green_tripdata.json&quot;,
+      &quot;inputView&quot;: &quot;green_tripdata0_raw&quot;,            
+      &quot;outputView&quot;: &quot;green_tripdata0&quot;,            
+      &quot;persist&quot;: true,
+      &quot;authentication&quot;: {
+      },       
+      &quot;params&quot;: {
+      }
+    },
+    {
+      &quot;type&quot;: &quot;SQLValidate&quot;,
+      &quot;name&quot;: &quot;ensure no errors exist after data typing&quot;,
+      &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+      &quot;inputURI&quot;: &quot;/opt/tutorial/nyctaxi/job/3/sqlvalidate_errors.sql&quot;,            
+      &quot;sqlParams&quot;: {
+          &quot;table_name&quot;: &quot;green_tripdata0&quot;
+      },              
+      &quot;authentication&quot;: {
+      },    
+      &quot;params&quot;: {
+      }
+    },
+    {
+      &quot;type&quot;: &quot;SQLTransform&quot;,
+      &quot;name&quot;: &quot;merge *tripdata to create a full trips&quot;,
+      &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+      &quot;inputURI&quot;: &quot;/opt/tutorial/nyctaxi/job/3/trips.sql&quot;,
+      &quot;outputView&quot;: &quot;trips&quot;,            
+      &quot;persist&quot;: true,
+      &quot;authentication&quot;: {
+      },    
+      &quot;sqlParams&quot;: {
+        &quot;year&quot;: &quot;2016&quot;
+      },   
+      &quot;params&quot;: {
+      }
+    },
+    {
+      &quot;type&quot;: &quot;ParquetLoad&quot;,
+      &quot;name&quot;: &quot;write trips back to filesystem&quot;,
+      &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+      &quot;inputView&quot;: &quot;trips&quot;,
+      &quot;outputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/output/trips.parquet&quot;,
+      &quot;numPartitions&quot;: 100,
+      &quot;partitionBy&quot;: [
+          &quot;vendor_id&quot;
+      ],
+      &quot;authentication&quot;: {
+      },    
+      &quot;params&quot;: {}
+    }
+  ]    
+}
+</code></pre>
+
+<h2 id="contributing">Contributing</h2>
+
+<p>If you have suggestions of additional components or find issues that you believe need fixing then please raise an issue. An issue with a test case is even more appreciated.</p>
+
+<p>When you contribute code, you affirm that the contribution is your original work and that you license the work to the project under the project’s open source license. Whether or not you state this explicitly, by submitting any copyrighted material via pull request, email, or other means you agree to license the material under the project’s open source license and warrant that you have the legal authority to do so.</p>
+
+<h2 id="attribution">Attribution</h2>
+
+<p>Thanks to the following projects:</p>
+
+<ul>
+<li><a href="https://spark.apache.org/">Apache Spark</a> for the underlying framework that has made this library possible.</li>
+<li><a href="https://github.com/savoirtech/slf4j-json-logger">slf4j-json-logger</a> Copyright &copy; 2016 Savoir Technologies released under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 License</a>. We have slightly altered their library to change the default logging format.</li>
+<li><a href="https://github.com/Azure/azure-sqldb-spark">azure-sqldb-spark</a> for their Microsoft SQL Server bulkload driver. Currently included in /lib but will be pulled from Maven once available.</li>
+<li><a href="https://github.com/toddwschneider/nyc-taxi-data">nyc-taxi-data</a> for preparing an easy to use set of real-world data for the tutorial.</li>
+</ul>
+
+<h2 id="license">License</h2>
+
+<p>Arc is released under the <a href="https://opensource.org/licenses/MIT">MIT License</a>.</p>
+
 			
 
 			<aside class="copyright" role="note">
