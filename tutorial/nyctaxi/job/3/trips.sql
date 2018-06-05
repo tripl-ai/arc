@@ -195,15 +195,15 @@ FROM uber_tripdata0
 UNION
 
 SELECT
-  dispatching_base_num AS vendor_id
+  base_code AS vendor_id
   ,pickup_datetime
   ,NULL AS dropoff_datetime
   ,NULL AS store_and_fwd_flag
   ,NULL AS rate_code_id
-  ,NULL AS pickup_longitude
-  ,NULL AS pickup_latitude
-  ,NULL AS dropoff_longitude
-  ,NULL AS dropoff_latitude
+  ,pickup_longitude
+  ,pickup_latitude
+  ,dropoff_longitude
+  ,dropoff_longitude
   ,NULL AS passenger_count  
   ,NULL AS trip_distance  
   ,NULL AS fare_amount  
@@ -216,6 +216,6 @@ SELECT
   ,NULL AS total_amount  
   ,NULL AS payment_type_id  
   ,NULL AS trip_type_id  
-  ,location_id AS pickup_location_id  
+  ,NULL AS pickup_location_id  
   ,NULL AS dropoff_location_id  
 FROM uber_tripdata1

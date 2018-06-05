@@ -8,7 +8,7 @@
       "outputView": "green_tripdata0_raw",            
       "persist": false,
       "delimiter": "Comma",
-      "quote" : "DoubleQuote",
+      "quote": "DoubleQuote",
       "header": true,
       "authentication": {
       },
@@ -49,7 +49,7 @@
       "outputView": "green_tripdata1_raw",            
       "persist": false,
       "delimiter": "Comma",
-      "quote" : "DoubleQuote",
+      "quote": "DoubleQuote",
       "header": true,
       "authentication": {
       },

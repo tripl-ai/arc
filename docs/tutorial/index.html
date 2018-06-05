@@ -412,15 +412,16 @@
 
 <h2 id="get-the-data">Get the Data</h2>
 
-<p>In the repository there is a directory called <code>tutorial</code>. There are two scripts in that directory <code>download_raw_data_large.sh</code> and <code>download_raw_data_small.sh</code>. The small version will download data for approximately 40 million records and the large will download more than one billion rows of data. Either of these files can be used for this tutorial.</p>
+<p>In the repository there is a directory called <code>tutorial</code>. There are two scripts in that directory <code>download_raw_data_large.sh</code> and <code>download_raw_data_small.sh</code>. The small version will download data for approximately 40 million records (6.3GB) and the large will download more than one billion rows of data. Either of these files can be used for this tutorial.</p>
 
 <p>Run the tutorial by calling the Docker container from the directory in which you want to place the data:</p>
 
-<pre><code class="language-bash">ETL_CONF_BASE_URL=/tmp/data docker run \
+<pre><code class="language-bash">export ETL_CONF_BASE_URL=/tmp
+docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
--it -p 4040:4040 spark-etl:2.3.0 \
+-it -p 4040:4040 seddonm1/arc:1.0.0 \
 /bin/sh -c '/opt/tutorial/nyctaxi/download_raw_data_small.sh'
 </code></pre>
 
@@ -428,40 +429,45 @@
 
 <pre><code class="language-bash">find
 .
-./uber_tripdata
-./uber_tripdata/1
-./uber_tripdata/0
-./uber_tripdata/0/uber-raw-data-apr14.csv
-./green_tripdata
-./green_tripdata/2
-./green_tripdata/2/green_tripdata_2016-07.csv
-./green_tripdata/1
-./green_tripdata/1/green_tripdata_2015-01.csv
-./green_tripdata/0
-./green_tripdata/0/green_tripdata_2013-08.csv
-./yellow_tripdata
-./yellow_tripdata/3
-./yellow_tripdata/3/yellow_tripdata_2017-01.csv
-./yellow_tripdata/2
-./yellow_tripdata/2/yellow_tripdata_2016-07.csv
-./yellow_tripdata/1
-./yellow_tripdata/1/yellow_tripdata_2015-01.csv
-./yellow_tripdata/0
-./yellow_tripdata/0/yellow_tripdata_2009-01.csv
+./data
+./data/central_park_weather
+./data/central_park_weather/0
+./data/central_park_weather/0/central_park_weather.csv
+./data/yellow_tripdata
+./data/yellow_tripdata/3
+./data/yellow_tripdata/3/yellow_tripdata_2017-01.csv
+./data/yellow_tripdata/1
+./data/yellow_tripdata/1/yellow_tripdata_2015-01.csv
+./data/yellow_tripdata/2
+./data/yellow_tripdata/2/yellow_tripdata_2016-07.csv
+./data/yellow_tripdata/0
+./data/yellow_tripdata/0/yellow_tripdata_2009-01.csv
+./data/green_tripdata
+./data/green_tripdata/1
+./data/green_tripdata/1/green_tripdata_2015-01.csv
+./data/green_tripdata/2
+./data/green_tripdata/2/green_tripdata_2016-07.csv
+./data/green_tripdata/0
+./data/green_tripdata/0/green_tripdata_2013-09.csv
+./data/green_tripdata/0/green_tripdata_2013-08.csv
+./data/uber_tripdata
+./data/uber_tripdata/1
+./data/uber_tripdata/0
+./data/uber_tripdata/0/uber-raw-data-apr14.csv
 </code></pre>
 
-<p>At this stage you can run a job. The <code>--driver-memory=4G</code> option should be set with as much memory as you can give it.</p>
+<p>At this stage you can run a job. The <code>--driver-memory=12G</code> option should be set with as much memory as you can give it.</p>
 
-<pre><code class="language-bash">ETL_CONF_BASE_URL=/tmp/data docker run \
+<pre><code class="language-bash">docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
--it -p 4040:4040 spark-etl:2.3.0 \
+-it -p 4040:4040 seddonm1/arc:1.0.0 \
 bin/spark-submit \
 --master local[*] \
---driver-memory=4G \
---class etl.ETL \
-/opt/spark/jars/spark-etl.jar \
+--driver-memory=12G \
+--class au.com.agl.arc.ARC \
+/opt/spark/jars/arc.jar \
 --etl.config.uri=file:///opt/tutorial/nyctaxi/job/0/nyctaxi.json
 </code></pre>
 
@@ -1088,18 +1094,18 @@ FROM (
 
 <p>At this stage we have a job which will apply data types to one or more <code>.csv</code> files and execute a <code>SQLValidate</code> stage to ensure that the data could be converted successfully. The Spark ETL framework is packaged with <a href="https://www.docker.com/">Docker</a> so that you can run the same job on your local machine or a massive compute cluster without having to think about how to package dependencies. The Docker image contains the dependencies files for connecting to most <code>JDBC</code>, <code>XML</code>, <code>Avro</code> and cloud services.</p>
 
-<p>To run first set an environment variable which is going to tell Spark where to read all the data from. If you are running this locally export a variable. You may need to modify <code>run_etl_job_local.sh</code> to increase the <code>--driver-memory=</code> from <code>4G</code> as the job gets more complex - or if you are on a machine with not enough available memory disable the <code>&quot;persist&quot;: true</code> options at the expense of job runtime.</p>
+<p>To run first set an environment variable which is going to tell Spark where to read all the data from. If you are running this locally export a variable. You may need to modify <code>run_etl_job_local.sh</code> to increase the <code>--driver-memory=</code> from <code>12G</code> as the job gets more complex - or if you are on a machine with not enough available memory disable the <code>&quot;persist&quot;: true</code> options at the expense of job runtime.</p>
 
-<pre><code class="language-bash">ETL_CONF_BASE_URL=/tmp/data docker run \
+<pre><code class="language-bash">docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
--it -p 4040:4040 spark-etl:2.3.0 \
+-it -p 4040:4040 seddonm1/arc:1.0.0 \
 bin/spark-submit \
 --master local[*] \
---driver-memory=4G \
---class etl.ETL \
-/opt/spark/jars/spark-etl.jar \
+--driver-memory=12G \
+--class au.com.agl.arc.ARC \
+/opt/spark/jars/arc.jar \
 --etl.config.uri=file://${ETL_CONF_BASE_URL}/job/0/nyctaxi.json
 </code></pre>
 
@@ -1377,7 +1383,7 @@ find ./job/2 -type f -exec sed -i &quot;s/job\/1/job\/2/g&quot; {} \;
 <ul>
 <li>add the file loading for the <code>yellow_tripdata</code> and <code>uber_tripdata</code> files. There should be 3 stages for each schema load (<code>DelimitedExtract</code>, <code>TypingTransform</code>, <code>SQLValidate</code>) and a total of 8 schemas so 24 stages plus a single <code>SQLTransform</code> as the final stage to merge the data.</li>
 <li>modify the <code>SQLTransform</code> to include the new datasets.</li>
-<li>run the new version of the job. You will need to increase the ram from 4G to run this stage.</li>
+<li>run the new version of the job. You will need to increase the ram from 12G to run this stage.</li>
 </ul>
 
 <p>A snapshot of what we have done so far should be in the repository under <code>tutorial/job/2/</code>.</p>

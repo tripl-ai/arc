@@ -15,16 +15,17 @@ It is a great dataset as it has a lot of the attributes of real-world data we wa
 
 ## Get the Data
 
-In the repository there is a directory called `tutorial`. There are two scripts in that directory `download_raw_data_large.sh` and `download_raw_data_small.sh`. The small version will download data for approximately 40 million records and the large will download more than one billion rows of data. Either of these files can be used for this tutorial. 
+In the repository there is a directory called `tutorial`. There are two scripts in that directory `download_raw_data_large.sh` and `download_raw_data_small.sh`. The small version will download data for approximately 40 million records (6.3GB) and the large will download more than one billion rows of data. Either of these files can be used for this tutorial. 
 
 Run the tutorial by calling the Docker container from the directory in which you want to place the data:
 
 ```bash
-ETL_CONF_BASE_URL=/tmp/data docker run \
+export ETL_CONF_BASE_URL=/tmp
+docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}" \
--it -p 4040:4040 spark-etl:2.3.0 \
+-it -p 4040:4040 seddonm1/arc:1.0.0 \
 /bin/sh -c '/opt/tutorial/nyctaxi/download_raw_data_small.sh'
 ```
 
@@ -33,41 +34,46 @@ After that comand runs there should be a directory structure like this in your c
 ```bash
 find
 .
-./uber_tripdata
-./uber_tripdata/1
-./uber_tripdata/0
-./uber_tripdata/0/uber-raw-data-apr14.csv
-./green_tripdata
-./green_tripdata/2
-./green_tripdata/2/green_tripdata_2016-07.csv
-./green_tripdata/1
-./green_tripdata/1/green_tripdata_2015-01.csv
-./green_tripdata/0
-./green_tripdata/0/green_tripdata_2013-08.csv
-./yellow_tripdata
-./yellow_tripdata/3
-./yellow_tripdata/3/yellow_tripdata_2017-01.csv
-./yellow_tripdata/2
-./yellow_tripdata/2/yellow_tripdata_2016-07.csv
-./yellow_tripdata/1
-./yellow_tripdata/1/yellow_tripdata_2015-01.csv
-./yellow_tripdata/0
-./yellow_tripdata/0/yellow_tripdata_2009-01.csv
+./data
+./data/central_park_weather
+./data/central_park_weather/0
+./data/central_park_weather/0/central_park_weather.csv
+./data/yellow_tripdata
+./data/yellow_tripdata/3
+./data/yellow_tripdata/3/yellow_tripdata_2017-01.csv
+./data/yellow_tripdata/1
+./data/yellow_tripdata/1/yellow_tripdata_2015-01.csv
+./data/yellow_tripdata/2
+./data/yellow_tripdata/2/yellow_tripdata_2016-07.csv
+./data/yellow_tripdata/0
+./data/yellow_tripdata/0/yellow_tripdata_2009-01.csv
+./data/green_tripdata
+./data/green_tripdata/1
+./data/green_tripdata/1/green_tripdata_2015-01.csv
+./data/green_tripdata/2
+./data/green_tripdata/2/green_tripdata_2016-07.csv
+./data/green_tripdata/0
+./data/green_tripdata/0/green_tripdata_2013-09.csv
+./data/green_tripdata/0/green_tripdata_2013-08.csv
+./data/uber_tripdata
+./data/uber_tripdata/1
+./data/uber_tripdata/0
+./data/uber_tripdata/0/uber-raw-data-apr14.csv
 ```
 
-At this stage you can run a job. The `--driver-memory=4G` option should be set with as much memory as you can give it.
+At this stage you can run a job. The `--driver-memory=12G` option should be set with as much memory as you can give it.
 
 ```bash
-ETL_CONF_BASE_URL=/tmp/data docker run \
+docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}" \
--it -p 4040:4040 spark-etl:2.3.0 \
+-it -p 4040:4040 seddonm1/arc:1.0.0 \
 bin/spark-submit \
 --master local[*] \
---driver-memory=4G \
---class etl.ETL \
-/opt/spark/jars/spark-etl.jar \
+--driver-memory=12G \
+--class au.com.agl.arc.ARC \
+/opt/spark/jars/arc.jar \
 --etl.config.uri=file:///opt/tutorial/nyctaxi/job/0/nyctaxi.json
 ```
 
@@ -623,19 +629,19 @@ A `TypingTransformation` is a big and computationally expensive operation so if 
 
 At this stage we have a job which will apply data types to one or more `.csv` files and execute a `SQLValidate` stage to ensure that the data could be converted successfully. The Spark ETL framework is packaged with [Docker](https://www.docker.com/) so that you can run the same job on your local machine or a massive compute cluster without having to think about how to package dependencies. The Docker image contains the dependencies files for connecting to most `JDBC`, `XML`, `Avro` and cloud services.
 
-To run first set an environment variable which is going to tell Spark where to read all the data from. If you are running this locally export a variable. You may need to modify `run_etl_job_local.sh` to increase the `--driver-memory=` from `4G` as the job gets more complex - or if you are on a machine with not enough available memory disable the `"persist": true` options at the expense of job runtime.
+To run first set an environment variable which is going to tell Spark where to read all the data from. If you are running this locally export a variable. You may need to modify `run_etl_job_local.sh` to increase the `--driver-memory=` from `12G` as the job gets more complex - or if you are on a machine with not enough available memory disable the `"persist": true` options at the expense of job runtime.
 
 ```bash
-ETL_CONF_BASE_URL=/tmp/data docker run \
+docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}" \
--it -p 4040:4040 spark-etl:2.3.0 \
+-it -p 4040:4040 seddonm1/arc:1.0.0 \
 bin/spark-submit \
 --master local[*] \
---driver-memory=4G \
---class etl.ETL \
-/opt/spark/jars/spark-etl.jar \
+--driver-memory=12G \
+--class au.com.agl.arc.ARC \
+/opt/spark/jars/arc.jar \
 --etl.config.uri=file://${ETL_CONF_BASE_URL}/job/0/nyctaxi.json
 ```
 
@@ -918,7 +924,7 @@ So go ahead and:
 
 - add the file loading for the `yellow_tripdata` and `uber_tripdata` files. There should be 3 stages for each schema load (`DelimitedExtract`, `TypingTransform`, `SQLValidate`) and a total of 8 schemas so 24 stages plus a single `SQLTransform` as the final stage to merge the data.
 - modify the `SQLTransform` to include the new datasets.
-- run the new version of the job. You will need to increase the ram from 4G to run this stage.
+- run the new version of the job. You will need to increase the ram from 12G to run this stage.
 
 A snapshot of what we have done so far should be in the repository under `tutorial/job/2/`.
 

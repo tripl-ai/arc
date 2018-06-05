@@ -40,7 +40,7 @@ object ARC {
     val spark: SparkSession = try {
       SparkSession
         .builder()
-        .appName(jobId.getOrElse("Spark ETL"))
+        .appName(jobId.getOrElse(s"arc:${BuildInfo.version}"))
         .config("spark.debug.maxToStringFields", "8192")
         .config("spark.kryo.registrator", classOf[GeoSparkKryoRegistrator].getName)
         .getOrCreate()
@@ -55,7 +55,7 @@ object ARC {
         detail.put("messages", exceptionThrowablesMessages)
         detail.put("stackTrace", exceptionThrowablesStackTraces)
 
-        val logger = LoggerFactory.getLogger(jobId.getOrElse("Spark ETL"))
+        val logger = LoggerFactory.getLogger(jobId.getOrElse(s"arc:${BuildInfo.version}"))
         logger.error()
           .field("event", "exit")
           .field("status", "failure")

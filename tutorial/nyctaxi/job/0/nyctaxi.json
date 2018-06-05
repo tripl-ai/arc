@@ -3,43 +3,46 @@
     {
       "type": "DelimitedExtract",
       "name": "extract data from green_tripdata/0",
-      "environments": ["production", "test"],
+      "environments": [
+        "production",
+        "test"
+      ],
       "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/0/*.csv",
-      "outputView": "green_tripdata0_raw",            
+      "outputView": "green_tripdata0_raw",
       "persist": false,
       "delimiter": "Comma",
-      "quote" : "DoubleQuote",
+      "quote": "DoubleQuote",
       "header": true,
-      "authentication": {
-      },
-      "params": {
-      }
+      "authentication": {},
+      "params": {}
     },
     {
       "type": "TypingTransform",
       "name": "apply green_tripdata/0 data types",
-      "environments": ["production", "test"],
+      "environments": [
+        "production",
+        "test"
+      ],
       "inputURI": "/opt/tutorial/nyctaxi/meta/green_tripdata/0/green_tripdata.json",
-      "inputView": "green_tripdata0_raw",            
-      "outputView": "green_tripdata0",            
-      "persist": true,
-      "authentication": {
-      },       
-      "params": {
-      }
+      "inputView": "green_tripdata0_raw",
+      "outputView": "green_tripdata0",
+      "persist": false,
+      "authentication": {},
+      "params": {}
     },
     {
       "type": "SQLValidate",
       "name": "ensure no errors exist after data typing",
-      "environments": ["production", "test"],
-      "inputURI": "/opt/tutorial/nyctaxi/job/0/sqlvalidate_errors.sql",            
+      "environments": [
+        "production",
+        "test"
+      ],
+      "inputURI": "/opt/tutorial/nyctaxi/job/0/sqlvalidate_errors.sql",
       "sqlParams": {
-          "table_name": "green_tripdata0"
-      },              
-      "authentication": {
-      },    
-      "params": {
-      }
-    }   
+        "table_name": "green_tripdata0"
+      },
+      "authentication": {},
+      "params": {}
+    }
   ]
 }

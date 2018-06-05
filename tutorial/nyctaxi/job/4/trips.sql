@@ -231,7 +231,7 @@ SELECT
   ,NULL AS total_amount  
   ,NULL AS payment_type_id  
   ,NULL AS trip_type_id  
-  ,NULL AS AS pickup_location_id  
+  ,NULL AS pickup_location_id  
   ,NULL AS dropoff_location_id  
 FROM uber_tripdata1
 CROSS JOIN cab_type_id ON cab_type_id.cab_type = 'uber'
