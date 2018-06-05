@@ -22,8 +22,8 @@ import au.com.agl.arc.util._
 class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
   class DataHandler extends AbstractHandler {
-    val payload = """{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-21T08:46:54.000+11:00"}
-      |{"booleanDatum":false,"dateDatum":"2016-12-19","decimalDatum":12.345000000000000000,"doubleDatum":21.2121,"integerDatum":34,"longDatum":1520828123,"stringDatum":"breakdelimiter,test","timeDatum":"23:45:16","timestampDatum":"2017-12-30T04:21:49.000+11:00"}""".stripMargin
+    val payload = """{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-20T21:46:54.000Z"}
+      |{"booleanDatum":false,"dateDatum":"2016-12-19","decimalDatum":12.345000000000000000,"doubleDatum":21.2121,"integerDatum":34,"longDatum":1520828123,"stringDatum":"breakdelimiter,test","timeDatum":"23:45:16","timestampDatum":"2017-12-29T17:21:49.000Z"}""".stripMargin
 
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
       response.setContentType("text/html")
@@ -59,6 +59,9 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
     session = spark
     import spark.implicits._
+
+    // set for deterministic timezone
+    spark.conf.set("spark.sql.session.timeZone", "UTC")    
 
     // register handlers
     val dataContext = new ContextHandler("/data");
