@@ -1,1 +1,1 @@
-The JDBC URL to connect to. e.g., `jdbc:mysql://localhost:3306`. Most common JDBC drivers are in the docker image already.
+The JDBC URL to connect to. e.g., `jdbc:mysql://localhost:3306`. 

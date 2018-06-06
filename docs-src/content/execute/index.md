@@ -74,9 +74,8 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
     },    
     "params": {
         "jdbcType": "SQLServer",
-        "serverName": "myserver.database.windows.net",
+        "url": "jdbc:sqlserver://myserver.database.windows.net",
         "databaseName": "mydatabase",
-        "hostNameInCertificate": "myserver",
         "serverPort": 1433,
         "user": "mydbuser",
         "password": "mydbpassword",
