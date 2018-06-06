@@ -11,7 +11,7 @@ ENV GLIBC_VERSION         2.26-r0
 # do spark
 RUN set -ex && \
     apk upgrade --update && \
-    apk add --update libstdc++ curl ca-certificates bash openblas findutils && \
+    apk add --update libstdc++ curl ca-certificates bash openblas && \
     for pkg in glibc-${GLIBC_VERSION} glibc-bin-${GLIBC_VERSION} glibc-i18n-${GLIBC_VERSION}; do curl -sSL https://github.com/andyshinn/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/${pkg}.apk -o /tmp/${pkg}.apk; done && \
     apk add --allow-untrusted /tmp/*.apk && \
     rm -v /tmp/*.apk && \
@@ -58,7 +58,14 @@ RUN curl  --show-error --location --output ${SPARK_HOME}/jars/spark-xml_2.11-0.4
     curl  --show-error --location --output ${SPARK_HOME}/jars/spark-cassandra-connector_2.11-2.0.5.jar \    
     https://repo.maven.apache.org/maven2/com/datastax/spark/spark-cassandra-connector_2.11/2.0.5/spark-cassandra-connector_2.11-2.0.5.jar && \
     curl  --show-error --location --output ${SPARK_HOME}/jars/mysql-connector-java-5.1.45.jar \    
-    https://repo.maven.apache.org/maven2/mysql/mysql-connector-java/5.1.45/mysql-connector-java-5.1.45.jar && \      
+    https://repo.maven.apache.org/maven2/mysql/mysql-connector-java/5.1.45/mysql-connector-java-5.1.45.jar && \    
+    # logging
+    curl  --show-error --location --output ${SPARK_HOME}/jars/applicationinsights-core-1.0.9.jar \    
+    https://repo.maven.apache.org/maven2/com/microsoft/azure/applicationinsights-core/1.0.9/applicationinsights-core-1.0.9.jar && \           
+    curl  --show-error --location --output ${SPARK_HOME}/jars/applicationinsights-logging-log4j1_2-1.0.9.jar \    
+    https://repo.maven.apache.org/maven2/com/microsoft/azure/applicationinsights-logging-log4j1_2/1.0.9/applicationinsights-logging-log4j1_2-1.0.9.jar && \
+    curl  --show-error --location --output ${SPARK_HOME}/jars/log4jala-1.0.4.jar \
+    https://repo.maven.apache.org/maven2/com/github/ptv-logistics/log4jala/1.0.4/log4jala-1.0.4.jar && \       
     #geospark
     curl  --show-error --location --output ${SPARK_HOME}/jars/geospark-1.1.1.jar \
     https://repo.maven.apache.org/maven2/org/datasyslab/geospark/1.1.1/geospark-1.1.1.jar && \       

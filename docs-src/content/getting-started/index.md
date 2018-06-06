@@ -2,6 +2,7 @@
 title: Getting started
 weight: 10
 type: blog
+draft: true
 ---
 
 ## Directed Acyclic Graphs

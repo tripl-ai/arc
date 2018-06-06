@@ -42,10 +42,10 @@ googleAnalytics = ""
 [social]
 	github  = "aglenergy"
 
-[[menu.main]]
-	name   = "Getting started"
-	url    = "getting-started/"
-	weight = 10
+# [[menu.main]]
+# 	name   = "Getting started"
+# 	url    = "getting-started/"
+# 	weight = 10
 
 [[menu.main]]
 	name   = "Tutorial"
