@@ -52,7 +52,7 @@ Parameters    Attribute Type Required Description     name String true Name of t
       
       <guid>https://aglenergy.github.io/arc/load/</guid>
       <description>*Load stages write out Spark datasets to a database or file system.
-*Load staages should meet this criteria:
+*Load stages should meet this criteria:
  Take in a single dataset. Perform target specific validation that the dataset has been written correctly.  AvroLoad The AvroLoad writes an input DataFrame to a target Apache Avro file.
 Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
     </item>

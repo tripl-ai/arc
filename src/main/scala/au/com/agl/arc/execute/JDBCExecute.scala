@@ -48,14 +48,14 @@ object JDBCExecute {
       }  
     }
 
-    try {
+    val result = try {
       for (c <- conn) {
-        val result = c.createStatement().execute(stmt)
+        c.createStatement().execute(stmt)
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          
-      }    
+      }
     } finally {
       try {
         conn.foreach(_.close())
@@ -99,5 +99,3 @@ object JDBCExecute {
     DriverManager.getConnection(params.get("serverName").getOrElse(""))    
   }  
 }
-
-

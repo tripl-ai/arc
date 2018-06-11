@@ -6,7 +6,7 @@ type: blog
 
 `*Load` stages write out Spark `datasets` to a database or file system.
 
-`*Load` staages should meet this criteria:
+`*Load` stages should meet this criteria:
 
 - Take in a single `dataset`.
 - Perform target specific validation that the dataset has been written correctly.

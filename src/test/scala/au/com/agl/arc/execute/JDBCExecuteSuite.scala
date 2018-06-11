@@ -139,6 +139,25 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     assert(thrown.getMessage == "java.sql.SQLException: Database 'invalid' not found.")
   }  
 
+  test("JDBCExecute: Bad sqlserver connection parameters") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val thrown = intercept[Exception with DetailException] {
+      au.com.agl.arc.execute.JDBCExecute.execute(
+        JDBCExecute(
+          name=outputView, 
+          inputURI=new URI(testURI), 
+          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
+          params= Map("jdbcType" -> "SQLServer", "url" -> "0.0.0.0"), 
+          sqlParams=Map.empty
+        )
+      )
+    }
+    assert(thrown.getMessage == "com.microsoft.sqlserver.jdbc.SQLServerException: The connection string contains a badly formed name or value.")
+  }    
+
   test("JDBCExecute: Bad jdbcType") {
     implicit val spark = session
     import spark.implicits._

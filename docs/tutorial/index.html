@@ -403,7 +403,7 @@ docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
--it -p 4040:4040 seddonm1/arc:1.0.0 \
+-it -p 4040:4040 seddonm1/arc:1.0.1 \
 /bin/sh -c '/opt/tutorial/nyctaxi/download_raw_data_small.sh'
 </code></pre>
 
@@ -444,10 +444,11 @@ docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
--it -p 4040:4040 seddonm1/arc:1.0.0 \
+-it -p 4040:4040 seddonm1/arc:1.0.1 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=12G \
+--driver-java-options=&quot;-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap&quot; \
 --class au.com.agl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///opt/tutorial/nyctaxi/job/0/nyctaxi.json
@@ -1082,10 +1083,11 @@ FROM (
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
--it -p 4040:4040 seddonm1/arc:1.0.0 \
+-it -p 4040:4040 seddonm1/arc:1.0.1 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=12G \
+--driver-java-options=&quot;-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap&quot; \
 --class au.com.agl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file://${ETL_CONF_BASE_URL}/job/0/nyctaxi.json

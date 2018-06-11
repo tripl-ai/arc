@@ -1,7 +1,7 @@
 FROM openjdk:8u151-jdk-alpine3.7
 
 # Spark Verison
-ENV SPARK_VERSION         2.3.0
+ENV SPARK_VERSION         2.3.1
 ENV HADOOP_VERSION        2.7
 ENV SPARK_HOME            /opt/spark
 ENV SPARK_CHECKSUM_URL    https://www.apache.org/dist/spark
