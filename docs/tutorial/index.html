@@ -438,7 +438,7 @@ docker run \
 ./data/uber_tripdata/0/uber-raw-data-apr14.csv
 </code></pre>
 
-<p>At this stage you can run a job. The <code>--driver-memory=12G</code> option should be set with as much memory as you can give it.</p>
+<p>At this stage you can run a job. The <code>--driver-memory=12G</code> option should be set with as much memory as you can give it. Also note the <code>+UseCGroupMemoryLimitForHeap</code> which is included so that the JVM can detect how much memory is available when running inside a Docker container.</p>
 
 <pre><code class="language-bash">docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \

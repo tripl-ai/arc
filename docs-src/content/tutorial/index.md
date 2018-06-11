@@ -61,7 +61,7 @@ find
 ./data/uber_tripdata/0/uber-raw-data-apr14.csv
 ```
 
-At this stage you can run a job. The `--driver-memory=12G` option should be set with as much memory as you can give it.
+At this stage you can run a job. The `--driver-memory=12G` option should be set with as much memory as you can give it. Also note the `+UseCGroupMemoryLimitForHeap` which is included so that the JVM can detect how much memory is available when running inside a Docker container.
 
 ```bash
 docker run \
