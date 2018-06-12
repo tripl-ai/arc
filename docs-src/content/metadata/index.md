@@ -230,7 +230,7 @@ No additional attributes.
 ## Time
 
 {{< note title="TimeType" >}}
-Spark does not have an internal `TimeType` representation of time. This type can be used to ensure time values are able to be successfully parsed as [LocalTime](https://docs.oracle.com/javase/8/docs/api/java/time/LocalTime.html) objects but they are always stored in Spark as `string` formatted in the standard `HH:mm:ss` format type meaning they can safely used in the `to_utc_timestamp` SQL function (but be very careful with timezone offsets). If they cannot be parsed then an error will be inserted into the `_errors` array like all other types.
+Spark does not have an internal `TimeType` representation of time. This type can be used to ensure time values are able to be successfully parsed as [LocalTime](https://docs.oracle.com/javase/8/docs/api/java/time/LocalTime.html) objects but they are always stored in Spark as `string` formatted in the standard `HH:mm:ss` format type meaning they can safely used in the [to_utc_timestamp](https://spark.apache.org/docs/latest/api/sql/index.html#to_utc_timestamp) SQL function (but be very careful with timezone offsets). If they cannot be parsed then an error will be inserted into the `_errors` array like all other types.
 {{</note>}}
 
 ### Additional Attributes
