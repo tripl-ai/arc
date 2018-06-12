@@ -745,7 +745,7 @@
 
 <div class="admonition note">
 <p class="admonition-title">TimeType</p>
-<p>Spark does not have an internal <code>TimeType</code> representation of time. This type can be used to ensure time values are able to be successfully parsed as <a href="https://docs.oracle.com/javase/8/docs/api/java/time/LocalTime.html">LocalTime</a> objects but they are always stored in Spark as <code>string</code> type meaning they can safely used in the <code>to_utc_timestamp</code> SQL function (but be very careful with timezone offsets). If they cannot be parsed then an error will be inserted into the <code>_errors</code> array like all other types.</p>
+<p>Spark does not have an internal <code>TimeType</code> representation of time. This type can be used to ensure time values are able to be successfully parsed as <a href="https://docs.oracle.com/javase/8/docs/api/java/time/LocalTime.html">LocalTime</a> objects but they are always stored in Spark as <code>string</code> formatted in the standard <code>HH:mm:ss</code> format type meaning they can safely used in the <code>to_utc_timestamp</code> SQL function (but be very careful with timezone offsets). If they cannot be parsed then an error will be inserted into the <code>_errors</code> array like all other types.</p>
 </div>
 
 <h3 id="additional-attributes-7">Additional Attributes</h3>
@@ -782,7 +782,7 @@
   &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
   &quot;primaryKey&quot; : false,
   &quot;position&quot; : 19,
-  &quot;formatters&quot; : [ &quot;HH:mm:ss&quot; ],
+  &quot;formatters&quot; : [ &quot;HHmmss&quot; ],
 }
 </code></pre>
 
