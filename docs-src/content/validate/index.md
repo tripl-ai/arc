@@ -66,7 +66,7 @@ See [patterns](../patterns/) for more examples.
 ```json
 {
     "type": "SQLValidate",
-    "name": "verify data equality",
+    "name": "apply data integrity rules",
     "environments": ["production", "test"],
     "inputURI": "hdfs://data_quality/customer/cutomer_error_threshold.sql",            
     "sqlParams": {
