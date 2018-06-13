@@ -675,7 +675,7 @@ object ConfigUtils {
 
     // try to verify if sql is technically valid against HQL dialect (will not check dependencies)
     val validSQL = inputSQL.rightFlatMap { sql =>
-      validateSQL(uriKey, sql)
+      validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams))
     }
 
     (name, parsedURI, inputSQL, validSQL, outputView, persist) match {
@@ -1061,6 +1061,7 @@ object ConfigUtils {
         Left(err)
     }
   }  
+
   def readSQLValidate(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
     import ConfigReader._
 
@@ -1076,16 +1077,21 @@ object ConfigUtils {
 
     val sqlParams = readMap("sqlParams", c) 
 
-    (name, parsedURI, inputSQL) match {
-      case (Right(n), Right(uri), Right(sql)) => 
+    // try to verify if sql is technically valid against HQL dialect (will not check dependencies)
+    val validSQL = inputSQL.rightFlatMap { sql =>
+      validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams))
+    }
+
+    (name, parsedURI, inputSQL, validSQL) match {
+      case (Right(n), Right(uri), Right(sql), Right(vsql)) => 
         Right(SQLValidate(n, uri, sql, sqlParams, params))
       case _ =>
-        val allErrors: Errors = List(name, parsedURI, inputSQL).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, parsedURI, inputSQL, validSQL).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
     }
-  }    
+  }   
 
   def readPipeline(c: Config, uri: URI)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, env: String): Either[List[Error], ETLPipeline] = {
     import ConfigReader._
