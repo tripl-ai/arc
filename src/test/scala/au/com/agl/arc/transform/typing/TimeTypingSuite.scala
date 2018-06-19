@@ -286,7 +286,7 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test multiple formatters
     {
-      val fmt = List("HH:mm:ss", "HH:mm:ss.nnnnnnnnn")
+      val fmt = List("HH:mm:ss", "HH:mm:ss.nnnnnnnnn", "HHmmss")
       val col = TimeColumn(id="1", name="name", description=Some("description"), primaryKey=Option(true), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt)
 
       {
@@ -311,7 +311,19 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
           }
           case (_,_) => assert(false)
         }
-      }                  
+      }  
+
+      {
+        val timeValue = "12:34:56"
+        val value = "123456"
+        Typing.typeValue(value, col) match {
+          case (Some(res), err) => {
+            assert(res === timeValue)
+            assert(err === None)
+          }
+          case (_,_) => assert(false)
+        }
+      }                        
     }    
 
     // Test bad inputs
@@ -329,6 +341,6 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
           case (_,_) => assert(false)
         }
       }                 
-    }    
+    }        
   }
 }
