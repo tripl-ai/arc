@@ -150,6 +150,11 @@ If you have suggestions of additional components or find issues that you believe
 
 When you contribute code, you affirm that the contribution is your original work and that you license the work to the project under the project’s open source license. Whether or not you state this explicitly, by submitting any copyrighted material via pull request, email, or other means you agree to license the material under the project’s open source license and warrant that you have the legal authority to do so.
 
+## Authors/Contributors
+
+- [AGL Energy](https://github.com/aglenergy)
+- [Mike Seddon](https://github.com/seddonm1)
+
 ## Attribution 
 
 Thanks to the following projects:
