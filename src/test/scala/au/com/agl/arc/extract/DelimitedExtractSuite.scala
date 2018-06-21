@@ -67,7 +67,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new Delimited(header=true, sep=Delimiter.Comma),
         authentication=None,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
 
@@ -116,7 +117,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new Delimited(),
         authentication=None,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -131,7 +133,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new Delimited(header=true, sep=Delimiter.Comma),
         authentication=None,
         params=Map.empty,
-        persist=true
+        persist=true,
+        numPartitions=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -167,7 +170,9 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new Delimited(),
         authentication=None,
         params=Map.empty,
-        persist=false)
+        persist=false,
+        numPartitions=None
+        )
       )
     }
     assert(thrown0.getMessage === "DelimitedExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
@@ -183,7 +188,9 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new Delimited(),
         authentication=None,
         params=Map.empty,
-        persist=false)
+        persist=false,
+        numPartitions=None
+        )
       )
     }
     assert(thrown1.getMessage === "DelimitedExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
@@ -198,7 +205,9 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       settings=new Delimited(),
       authentication=None,
       params=Map.empty,
-      persist=false)
+      persist=false,
+      numPartitions=None
+      )
     )
 
     val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
@@ -231,7 +240,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new Delimited(header=true, sep=Delimiter.Pipe, inferSchema=false),
         authentication=None,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
 
@@ -257,7 +267,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new Delimited(header=false, sep=Delimiter.Comma, inferSchema=false),
         authentication=None,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
     val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
@@ -282,7 +293,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new Delimited(header=true, sep=Delimiter.Comma, inferSchema=true),
         authentication=None,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
     val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)

@@ -66,7 +66,10 @@ object XMLExtract {
       .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))
          
     // repartition to distribute rows evenly
-    val repartitionedDF = enrichedDF.repartition(spark.sparkContext.defaultParallelism * 4)  
+    val repartitionedDF = extract.numPartitions match {
+      case Some(numPartitions) => enrichedDF.repartition(numPartitions)
+      case None => enrichedDF.repartition(spark.sparkContext.defaultParallelism * 4)
+    }
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 
     stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))

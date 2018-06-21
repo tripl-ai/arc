@@ -81,7 +81,10 @@ object HTTPExtract {
     val df = spark.sparkContext.parallelize(body.split("\n")).toDF
     
     // repartition to distribute rows evenly
-    val repartitionedDF = df.repartition(spark.sparkContext.defaultParallelism * 4)  
+    val repartitionedDF = extract.numPartitions match {
+      case Some(numPartitions) => df.repartition(numPartitions)
+      case None => df.repartition(spark.sparkContext.defaultParallelism * 4)
+    }
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 
     stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))

@@ -410,13 +410,14 @@ object ConfigUtils {
     val inputURI = getValue[String]("inputURI")
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")
 
-    (name, inputURI, outputView, persist, authentication) match {
-      case (Right(n), Right(in), Right(ov), Right(p), Right(auth)) => 
-        Right(AvroExtract(n, Nil, ov, new URI(in), auth, params, p))
+    (name, inputURI, outputView, persist, numPartitions, authentication) match {
+      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth)) => 
+        Right(AvroExtract(n, Nil, ov, new URI(in), auth, params, p, np))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, outputView, persist, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -430,6 +431,7 @@ object ConfigUtils {
     val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
     val header = getOptionalValue[Boolean]("header")
     val authentication = readAuthentication("authentication")
 
@@ -460,8 +462,8 @@ object ConfigUtils {
       }
     } else delimited.quote
 
-    (name, input, extractColumns, outputView, persist, header, authentication) match {
-      case (Right(n), Right(in), Right(cols), Right(ov), Right(p), Right(head), Right(auth)) => 
+    (name, input, extractColumns, outputView, persist, numPartitions, header, authentication) match {
+      case (Right(n), Right(in), Right(cols), Right(ov), Right(p), Right(np), Right(head), Right(auth)) => 
 
         val header = head match {
           case Some(value) => value
@@ -469,10 +471,10 @@ object ConfigUtils {
         }
 
         val input = if(c.hasPath("inputView")) Left(in) else Right(new URI(in))
-        val extract = DelimitedExtract(n, cols, ov, input, Delimited(header=header, sep=delimiter, quote=quote), auth, params, p)
+        val extract = DelimitedExtract(n, cols, ov, input, Delimited(header=header, sep=delimiter, quote=quote), auth, params, p, np)
         Right(extract)
       case _ =>
-        val allErrors: Errors = List(name, input, extractColumns, outputView, persist, header, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, input, extractColumns, outputView, persist, numPartitions, header, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -490,12 +492,13 @@ object ConfigUtils {
 
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
 
-    (name, parsedURI, outputView, persist) match {
-      case (Right(n), Right(uri), Right(ov), Right(p)) => 
-        Right(HTTPExtract(n, uri, headers, validStatusCodes, ov, params, p))
+    (name, parsedURI, outputView, persist, numPartitions) match {
+      case (Right(n), Right(uri), Right(ov), Right(p), Right(np)) => 
+        Right(HTTPExtract(n, uri, headers, validStatusCodes, ov, params, p, np))
       case _ =>
-        val allErrors: Errors = List(name, parsedURI, outputView, persist).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, parsedURI, outputView, persist, numPartitions).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -531,11 +534,12 @@ object ConfigUtils {
     val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
     val multiLine = getOptionalValue[Boolean]("multiLine")
     val authentication = readAuthentication("authentication")
 
-    (name, input, outputView, persist, multiLine, authentication) match {
-      case (Right(n), Right(in), Right(ov), Right(p), Right(ml), Right(auth)) => 
+    (name, input, outputView, persist, numPartitions, multiLine, authentication) match {
+      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(ml), Right(auth)) => 
         val input = if(c.hasPath("inputView")) Left(in) else Right(new URI(in))
 
         val json = JSON()
@@ -543,10 +547,10 @@ object ConfigUtils {
           case Some(b: Boolean) => b
           case _ => json.multiLine
         }
-        val extract = JSONExtract(n, Nil, ov, input, JSON(multiLine=multiLine), auth, params, p)
+        val extract = JSONExtract(n, Nil, ov, input, JSON(multiLine=multiLine), auth, params, p, np)
         Right(extract)
       case _ =>
-        val allErrors: Errors = List(name, input, outputView, persist, multiLine, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, input, outputView, persist, numPartitions, multiLine, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -559,13 +563,14 @@ object ConfigUtils {
     val inputURI = getValue[String]("inputURI")
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")
 
-    (name, inputURI, outputView, persist, authentication) match {
-      case (Right(n), Right(in), Right(ov), Right(p), Right(auth)) => 
-        Right(ORCExtract(n, Nil, ov, new URI(in), auth, params, p))
+    (name, inputURI, outputView, persist, numPartitions, authentication) match {
+      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth)) => 
+        Right(ORCExtract(n, Nil, ov, new URI(in), auth, params, p, np))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, outputView, persist, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -578,13 +583,14 @@ object ConfigUtils {
     val inputURI = getValue[String]("inputURI")
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")
 
-    (name, inputURI, outputView, persist, authentication) match {
-      case (Right(n), Right(in), Right(ov), Right(p), Right(auth)) => 
-        Right(ParquetExtract(n, Nil, ov, new URI(in), auth, params, p))
+    (name, inputURI, outputView, persist, numPartitions, authentication) match {
+      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth)) => 
+        Right(ParquetExtract(n, Nil, ov, new URI(in), auth, params, p, np))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, outputView, persist, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -597,13 +603,14 @@ object ConfigUtils {
     val inputURI = getValue[String]("inputURI")
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")
 
-    (name, inputURI, outputView, persist, authentication) match {
-      case (Right(n), Right(in), Right(ov), Right(p), Right(auth)) => 
-        Right(XMLExtract(n, Nil, ov, new URI(in), auth, params, p))
+    (name, inputURI, outputView, persist, numPartitions, authentication) match {
+      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth)) => 
+        Right(XMLExtract(n, Nil, ov, new URI(in), auth, params, p, np))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, outputView, persist, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -1061,7 +1068,7 @@ object ConfigUtils {
         Left(err)
     }
   }  
-
+  
   def readSQLValidate(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
     import ConfigReader._
 
@@ -1080,7 +1087,7 @@ object ConfigUtils {
     // try to verify if sql is technically valid against HQL dialect (will not check dependencies)
     val validSQL = inputSQL.rightFlatMap { sql =>
       validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams))
-    }
+    }    
 
     (name, parsedURI, inputSQL, validSQL) match {
       case (Right(n), Right(uri), Right(sql), Right(vsql)) => 
@@ -1091,7 +1098,7 @@ object ConfigUtils {
         val err = StageError(stageName, allErrors)
         Left(err)
     }
-  }   
+  }    
 
   def readPipeline(c: Config, uri: URI)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, env: String): Either[List[Error], ETLPipeline] = {
     import ConfigReader._

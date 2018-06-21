@@ -98,7 +98,8 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         validStatusCodes=None,
         outputView=outputView,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
 
@@ -136,7 +137,8 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         validStatusCodes=None,
         outputView=outputView,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
 
@@ -157,7 +159,8 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           headers=Map.empty,
           outputView=outputView,
           params=Map.empty,
-          persist=false
+          persist=false,
+          numPartitions=None
         )
       )
     }
@@ -178,7 +181,8 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           validStatusCodes=Option(List(201)),
           outputView=outputView,
           params=Map.empty,
-          persist=false
+          persist=false,
+          numPartitions=None
         )
       )
     }
@@ -199,11 +203,12 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           validStatusCodes=None,
           outputView=outputView,
           params=Map.empty,
-          persist=false
+          persist=false,
+          numPartitions=None
         )
       )
     }
-    assert(thrown.getMessage.contains("Connection refused"))
+    assert(thrown.getMessage.contains("Connection refused"))      
   }
        
 }

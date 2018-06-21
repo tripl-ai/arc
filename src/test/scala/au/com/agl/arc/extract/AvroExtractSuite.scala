@@ -65,7 +65,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         input=new URI(targetFile),
         authentication=None,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
 
@@ -106,7 +107,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         input=new URI(targetFile),
         authentication=None,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -120,7 +122,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         input=new URI(targetFile),
         authentication=None,
         params=Map.empty,
-        persist=true
+        persist=true,
+        numPartitions=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -155,7 +158,9 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         input=new URI(emptyWildcardDirectory),
         authentication=None,
         params=Map.empty,
-        persist=false)
+        persist=false,
+        numPartitions=None
+        )
       )
     }
     assert(thrown0.getMessage === "AvroExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
@@ -170,7 +175,9 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         input=new URI(emptyDirectory),
         authentication=None,
         params=Map.empty,
-        persist=false)
+        persist=false,
+        numPartitions=None
+        )
       )
     }
     assert(thrown1.getMessage === "AvroExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
@@ -184,7 +191,9 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       input=new URI(emptyDirectory),
       authentication=None,
       params=Map.empty,
-      persist=false)
+      persist=false,
+      numPartitions=None
+      )
     )
 
     val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)

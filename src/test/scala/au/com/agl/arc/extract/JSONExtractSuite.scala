@@ -78,7 +78,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new JSON(multiLine=false),
         authentication=None,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
 
@@ -122,7 +123,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new JSON(multiLine=false),
         authentication=None,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -137,7 +139,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new JSON(),
         authentication=None,
         params=Map.empty,
-        persist=true
+        persist=true,
+        numPartitions=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)
@@ -173,7 +176,9 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new JSON(multiLine=false),
         authentication=None,
         params=Map.empty,
-        persist=false)
+        persist=false,
+        numPartitions=None
+        )
       )
     }
 
@@ -190,7 +195,9 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new JSON(multiLine=false),
         authentication=None,
         params=Map.empty,
-        persist=false)
+        persist=false,
+        numPartitions=None
+        )
       )
     }
 
@@ -206,7 +213,9 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
       settings=new JSON(multiLine=false),
       authentication=None,
       params=Map.empty,
-      persist=false)
+      persist=false,
+      numPartitions=None
+      )
     )
 
     val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
@@ -242,7 +251,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new JSON(multiLine=false),
         authentication=None,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
 
@@ -255,7 +265,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new JSON(multiLine=true),
         authentication=None,
         params=Map.empty,
-        persist=false
+        persist=false,
+        numPartitions=None
       )
     )
 

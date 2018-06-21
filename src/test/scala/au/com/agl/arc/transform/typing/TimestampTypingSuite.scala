@@ -447,5 +447,21 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         }
         case (_,_) => assert(false)
       }
-  }     
+  }   
+
+  test("Type Timestamp Column: Timestamp from ISO8601") {
+    val datetimeValue = ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC"))
+    val timestampValue = Timestamp.from(datetimeValue.toInstant())
+    val fmt = List("yyyy-MM-dd'T'HH:mm:ss")
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), primaryKey=Option(true), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None)
+
+    val value = "2017-10-01T22:30:00"
+    Typing.typeValue(value, col) match {
+      case (Some(res), err) => {
+        assert(res === timestampValue)
+        assert(err === None)
+      }
+      case (_,_) => assert(false)
+    }
+  }      
 }
