@@ -136,7 +136,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.0.3</span></strong>
+          <span class="version">1.0.4</span></strong>
         
       </div>
     </div>
@@ -889,7 +889,7 @@
 <td>schemaURI</td>
 <td>URI</td>
 <td>false</td>
-<td>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</td>
+<td>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system. By specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.</td>
 </tr>
 
 <tr>
@@ -1194,7 +1194,7 @@
 <td>schemaURI</td>
 <td>URI</td>
 <td>false</td>
-<td>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</td>
+<td>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system. By specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.</td>
 </tr>
 
 <tr>

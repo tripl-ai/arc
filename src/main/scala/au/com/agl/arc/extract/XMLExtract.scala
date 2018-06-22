@@ -37,7 +37,13 @@ object XMLExtract {
     // the xml reader does not yet support loading from a string dataset
     CloudUtils.setHadoopConfiguration(extract.authentication)
     val df = try {
-      spark.read.format("com.databricks.spark.xml").options(options).load(extract.input.toString)     
+      extract.cols match {
+        case Nil => spark.read.format("com.databricks.spark.xml").options(options).load(extract.input.toString) 
+        case cols => { 
+          val schema = Extract.toStructType(cols)
+          spark.read.format("com.databricks.spark.xml").options(options).schema(schema).load(extract.input.toString) 
+        }                
+      }      
     } catch {
       case e: org.apache.hadoop.mapreduce.lib.input.InvalidInputException if (e.getMessage.contains("matches 0 files")) => {
         spark.emptyDataFrame
@@ -90,4 +96,3 @@ object XMLExtract {
   }
 
 }
-

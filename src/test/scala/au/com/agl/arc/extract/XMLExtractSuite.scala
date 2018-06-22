@@ -88,7 +88,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     assert(expected.except(actual).count === 0)
   }  
 
-  test("XMLExtract Caching") {
+  test("XMLExtract: Caching") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -124,7 +124,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     assert(spark.catalog.isCached(outputView) === true)     
   }  
 
-  test("XMLExtract Empty Dataset") {
+  test("XMLExtract: Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -203,6 +203,64 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
       actual.show(false)
       println("expected")
       expected.show(false)  
+    }
+    assert(actual.except(expected).count === 0)
+    assert(expected.except(actual).count === 0)
+  }  
+
+  test("XMLExtract: Input Schema") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val cols = 
+      BooleanColumn(
+        id="1",
+        name="booleanDatum",
+        description=None,
+        primaryKey=Option(false),
+        nullable=true,
+        nullReplacementValue=None,
+        trim=false,
+        nullableValues=Nil, 
+        trueValues=Nil, 
+        falseValues=Nil
+      ) :: 
+      IntegerColumn(
+        id="2",
+        name="integerDatum",
+        description=None,
+        primaryKey=Option(false),
+        nullable=true,
+        nullReplacementValue=None,
+        trim=false,
+        nullableValues=Nil
+      ) :: Nil
+
+    val extractDataset = extract.XMLExtract.extract(
+      XMLExtract(
+        name=outputView,
+        cols=cols,
+        outputView=outputView,
+        input=new URI(targetFile),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None
+      )
+    )
+
+    val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = extractDataset.drop(internal:_*)
+    val expected = TestDataUtils.getKnownDataset.select($"booleanDatum", $"integerDatum")
+
+    val actualExceptExpectedCount = actual.except(expected).count
+    val expectedExceptActualCount = expected.except(actual).count
+    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
+      println("actual")
+      actual.show(false)
+      println("expected")
+      expected.show(false)
     }
     assert(actual.except(expected).count === 0)
     assert(expected.except(actual).count === 0)

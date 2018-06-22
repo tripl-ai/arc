@@ -198,7 +198,7 @@ The `JSONExtract` stage reads either one or more JSON files or an input `Dataset
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|false*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
 |inputURI|URI|false*|URI of the input delimited text files. If not present `inputView` is requred.|
-|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}} By specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
@@ -308,7 +308,7 @@ The `XMLExtract` stage reads one or more XML files and returns a `DataFrame`.
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputURI|URI|true|URI of the input XML files.|
-|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}} By specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|

@@ -13,7 +13,7 @@ lazy val root = (project in file(".")).
     buildInfoPackage := "au.com.agl.arc" 
   )
 
-test in assembly := {}
+// test in assembly := {}
 
 assemblyJarName in assembly := s"${name.value}.jar"
 

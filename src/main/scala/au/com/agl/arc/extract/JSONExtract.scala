@@ -59,7 +59,14 @@ object JSONExtract {
 
               // read the file but do not cache. caching will break the input_file_name() function
               val textFile = spark.sparkContext.textFile(uri.toString)
-              val json = spark.read.options(options).json(textFile.toDS)
+
+              val json = extract.cols match {
+                case Nil => spark.read.options(options).json(textFile.toDS)
+                case cols => { 
+                  val schema = Extract.toStructType(cols)
+                  spark.read.options(options).schema(schema).json(textFile.toDS)
+                }                
+              }              
 
               // reset delimiter
               if (oldDelimiter == null) {
@@ -72,7 +79,14 @@ object JSONExtract {
             } else {
               // read the file but do not cache. caching will break the input_file_name() function              
               val textFile = spark.sparkContext.textFile(uri.toString)
-              val json = spark.read.options(options).json(textFile.toDS)
+
+              val json = extract.cols match {
+                case Nil => spark.read.options(options).json(textFile.toDS)
+                case cols => { 
+                  val schema = Extract.toStructType(cols)
+                  spark.read.options(options).schema(schema).json(textFile.toDS)
+                }                
+              }
 
               json              
             }
@@ -133,4 +147,3 @@ object JSONExtract {
   }
 
 }
-
