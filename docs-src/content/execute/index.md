@@ -57,9 +57,12 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}|
+|url|String|true|{{< readfile file="/content/partials/fields/jdbcURL.md" markdown="true" >}}|
+|user|String|false|Database username to connect as. Optional, can also be in the url or params.|
+|password|String|false|Database password for the given user. Optional, can also be in the url or params.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
-|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Currently requires `jdbcType`, `serverName`, `databaseName`, `hostNameInCertificate`, `serverPort`, `user` and `password` to be set here - see example below. Allowed values for `jdbcType` is currently only `SQLServer`.|
+|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. All params will be added to the Connection Properties.|
 
 ### Examples
 
@@ -69,16 +72,13 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
     "name": "update the load date table",
     "environments": ["production", "test"],
     "inputURI": "hdfs://datalake/sql/update_customer_load_date.sql",          
+    "url": "jdbc:postgresql://localhost/test",
+    "user": "test",
+    "password": "test",
     "sqlParams": {
         "current_timestamp": "2018-11-24 14:48:56"
     },    
     "params": {
-        "jdbcType": "SQLServer",
-        "url": "jdbc:sqlserver://myserver.database.windows.net",
-        "databaseName": "mydatabase",
-        "serverPort": 1433,
-        "user": "mydbuser",
-        "password": "mydbpassword",
     }
 }
 ```
