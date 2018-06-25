@@ -50,8 +50,8 @@ object AzureEventHubsLoad {
       }      
     }     
 
-    val events = try {
-      df.mapPartitions(partition => {
+    try {
+      df.foreachPartition(partition => {
         // establish connection
         val connStr = { new ConnectionStringBuilder()
           .setNamespaceName(load.namespaceName)
@@ -66,8 +66,8 @@ object AzureEventHubsLoad {
         var eventBatch = eventHubClient.createBatch
         
         // send each message via shared connection
-        val partitionEventCount = try {
-          val rowEventCount = partition.map(row => {
+        try {
+          partition.foreach(row => {
             // create event
             val jsonBytes = row.getString(0).getBytes("UTF-8")
             val event = EventData.create(jsonBytes)
@@ -78,37 +78,24 @@ object AzureEventHubsLoad {
               eventBatch = eventHubClient.createBatch
               eventBatch.tryAdd(event)
             }
-
-            1
           })
 
-          // if there are still events in the buffer send them
+          // if there are events in the buffer send them
           if (eventBatch.getSize > 0) {
             eventHubClient.sendSync(eventBatch)
-          }        
-
-          rowEventCount
+          }          
         } catch {
           case e: Exception => throw e
         } finally {
           eventHubClient.closeSync
           executorService.shutdown
-        }  
-
-        partitionEventCount
+        }          
       })
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          
       }
     }
-
-    val eventCount = events.agg(sum("value"))
-
-    // push to eventhubs and count number of messages pushed
-    eventCount.cache.count
-
-    stageDetail.put("records", Long.valueOf(eventCount.first.getLong(0)))  
 
     logger.info()
       .field("event", "exit")
