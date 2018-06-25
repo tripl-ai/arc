@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.0.5
+
+- fix a longstanding defect in `TypingTranform` not correctly passing through values which are already of correct type.
+
 # 1.0.4
 
 - allow passing of same metadata schema to `JSONExtract` and `XMLExtract` to reduce cost of schema inference for large number of files.

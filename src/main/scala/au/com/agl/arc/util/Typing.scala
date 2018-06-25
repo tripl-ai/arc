@@ -46,7 +46,7 @@ object Typing {
           } else {
             val col = extract.cols(fieldIdx)
             // Pass through when the incoming type matches the outgoing type
-            if (col.sparkDataType == field) {
+            if (col.sparkDataType == field.dataType) {
                 (row.get(fieldIdx) :: valuesAccum, errorsAccum)
             } else {              
               // TODO: add support for converting between types etc decimal to timestamp, date to timestamp etc
