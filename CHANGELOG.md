@@ -3,6 +3,7 @@
 # 1.0.5
 
 - fix a longstanding defect in `TypingTranform` not correctly passing through values which are already of correct type.
+- change the `_index` field added to `*Extract` from `monotonically_increasing_id()` to a `row_number(monotonically_increasing_id())` so that the index aligns to underlying files.
 
 # 1.0.4
 

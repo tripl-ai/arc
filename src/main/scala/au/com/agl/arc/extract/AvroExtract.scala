@@ -6,8 +6,9 @@ import java.net.URI
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
 import org.apache.spark.storage.StorageLevel
 
 import au.com.agl.arc.api._
@@ -60,10 +61,18 @@ object AvroExtract {
       df
     }     
 
-    // add meta columns
-    val enrichedDF = emptyDataframeHandlerDF
-      .withColumn("_index",monotonically_increasing_id().as("_index", new MetadataBuilder().putBoolean("internal", true).build()))
-      .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))
+    // add meta columns including sequential index
+    // if schema already has metadata columns ignore
+    val enrichedDF = if (!emptyDataframeHandlerDF.schema.map(_.name).contains("_index")) {
+      val window = Window.partitionBy("_filename").orderBy("_monotonically_increasing_id")
+      emptyDataframeHandlerDF
+        .withColumn("_monotonically_increasing_id", monotonically_increasing_id())
+        .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))
+        .withColumn("_index", row_number().over(window).as("_index", new MetadataBuilder().putBoolean("internal", true).build()))
+        .drop("_monotonically_increasing_id")
+    } else {
+      emptyDataframeHandlerDF
+    }
 
     // repartition to distribute rows evenly
     val repartitionedDF = extract.numPartitions match {
