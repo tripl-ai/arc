@@ -136,7 +136,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.0.5</span></strong>
+          <span class="version">1.0.6</span></strong>
         
       </div>
     </div>
@@ -562,6 +562,34 @@
 </tr>
 
 <tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing. Azure EventHubs will throw a <code>ServerBusyException</code> if too many executors write to a target in parallel which can be decreased by reducing the number of partitions.</td>
+</tr>
+
+<tr>
+<td>retryMinBackoff</td>
+<td>Long</td>
+<td>false</td>
+<td>The minimum time (in seconds) for the exponential backoff algorithm to wait between retries. Default: 0.</td>
+</tr>
+
+<tr>
+<td>retryMaxBackoff</td>
+<td>Long</td>
+<td>false</td>
+<td>The maximum time (in seconds) for the exponential backoff algorithm to wait between retries. Default: 30.</td>
+</tr>
+
+<tr>
+<td>retryCount</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of retries for the exponential backoff algorithm. Default: 10.</td>
+</tr>
+
+<tr>
 <td>params</td>
 <td>Map[String, String]</td>
 <td>true</td>
@@ -581,6 +609,10 @@
     &quot;eventHubName&quot;: &quot;myeventhub&quot;, 
     &quot;sharedAccessSignatureKeyName&quot;: &quot;mysignaturename&quot;, 
     &quot;sharedAccessSignatureKey&quot;: &quot;ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=&quot;,
+    &quot;numPartitions&quot;: 4,
+    &quot;retryMinBackoff&quot;: 5,
+    &quot;retryMinBackoff&quot;: 60,
+    &quot;retryCount&quot;: 30,
     &quot;params&quot;: {}
 }
 </code></pre>

@@ -68,6 +68,10 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 |eventHubName|String|true|{{< readfile file="/content/partials/fields/eventHubName.md" markdown="true" >}}|
 |sharedAccessSignatureKeyName|String|true|{{< readfile file="/content/partials/fields/sharedAccessSignatureKeyName.md" markdown="true" >}}|
 |sharedAccessSignatureKey|String|true|{{< readfile file="/content/partials/fields/sharedAccessSignatureKey.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} Azure EventHubs will throw a `ServerBusyException` if too many executors write to a target in parallel which can be decreased by reducing the number of partitions.|
+|retryMinBackoff|Long|false|The minimum time (in seconds) for the exponential backoff algorithm to wait between retries. Default: 0.|
+|retryMaxBackoff|Long|false|The maximum time (in seconds) for the exponential backoff algorithm to wait between retries. Default: 30.|
+|retryCount|Integer|false|The maximum number of retries for the exponential backoff algorithm. Default: 10.|
 |params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
@@ -82,6 +86,10 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
     "eventHubName": "myeventhub", 
     "sharedAccessSignatureKeyName": "mysignaturename", 
     "sharedAccessSignatureKey": "ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=",
+    "numPartitions": 4,
+    "retryMinBackoff": 5,
+    "retryMinBackoff": 60,
+    "retryCount": 30,
     "params": {}
 }
 ```

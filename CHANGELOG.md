@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.0.6
+
+- updated `AzureEventHubsLoad` to use a SNAPSHOT compiled JAR in `/lib` to get latest changes. this will be changed back to Maven once version is officially released. Also exposed the expontential retry options to API.
+
 # 1.0.5
 
 - fix a longstanding defect in `TypingTranform` not correctly passing through values which are already of correct type.

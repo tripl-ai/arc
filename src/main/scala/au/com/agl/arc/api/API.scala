@@ -197,7 +197,7 @@ object API {
 
   case class AvroLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "AvroLoad" }
 
-  case class AzureEventHubsLoad(name: String, inputView: String, namespaceName: String, eventHubName: String, sharedAccessSignatureKeyName: String, sharedAccessSignatureKey: String, params: Map[String, String]) extends Load { val getType = "AzureEventHubsLoad" }
+  case class AzureEventHubsLoad(name: String, inputView: String, namespaceName: String, eventHubName: String, sharedAccessSignatureKeyName: String, sharedAccessSignatureKey: String, numPartitions: Option[Int], retryMinBackoff: Option[Long], retryMaxBackoff: Option[Long], retryCount: Option[Int], params: Map[String, String]) extends Load { val getType = "AzureEventHubsLoad" }
 
   case class DelimitedLoad(name: String, inputView: String, outputURI: URI, settings: Delimited, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "DelimitedLoad" }
 

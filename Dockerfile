@@ -46,8 +46,8 @@ RUN curl  --show-error --location --output ${SPARK_HOME}/jars/spark-xml_2.11-0.4
     curl  --show-error --location --output ${SPARK_HOME}/jars/azure-storage-3.1.0.jar \    
     https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-storage/3.1.0/azure-storage-3.1.0.jar && \    
     # azure eventhub
-    curl  --show-error --location --output ${SPARK_HOME}/jars/azure-eventhubs-1.0.1.jar  \
-    https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-eventhubs/1.0.1/azure-eventhubs-1.0.1.jar && \       
+    #curl  --show-error --location --output ${SPARK_HOME}/jars/azure-eventhubs-1.0.1.jar  \
+    #https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-eventhubs/1.0.1/azure-eventhubs-1.0.1.jar && \       
     curl  --show-error --location --output ${SPARK_HOME}/jars/proton-j-0.26.0.jar  \
     https://repo.maven.apache.org/maven2/org/apache/qpid/proton-j/0.26.0/proton-j-0.26.0.jar && \   
     # databases
@@ -73,9 +73,6 @@ RUN curl  --show-error --location --output ${SPARK_HOME}/jars/spark-xml_2.11-0.4
     https://repo.maven.apache.org/maven2/org/datasyslab/geospark-sql_2.3/1.1.1/geospark-sql_2.3-1.1.1.jar && \       
     apk del curl
 
-# copy in etl library
-COPY target/scala-2.11/arc.jar /opt/spark/jars/arc.jar
-
 # copy in tutorial
 COPY tutorial /opt/tutorial
 RUN chmod +x /opt/tutorial/nyctaxi/download_raw_data_small.sh
@@ -83,6 +80,9 @@ RUN chmod +x /opt/tutorial/nyctaxi/download_raw_data_large.sh
 
 # copy in log4j.properties config file
 COPY log4j.properties /opt/spark/conf/log4j.properties
+
+# copy in etl library
+COPY target/scala-2.11/arc.jar /opt/spark/jars/arc.jar
 
 WORKDIR $SPARK_HOME
 # EOF

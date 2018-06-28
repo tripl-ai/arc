@@ -306,7 +306,15 @@ object ConfigUtils {
 
       def getOptionalValue(path: String, c: Config): Either[Errors, Option[Int]] = getOptionalConfigValue(path, c, "int"){ c.getInt(path) }
 
-    }      
+    }    
+
+    implicit object LongConfigReader extends ConfigReader[Long] {
+
+      def getValue(path: String, c: Config): Either[Errors, Long] = getConfigValue(path, c, "long"){ c.getLong(path) }
+
+      def getOptionalValue(path: String, c: Config): Either[Errors, Option[Long]] = getOptionalConfigValue(path, c, "long"){ c.getLong(path) }
+
+    }        
 
     def getValue[A](path: String)(implicit c: Config, reader: ConfigReader[A]): Either[Errors, A] = reader.getValue(path, c)
 
@@ -805,17 +813,21 @@ object ConfigUtils {
     val eventHubName = getValue[String]("eventHubName")
     val sharedAccessSignatureKeyName = getValue[String]("sharedAccessSignatureKeyName")
     val sharedAccessSignatureKey = getValue[String]("sharedAccessSignatureKey")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val retryMinBackoff = getOptionalValue[Long]("retryMinBackoff")
+    val retryMaxBackoff = getOptionalValue[Long]("retryMaxBackoff")
+    val retryCount = getOptionalValue[Int]("retryCount")
 
-    (name, inputView, namespaceName, eventHubName, sharedAccessSignatureKeyName, sharedAccessSignatureKey) match {
-      case (Right(n), Right(iv), Right(nn), Right(ehn), Right(saskn), Right(sask)) => 
-        Right(AzureEventHubsLoad(n, iv, nn, ehn, saskn, sask, params))
+    (name, inputView, namespaceName, eventHubName, sharedAccessSignatureKeyName, sharedAccessSignatureKey, numPartitions, retryMinBackoff, retryMaxBackoff, retryCount) match {
+      case (Right(n), Right(iv), Right(nn), Right(ehn), Right(saskn), Right(sask), Right(np), Right(rmin), Right(rmax), Right(rcount)) => 
+        Right(AzureEventHubsLoad(n, iv, nn, ehn, saskn, sask, np, rmin, rmax, rcount, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, namespaceName, eventHubName, sharedAccessSignatureKeyName, sharedAccessSignatureKey).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, namespaceName, eventHubName, sharedAccessSignatureKeyName, sharedAccessSignatureKey, numPartitions, retryMinBackoff, retryMaxBackoff, retryCount).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
     }
-  }   
+  }    
 
   def readDelimitedLoad(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
     import ConfigReader._

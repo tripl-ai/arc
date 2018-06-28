@@ -4,6 +4,7 @@ import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 import java.util.concurrent.Executors
+import java.time.Duration
 
 import com.microsoft.azure.eventhubs.ConnectionStringBuilder
 import com.microsoft.azure.eventhubs.EventData
@@ -11,6 +12,7 @@ import com.microsoft.azure.eventhubs.EventHubClient
 import com.microsoft.azure.eventhubs.PartitionSender
 import com.microsoft.azure.eventhubs.EventHubException
 import com.microsoft.azure.eventhubs.EventDataBatch
+import com.microsoft.azure.eventhubs.impl.RetryExponential
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
@@ -50,8 +52,19 @@ object AzureEventHubsLoad {
       }      
     }     
 
+    val repartitionedDF = load.numPartitions match {
+      case Some(partitions) => {
+        stageDetail.put("numPartitions", Integer.valueOf(partitions))
+        df.repartition(partitions)
+      }
+      case None => {
+        stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+        df
+      }
+    }       
+
     try {
-      df.foreachPartition(partition => {
+      repartitionedDF.foreachPartition(partition => {
         // establish connection
         val connStr = { new ConnectionStringBuilder()
           .setNamespaceName(load.namespaceName)
@@ -60,7 +73,12 @@ object AzureEventHubsLoad {
           .setSasKey(load.sharedAccessSignatureKey)
         }
         val executorService = Executors.newSingleThreadExecutor()
-        val eventHubClient = EventHubClient.createSync(connStr.toString(), executorService)
+        val retryPolicy = new RetryExponential(
+          Duration.ofSeconds(load.retryMinBackoff.getOrElse(0)),    // DEFAULT_RETRY_MIN_BACKOFF = 0
+          Duration.ofSeconds(load.retryMaxBackoff.getOrElse(30)),   // DEFAULT_RETRY_MAX_BACKOFF = 30
+          load.retryCount.getOrElse(10),                            // DEFAULT_MAX_RETRY_COUNT = 10
+          "Custom")                                                 // DEFAULT_RETRY = "Default"
+        val eventHubClient = EventHubClient.createSync(connStr.toString(), retryPolicy, executorService)
 
         // reusable batch
         var eventBatch = eventHubClient.createBatch
