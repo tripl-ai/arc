@@ -43,7 +43,7 @@ object ARC {
         .appName(jobId.getOrElse(s"arc:${BuildInfo.version}"))
         .config("spark.debug.maxToStringFields", "8192")
         .config("spark.kryo.registrator", classOf[GeoSparkKryoRegistrator].getName)
-        .getOrCreate()
+        .getOrCreate()  
     } catch {
       case e: Exception => 
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
@@ -79,6 +79,8 @@ object ARC {
 
     // add spark config to log
     val sparkConf = new java.util.HashMap[String, String]()
+    spark.sparkContext.hadoopConfiguration.set("io.compression.codecs", classOf[au.com.agl.arc.util.ZipCodec].getName)
+
     spark.sparkContext.getConf.getAll.foreach{ case (k, v) => sparkConf.put(k, v) }
 
     implicit val logger = LoggerFactory.getLogger(jobId.getOrElse(spark.sparkContext.applicationId))

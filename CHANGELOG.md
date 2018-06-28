@@ -3,6 +3,7 @@
 # 1.0.6
 
 - updated `AzureEventHubsLoad` to use a SNAPSHOT compiled JAR in `/lib` to get latest changes. this will be changed back to Maven once version is officially released. Also exposed the expontential retry options to API.
+- initial testing of a `.zip` reader/writer.
 
 # 1.0.5
 
