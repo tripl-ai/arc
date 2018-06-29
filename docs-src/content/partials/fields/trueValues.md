@@ -1,1 +1,1 @@
-A list of values which are considered as true.
+A list of values which are considered as true. Try to order this list so the values are arranged from most frequent to least frequent.

@@ -25,7 +25,7 @@ docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}" \
--it -p 4040:4040 seddonm1/arc:1.0.2 \
+-it -p 4040:4040 seddonm1/arc:1.0.6 \
 /bin/sh -c '/opt/tutorial/nyctaxi/download_raw_data_small.sh'
 ```
 
@@ -68,7 +68,7 @@ docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}" \
--it -p 4040:4040 seddonm1/arc:1.0.2 \
+-it -p 4040:4040 seddonm1/arc:1.0.6 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=12G \
@@ -637,7 +637,7 @@ docker run \
 -v $(pwd):${ETL_CONF_BASE_URL} \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}" \
--it -p 4040:4040 seddonm1/arc:1.0.2 \
+-it -p 4040:4040 seddonm1/arc:1.0.6 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=12G \

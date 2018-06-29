@@ -1,1 +1,1 @@
-A list of values which are considered as false.
+A list of values which are considered as false. Try to order this list so the values are arranged from most frequent to least frequent.
