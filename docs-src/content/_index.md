@@ -6,7 +6,7 @@ weight: 0
 
 ## What is Arc?
 
-Arc is an **opinionated** framework for defining **predictable**, **repeatable** and **manageable** data transformation pipelines for data transformation tasks;
+Arc is an **opinionated** framework for defining **predictable**, **repeatable** and **manageable** data transformation pipelines;
 
 - **predictable** in that data is used to define transformations - not code.
 - **repeatable** in that if a job is executed multiple times it will produce the same result.
