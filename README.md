@@ -144,6 +144,22 @@ This is an example of a fairly standard pipeline:
 }
 ```
 
+## Compiling
+
+### Library
+
+To compile the main library (which will produce `target/scala-2.11/arc.jar`) in  run:
+
+```bash
+sbt assembly
+```
+
+The compiled JAR is then copied into the Docker image in the `Dockerfile`.
+
+### Documentation
+
+To generate the documentation you need to download [Hugo](https://gohugo.io/) to `/docs-src` and run `./hugo` in that  directory. The `/docs` directory is the output of the docuementation generation and should not be edited by hand. The `/docs` directory is automatically published by the Github Pages process on commit.
+
 ## Contributing
 
 If you have suggestions of additional components or find issues that you believe need fixing then please raise an issue. An issue with a test case is even more appreciated.
@@ -154,6 +170,8 @@ When you contribute code, you affirm that the contribution is your original work
 
 - [AGL Energy](https://github.com/aglenergy)
 - [Mike Seddon](https://github.com/seddonm1)
+- [John Bruce](https://github.com/jbruce)
+
 
 ## Attribution 
 
