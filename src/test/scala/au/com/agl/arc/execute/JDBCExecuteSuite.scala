@@ -167,7 +167,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown.getMessage == "java.sql.SQLException: No suitable driver found for 0.0.0.0")
+    assert(thrown.getMessage.contains("No suitable driver found"))
   }    
 
   test("JDBCExecute: Bad jdbcType") {

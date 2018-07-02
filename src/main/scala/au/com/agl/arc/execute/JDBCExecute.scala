@@ -52,16 +52,16 @@ object JDBCExecute {
     stageDetail.put("inputURI", inputURI.toString)     
     stageDetail.put("sqlParams", sqlParams.asJava)
 
+    // replace sql parameters
+    val sqlToExecute = SQLUtils.injectParameters(sql, sqlParams)
+    stageDetail.put("sql", sqlToExecute)     
+
     logger.info()
       .field("event", "enter")
       .map("stage", stageDetail)      
       .log()
 
     try {
-      // replace sql parameters
-      val sqlToExecute = SQLUtils.injectParameters(sql, sqlParams)
-      stageDetail.put("sql", sqlToExecute)     
-
       using(getConnection(url, user, password, params)) { conn =>
         using(conn.createStatement) { stmt =>
           stmt.execute(sqlToExecute)
