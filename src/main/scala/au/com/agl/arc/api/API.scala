@@ -217,7 +217,10 @@ object API {
 
   sealed trait Execute extends PipelineStage
 
-  case class JDBCExecute(name: String, inputURI: URI, sql: String, sqlParams: Map[String, String], params: Map[String, String]) extends Execute { val getType = "JDBCExecute" }
+  case class JDBCExecute(name: String, inputURI: URI, url: String,
+                        user: Option[String], password: Option[String], 
+                        sql: String, sqlParams: Map[String, String], 
+                        params: Map[String, String]) extends Execute { val getType = "JDBCExecute" }
 
   case class HTTPExecute(name: String, uri: URI, headers: Map[String, String], payloads: Map[String, String], validStatusCodes: Option[List[Int]], params: Map[String, String]) extends Execute  { val getType = "HTTPExecute" }
 

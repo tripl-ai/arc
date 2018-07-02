@@ -8,6 +8,7 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.Properties
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource
 
@@ -15,56 +16,63 @@ import org.apache.spark.sql._
 
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util._
+import au.com.agl.arc.util.ControlUtils._
 
 object JDBCExecute {
 
+  def getConnection(url: String, user: Option[String], password: Option[String], params: Map[String, String]): Connection = {
+    val _user = user.orElse(params.get("user"))
+    val _password = password.orElse(params.get("password"))
+
+    (_user, _password) match {
+      case (Some(u), Some(p)) =>
+        if (params.isEmpty) {
+          DriverManager.getConnection(url, u, p)
+        } else {
+          val props = new Properties()
+          props.setProperty("user", u)
+          props.setProperty("password", p)
+          for ( (k,v) <- params) {
+            props.setProperty(k, v)
+          }
+          DriverManager.getConnection(url, props)
+        }
+      case _ =>
+        DriverManager.getConnection(url)
+    }
+  }
+
   def execute(exec: JDBCExecute)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+    import exec._
+
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
-    stageDetail.put("type", exec.getType)
-    stageDetail.put("name", exec.name)
-    stageDetail.put("inputURI", exec.inputURI.toString)     
-    stageDetail.put("sqlParams", exec.sqlParams.asJava)
+    stageDetail.put("type", getType)
+    stageDetail.put("name", name)
+    stageDetail.put("inputURI", inputURI.toString)     
+    stageDetail.put("sqlParams", sqlParams.asJava)
 
     // replace sql parameters
-    val stmt = SQLUtils.injectParameters(exec.sql, exec.sqlParams)
-
-    stageDetail.put("sql", stmt)     
+    val sqlToExecute = SQLUtils.injectParameters(sql, sqlParams)
+    stageDetail.put("sql", sqlToExecute)     
 
     logger.info()
       .field("event", "enter")
       .map("stage", stageDetail)      
       .log()
 
-    val conn = try {
-      exec.params.get("jdbcType") match {
-        case Some("SQLServer") => Option(getSQLServerConnection(exec.params))
-        case Some("Derby") => Option(getDerbyConnection(exec.params))        
-        case _ => throw new Exception (s"""unknown jdbcType: '${exec.params.get("jdbcType").getOrElse("")}'""")
+    try {
+      using(getConnection(url, user, password, params)) { conn =>
+        using(conn.createStatement) { stmt =>
+          stmt.execute(sqlToExecute)
+        }
       }
-    } catch {
-      case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
-      }  
-    }
 
-    val result = try {
-      for (c <- conn) {
-        c.createStatement().execute(stmt)
-      }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stageDetail         
       }
-    } finally {
-      try {
-        conn.foreach(_.close())
-      } catch {
-        case e: Exception => throw new Exception(e) with DetailException {
-          override val detail = stageDetail          
-        }  
-      }
-    } 
+    }
 
     logger.info()
       .field("event", "exit")
@@ -73,29 +81,4 @@ object JDBCExecute {
       .log()   
   }
 
-  private def getSQLServerConnection(params: Map[String, String]): Connection = {
-    val ds = new SQLServerDataSource()
-
-    for (url <- params.get("url")) {
-      ds.setURL(url)    
-    }        
-    for (user <- params.get("user")) {
-      ds.setUser(user)    
-    }    
-    for (password <- params.get("password")) {
-      ds.setPassword(password)    
-    }        
-    for (serverPort <- params.get("serverPort")) {
-      ds.setPortNumber(serverPort.toInt)
-    }
-    for (databaseName <- params.get("databaseName")) {
-      ds.setDatabaseName(databaseName)    
-    }         
-
-    ds.getConnection()
-  }
-
-  private def getDerbyConnection(params: Map[String, String]): Connection = {
-    DriverManager.getConnection(params.get("serverName").getOrElse(""))    
-  }  
 }

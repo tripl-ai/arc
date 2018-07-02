@@ -77,8 +77,11 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       JDBCExecute(
         name=outputView, 
         inputURI=new URI(testURI), 
+        url = url,
+        user = None,
+        password = None,
         sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-        params= Map("jdbcType" -> "Derby", "serverName" -> url), 
+        params= Map.empty, 
         sqlParams=Map.empty
       )
     )
@@ -103,8 +106,11 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       JDBCExecute(
         name=outputView, 
         inputURI=new URI(testURI), 
+        url = url,
+        user = None,
+        password = None,
         sql=s"CREATE TABLE ${newTable} (${newColumn} VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-        params= Map("jdbcType" -> "Derby", "serverName" -> url), 
+        params= Map.empty, 
         sqlParams=Map("column_name" -> "COLUMN0")
       )
     )
@@ -130,8 +136,11 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
         JDBCExecute(
           name=outputView, 
           inputURI=new URI(testURI), 
+          url = "jdbc:derby:invalid",
+          user = None,
+          password = None,
           sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-          params= Map("jdbcType" -> "Derby", "serverName" -> "jdbc:derby:invalid"), 
+          params= Map.empty, 
           sqlParams=Map.empty
         )
       )
@@ -149,13 +158,16 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
         JDBCExecute(
           name=outputView, 
           inputURI=new URI(testURI), 
+          url = "0.0.0.0",
+          user = None,
+          password = None,
           sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-          params= Map("jdbcType" -> "SQLServer", "url" -> "0.0.0.0"), 
+          params= Map.empty, 
           sqlParams=Map.empty
         )
       )
     }
-    assert(thrown.getMessage == "com.microsoft.sqlserver.jdbc.SQLServerException: The connection string contains a badly formed name or value.")
+    assert(thrown.getMessage.contains("No suitable driver found"))
   }    
 
   test("JDBCExecute: Bad jdbcType") {
@@ -168,12 +180,15 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
         JDBCExecute(
           name=outputView, 
           inputURI=new URI(testURI), 
+          url = "",
+          user = None,
+          password = None,
           sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-          params= Map("jdbcType" -> "unknown"), 
+          params= Map.empty, 
           sqlParams=Map.empty
         )
       )
     }
-    assert(thrown.getMessage == "java.lang.Exception: unknown jdbcType: 'unknown'")
+    assert(thrown.getMessage == "java.sql.SQLException: No suitable driver found for ")
   }    
 }

@@ -19,6 +19,7 @@ import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 
 import au.com.agl.arc.util.EitherUtils._
+import au.com.agl.arc.util.JDBCUtils._
 
 object ConfigUtils {
 
@@ -1048,14 +1049,32 @@ object ConfigUtils {
         getBlob(uriKey, uri)
     }
 
+    val jdbcUrl = getValue[String]("url")
+    val user = getOptionalValue[String]("user")
+    val password = getOptionalValue[String]("password")
+
     val sqlParams = readMap("sqlParams", c)    
 
-    (name, inputURI, inputSQL) match {
-      case (Right(n), Right(in), Right(sql)) => 
-        val uri = new URI(in)
-        Right(JDBCExecute(n, uri, sql, sqlParams, params))
+    val driverExists = jdbcUrl match {
+      case Right(url) => JDBCUtils.checkDriverExists(url)
+      case _ => false
+    }
+
+    (name, inputURI, inputSQL, jdbcUrl, user, password) match {
+      case (Right(n), Right(in), Right(sql), Right(url), Right(u), Right(p)) if driverExists => 
+        val sqlFileUri = new URI(in)
+        
+        Right(JDBCExecute(n, sqlFileUri, url, u, p, sql, sqlParams, params))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, parsedURI, inputSQL).collect{ case Left(errs) => errs }.flatten
+        val configErrors = List(name, inputURI, parsedURI, inputSQL, jdbcUrl, user, password).collect{ case Left(errs) => errs }.flatten
+
+        val allErrors = if (!driverExists) {
+          val driverError = ConfigError("url", "No jdbc driver found")
+          driverError :: configErrors
+        } else {
+          configErrors
+        }
+
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
