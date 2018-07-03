@@ -523,6 +523,27 @@
 </tr>
 
 <tr>
+<td>url</td>
+<td>String</td>
+<td>true</td>
+<td>The JDBC URL to connect to. e.g., <code>jdbc:mysql://localhost:3306</code>.</td>
+</tr>
+
+<tr>
+<td>user</td>
+<td>String</td>
+<td>false</td>
+<td>Database username to connect as. Optional, can also be in the url or params.</td>
+</tr>
+
+<tr>
+<td>password</td>
+<td>String</td>
+<td>false</td>
+<td>Database password for the given user. Optional, can also be in the url or params.</td>
+</tr>
+
+<tr>
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -540,7 +561,7 @@
 <td>params</td>
 <td>Map[String, String]</td>
 <td>true</td>
-<td>Map of configuration parameters.. Currently requires <code>jdbcType</code>, <code>serverName</code>, <code>databaseName</code>, <code>hostNameInCertificate</code>, <code>serverPort</code>, <code>user</code> and <code>password</code> to be set here - see example below. Allowed values for <code>jdbcType</code> is currently only <code>SQLServer</code>.</td>
+<td>Map of configuration parameters. All parameters will be added to the Connection Properties.</td>
 </tr>
 </tbody>
 </table>
@@ -552,16 +573,16 @@
     &quot;name&quot;: &quot;update the load date table&quot;,
     &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
     &quot;inputURI&quot;: &quot;hdfs://datalake/sql/update_customer_load_date.sql&quot;,          
+    &quot;url&quot;: &quot;jdbc:postgresql://localhost:5432/test&quot;,
+    &quot;user&quot;: &quot;test&quot;,
+    &quot;password&quot;: &quot;test&quot;,
     &quot;sqlParams&quot;: {
         &quot;current_timestamp&quot;: &quot;2018-11-24 14:48:56&quot;
-    },    
+    },
+    &quot;authentication&quot;: {
+        ...
+    },     
     &quot;params&quot;: {
-        &quot;jdbcType&quot;: &quot;SQLServer&quot;,
-        &quot;url&quot;: &quot;jdbc:sqlserver://myserver.database.windows.net&quot;,
-        &quot;databaseName&quot;: &quot;mydatabase&quot;,
-        &quot;serverPort&quot;: 1433,
-        &quot;user&quot;: &quot;mydbuser&quot;,
-        &quot;password&quot;: &quot;mydbpassword&quot;,
     }
 }
 </code></pre>

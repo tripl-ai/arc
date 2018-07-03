@@ -62,7 +62,7 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
 |password|String|false|Database password for the given user. Optional, can also be in the url or params.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
-|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. All params will be added to the Connection Properties.|
+|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} All parameters will be added to the Connection Properties.|
 
 ### Examples
 
@@ -72,12 +72,15 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
     "name": "update the load date table",
     "environments": ["production", "test"],
     "inputURI": "hdfs://datalake/sql/update_customer_load_date.sql",          
-    "url": "jdbc:postgresql://localhost/test",
+    "url": "jdbc:postgresql://localhost:5432/test",
     "user": "test",
     "password": "test",
     "sqlParams": {
         "current_timestamp": "2018-11-24 14:48:56"
-    },    
+    },
+    "authentication": {
+        ...
+    },     
     "params": {
     }
 }
