@@ -23,9 +23,10 @@ Many of these principles have come from [12factor](https://12factor.net/):
 
 ## Not just for data engineers
 
-The intent of the pipeline is to provide a simple way of creating Extract-Transform-Load (ETL) pipelines which are able to be maintained in production, and captures the answers to simple operational questions transparently to the user: 
+The intent of the pipeline is to provide a simple way of creating Extract-Transform-Load (ETL) pipelines which are able to be maintained in production, and captures the answers to simple operational questions transparently to the user.
 
 - **monitoring**: is it working each time it's run? and how much resource was consumed in creating it?
+- **devops**: is packaged as a Docker image to allow rapid deployment on ephemeral compute.
 
 These concerns are supported at run time to ensure that as deployment grows in uses and complexity it does not become opaque and unmanageable.
 
