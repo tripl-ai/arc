@@ -58,7 +58,7 @@ object JDBCExtract {
     // repartition to distribute rows evenly
     val repartitionedDF = extract.numPartitions match {
       case Some(numPartitions) => df.repartition(numPartitions)
-      case None => df.repartition(spark.sparkContext.defaultParallelism * 4)
+      case None => df
     }
     repartitionedDF.createOrReplaceTempView(extract.outputView)
     

@@ -77,7 +77,7 @@ object AvroExtract {
     // repartition to distribute rows evenly
     val repartitionedDF = extract.numPartitions match {
       case Some(numPartitions) => enrichedDF.repartition(numPartitions)
-      case None => enrichedDF.repartition(spark.sparkContext.defaultParallelism * 4)
+      case None => enrichedDF
     }
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 
