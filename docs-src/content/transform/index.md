@@ -34,7 +34,7 @@ This stage performs this 'diffing' operation in a single pass so if multiple of 
 |outputIntersectionView|String|false|Name of output `intersection` view.|
 |outputLeftView|String|false|Name of output `left` view.|
 |outputRightView|String|false|Name of output `right` view.|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|persist|Boolean|true|Whether to persist dataset to Spark cache.|
 |params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
