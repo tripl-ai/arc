@@ -429,17 +429,57 @@
 <td>true</td>
 <td>Name of the stage for logging.</td>
 </tr>
+
+<tr>
+<td>inputLeftView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of first incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>inputRightView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of second incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputIntersectionView</td>
+<td>String</td>
+<td>false</td>
+<td>Name of output <code>intersection</code> view.</td>
+</tr>
+
+<tr>
+<td>outputLeftView</td>
+<td>String</td>
+<td>false</td>
+<td>Name of output <code>left</code> view.</td>
+</tr>
+
+<tr>
+<td>outputRightView</td>
+<td>String</td>
+<td>false</td>
+<td>Name of output <code>right</code> view.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
 </tbody>
 </table>
-
-<p>|leftView|String|true||
-|inputLeftView|String|true|Name of first incoming Spark dataset.|
-|inputRightView|String|true|Name of second incoming Spark dataset.|
-|outputIntersectionView|String|false|Name of output <code>intersection</code> view.|
-|outputLeftView|String|false|Name of output <code>left</code> view.|
-|outputRightView|String|false|Name of output <code>right</code> view.|
-|persist|Boolean|true|Whether to persist dataset to Spark cache. Will also log row count.|
-|params|Map[String, String]|true|Map of configuration parameters. Currently unused.|</p>
 
 <h3 id="examples">Examples</h3>
 
