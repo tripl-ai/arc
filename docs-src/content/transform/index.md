@@ -12,6 +12,51 @@ Transformers should meet this criteria:
 - Perform only a [single function](https://en.wikipedia.org/wiki/Separation_of_concerns).
 - Utilise Spark [internal functionality](https://spark.apache.org/docs/latest/sql-programming-guide.html) where possible.
 
+## DiffTransform
+
+The `DiffTransform` stage calculates the difference between two input datasets and produces three datasets: 
+
+- A dataset of the `intersection` of the two datasets - or rows that exist and are the same in both datasets.
+- A dataset of the `left` dataset - or rows that only exist in the left input dataset (`inputLeftView`).
+- A dataset of the `right` dataset - or rows that only exist in the right input dataset (`inputRightView`).
+
+{{< note title="Persistence" >}}
+This stage performs this 'diffing' operation in a single pass so if multiple of the output views are going to be used then it is a good idea to set persist = `true` to reduce the cost of recomputing the difference multiple times.
+{{</note>}}
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+
+|leftView|String|true||
+|inputLeftView|String|true|Name of first incoming Spark dataset.|
+|inputRightView|String|true|Name of second incoming Spark dataset.|
+|outputIntersectionView|String|false|Name of output `intersection` view.|
+|outputLeftView|String|false|Name of output `left` view.|
+|outputRightView|String|false|Name of output `right` view.|
+|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "DiffTransform",
+    "name": "calculate the difference between the yesterday and today datasets",
+    "environments": ["production", "test"],
+    "inputLeftView": "cutomer_20180501",            
+    "inputRightView": "cutomer_20180502",            
+    "outputIntersectionView": "customer_unchanged",            
+    "outputLeftView": "customer_removed",            
+    "outputRightView": "customer_added",            
+    "persist": true,
+    "params": {
+    }
+}
+```
+
 ## JSONTransform
 
 The `JSONTransform` stage transforms the incoming dataset to rows of `json` strings with the column name `value`. It is intended to be used before stages like [HTTPLoad](/load/#httpload) to prepare the data for sending externally. 

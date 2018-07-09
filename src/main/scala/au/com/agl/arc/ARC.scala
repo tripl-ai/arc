@@ -268,7 +268,9 @@ object ARC {
           extract.ParquetExtract.extract(e)
         case e : XMLExtract =>
           extract.XMLExtract.extract(e)
-
+          
+        case t : DiffTransform =>
+          transform.DiffTransform.transform(t)
         case t : JSONTransform =>
           transform.JSONTransform.transform(t)
         case t : MLTransform =>

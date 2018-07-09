@@ -10,7 +10,6 @@ import com.fasterxml.jackson.core._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 
-// Add nulls
 case class KnownData(
     booleanDatum: Boolean, 
     dateDatum: Date, 
@@ -36,6 +35,20 @@ object TestDataUtils {
 
         dataset.toDF
     }
+
+    // modified dataset for DiffTransform test
+    def getKnownAlteredDataset()(implicit spark: SparkSession): DataFrame = {
+        import spark.implicits._
+        
+        val dataset = Seq(
+            // same first row
+            KnownData(booleanDatum=true, dateDatum=Date.valueOf("2016-12-18"), decimalDatum=Decimal(54.321, 10, 3), doubleDatum=42.4242, integerDatum=17, longDatum=1520828868, stringDatum="test,breakdelimiter", timestampDatum=Timestamp.from(ZonedDateTime.of(2017, 12, 20, 21, 46, 54, 0, ZoneId.of("UTC")).toInstant), timeDatum="12:34:56", nullDatum=null),
+            // altered second row (only booleanDatum and integerValue value has been changed)
+            KnownData(booleanDatum=true, dateDatum=Date.valueOf("2016-12-19"), decimalDatum=Decimal(12.345, 10, 3), doubleDatum=21.2121, integerDatum=35, longDatum=1520828123, stringDatum="breakdelimiter,test", timestampDatum=Timestamp.from(ZonedDateTime.of(2017, 12, 29, 17, 21, 49, 0, ZoneId.of("UTC")).toInstant), timeDatum="23:45:16", nullDatum=null)
+        )
+
+        dataset.toDF
+    }    
 
     def knownDatasetPrettyJSON(row: Int)(implicit spark: SparkSession): String = {
         val json = getKnownDataset().toJSON.collect.toList(row)

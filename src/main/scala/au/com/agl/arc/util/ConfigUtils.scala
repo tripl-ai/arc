@@ -627,6 +627,27 @@ object ConfigUtils {
   }
 
   // transform
+  def readDiffTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+    import ConfigReader._
+
+    val inputLeftView = getValue[String]("inputLeftView")
+    val inputRightView = getValue[String]("inputRightView")
+    val outputIntersectionView = getOptionalValue[String]("outputIntersectionView")
+    val outputLeftView = getOptionalValue[String]("outputLeftView")
+    val outputRightView = getOptionalValue[String]("outputRightView")
+    val persist = getValue[Boolean]("persist")
+
+    (name, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist) match {
+      case (Right(n), Right(ilv), Right(irv), Right(oiv), Right(olv), Right(orv), Right(p)) => 
+        Right(DiffTransform(n, ilv, irv, oiv, olv, orv, params, p))
+      case _ =>
+        val allErrors: Errors = List(name, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err)
+    }
+  } 
+
   def readJSONTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
     import ConfigReader._
 
@@ -1199,6 +1220,7 @@ object ConfigUtils {
             case Right("ParquetExtract") => Option(readParquetExtract(name, params))
             case Right("XMLExtract") => Option(readXMLExtract(name, params))
 
+            case Right("DiffTransform") => Option(readDiffTransform(name, params))
             case Right("JSONTransform") => Option(readJSONTransform(name, params))
             case Right("MLTransform") => Option(readMLTransform(name, params))
             case Right("SQLTransform") => Option(readSQLTransform(name, params))

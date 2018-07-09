@@ -182,6 +182,8 @@ object API {
 
   sealed trait Transform extends PipelineStage
 
+  case class DiffTransform(name: String, inputLeftView: String, inputRightView: String, outputIntersectionView: Option[String], outputLeftView: Option[String], outputRightView: Option[String], params: Map[String, String], persist: Boolean) extends Transform { val getType = "DiffTransform" }
+
   case class JSONTransform(name: String, inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "JSONTransform" }
 
   case class MLTransform(name: String, inputURI: URI, model: PipelineModel, inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "MLTransform" }

@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.0.6</span></strong>
+          <span class="version">1.0.7</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -395,11 +395,74 @@
 <li>Utilise Spark <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">internal functionality</a> where possible.</li>
 </ul>
 
+<h2 id="difftransform">DiffTransform</h2>
+
+<p>The <code>DiffTransform</code> stage calculates the difference between two input datasets and produces three datasets:</p>
+
+<ul>
+<li>A dataset of the <code>intersection</code> of the two datasets - or rows that exist and are the same in both datasets.</li>
+<li>A dataset of the <code>left</code> dataset - or rows that only exist in the left input dataset (<code>inputLeftView</code>).</li>
+<li>A dataset of the <code>right</code> dataset - or rows that only exist in the right input dataset (<code>inputRightView</code>).</li>
+</ul>
+
+<div class="admonition note">
+<p class="admonition-title">Persistence</p>
+<p>This stage performs this &lsquo;diffing&rsquo; operation in a single pass so if multiple of the output views are going to be used then it is a good idea to set persist = <code>true</code> to reduce the cost of recomputing the difference multiple times.</p>
+</div>
+
+<h3 id="parameters">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+</tbody>
+</table>
+
+<p>|leftView|String|true||
+|inputLeftView|String|true|Name of first incoming Spark dataset.|
+|inputRightView|String|true|Name of second incoming Spark dataset.|
+|outputIntersectionView|String|false|Name of output <code>intersection</code> view.|
+|outputLeftView|String|false|Name of output <code>left</code> view.|
+|outputRightView|String|false|Name of output <code>right</code> view.|
+|persist|Boolean|true|Whether to persist dataset to Spark cache. Will also log row count.|
+|params|Map[String, String]|true|Map of configuration parameters. Currently unused.|</p>
+
+<h3 id="examples">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;DiffTransform&quot;,
+    &quot;name&quot;: &quot;calculate the difference between the yesterday and today datasets&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputLeftView&quot;: &quot;cutomer_20180501&quot;,            
+    &quot;inputRightView&quot;: &quot;cutomer_20180502&quot;,            
+    &quot;outputIntersectionView&quot;: &quot;customer_unchanged&quot;,            
+    &quot;outputLeftView&quot;: &quot;customer_removed&quot;,            
+    &quot;outputRightView&quot;: &quot;customer_added&quot;,            
+    &quot;persist&quot;: true,
+    &quot;params&quot;: {
+    }
+}
+</code></pre>
+
 <h2 id="jsontransform">JSONTransform</h2>
 
 <p>The <code>JSONTransform</code> stage transforms the incoming dataset to rows of <code>json</code> strings with the column name <code>value</code>. It is intended to be used before stages like <a href="https://aglenergy.github.io/arc/load/#httpload">HTTPLoad</a> to prepare the data for sending externally.</p>
 
-<h3 id="parameters">Parameters</h3>
+<h3 id="parameters-1">Parameters</h3>
 
 <table>
 <thead>
@@ -456,7 +519,7 @@
 </tbody>
 </table>
 
-<h3 id="examples">Examples</h3>
+<h3 id="examples-1">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;JSONTransform&quot;,
@@ -474,7 +537,7 @@
 
 <p>The <code>MLTransform</code> stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a <code>PipelineModel</code> produced using Spark&rsquo;s Scala, Java, PySpark or SparkR API.</p>
 
-<h3 id="parameters-1">Parameters</h3>
+<h3 id="parameters-2">Parameters</h3>
 
 <table>
 <thead>
@@ -545,7 +608,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-1">Examples</h3>
+<h3 id="examples-2">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;MLTransform&quot;,
@@ -575,7 +638,7 @@
 </p>
 </div>
 
-<h3 id="parameters-2">Parameters</h3>
+<h3 id="parameters-3">Parameters</h3>
 
 <table>
 <thead>
@@ -646,7 +709,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-2">Examples</h3>
+<h3 id="examples-3">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;SQLTransform&quot;,
@@ -693,7 +756,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <p>The <code>TensorFlowServingTransform</code> stage transforms the incoming dataset by calling a <a href="https://www.tensorflow.org/serving/">TensorFlow Serving</a> service. Because each call is atomic the TensorFlow Serving instances could be behind a load balancer to increase throughput.</p>
 
-<h3 id="parameters-3">Parameters</h3>
+<h3 id="parameters-4">Parameters</h3>
 
 <table>
 <thead>
@@ -792,7 +855,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tbody>
 </table>
 
-<h3 id="examples-3">Examples</h3>
+<h3 id="examples-4">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;environments&quot;: [&quot;prd&quot;,&quot;tst&quot;],
@@ -819,7 +882,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <p>The <code>TypingTransform</code> stage transforms the incoming dataset with based on metadata defined in the <a href="../metadata/">metadata</a> format.</p>
 
-<h3 id="parameters-4">Parameters</h3>
+<h3 id="parameters-5">Parameters</h3>
 
 <table>
 <thead>
@@ -890,7 +953,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tbody>
 </table>
 
-<h3 id="examples-4">Examples</h3>
+<h3 id="examples-5">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;TypingTransform&quot;,

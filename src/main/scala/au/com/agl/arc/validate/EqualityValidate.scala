@@ -1,7 +1,9 @@
 package au.com.agl.arc.validate
 
-import org.apache.spark.sql._
 import java.lang._
+
+import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
 
 import au.com.agl.arc.api.API._ 
 import au.com.agl.arc.util._
@@ -30,20 +32,36 @@ object EqualityValidate {
     val leftDF = rawLeftDF.drop(leftInternalFields:_*) 
     val rightDF = rawRightDF.drop(rightInternalFields:_*) 
 
-    if (leftDF.columns.length != rightDF.columns.length) {
-      val leftExceptRightColumns = leftDF.columns diff rightDF.columns
-      val rightExceptLeftColumns = rightDF.columns diff leftDF.columns
-
+    // test column count equality
+    val leftExceptRightColumns = leftDF.columns diff rightDF.columns
+    val rightExceptLeftColumns = rightDF.columns diff leftDF.columns
+    if (leftExceptRightColumns.length != 0) {
       stageDetail.put("leftExceptRightColumns", leftExceptRightColumns)
       stageDetail.put("rightExceptLeftColumns", rightExceptLeftColumns)
 
-      throw new Exception(s"""EqualityValidate ensures the two input datasets are the same, but '${validate.leftView}' (${leftDF.columns.length} columns) contains columns: [${leftExceptRightColumns.map(fieldName => s"'${fieldName}'").mkString(", ")}] that are not in '${validate.rightView}' and '${validate.rightView}' (${rightDF.columns.length} columns) contains columns: [${rightExceptLeftColumns.map(fieldName => s"'${fieldName}'").mkString(", ")}] that are not in '${validate.leftView}'. Columns are not equal so cannot the data be compared.""") with DetailException {
+      throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${validate.leftView}' (${leftDF.columns.length} columns) contains columns: [${leftExceptRightColumns.map(fieldName => s"'${fieldName}'").mkString(", ")}] that are not in '${validate.rightView}' and '${validate.rightView}' (${rightDF.columns.length} columns) contains columns: [${rightExceptLeftColumns.map(fieldName => s"'${fieldName}'").mkString(", ")}] that are not in '${validate.leftView}'. Columns are not equal so cannot the data be compared.""") with DetailException {
         override val detail = stageDetail
       }      
     }      
 
-    val leftExceptRight = leftDF.except(rightDF)
-    val rightExceptLeft = rightDF.except(leftDF)
+    // test column order equality
+    if (leftDF.columns.mkString("|") != rightDF.columns.mkString("|")) {
+      stageDetail.put("leftColumns", leftDF.columns)
+      stageDetail.put("rightColumns", rightDF.columns)
+
+      throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${validate.leftView}' contains columns (ordered): [${leftDF.columns.map(fieldName => s"'${fieldName}'").mkString(", ")}] and '${validate.rightView}' contains columns (ordered): [${rightDF.columns.map(fieldName => s"'${fieldName}'").mkString(", ")}]. Columns are not equal so cannot the data be compared.""") with DetailException {
+        override val detail = stageDetail
+      }      
+    }      
+
+    // do a full join on a calculated hash of all values in row on each dataset
+    // trying to calculate the hash value inside the joinWith method produced an inconsistent result
+    val leftHashDF = leftDF.withColumn("_hash", hash(leftDF.columns.map(col):_*))
+    val rightHashDF = rightDF.withColumn("_hash", hash(rightDF.columns.map(col):_*))
+    val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF("_hash") === rightHashDF("_hash"), "full")
+
+    val leftExceptRight = transformedDF.filter(col("_2").isNull)
+    val rightExceptLeft = transformedDF.filter(col("_1").isNull)
     val leftExceptRightCount = leftExceptRight.count
     val rightExceptLeftCount = rightExceptLeft.count     
 
@@ -51,7 +69,7 @@ object EqualityValidate {
       stageDetail.put("leftExceptRightCount", Long.valueOf(leftExceptRightCount))
       stageDetail.put("rightExceptLeftCount", Long.valueOf(rightExceptLeftCount))
 
-      throw new Exception(s"EqualityValidate ensures the two input datasets are the same, but '${validate.leftView}' (${leftDF.count} rows) contains ${leftExceptRightCount} rows that are not in '${validate.rightView}' and '${validate.rightView}' (${rightDF.count} rows) contains ${rightExceptLeftCount} rows which are not in '${validate.leftView}'.") with DetailException {
+      throw new Exception(s"EqualityValidate ensures the two input datasets are the same (including column order), but '${validate.leftView}' (${leftDF.count} rows) contains ${leftExceptRightCount} rows that are not in '${validate.rightView}' and '${validate.rightView}' (${rightDF.count} rows) contains ${rightExceptLeftCount} rows which are not in '${validate.leftView}'.") with DetailException {
         override val detail = stageDetail
       }
     }    
