@@ -78,7 +78,7 @@ object HTTPExtract {
     val body = Source.fromInputStream(responseEntity).mkString
     response.close
 
-    val df = spark.sparkContext.parallelize(body.split("\n")).toDF
+    val df = spark.sparkContext.parallelize(Array(body)).toDF
     
     // repartition to distribute rows evenly
     val repartitionedDF = extract.numPartitions match {

@@ -3,7 +3,9 @@
 # 1.0.7
 
 - added the `DiffTransform` stage - a stage which efficiently calculutes the difference between two datasets and produces left, right and intersection output views.
+- added logging of `records` and `batches` counts to the `AzureEventHubsLoad`.
 - updated the `EqualityValidate` to use the `hash` diffing function as the inbuilt `except` function is very difficult to use in practice. API unchanged.
+- updated the `HTTPExecute` stage to not automatically split the response body by newline (`\n`) - this is more in line with expected usecase of REST API endpoints.
 
 # 1.0.6
 

@@ -22,8 +22,8 @@ import au.com.agl.arc.util._
 class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
   class DataHandler extends AbstractHandler {
-    val payload = """{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-20T21:46:54.000Z"}
-      |{"booleanDatum":false,"dateDatum":"2016-12-19","decimalDatum":12.345000000000000000,"doubleDatum":21.2121,"integerDatum":34,"longDatum":1520828123,"stringDatum":"breakdelimiter,test","timeDatum":"23:45:16","timestampDatum":"2017-12-29T17:21:49.000Z"}""".stripMargin
+    val payload = """[{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-20T21:46:54.000Z"},
+      |{"booleanDatum":false,"dateDatum":"2016-12-19","decimalDatum":12.345000000000000000,"doubleDatum":21.2121,"integerDatum":34,"longDatum":1520828123,"stringDatum":"breakdelimiter,test","timeDatum":"23:45:16","timestampDatum":"2017-12-29T17:21:49.000Z"}]""".stripMargin
 
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
       response.setContentType("text/html")
@@ -103,7 +103,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       )
     )
 
-    val actual = spark.read.json(extractDataset.as[String])
+    val actual = spark.read.option("multiLine", "true").json(extractDataset.as[String])
 
     // JSON does not have DecimalType or TimestampType
     // JSON will silently drop NullType on write
