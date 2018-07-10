@@ -45,14 +45,26 @@ object EqualityValidate {
     }      
 
     // test column order equality
-    if (leftDF.columns.mkString("|") != rightDF.columns.mkString("|")) {
-      stageDetail.put("leftColumns", leftDF.columns)
-      stageDetail.put("rightColumns", rightDF.columns)
+    if (leftDF.schema.map(_.name).toArray.deep != rightDF.schema.map(_.name).toArray.deep) {
+      stageDetail.put("leftColumns", leftDF.schema.map(_.name).toArray)
+      stageDetail.put("rightColumns", rightDF.schema.map(_.name).toArray)
 
       throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${validate.leftView}' contains columns (ordered): [${leftDF.columns.map(fieldName => s"'${fieldName}'").mkString(", ")}] and '${validate.rightView}' contains columns (ordered): [${rightDF.columns.map(fieldName => s"'${fieldName}'").mkString(", ")}]. Columns are not equal so cannot the data be compared.""") with DetailException {
         override val detail = stageDetail
       }      
     }      
+
+    // test column type equality
+    if (leftDF.schema.map(_.dataType.typeName).toArray.deep != rightDF.schema.map(_.dataType.typeName).toArray.deep) {
+      stageDetail.put("leftColumnsTypes", leftDF.schema.map(_.dataType.typeName).toArray)
+      stageDetail.put("rightColumnsTypes", rightDF.schema.map(_.dataType.typeName).toArray)
+
+      throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${validate.leftView}' contains column types (ordered): [${leftDF.schema.map(_.dataType.typeName).toArray.map(fieldType => s"'${fieldType}'").mkString(", ")}] and '${validate.rightView}' contains column types (ordered): [${rightDF.schema.map(_.dataType.typeName).toArray.map(fieldType => s"'${fieldType}'").mkString(", ")}]. Columns are not equal so cannot the data be compared.""") with DetailException {
+        override val detail = stageDetail
+      }      
+    }   
+
+    // do not test column nullable equality
 
     // do a full join on a calculated hash of all values in row on each dataset
     // trying to calculate the hash value inside the joinWith method produced an inconsistent result
@@ -81,5 +93,3 @@ object EqualityValidate {
       .log()    
   }
 }
-
-

@@ -110,6 +110,30 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
     assert(thrown.getMessage === s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${leftView}' contains columns (ordered): ['booleanDatum', 'dateDatum', 'decimalDatum', 'doubleDatum', 'integerDatum', 'longDatum', 'stringDatum', 'timeDatum', 'timestampDatum', 'nullDatum'] and '${rightView}' contains columns (ordered): ['dateDatum', 'decimalDatum', 'doubleDatum', 'integerDatum', 'longDatum', 'stringDatum', 'timeDatum', 'timestampDatum', 'nullDatum', 'booleanDatum']. Columns are not equal so cannot the data be compared.""")
   }   
 
+  test("EqualityValidate: different type of columns") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(leftView)
+    dataset.select($"booleanDatum".cast("string"), $"dateDatum", $"decimalDatum", $"doubleDatum", $"integerDatum", $"longDatum", $"stringDatum", $"timeDatum", $"timestampDatum", $"nullDatum").createOrReplaceTempView(rightView)
+
+    val thrown = intercept[Exception with DetailException] {
+      validate.EqualityValidate.validate(
+        EqualityValidate(
+          name=testName, 
+          leftView=leftView,
+          rightView=rightView,
+          params=Map.empty
+        )
+      )
+    }
+
+    println(thrown.getMessage )
+    assert(thrown.getMessage === s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${leftView}' contains column types (ordered): ['boolean', 'date', 'decimal(38,18)', 'double', 'integer', 'long', 'string', 'string', 'timestamp', 'null'] and '${rightView}' contains column types (ordered): ['string', 'date', 'decimal(38,18)', 'double', 'integer', 'long', 'string', 'string', 'timestamp', 'null']. Columns are not equal so cannot the data be compared.""")
+  }    
+
   test("EqualityValidate: value") {
     implicit val spark = session
     import spark.implicits._
