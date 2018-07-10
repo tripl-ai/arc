@@ -35,7 +35,7 @@ object EqualityValidate {
     // test column count equality
     val leftExceptRightColumns = leftDF.columns diff rightDF.columns
     val rightExceptLeftColumns = rightDF.columns diff leftDF.columns
-    if (leftExceptRightColumns.length != 0) {
+    if (leftExceptRightColumns.length != 0 || rightExceptLeftColumns.length != 0) {
       stageDetail.put("leftExceptRightColumns", leftExceptRightColumns)
       stageDetail.put("rightExceptLeftColumns", rightExceptLeftColumns)
 

@@ -130,7 +130,6 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       )
     }
 
-    println(thrown.getMessage )
     assert(thrown.getMessage === s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${leftView}' contains column types (ordered): ['boolean', 'date', 'decimal(38,18)', 'double', 'integer', 'long', 'string', 'string', 'timestamp', 'null'] and '${rightView}' contains column types (ordered): ['string', 'date', 'decimal(38,18)', 'double', 'integer', 'long', 'string', 'string', 'timestamp', 'null']. Columns are not equal so cannot the data be compared.""")
   }    
 
