@@ -40,9 +40,9 @@ object DiffTransform {
       transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
     }   
 
-    val outputIntersectionDF = transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).select(col("_1.*"))
-    val outputLeftDF = transformedDF.filter(col("_2").isNull).select(col("_1.*"))
-    val outputRightDF = transformedDF.filter(col("_1").isNull).select(col("_2.*"))
+    val outputIntersectionDF = transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).select(col("_1.*")).drop("_hash")
+    val outputLeftDF = transformedDF.filter(col("_2").isNull).select(col("_1.*")).drop("_hash")
+    val outputRightDF = transformedDF.filter(col("_1").isNull).select(col("_2.*")).drop("_hash")
 
     // register views
     transform.outputIntersectionView match {
