@@ -61,7 +61,13 @@ object AzureEventHubsLoad {
         stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
         df
       }
-    }       
+    }      
+
+    // initialise statistics accumulators or reset if they exist
+    val recordAccumulator = spark.sparkContext.longAccumulator
+    val batchAccumulator = spark.sparkContext.longAccumulator
+    recordAccumulator.reset
+    batchAccumulator.reset
 
     try {
       repartitionedDF.foreachPartition(partition => {
@@ -82,6 +88,7 @@ object AzureEventHubsLoad {
 
         // reusable batch
         var eventBatch = eventHubClient.createBatch
+        batchAccumulator.add(1)
         
         // send each message via shared connection
         try {
@@ -95,7 +102,11 @@ object AzureEventHubsLoad {
               eventHubClient.sendSync(eventBatch)
               eventBatch = eventHubClient.createBatch
               eventBatch.tryAdd(event)
+
+              batchAccumulator.add(1)
             }
+
+            recordAccumulator.add(1)
           })
 
           // if there are events in the buffer send them
@@ -111,9 +122,14 @@ object AzureEventHubsLoad {
       })
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
+        stageDetail.put("records", Long.valueOf(recordAccumulator.value)) 
+        stageDetail.put("batches", Long.valueOf(batchAccumulator.value)) 
         override val detail = stageDetail          
       }
     }
+
+    stageDetail.put("records", Long.valueOf(recordAccumulator.value)) 
+    stageDetail.put("batches", Long.valueOf(batchAccumulator.value)) 
 
     logger.info()
       .field("event", "exit")
