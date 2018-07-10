@@ -112,7 +112,7 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 
 ## HTTPExtract
 
-The `HTTPExtract` executes a `GET` request against a remote HTTP service and returns a `DataFrame`. 
+The `HTTPExtract` executes a `GET` request against a remote HTTP service and returns a `DataFrame` which will have a single column of rows holding the value of the HTTP repsonse body split by newline (`\n`). This would typically be used in conjuction with a `JSONExtract` stage by specifying `inputView` instead of `inputURI`.
 
 ### Parameters
 

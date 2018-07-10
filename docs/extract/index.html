@@ -644,7 +644,7 @@
 
 <h2 id="httpextract">HTTPExtract</h2>
 
-<p>The <code>HTTPExtract</code> executes a <code>GET</code> request against a remote HTTP service and returns a <code>DataFrame</code>.</p>
+<p>The <code>HTTPExtract</code> executes a <code>GET</code> request against a remote HTTP service and returns a <code>DataFrame</code> which will have a single column of rows holding the value of the HTTP repsonse body split by newline (<code>\n</code>). This would typically be used in conjuction with a <code>JSONExtract</code> stage by specifying <code>inputView</code> instead of <code>inputURI</code>.</p>
 
 <h3 id="parameters-2">Parameters</h3>
 
