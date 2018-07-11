@@ -34,7 +34,6 @@ object JDBCExtract {
 
     for (numPartitions <- extract.numPartitions) {
       connectionProperties.put("numPartitions", Integer.valueOf(numPartitions))    
-      stageDetail.put("numPartitions", Integer.valueOf(numPartitions))
     }
 
     for (fetchsize <- extract.fetchsize) {
