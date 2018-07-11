@@ -82,6 +82,7 @@ object KafkaExtract {
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 
     stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+    stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (extract.persist) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
