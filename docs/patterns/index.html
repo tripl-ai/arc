@@ -432,7 +432,9 @@
 SELECT * FROM customers_${JOB_RUN_DATE}
 </code></pre>
 
-<p>Each of the main SQL databases behaves slighly different and has slighty different syntax but most can achieve a repointing of a view to a different table in an atomic operation. A second <code>JDBCExecute</code> stage could also be added to clean up older verions of the underlying <code>customers_</code> tables.</p>
+<p>Each of the main SQL databases behaves slighly different and has slighty different syntax but most can achieve a repointing of a view to a different table in an atomic operation.</p>
+
+<p>Note that this method will require some cleanup activity to be performed or the number of tables will grow with each execution. A second <code>JDBCExecute</code> stage could be added to clean up older verions of the underlying <code>customers_</code> tables after successful &lsquo;rollover&rsquo; execution.</p>
 
 <h2 id="duplicate-keys">Duplicate Keys</h2>
 
@@ -639,8 +641,11 @@ FROM (
 </tbody>
 </table>
 
+<p>Two process this sort of data and ensure all records are successful:</p>
+
 <ul>
-<li>Use two <code>SQLTransform</code> stages to split the input dataset into two new <code>DataFrame</code>.</li>
+<li>First use a <code>DelimitedExtract</code> stage to load the raw data without headers.</li>
+<li>Use two <code>SQLTransform</code> stages to split the input dataset into two new <code>DataFrame</code>s using a SQL where statement.</li>
 </ul>
 
 <h3 id="detail">detail</h3>
@@ -782,16 +787,16 @@ FROM (
 FROM (
     SELECT 
         CASE 
-            WHEN customer_churn.probability &lt; 0.8 IS NULL THEN 1 
+            WHEN customer_churn.probability &lt; 0.8 THEN 1 
             ELSE 0 
         END AS low_probability
     FROM customer_churn
 ) valid
 </code></pre>
 
-<h2 id="testing">Testing</h2>
+<h2 id="testing-with-parquet">Testing with Parquet</h2>
 
-<p>If you want to manually create test data to compare against a Spark DataFrame a good option is to use the <a href="https://arrow.apache.org/">Apache Arrow</a> library and the Python API to create a correctly typed Parquet. This file can then be loaded and compared with the <code>EqualityValidate</code> stage.</p>
+<p>If you want to manually create test data to compare against a Spark DataFrame a good option is to use the <a href="https://arrow.apache.org/">Apache Arrow</a> library and the Python API to create a correctly typed <a href="https://parquet.apache.org/">Parquet</a>. This file can then be loaded and compared with the <code>EqualityValidate</code> stage.</p>
 
 <p>Using the publicly available <a href="https://www.docker.com/">Docker</a> <a href="https://conda.io">Conda</a> image:</p>
 
@@ -832,7 +837,7 @@ table = pa.Table.from_arrays([booleanDatum, dateDatum, decimalDatum, doubleDatum
 pq.write_table(table, '/tmp/data/example.parquet')
 </code></pre>
 
-<p>The suggestion then is to use the <code>environments</code> key to only execute the difference test whilst in testing mode:</p>
+<p>The suggestion then is to use the <code>environments</code> key to only execute the <code>EqualityValidate</code> stage whilst in testing mode:</p>
 
 <pre><code class="language-json">{
   &quot;environments&quot;: [&quot;test&quot;],

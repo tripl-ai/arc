@@ -51,7 +51,9 @@ CREATE OR REPLACE VIEW customers AS
 SELECT * FROM customers_${JOB_RUN_DATE}
 ```
 
-Each of the main SQL databases behaves slighly different and has slighty different syntax but most can achieve a repointing of a view to a different table in an atomic operation. A second `JDBCExecute` stage could also be added to clean up older verions of the underlying `customers_` tables.
+Each of the main SQL databases behaves slighly different and has slighty different syntax but most can achieve a repointing of a view to a different table in an atomic operation. 
+
+Note that this method will require some cleanup activity to be performed or the number of tables will grow with each execution. A second `JDBCExecute` stage could be added to clean up older verions of the underlying `customers_` tables after successful 'rollover' execution.
 
 ## Duplicate Keys
 
@@ -151,8 +153,10 @@ It is common to see formats like where the input dataset contains multiple recor
 |detail|2016-12-21|daily total|18.20|
 |trailer|3|28.45|
 
+Two process this sort of data and ensure all records are successful:
 
-- Use two `SQLTransform` stages to split the input dataset into two new `DataFrame`.
+- First use a `DelimitedExtract` stage to load the raw data without headers.
+- Use two `SQLTransform` stages to split the input dataset into two new `DataFrame`s using a SQL where statement.
 
 ### detail
 
@@ -219,16 +223,16 @@ SELECT
 FROM (
     SELECT 
         CASE 
-            WHEN customer_churn.probability < 0.8 IS NULL THEN 1 
+            WHEN customer_churn.probability < 0.8 THEN 1 
             ELSE 0 
         END AS low_probability
     FROM customer_churn
 ) valid
 ```
 
-## Testing
+## Testing with Parquet
 
-If you want to manually create test data to compare against a Spark DataFrame a good option is to use the [Apache Arrow](https://arrow.apache.org/) library and the Python API to create a correctly typed Parquet. This file can then be loaded and compared with the `EqualityValidate` stage.
+If you want to manually create test data to compare against a Spark DataFrame a good option is to use the [Apache Arrow](https://arrow.apache.org/) library and the Python API to create a correctly typed [Parquet](https://parquet.apache.org/). This file can then be loaded and compared with the `EqualityValidate` stage.
 
 Using the publicly available [Docker](https://www.docker.com/) [Conda](https://conda.io) image:
 
@@ -271,7 +275,7 @@ table = pa.Table.from_arrays([booleanDatum, dateDatum, decimalDatum, doubleDatum
 pq.write_table(table, '/tmp/data/example.parquet')
 ```
 
-The suggestion then is to use the `environments` key to only execute the difference test whilst in testing mode:
+The suggestion then is to use the `environments` key to only execute the `EqualityValidate` stage whilst in testing mode:
 
 ```json
 {
