@@ -225,6 +225,46 @@ The `JSONExtract` stage reads either one or more JSON files or an input `Dataset
 }
 ```
 
+## KafkaExtract
+
+{{< note title="Experimental" >}}
+The `KafkaExtract` is currently in experimental state whilst the requirements become clearer. 
+
+This means this API is likely to change to better handle failures.
+{{</note>}}
+
+The `KafkaExtract` stage reads records from a [Kafka](https://kafka.apache.org/) `topic` and returns a `DataFrame`. It requires a unique `groupID` to be set which on first run will consume from the `earliest` offset available in Kafka. Each subsequent run will use the offset as recorded against that `groupID`. This means that if a job fails before properly processing the data then data may need to be restarted from the earliest offset by creating a new `groupID`.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|topic|String|true|{{< readfile file="/content/partials/fields/topic.md" markdown="true" >}}|
+|bootstrapServers|String|true|{{< readfile file="/content/partials/fields/bootstrapServers.md" markdown="true" >}}|
+|groupID|String|true|{{< readfile file="/content/partials/fields/groupID.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "KafkaLoad",
+    "name": "write customer records to kafka",
+    "environments": ["production", "test"],
+    "outputView": "customer",
+    "topic": "customer", 
+    "bootstrapServers": "kafka:29092", 
+    "groupID": "spark-customer-extract-job",
+    "persist": false,
+    "params": {}
+}
+```
+
 ## ORCExtract
 
 The `ORCExtract` stage reads one or more [Apache ORC](https://orc.apache.org/) files and returns a `DataFrame`. 

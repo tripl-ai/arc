@@ -7,6 +7,7 @@ import scala.collection.JavaConverters._
 
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.Producer
+import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 
 import org.apache.spark.sql._
@@ -64,22 +65,22 @@ object KafkaLoad {
 
     try {
       repartitionedDF.foreachPartition(partition => {
-        // producer properties 
+        // KafkaProducer properties 
         // https://kafka.apache.org/documentation/#producerconfigs
         val props = new Properties
-        props.put("bootstrap.servers", load.bootstrapServers)
-        props.put("acks", String.valueOf(load.acks))
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, load.bootstrapServers)
+        props.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
 
         // optional
         for (retries <- load.retries) {
-          props.put("retries", String.valueOf(retries))    
-          stageDetail.put("retries", Integer.valueOf(retries))
+          props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(retries))    
+          stageDetail.put(ProducerConfig.RETRIES_CONFIG, Integer.valueOf(retries))
         }
         for (batchSize <- load.batchSize) {
-          props.put("batch.size", String.valueOf(batchSize))    
-          stageDetail.put("batch.size", Integer.valueOf(batchSize))
+          props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(batchSize))    
+          stageDetail.put(ProducerConfig.BATCH_SIZE_CONFIG, Integer.valueOf(batchSize))
         }   
 
         // create producer

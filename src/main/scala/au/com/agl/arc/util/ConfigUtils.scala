@@ -566,6 +566,28 @@ object ConfigUtils {
     }
   }
 
+  def readKafkaExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+    import ConfigReader._
+
+    val outputView = getValue[String]("outputView")
+    val topic = getValue[String]("topic")
+    val bootstrapServers = getValue[String]("bootstrapServers")
+    val groupID = getValue[String]("groupID")
+
+    val persist = getValue[Boolean]("persist")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+
+    (name, outputView, topic, bootstrapServers, groupID, persist, numPartitions) match {
+      case (Right(n), Right(ov), Right(t), Right(bs), Right(g), Right(p), Right(np)) => 
+        Right(KafkaExtract(n, ov, t, bs, g, params, p, np))
+      case _ =>
+        val allErrors: Errors = List(name, outputView, topic, bootstrapServers, groupID, persist, numPartitions).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err)
+    }
+  }  
+
   def readORCExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
     import ConfigReader._
 
@@ -1239,6 +1261,7 @@ object ConfigUtils {
             case Right("HTTPExtract") => Option(readHTTPExtract(name, params))
             case Right("JDBCExtract") => Option(readJDBCExtract(name, params))
             case Right("JSONExtract") => Option(readJSONExtract(name, params))
+            case Right("KafkaExtract") => Option(readKafkaExtract(name, params))
             case Right("ORCExtract") => Option(readORCExtract(name, params))
             case Right("ParquetExtract") => Option(readParquetExtract(name, params))
             case Right("XMLExtract") => Option(readXMLExtract(name, params))

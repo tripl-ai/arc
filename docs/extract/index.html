@@ -958,11 +958,116 @@
 }
 </code></pre>
 
+<h2 id="kafkaextract">KafkaExtract</h2>
+
+<div class="admonition note">
+<p class="admonition-title">Experimental</p>
+<p><p>The <code>KafkaExtract</code> is currently in experimental state whilst the requirements become clearer.</p>
+
+<p>This means this API is likely to change to better handle failures.</p>
+</p>
+</div>
+
+<p>The <code>KafkaExtract</code> stage reads records from a <a href="https://kafka.apache.org/">Kafka</a> <code>topic</code> and returns a <code>DataFrame</code>. It requires a unique <code>groupID</code> to be set which on first run will consume from the <code>earliest</code> offset available in Kafka. Each subsequent run will use the offset as recorded against that <code>groupID</code>. This means that if a job fails before properly processing the data then data may need to be restarted from the earliest offset by creating a new <code>groupID</code>.</p>
+
+<h3 id="parameters-5">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>topic</td>
+<td>String</td>
+<td>true</td>
+<td>The target Kafka topic.</td>
+</tr>
+
+<tr>
+<td>bootstrapServers</td>
+<td>String</td>
+<td>true</td>
+<td>A list of host/port pairs to use for establishing the initial connection to the Kafka cluster. e.g. <code>host1:port1,host2:port2,...</code></td>
+</tr>
+
+<tr>
+<td>groupID</td>
+<td>String</td>
+<td>true</td>
+<td>A string that uniquely identifies the group of consumer processes to which this consumer belongs. This will retain the offset of the job between executions.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-5">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;KafkaLoad&quot;,
+    &quot;name&quot;: &quot;write customer records to kafka&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;outputView&quot;: &quot;customer&quot;,
+    &quot;topic&quot;: &quot;customer&quot;, 
+    &quot;bootstrapServers&quot;: &quot;kafka:29092&quot;, 
+    &quot;groupID&quot;: &quot;spark-customer-extract-job&quot;,
+    &quot;persist&quot;: false,
+    &quot;params&quot;: {}
+}
+</code></pre>
+
 <h2 id="orcextract">ORCExtract</h2>
 
 <p>The <code>ORCExtract</code> stage reads one or more <a href="https://orc.apache.org/">Apache ORC</a> files and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-5">Parameters</h3>
+<h3 id="parameters-6">Parameters</h3>
 
 <table>
 <thead>
@@ -1040,7 +1145,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-5">Examples</h3>
+<h3 id="examples-6">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;ParquetExtract&quot;,
@@ -1061,7 +1166,7 @@
 
 <p>The <code>ParquetExtract</code> stage reads one or more <a href="https://parquet.apache.org/">Apache Parquet</a> files and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-6">Parameters</h3>
+<h3 id="parameters-7">Parameters</h3>
 
 <table>
 <thead>
@@ -1139,7 +1244,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-6">Examples</h3>
+<h3 id="examples-7">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;ParquetExtract&quot;,
@@ -1160,7 +1265,7 @@
 
 <p>The <code>XMLExtract</code> stage reads one or more XML files and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-7">Parameters</h3>
+<h3 id="parameters-8">Parameters</h3>
 
 <table>
 <thead>
@@ -1245,7 +1350,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-7">Examples</h3>
+<h3 id="examples-8">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;XMLExtract&quot;,

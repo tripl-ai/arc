@@ -166,11 +166,13 @@ object API {
 
   case class DelimitedExtract(name: String, cols: List[ExtractColumn], outputView: String, input: Either[String, URI], settings: Delimited, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends ColumnarExtract { val getType = "DelimitedExtract" }
 
-  case class HTTPExtract(name: String, uri: URI, headers: Map[String, String], validStatusCodes: Option[List[Int]], outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends Execute { val getType = "HTTPExtract" }
+  case class HTTPExtract(name: String, uri: URI, headers: Map[String, String], validStatusCodes: Option[List[Int]], outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends Extract { val getType = "HTTPExtract" }
 
   case class JDBCExtract(name: String, outputView: String, jdbcURL: String, tableName: String, numPartitions: Option[Int], fetchsize: Option[Int], customSchema: Option[String], driver: java.sql.Driver, params: Map[String, String], persist: Boolean) extends Extract { val getType = "JDBCExtract" }
 
   case class JSONExtract(name: String, cols: List[ExtractColumn], outputView: String, input: Either[String, URI], settings: JSON, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends ColumnarExtract { val getType = "JSONExtract" }
+
+  case class KafkaExtract(name: String, outputView: String, topic: String, bootstrapServers: String, groupID: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends Extract { val getType = "KafkaExtract" }
 
   case class ORCExtract(name: String, cols: List[ExtractColumn], outputView: String, input: URI, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends ColumnarExtract { val getType = "ORCExtract" }
 

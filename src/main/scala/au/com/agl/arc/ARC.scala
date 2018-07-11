@@ -261,7 +261,9 @@ object ARC {
         case e : JDBCExtract =>
           extract.JDBCExtract.extract(e)             
         case e : JSONExtract =>
-          extract.JSONExtract.extract(e)                  
+          extract.JSONExtract.extract(e)
+        case e : KafkaExtract =>
+          extract.KafkaExtract.extract(e)                             
         case e : ORCExtract =>
           extract.ORCExtract.extract(e)              
         case e : ParquetExtract =>
