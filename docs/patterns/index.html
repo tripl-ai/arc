@@ -641,11 +641,11 @@ FROM (
 </tbody>
 </table>
 
-<p>Two process this sort of data and ensure all records are successful:</p>
+<p>To process this sort of data and ensure all records are successful:</p>
 
 <ul>
 <li>First use a <code>DelimitedExtract</code> stage to load the raw data without headers.</li>
-<li>Use two <code>SQLTransform</code> stages to split the input dataset into two new <code>DataFrame</code>s using a SQL where statement.</li>
+<li>Use two <code>SQLTransform</code> stages to split the input dataset into two new <code>DataFrame</code>s using SQL <code>WHERE</code> statements.</li>
 </ul>
 
 <h3 id="detail">detail</h3>

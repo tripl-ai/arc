@@ -153,10 +153,10 @@ It is common to see formats like where the input dataset contains multiple recor
 |detail|2016-12-21|daily total|18.20|
 |trailer|3|28.45|
 
-Two process this sort of data and ensure all records are successful:
+To process this sort of data and ensure all records are successful:
 
 - First use a `DelimitedExtract` stage to load the raw data without headers.
-- Use two `SQLTransform` stages to split the input dataset into two new `DataFrame`s using a SQL where statement.
+- Use two `SQLTransform` stages to split the input dataset into two new `DataFrame`s using SQL `WHERE` statements.
 
 ### detail
 
