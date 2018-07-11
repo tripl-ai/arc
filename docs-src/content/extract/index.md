@@ -253,8 +253,8 @@ The `KafkaExtract` stage reads records from a [Kafka](https://kafka.apache.org/)
 
 ```json
 {
-    "type": "KafkaLoad",
-    "name": "write customer records to kafka",
+    "type": "KafkaExtract",
+    "name": "read customer records from kafka",
     "environments": ["production", "test"],
     "outputView": "customer",
     "topic": "customer", 
