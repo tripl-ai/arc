@@ -1,0 +1,1 @@
+A list of host/port pairs to use for establishing the initial connection to the Kafka cluster. e.g. `host1:port1,host2:port2,...`

@@ -969,6 +969,29 @@ object ConfigUtils {
     }
   }
 
+  def readKafkaLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+    import ConfigReader._
+
+    val inputView = getValue[String]("inputView")
+    val topic = getValue[String]("topic")
+    val bootstrapServers = getValue[String]("bootstrapServers")
+    val acks = getValue[Int]("acks")
+
+    val retries = getOptionalValue[Int]("retries")
+    val batchSize = getOptionalValue[Int]("batchSize")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+
+    (name, inputView, topic, bootstrapServers, acks, retries, batchSize, numPartitions) match {
+      case (Right(n), Right(iv), Right(t), Right(bss), Right(a), Right(r), Right(bs), Right(np)) => 
+        Right(KafkaLoad(n, iv, t, bss, a, np, r, bs, params))
+      case _ =>
+        val allErrors: Errors = List(name, inputView, topic, bootstrapServers, acks, retries, batchSize, numPartitions).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err)
+    }
+  }   
+
   def readORCLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
     import ConfigReader._
 
@@ -1233,6 +1256,7 @@ object ConfigUtils {
             case Right("HTTPLoad") => Option(readHTTPLoad(name, params))
             case Right("JDBCLoad") => Option(readJDBCLoad(name, params))
             case Right("JSONLoad") => Option(readJSONLoad(name, params))
+            case Right("KafkaLoad") => Option(readKafkaLoad(name, params))
             case Right("ORCLoad") => Option(readORCLoad(name, params))
             case Right("ParquetLoad") => Option(readParquetLoad(name, params))
             case Right("XMLLoad") => Option(readXMLLoad(name, params))

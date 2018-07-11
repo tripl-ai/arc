@@ -209,6 +209,8 @@ object API {
 
   case class JSONLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "JSONLoad" }
 
+  case class KafkaLoad(name: String, inputView: String, topic: String, bootstrapServers: String, acks: Int, numPartitions: Option[Int], retries: Option[Int], batchSize: Option[Int], params: Map[String, String]) extends Load { val getType = "KafkaLoad" }
+  
   case class ORCLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "ORCLoad" }
 
   case class ParquetLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "ParquetLoad" }

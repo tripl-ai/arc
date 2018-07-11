@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.0.8
+
+- added the `KafkaLoad` stage - a stage which will write a dataset to a designated `topic` in Apache Kafka.
+
 # 1.0.7
 
 - added the `DiffTransform` stage - a stage which efficiently calculutes the difference between two datasets and produces left, right and intersection output views.

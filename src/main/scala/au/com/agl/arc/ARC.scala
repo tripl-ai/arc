@@ -293,7 +293,9 @@ object ARC {
         case l : JDBCLoad =>
           load.JDBCLoad.load(l)          
         case l : JSONLoad =>
-          load.JSONLoad.load(l)                      
+          load.JSONLoad.load(l)
+        case l : KafkaLoad =>
+          load.KafkaLoad.load(l)                              
         case l : ORCLoad =>
           load.ORCLoad.load(l)             
         case l : ParquetLoad =>

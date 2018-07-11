@@ -257,6 +257,90 @@ The `JSONLoad` writes an input `DataFrame` to a target JSON file.
 }
 ```
 
+## KafkaLoad
+
+The `KafkaLoad` writes an input `DataFrame` to a target [Kafka](https://kafka.apache.org/) `topic`. The input to this stage needs to be a single column dataset of signature `value: string` and is intended to be used after a [JSONTransform](/load/#jsontransform) stage which would prepare the data for sending to the Kafka server.
+
+In the future additional Transform stages (like `ProtoBufTransform`) could be added to prepare binary payloads instead of just `json` `string`.
+
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|topic|String|true|{{< readfile file="/content/partials/fields/topic.md" markdown="true" >}}|
+|bootstrapServers|String|true|{{< readfile file="/content/partials/fields/bootstrapServers.md" markdown="true" >}}|
+|acks|Integer|true|{{< readfile file="/content/partials/fields/acks.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|batchSize|Integer|false|Number of records to send in single requet to reduce number of requests to Kafka. Default: 16384.|
+|retries|Integer|false|How many times to try to resend any record whose send fails with a potentially transient error. Default: 0.|
+|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "KafkaLoad",
+    "name": "write customer records to kafka",
+    "environments": ["production", "test"],
+    "inputView": "customer",
+    "topic": "customer", 
+    "bootstrapServers": "kafka:29092", 
+    "acks": -1,
+    "numPartitions": 4,
+    "batchSize": 16384,
+    "retries": 3,
+    "params": {}
+}
+```
+
+## DelimitedLoad
+
+The `DelimitedLoad` writes an input `DataFrame` to a target delimited file. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|outputURI|URI|true|URI of the Delimited file to write to.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|delimiter|String|true|The type of delimiter in the file. Supported values: `Comma`, `Pipe`, `DefaultHive`. `DefaultHive` is  ASCII character 1, the default delimiter for Apache Hive extracts.|
+|quote|String|true|The type of quoting in the file. Supported values: `None`, `SingleQuote`, `DoubleQuote`.|
+|header|Boolean|true|Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named `_col1`, `_col2` ... `_colN`.|
+|saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
+|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "DelimitedLoad",
+    "name": "write out customer csvs",
+    "environments": ["production", "test"],
+    "inputView": "customer",            
+    "outputURI": "hdfs://input_data/customer/customer.csv",
+    "delimiter": "Comma",
+    "quote" : "DoubleQuote",
+    "header": true,
+    "partitionBy": ["active"],
+    "numPartitions": 10,
+    "authentication": {
+        ...
+    },
+    "saveMode": "Append",
+    "params": {
+    }
+}
+```
+
 ## ORCLoad
 
 The `ORCLoad` writes an input `DataFrame` to a target [Apache ORC](https://orc.apache.org/) file. 

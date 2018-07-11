@@ -1,0 +1,1 @@
+The target Kafka topic.

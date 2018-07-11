@@ -58,6 +58,10 @@ object Dependencies {
   val grpc_netty = "io.grpc" % "grpc-netty" % "1.7.0" 
   val tensorflow_client = "com.yesup.oss" % "tensorflow-client" % "1.4-2" 
 
+  // kafka
+  val kafka = "org.apache.kafka" %% "kafka" % "1.1.0" % "provided"
+  val kafkaClients = "org.apache.kafka" % "kafka-clients" % "1.1.0" % "provided"
+
   // Project
   val etlDeps = Seq(
     sparkCore,
@@ -91,7 +95,11 @@ object Dependencies {
 
     // Azure EventHubs
     azureEventHub,
-    qpid
+    qpid,
+
+    // Kafka
+    kafka,
+    kafkaClients
 
     // tensorflow serving
     // grpc_netty,

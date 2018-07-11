@@ -1,0 +1,117 @@
+package au.com.agl.arc.load
+
+import java.lang._
+import java.net.URI
+import java.util.Properties
+import scala.collection.JavaConverters._
+
+import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.producer.Producer
+import org.apache.kafka.clients.producer.ProducerRecord
+
+import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
+
+import scala.io.Source
+
+import au.com.agl.arc.api.API._
+import au.com.agl.arc.util._
+
+object KafkaLoad {
+
+  def load(load: KafkaLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+    import spark.implicits._
+    val startTime = System.currentTimeMillis() 
+
+    val signature = "KafkaLoad requires inputView to be dataset with [value: string] signature."
+
+    val stageDetail = new java.util.HashMap[String, Object]()
+    stageDetail.put("type", load.getType)
+    stageDetail.put("name", load.name)
+    stageDetail.put("inputView", load.inputView)  
+    stageDetail.put("topic", load.topic)  
+    stageDetail.put("bootstrapServers", load.bootstrapServers)
+    stageDetail.put("acks", Integer.valueOf(load.acks))
+
+    logger.info()
+      .field("event", "enter")
+      .map("stage", stageDetail)      
+      .log()
+
+    val df = spark.table(load.inputView)     
+
+    if (df.schema.length != 1 || df.schema(0).dataType != StringType) {
+        throw new Exception(s"${signature} inputView '${load.inputView}' has ${df.schema.length} columns of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
+        override val detail = stageDetail          
+      }      
+    }     
+
+    val repartitionedDF = load.numPartitions match {
+      case Some(partitions) => {
+        stageDetail.put("numPartitions", Integer.valueOf(partitions))
+        df.repartition(partitions)
+      }
+      case None => {
+        stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+        df
+      }
+    }      
+
+    // initialise statistics accumulators or reset if they exist
+    val recordAccumulator = spark.sparkContext.longAccumulator
+    recordAccumulator.reset
+
+    try {
+      repartitionedDF.foreachPartition(partition => {
+        // producer properties 
+        // https://kafka.apache.org/documentation/#producerconfigs
+        val props = new Properties
+        props.put("bootstrap.servers", load.bootstrapServers)
+        props.put("acks", String.valueOf(load.acks))
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
+
+        // optional
+        for (retries <- load.retries) {
+          props.put("retries", String.valueOf(retries))    
+          stageDetail.put("retries", Integer.valueOf(retries))
+        }
+        for (batchSize <- load.batchSize) {
+          props.put("batch.size", String.valueOf(batchSize))    
+          stageDetail.put("batch.size", Integer.valueOf(batchSize))
+        }   
+
+        // create producer
+        val kafkaProducer = new KafkaProducer[String, String](props)
+        
+        // send each message via producer
+        try {
+          partition.foreach(row => {
+            // create payload and send sync
+            val producerRecord = new ProducerRecord[String, String](load.topic, row.getString(0))
+            kafkaProducer.send(producerRecord)
+            recordAccumulator.add(1)
+          })    
+        } catch {
+          case e: Exception => throw e
+        } finally {
+          kafkaProducer.close
+        }          
+      })
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        stageDetail.put("records", Long.valueOf(recordAccumulator.value)) 
+        override val detail = stageDetail          
+      }
+    }
+
+    stageDetail.put("records", Long.valueOf(recordAccumulator.value)) 
+
+    logger.info()
+      .field("event", "exit")
+      .field("duration", System.currentTimeMillis() - startTime)
+      .map("stage", stageDetail)      
+      .log()   
+  }
+}
