@@ -577,11 +577,14 @@ object ConfigUtils {
     val persist = getValue[Boolean]("persist")
     val numPartitions = getOptionalValue[Int]("numPartitions")
 
-    (name, outputView, topic, bootstrapServers, groupID, persist, numPartitions) match {
-      case (Right(n), Right(ov), Right(t), Right(bs), Right(g), Right(p), Right(np)) => 
-        Right(KafkaExtract(n, ov, t, bs, g, params, p, np))
+    val maxPollRecords = getOptionalValue[Int]("maxPollRecords")
+    val timeout = getOptionalValue[Long]("timeout")
+
+    (name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout) match {
+      case (Right(n), Right(ov), Right(t), Right(bs), Right(g), Right(p), Right(np), Right(mpr), Right(time)) => 
+        Right(KafkaExtract(n, ov, t, bs, g, mpr, time, params, p, np))
       case _ =>
-        val allErrors: Errors = List(name, outputView, topic, bootstrapServers, groupID, persist, numPartitions).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)

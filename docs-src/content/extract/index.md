@@ -245,6 +245,8 @@ The `KafkaExtract` stage reads records from a [Kafka](https://kafka.apache.org/)
 |topic|String|true|{{< readfile file="/content/partials/fields/topic.md" markdown="true" >}}|
 |bootstrapServers|String|true|{{< readfile file="/content/partials/fields/bootstrapServers.md" markdown="true" >}}|
 |groupID|String|true|{{< readfile file="/content/partials/fields/groupID.md" markdown="true" >}}|
+|maxPollRecords|Int|false|The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read. Default: 10000.|
+|timeout|Long|false|The time, in milliseconds, spent waiting in poll if data is not available in Kafka. Default: 10000.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
@@ -260,6 +262,8 @@ The `KafkaExtract` stage reads records from a [Kafka](https://kafka.apache.org/)
     "topic": "customer", 
     "bootstrapServers": "kafka:29092", 
     "groupID": "spark-customer-extract-job",
+    "maxPollRecords": 10000,
+    "timeout": 0,    
     "persist": false,
     "params": {}
 }

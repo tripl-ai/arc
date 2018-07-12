@@ -94,8 +94,6 @@ object KafkaLoad {
             kafkaProducer.send(producerRecord)
             recordAccumulator.add(1)
           })    
-        } catch {
-          case e: Exception => throw e
         } finally {
           kafkaProducer.close
         }          

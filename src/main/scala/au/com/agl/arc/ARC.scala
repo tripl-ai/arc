@@ -7,6 +7,7 @@ object ARC {
 
   import org.slf4j.MDC
 
+  import scala.annotation.tailrec
   import scala.util.Properties._
   import org.datasyslab.geospark.serde.GeoSparkKryoRegistrator
   import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator
@@ -317,7 +318,7 @@ object ARC {
       }
     }
 
-    @annotation.tailrec
+    @tailrec
     def runStages(stages: List[PipelineStage]) {
       stages match {
         case Nil => // finished

@@ -1026,6 +1026,20 @@
 </tr>
 
 <tr>
+<td>maxPollRecords</td>
+<td>Int</td>
+<td>false</td>
+<td>The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read. Default: 10000.</td>
+</tr>
+
+<tr>
+<td>timeout</td>
+<td>Long</td>
+<td>false</td>
+<td>The time, in milliseconds, spent waiting in poll if data is not available in Kafka. Default: 10000.</td>
+</tr>
+
+<tr>
 <td>numPartitions</td>
 <td>Integer</td>
 <td>false</td>
@@ -1058,6 +1072,8 @@
     &quot;topic&quot;: &quot;customer&quot;, 
     &quot;bootstrapServers&quot;: &quot;kafka:29092&quot;, 
     &quot;groupID&quot;: &quot;spark-customer-extract-job&quot;,
+    &quot;maxPollRecords&quot;: 10000,
+    &quot;timeout&quot;: 0,    
     &quot;persist&quot;: false,
     &quot;params&quot;: {}
 }

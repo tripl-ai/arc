@@ -113,8 +113,6 @@ object AzureEventHubsLoad {
           if (eventBatch.getSize > 0) {
             eventHubClient.sendSync(eventBatch)
           }          
-        } catch {
-          case e: Exception => throw e
         } finally {
           eventHubClient.closeSync
           executorService.shutdown

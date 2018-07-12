@@ -172,7 +172,7 @@ object API {
 
   case class JSONExtract(name: String, cols: List[ExtractColumn], outputView: String, input: Either[String, URI], settings: JSON, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends ColumnarExtract { val getType = "JSONExtract" }
 
-  case class KafkaExtract(name: String, outputView: String, topic: String, bootstrapServers: String, groupID: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends Extract { val getType = "KafkaExtract" }
+  case class KafkaExtract(name: String, outputView: String, topic: String, bootstrapServers: String, groupID: String, maxPollRecords: Option[Int], timeout: Option[Long], params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends Extract { val getType = "KafkaExtract" }
 
   case class ORCExtract(name: String, cols: List[ExtractColumn], outputView: String, input: URI, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends ColumnarExtract { val getType = "ORCExtract" }
 
