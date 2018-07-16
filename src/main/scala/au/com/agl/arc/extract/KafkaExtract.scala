@@ -17,7 +17,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.TopicPartition
 
-
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util._
@@ -45,7 +44,8 @@ object KafkaExtract {
     stageDetail.put("topic", extract.topic)
     stageDetail.put("maxPollRecords", Integer.valueOf(extract.maxPollRecords.getOrElse(10000)))
     stageDetail.put("timeout", Long.valueOf(extract.timeout.getOrElse(10000L)))
-    stageDetail.put("autoCommit", Boolean.valueOf(extract.autoCommit.getOrElse(true)))
+    val autoCommit = extract.autoCommit.getOrElse(true)
+    stageDetail.put("autoCommit", Boolean.valueOf(autoCommit))
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
 
     logger.info()
@@ -110,7 +110,6 @@ object KafkaExtract {
           val dataset = getAllKafkaRecords(getKafkaRecord, Nil)
 
           // only commit offset once consumerRecords are succesfully mapped to case classes
-          val autoCommit = extract.autoCommit.getOrElse(true)
           if (autoCommit) {
             kafkaConsumer.commitSync
           }
@@ -136,7 +135,8 @@ object KafkaExtract {
     stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
     stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
-    if (extract.persist) {
+    // force persistence if autoCommit=false to prevent double KafkaExtract execution and different offsets
+    if (extract.persist || !autoCommit) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
       stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
     }    

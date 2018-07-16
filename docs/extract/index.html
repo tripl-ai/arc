@@ -1045,7 +1045,7 @@
 <td>autoCommit</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to update the offsets in Kafka automatically. To be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour. Default: true.</td>
+<td>Whether to update the offsets in Kafka automatically. To be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour. Default: true.<br><br>If <code>autoCommit</code> is set to <code>false</code> this stage will force <code>persist</code> equal to <code>true</code> so that Spark will not execute the Kafka extract process twice with a potentially different result (e.g. new messages added between extracts).</td>
 </tr>
 
 <tr>
@@ -1083,8 +1083,8 @@
     &quot;groupID&quot;: &quot;spark-customer-extract-job&quot;,
     &quot;maxPollRecords&quot;: 10000,
     &quot;timeout&quot;: 0,
-    &quot;autoCommit&quot;: true, 
-    &quot;persist&quot;: false,
+    &quot;autoCommit&quot;: false, 
+    &quot;persist&quot;: true,
     &quot;params&quot;: {}
 }
 </code></pre>

@@ -249,7 +249,7 @@ Can be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecu
 |groupID|String|true|{{< readfile file="/content/partials/fields/groupID.md" markdown="true" >}}|
 |maxPollRecords|Int|false|The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read. Default: 10000.|
 |timeout|Long|false|The time, in milliseconds, spent waiting in poll if data is not available in Kafka. Default: 10000.|
-|autoCommit|Boolean|false|Whether to update the offsets in Kafka automatically. To be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecute) to allow quasi-transactional behaviour. Default: true.|
+|autoCommit|Boolean|false|Whether to update the offsets in Kafka automatically. To be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecute) to allow quasi-transactional behaviour. Default: true.<br><br>If `autoCommit` is set to `false` this stage will force `persist` equal to `true` so that Spark will not execute the Kafka extract process twice with a potentially different result (e.g. new messages added between extracts).|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
@@ -267,8 +267,8 @@ Can be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecu
     "groupID": "spark-customer-extract-job",
     "maxPollRecords": 10000,
     "timeout": 0,
-    "autoCommit": true, 
-    "persist": false,
+    "autoCommit": false, 
+    "persist": true,
     "params": {}
 }
 ```
