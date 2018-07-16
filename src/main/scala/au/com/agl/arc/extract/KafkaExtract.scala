@@ -61,14 +61,21 @@ object KafkaExtract {
     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
     props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+    props.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, "60000")
     props.put(ConsumerConfig.GROUP_ID_CONFIG, extract.groupID)
 
     // first get the number of partitions via the driver process so it can be used for mapPartition
-    val kafkaDriverConsumer = new KafkaConsumer[String, String](props)
     val numPartitions = try {
-      kafkaDriverConsumer.partitionsFor(extract.topic).size
-    } finally {
-      kafkaDriverConsumer.close
+      val kafkaDriverConsumer = new KafkaConsumer[String, String](props)
+      try {
+        kafkaDriverConsumer.partitionsFor(extract.topic).size
+      } finally {
+        kafkaDriverConsumer.close
+      }
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }  
     }
 
     val df = try {
@@ -82,6 +89,7 @@ object KafkaExtract {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+        props.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, "60000")
         props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, extract.maxPollRecords.getOrElse(10000).toString)
         props.put(ConsumerConfig.GROUP_ID_CONFIG, s"${extract.groupID}-${partitionId}")
 
