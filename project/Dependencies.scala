@@ -30,7 +30,7 @@ object Dependencies {
   val azureStorage = "com.microsoft.azure" % "azure-storage" % "3.1.0" % "provided"
 
   // Azure EventHubs
-  val azureEventHub = "com.microsoft.azure" % "azure-eventhubs" % "1.0.1" % "provided"
+  val azureEventHub = "com.microsoft.azure" % "azure-eventhubs" % "1.0.2" % "provided"
   val qpid = "org.apache.qpid" % "proton-j" % "0.26.0" % "provided"
 
 
