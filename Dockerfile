@@ -46,10 +46,11 @@ RUN curl  --show-error --location --output ${SPARK_HOME}/jars/spark-xml_2.11-0.4
     curl  --show-error --location --output ${SPARK_HOME}/jars/azure-storage-3.1.0.jar \    
     https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-storage/3.1.0/azure-storage-3.1.0.jar && \    
     # kafka
-    curl  --show-error --location --output ${SPARK_HOME}/jars/kafka_2.11-1.1.0.jar \    
-    https://repo.maven.apache.org/maven2/org/apache/kafka/kafka_2.11/1.1.0/kafka_2.11-1.1.0.jar && \   
-    curl  --show-error --location --output ${SPARK_HOME}/jars/kafka-clients-1.1.0.jar \    
-    https://repo.maven.apache.org/maven2/org/apache/kafka/kafka-clients/1.1.0/kafka-clients-1.1.0.jar  && \   
+    # kafka dependencies moved to /lib so that version conflicts allow tests to run
+    # curl  --show-error --location --output ${SPARK_HOME}/jars/kafka_2.11-1.1.0.jar \    
+    # https://repo.maven.apache.org/maven2/org/apache/kafka/kafka_2.11/1.1.0/kafka_2.11-1.1.0.jar && \   
+    # curl  --show-error --location --output ${SPARK_HOME}/jars/kafka-clients-1.1.0.jar \    
+    # https://repo.maven.apache.org/maven2/org/apache/kafka/kafka-clients/1.1.0/kafka-clients-1.1.0.jar  && \   
     # azure eventhub
     #curl  --show-error --location --output ${SPARK_HOME}/jars/azure-eventhubs-1.0.1.jar  \
     #https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-eventhubs/1.0.1/azure-eventhubs-1.0.1.jar && \       

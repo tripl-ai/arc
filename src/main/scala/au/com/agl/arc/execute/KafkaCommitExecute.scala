@@ -80,5 +80,3 @@ object KafkaCommitExecute {
       .log()   
   }
 }
-
-

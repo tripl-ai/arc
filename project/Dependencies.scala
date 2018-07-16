@@ -59,8 +59,8 @@ object Dependencies {
   val tensorflow_client = "com.yesup.oss" % "tensorflow-client" % "1.4-2" 
 
   // kafka
-  val kafka = "org.apache.kafka" %% "kafka" % "1.1.0" % "provided"
-  val kafkaClients = "org.apache.kafka" % "kafka-clients" % "1.1.0" % "provided"
+  // val kafka = "org.apache.kafka" %% "kafka" % "1.1.0" % "provided"
+  // val kafkaClients = "org.apache.kafka" % "kafka-clients" % "1.1.0" % "provided"
 
   // Project
   val etlDeps = Seq(
@@ -95,11 +95,11 @@ object Dependencies {
 
     // Azure EventHubs
     azureEventHub,
-    qpid,
+    qpid
 
     // Kafka
-    kafka,
-    kafkaClients
+    // kafka,
+    // kafkaClients
 
     // tensorflow serving
     // grpc_netty,
