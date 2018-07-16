@@ -85,3 +85,34 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
     }
 }
 ```
+
+## KafkaCommitExecute
+
+The `KafkaCommitExecute` takes the resulting `DataFrame` from a [KafkaExtract](../extract/#kafkaextract) stage and commits the offsets back to Kafka. This is used so that a user is able to perform a quasi-transaction by specifing a series of stages that must be succesfully executed prior to `committing` the offset back to Kafka. To use this stage ensure that the `autoCommit` option on the [KafkaExtract](../extract/#kafkaextract) stage is set to `false`.
+
+For example, if a job reads from a Kafka topic and writes the results to `parquet` then it would be good to ensure the [ParquetLoad](../load/#parquetload) stage had completed successfully before updating the offset in Kafka.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|bootstrapServers|String|true|{{< readfile file="/content/partials/fields/bootstrapServers.md" markdown="true" >}}|
+|groupID|String|true|{{< readfile file="/content/partials/fields/groupID.md" markdown="true" >}}|
+|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "KafkaCommitExecute",
+    "name": "update the offsets in kafka",
+    "environments": ["production", "test"],
+    "inputView": "customer",
+    "bootstrapServers": "kafka:29092", 
+    "groupID": "spark-customer-extract-job",
+    "params": {}
+}
+```

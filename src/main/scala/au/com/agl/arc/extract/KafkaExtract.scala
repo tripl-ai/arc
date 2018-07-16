@@ -45,6 +45,7 @@ object KafkaExtract {
     stageDetail.put("topic", extract.topic)
     stageDetail.put("maxPollRecords", Integer.valueOf(extract.maxPollRecords.getOrElse(10000)))
     stageDetail.put("timeout", Long.valueOf(extract.timeout.getOrElse(10000L)))
+    stageDetail.put("autoCommit", Boolean.valueOf(extract.autoCommit.getOrElse(true)))
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
 
     logger.info()
@@ -109,7 +110,10 @@ object KafkaExtract {
           val dataset = getAllKafkaRecords(getKafkaRecord, Nil)
 
           // only commit offset once consumerRecords are succesfully mapped to case classes
-          kafkaConsumer.commitSync
+          val autoCommit = extract.autoCommit.getOrElse(true)
+          if (autoCommit) {
+            kafkaConsumer.commitSync
+          }
 
           dataset.toIterator
         } finally {

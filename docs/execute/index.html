@@ -587,6 +587,82 @@
 }
 </code></pre>
 
+<h2 id="kafkacommitexecute">KafkaCommitExecute</h2>
+
+<p>The <code>KafkaCommitExecute</code> takes the resulting <code>DataFrame</code> from a <a href="../extract/#kafkaextract">KafkaExtract</a> stage and commits the offsets back to Kafka. This is used so that a user is able to perform a quasi-transaction by specifing a series of stages that must be succesfully executed prior to <code>committing</code> the offset back to Kafka. To use this stage ensure that the <code>autoCommit</code> option on the <a href="../extract/#kafkaextract">KafkaExtract</a> stage is set to <code>false</code>.</p>
+
+<p>For example, if a job reads from a Kafka topic and writes the results to <code>parquet</code> then it would be good to ensure the <a href="../load/#parquetload">ParquetLoad</a> stage had completed successfully before updating the offset in Kafka.</p>
+
+<h3 id="parameters-2">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>bootstrapServers</td>
+<td>String</td>
+<td>true</td>
+<td>A list of host/port pairs to use for establishing the initial connection to the Kafka cluster. e.g. <code>host1:port1,host2:port2,...</code></td>
+</tr>
+
+<tr>
+<td>groupID</td>
+<td>String</td>
+<td>true</td>
+<td>A string that uniquely identifies the group of consumer processes to which this consumer belongs. This will retain the offset of the job between executions.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-2">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;KafkaCommitExecute&quot;,
+    &quot;name&quot;: &quot;update the offsets in kafka&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputView&quot;: &quot;customer&quot;,
+    &quot;bootstrapServers&quot;: &quot;kafka:29092&quot;, 
+    &quot;groupID&quot;: &quot;spark-customer-extract-job&quot;,
+    &quot;params&quot;: {}
+}
+</code></pre>
+
 
 			<aside class="copyright" role="note">
 				

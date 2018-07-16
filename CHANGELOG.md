@@ -4,6 +4,7 @@
 
 - added the `KafkaLoad` stage - a stage which will write a dataset to a designated `topic` in Apache Kafka.
 - added the `EXPERIMENTAL` `KafkaExtract` stage - a stage which will read from a designated `topic` in Apache Kafka and produce a dataset.
+- added the `KafkaCommitExecute` stage - a stage which allows the commiting of the Kafka offsets to be deferred allowing quasi-transactional behaviour.
 
 # 1.0.7
 

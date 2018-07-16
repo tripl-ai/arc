@@ -235,6 +235,8 @@ This means this API is likely to change to better handle failures.
 
 The `KafkaExtract` stage reads records from a [Kafka](https://kafka.apache.org/) `topic` and returns a `DataFrame`. It requires a unique `groupID` to be set which on first run will consume from the `earliest` offset available in Kafka. Each subsequent run will use the offset as recorded against that `groupID`. This means that if a job fails before properly processing the data then data may need to be restarted from the earliest offset by creating a new `groupID`.
 
+Can be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecute) to allow quasi-transactional behaviour (with `autoCommit` set to `false`) - in that the offset commit can be deferred until certain dependent stages are sucessfully executed.
+
 ### Parameters
 
 | Attribute | Type | Required | Description |
@@ -247,6 +249,7 @@ The `KafkaExtract` stage reads records from a [Kafka](https://kafka.apache.org/)
 |groupID|String|true|{{< readfile file="/content/partials/fields/groupID.md" markdown="true" >}}|
 |maxPollRecords|Int|false|The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read. Default: 10000.|
 |timeout|Long|false|The time, in milliseconds, spent waiting in poll if data is not available in Kafka. Default: 10000.|
+|autoCommit|Boolean|false|Whether to update the offsets in Kafka automatically. To be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecute) to allow quasi-transactional behaviour. Default: true.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
@@ -263,7 +266,8 @@ The `KafkaExtract` stage reads records from a [Kafka](https://kafka.apache.org/)
     "bootstrapServers": "kafka:29092", 
     "groupID": "spark-customer-extract-job",
     "maxPollRecords": 10000,
-    "timeout": 0,    
+    "timeout": 0,
+    "autoCommit": true, 
     "persist": false,
     "params": {}
 }

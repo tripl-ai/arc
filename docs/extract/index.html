@@ -970,6 +970,8 @@
 
 <p>The <code>KafkaExtract</code> stage reads records from a <a href="https://kafka.apache.org/">Kafka</a> <code>topic</code> and returns a <code>DataFrame</code>. It requires a unique <code>groupID</code> to be set which on first run will consume from the <code>earliest</code> offset available in Kafka. Each subsequent run will use the offset as recorded against that <code>groupID</code>. This means that if a job fails before properly processing the data then data may need to be restarted from the earliest offset by creating a new <code>groupID</code>.</p>
 
+<p>Can be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour (with <code>autoCommit</code> set to <code>false</code>) - in that the offset commit can be deferred until certain dependent stages are sucessfully executed.</p>
+
 <h3 id="parameters-5">Parameters</h3>
 
 <table>
@@ -1040,6 +1042,13 @@
 </tr>
 
 <tr>
+<td>autoCommit</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to update the offsets in Kafka automatically. To be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour. Default: true.</td>
+</tr>
+
+<tr>
 <td>numPartitions</td>
 <td>Integer</td>
 <td>false</td>
@@ -1073,7 +1082,8 @@
     &quot;bootstrapServers&quot;: &quot;kafka:29092&quot;, 
     &quot;groupID&quot;: &quot;spark-customer-extract-job&quot;,
     &quot;maxPollRecords&quot;: 10000,
-    &quot;timeout&quot;: 0,    
+    &quot;timeout&quot;: 0,
+    &quot;autoCommit&quot;: true, 
     &quot;persist&quot;: false,
     &quot;params&quot;: {}
 }

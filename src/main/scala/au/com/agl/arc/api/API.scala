@@ -172,7 +172,7 @@ object API {
 
   case class JSONExtract(name: String, cols: List[ExtractColumn], outputView: String, input: Either[String, URI], settings: JSON, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends ColumnarExtract { val getType = "JSONExtract" }
 
-  case class KafkaExtract(name: String, outputView: String, topic: String, bootstrapServers: String, groupID: String, maxPollRecords: Option[Int], timeout: Option[Long], params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends Extract { val getType = "KafkaExtract" }
+  case class KafkaExtract(name: String, outputView: String, topic: String, bootstrapServers: String, groupID: String, maxPollRecords: Option[Int], timeout: Option[Long], autoCommit: Option[Boolean], params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends Extract { val getType = "KafkaExtract" }
 
   case class ORCExtract(name: String, cols: List[ExtractColumn], outputView: String, input: URI, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int]) extends ColumnarExtract { val getType = "ORCExtract" }
 
@@ -230,6 +230,7 @@ object API {
 
   case class HTTPExecute(name: String, uri: URI, headers: Map[String, String], payloads: Map[String, String], validStatusCodes: Option[List[Int]], params: Map[String, String]) extends Execute  { val getType = "HTTPExecute" }
 
+  case class KafkaCommitExecute(name: String, inputView: String, bootstrapServers: String, groupID: String, params: Map[String, String]) extends Execute  { val getType = "KafkaCommitExecute" }
 
 
   sealed trait Validate extends PipelineStage

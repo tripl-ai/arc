@@ -579,12 +579,13 @@ object ConfigUtils {
 
     val maxPollRecords = getOptionalValue[Int]("maxPollRecords")
     val timeout = getOptionalValue[Long]("timeout")
+    val autoCommit = getOptionalValue[Boolean]("autoCommit")
 
-    (name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout) match {
-      case (Right(n), Right(ov), Right(t), Right(bs), Right(g), Right(p), Right(np), Right(mpr), Right(time)) => 
-        Right(KafkaExtract(n, ov, t, bs, g, mpr, time, params, p, np))
+    (name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit) match {
+      case (Right(n), Right(ov), Right(t), Right(bs), Right(g), Right(p), Right(np), Right(mpr), Right(time), Right(ac)) => 
+        Right(KafkaExtract(n, ov, t, bs, g, mpr, time, ac, params, p, np))
       case _ =>
-        val allErrors: Errors = List(name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -1150,6 +1151,24 @@ object ConfigUtils {
     }
   }
 
+  def readKafkaCommitExecute(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+    import ConfigReader._
+
+    val inputView = getValue[String]("inputView")
+    val bootstrapServers = getValue[String]("bootstrapServers")
+    val groupID = getValue[String]("groupID")
+
+    (name, inputView, bootstrapServers, groupID) match {
+      case (Right(n), Right(iv), Right(bs), Right(g)) => 
+        Right(KafkaCommitExecute(n, iv, bs, g, params))
+      case _ =>
+        val allErrors: Errors = List(name, inputView, bootstrapServers, groupID).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err)
+    }
+  }    
+
   // validate
 
   def readEqualityValidate(name: StringConfigValue, params: Map[String, String])(implicit logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
@@ -1289,6 +1308,7 @@ object ConfigUtils {
 
             case Right("HTTPExecute") => Option(readHTTPExecute(name, params))
             case Right("JDBCExecute") => Option(readJDBCExecute(name, params))
+            case Right("KafkaCommitExecute") => Option(readKafkaCommitExecute(name, params))
 
             case Right("EqualityValidate") => Option(readEqualityValidate(name, params))
             case Right("SQLValidate") => Option(readSQLValidate(name, params))

@@ -306,10 +306,12 @@ object ARC {
         case l : XMLLoad =>
           load.XMLLoad.load(l)            
 
+        case x : HTTPExecute =>
+          execute.HTTPExecute.execute(x)  
         case x : JDBCExecute =>
           execute.JDBCExecute.execute(x)
-        case x : HTTPExecute =>
-          execute.HTTPExecute.execute(x)          
+        case x : KafkaCommitExecute =>
+          execute.KafkaCommitExecute.execute(x)          
 
         case v : EqualityValidate =>
           validate.EqualityValidate.validate(v)           
