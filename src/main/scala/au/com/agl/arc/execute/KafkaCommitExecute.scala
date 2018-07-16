@@ -37,8 +37,8 @@ object KafkaCommitExecute {
     val offsetsLogMap = new java.util.HashMap[String, Object]()
 
     try {
-      // get the aggregation
-      val offset = df.groupBy(df("topic"), df("partition")).agg(max(df("offset")))
+      // get the aggregation and limit to 10000 for overflow protection
+      val offset = df.groupBy(df("topic"), df("partition")).agg(max(df("offset"))).orderBy(df("topic"), df("partition")).limit(10000)
 
       val props = new Properties
       props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, exec.bootstrapServers)
