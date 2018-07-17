@@ -21,3 +21,9 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_NUM_PARTITIONS: 10
+
+  tensorflow_serving:
+    image: tensorflow_serving/simple:latest
+    build: tensorflow_serving/.
+    ports:
+        - 9000:9000

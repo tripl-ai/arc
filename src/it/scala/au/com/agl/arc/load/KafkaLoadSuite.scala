@@ -25,7 +25,7 @@ import au.com.agl.arc.util.log.LoggerFactory
 class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _  
-  val outputView = "dataset"
+  val inputView = "inputView"
   val topic = UUID.randomUUID.toString
   val bootstrapServers = "localhost:29092"
 
@@ -36,7 +36,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("WARN")
+    spark.sparkContext.setLogLevel("ERROR")
 
     session = spark
   }
@@ -56,12 +56,12 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
       .withColumn("normal", randn(seed=27))
       .repartition(10)
       .toJSON
-    dataset.createOrReplaceTempView(outputView)
+    dataset.createOrReplaceTempView(inputView)
 
     load.KafkaLoad.load(
       KafkaLoad(
         name="df", 
-        inputView=outputView, 
+        inputView=inputView, 
         topic=topic,
         bootstrapServers=bootstrapServers,
         acks= -1,

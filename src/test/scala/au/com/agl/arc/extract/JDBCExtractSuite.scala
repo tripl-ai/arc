@@ -33,7 +33,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("WARN")
+    spark.sparkContext.setLogLevel("ERROR")
 
     session = spark
     import spark.implicits._

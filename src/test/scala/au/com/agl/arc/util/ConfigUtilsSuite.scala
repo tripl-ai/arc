@@ -23,7 +23,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
                   .master("local[*]")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("WARN")
+    spark.sparkContext.setLogLevel("ERROR")
 
     session = spark
   }

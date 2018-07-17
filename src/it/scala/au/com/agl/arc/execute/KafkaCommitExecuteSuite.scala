@@ -17,10 +17,11 @@ import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.log.LoggerFactory 
 import au.com.agl.arc.util._
 
-class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
+class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _  
-  val inputView = "inputView"
+  val inputView0 = "inputView0"
+  val inputView1 = "inputView1"
   val outputView = "outputView"
   val bootstrapServers = "localhost:29092"
   val timeout = Option(3000L)
@@ -42,7 +43,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  test("KafkaExtract") {
+  test("KafkaCommitExecute") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -51,17 +52,17 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
     val groupId = UUID.randomUUID.toString
 
     // insert 100 records
-    val dataset = spark.sqlContext.range(0, 100)
+    val dataset0 = spark.sqlContext.range(0, 100)
       .select("id")
       .withColumn("uniform", rand(seed=10))
       .withColumn("normal", randn(seed=27))
       .repartition(10)
       .toJSON
-    dataset.createOrReplaceTempView(inputView)
+    dataset0.createOrReplaceTempView(inputView0)
     load.KafkaLoad.load(
       KafkaLoad(
         name="df", 
-        inputView=inputView, 
+        inputView=inputView0, 
         topic=topic,
         bootstrapServers=bootstrapServers,
         acks= -1,
@@ -72,67 +73,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
       )
     )   
 
-    val extractDataset = extract.KafkaExtract.extract(
-      KafkaExtract(
-        name="df", 
-        outputView=outputView, 
-        topic=topic,
-        bootstrapServers=bootstrapServers,
-        groupID=groupId,
-        maxPollRecords=None, 
-        timeout=timeout, 
-        autoCommit=Option(false), 
-        persist=true, 
-        numPartitions=None, 
-        params=Map.empty
-      )
-    ) 
-
-    val expected = dataset
-    val actual = extractDataset.select($"value").as[String]
-
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)  
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
-  }  
-
-  test("KafkaExtract: autoCommit = false") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-    val topic = UUID.randomUUID.toString
-    val groupId = UUID.randomUUID.toString
-
-    // insert 100 records
-    val dataset = spark.sqlContext.range(0, 100)
-      .select("id")
-      .withColumn("uniform", rand(seed=10))
-      .withColumn("normal", randn(seed=27))
-      .repartition(10)
-      .toJSON
-    dataset.createOrReplaceTempView(inputView)
-    load.KafkaLoad.load(
-      KafkaLoad(
-        name="df", 
-        inputView=inputView, 
-        topic=topic,
-        bootstrapServers=bootstrapServers,
-        acks= -1,
-        numPartitions=None, 
-        batchSize=None, 
-        retries=None, 
-        params=Map.empty
-      )
-    )   
-
+    // read should have no offset saved as using uuid group id so get all 100 records
     val extractDataset0 = extract.KafkaExtract.extract(
       KafkaExtract(
         name="df", 
@@ -149,6 +90,12 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ) 
 
+    var expected = dataset0
+    var actual = extractDataset0.select($"value").as[String]
+    assert(actual.except(expected).count === 0)
+    assert(expected.except(actual).count === 0)
+
+    // read should have no offset saved (autoCommit=false) so get all 100 records
     val extractDataset1 = extract.KafkaExtract.extract(
       KafkaExtract(
         name="df", 
@@ -163,56 +110,26 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None, 
         params=Map.empty
       )
-    )
+    ) 
 
-    assert(spark.catalog.isCached(outputView) === true)
-
-    val expected = extractDataset0.select($"value").as[String]
-    val actual = extractDataset1.select($"value").as[String]
-
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)  
-    }
+    expected = dataset0
+    actual = extractDataset1.select($"value").as[String]
     assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
-  }  
+    assert(expected.except(actual).count === 0)    
 
-  test("KafkaExtract: autoCommit = true") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-    val topic = UUID.randomUUID.toString
-    val groupId = UUID.randomUUID.toString
-
-    // insert 100 records
-    val dataset = spark.sqlContext.range(0, 100)
-      .select("id")
-      .withColumn("uniform", rand(seed=10))
-      .withColumn("normal", randn(seed=27))
-      .repartition(10)
-      .toJSON
-    dataset.createOrReplaceTempView(inputView)
-    load.KafkaLoad.load(
-      KafkaLoad(
+    // execute the update
+    au.com.agl.arc.execute.KafkaCommitExecute.execute(
+      KafkaCommitExecute(
         name="df", 
-        inputView=inputView, 
-        topic=topic,
+        inputView=outputView, 
         bootstrapServers=bootstrapServers,
-        acks= -1,
-        numPartitions=None, 
-        batchSize=None, 
-        retries=None, 
+        groupID=groupId,
         params=Map.empty
       )
-    )   
+    ) 
 
-    val extractDataset0 = extract.KafkaExtract.extract(
+    // read should now have offset saved so as no new records exist in kafka should return 0 records
+    val extractDataset2 = extract.KafkaExtract.extract(
       KafkaExtract(
         name="df", 
         outputView=outputView, 
@@ -221,35 +138,57 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         groupID=groupId,
         maxPollRecords=None, 
         timeout=timeout, 
-        autoCommit=Option(true), 
+        autoCommit=Option(false), 
         persist=true, 
         numPartitions=None, 
         params=Map.empty
       )
     ) 
-
-    val extractDataset1 = extract.KafkaExtract.extract(
-      KafkaExtract(
-        name="df", 
-        outputView=outputView, 
-        topic=topic,
-        bootstrapServers=bootstrapServers,
-        groupID=groupId,
-        maxPollRecords=None, 
-        timeout=timeout, 
-        autoCommit=Option(true), 
-        persist=true, 
-        numPartitions=None, 
-        params=Map.empty
-      )
-    )
-
-    assert(spark.catalog.isCached(outputView) === true)
-
-    val expected = extractDataset0.select($"value").as[String]
-    val actual = extractDataset1.select($"value").as[String]
-
-    assert(expected.count === dataset.count)
+    actual = extractDataset2.select($"value").as[String]
     assert(actual.count === 0)
-  }    
+
+    // insert 200 records
+    val dataset1 = spark.sqlContext.range(0, 200)
+      .select("id")
+      .withColumn("uniform", rand(seed=10))
+      .withColumn("normal", randn(seed=27))
+      .repartition(10)
+      .toJSON
+    dataset1.createOrReplaceTempView(inputView1)
+    load.KafkaLoad.load(
+      KafkaLoad(
+        name="df", 
+        inputView=inputView1, 
+        topic=topic,
+        bootstrapServers=bootstrapServers,
+        acks= -1,
+        numPartitions=None, 
+        batchSize=None, 
+        retries=None, 
+        params=Map.empty
+      )
+    ) 
+
+    // read should now have offset saved so should only retieve records from second insert (200 records)
+    val extractDataset3 = extract.KafkaExtract.extract(
+      KafkaExtract(
+        name="df", 
+        outputView=outputView, 
+        topic=topic,
+        bootstrapServers=bootstrapServers,
+        groupID=groupId,
+        maxPollRecords=None, 
+        timeout=timeout, 
+        autoCommit=Option(false), 
+        persist=true, 
+        numPartitions=None, 
+        params=Map.empty
+      )
+    ) 
+
+    expected = dataset1
+    actual = extractDataset3.select($"value").as[String]
+    assert(actual.except(expected).count === 0)
+    assert(expected.except(actual).count === 0)
+  }      
 }
