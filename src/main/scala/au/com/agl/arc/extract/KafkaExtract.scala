@@ -35,6 +35,11 @@ object KafkaExtract {
   def extract(extract: KafkaExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): DataFrame = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
+
+    val maxPollRecords = extract.maxPollRecords.getOrElse(10000)
+    val timeout = extract.timeout.getOrElse(10000L)
+    val autoCommit = extract.autoCommit.getOrElse(false)
+
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
@@ -42,9 +47,8 @@ object KafkaExtract {
     stageDetail.put("bootstrapServers", extract.bootstrapServers)
     stageDetail.put("groupID", extract.groupID)
     stageDetail.put("topic", extract.topic)
-    stageDetail.put("maxPollRecords", Integer.valueOf(extract.maxPollRecords.getOrElse(10000)))
-    stageDetail.put("timeout", Long.valueOf(extract.timeout.getOrElse(10000L)))
-    val autoCommit = extract.autoCommit.getOrElse(true)
+    stageDetail.put("maxPollRecords", Integer.valueOf(maxPollRecords))
+    stageDetail.put("timeout", Long.valueOf(timeout))
     stageDetail.put("autoCommit", Boolean.valueOf(autoCommit))
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
 
@@ -61,7 +65,10 @@ object KafkaExtract {
     props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
     props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
     props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-    props.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, "60000")
+    props.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, timeout.toString)
+    props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, Math.min(10000, timeout-1).toString)
+    props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, Math.min(500, timeout-1).toString)
+    props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, Math.min(3000, timeout-2).toString)
     props.put(ConsumerConfig.GROUP_ID_CONFIG, extract.groupID)
 
     // first get the number of partitions via the driver process so it can be used for mapPartition
@@ -89,8 +96,11 @@ object KafkaExtract {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-        props.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, "60000")
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, extract.maxPollRecords.getOrElse(10000).toString)
+        props.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, timeout.toString)
+        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, Math.min(10000, timeout-1).toString)
+        props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, Math.min(500, timeout-1).toString)
+        props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, Math.min(3000, timeout-2).toString)
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords.toString)
         props.put(ConsumerConfig.GROUP_ID_CONFIG, s"${extract.groupID}-${partitionId}")
 
         // try to assign records based on partitionId and extract 

@@ -2,6 +2,7 @@ import Dependencies._
 
 lazy val root = (project in file(".")).
   enablePlugins(BuildInfoPlugin).
+  configs(IntegrationTest).
   settings(
     name := "arc",
     organization := "au.com.agl",
@@ -9,8 +10,10 @@ lazy val root = (project in file(".")).
     scalastyleFailOnError := false,
     libraryDependencies ++= etlDeps,
     parallelExecution in Test := false,
+    parallelExecution in IntegrationTest := false,
     buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion),
-    buildInfoPackage := "au.com.agl.arc" 
+    buildInfoPackage := "au.com.agl.arc",
+    Defaults.itSettings
   )
 
 // test in assembly := {}

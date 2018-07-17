@@ -6,8 +6,8 @@ object Dependencies {
   lazy val scalaTestVersion = "3.0.1"
 
   // Testing
-  val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion % "test"
-  val scalactic = "org.scalactic" %% "scalactic" % scalaTestVersion % "test"
+  val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion % "it,test"
+  val scalactic = "org.scalactic" %% "scalactic" % scalaTestVersion % "it,test"
 
   // Spark
   val sparkCore = "org.apache.spark" %% "spark-core" % sparkVersion % "provided"

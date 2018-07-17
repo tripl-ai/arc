@@ -157,6 +157,22 @@ sbt assembly
 
 The compiled JAR is then copied into the Docker image in the `Dockerfile`.
 
+### Tests
+
+To run unit tests:
+
+```bash
+sbt test
+```
+
+To run integration tests:
+
+```bash
+docker-compose -f src/it/resources/docker-compose.yml up -d
+sbt it:test
+docker-compose -f src/it/resources/docker-compose.yml down
+```
+
 ### Documentation
 
 To generate the documentation you need to download [Hugo](https://gohugo.io/) to `/docs-src` and run `./hugo` in that  directory. The `/docs` directory is the output of the docuementation generation and should not be edited by hand. The `/docs` directory is automatically published by the Github Pages process on commit.
