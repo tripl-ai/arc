@@ -26,8 +26,9 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _  
   val inputView = "inputView"
-  val topic = UUID.randomUUID.toString
+  val outputView = "outputView"
   val bootstrapServers = "localhost:29092"
+  val timeout = Option(3000L)
 
   before {
     implicit val spark = SparkSession
@@ -45,10 +46,13 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  test("KafkaLoad") {
+  test("KafkaLoad: (value)") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val topic = UUID.randomUUID.toString
+    val groupId = UUID.randomUUID.toString
 
     val dataset = spark.sqlContext.range(0, 100)
       .select("id")
@@ -72,31 +76,104 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
       )
     )   
   
-    // get and sum offsets 
-    val props = new Properties
-    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers)
-    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-    props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-    props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "5000")
-    props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
-    props.put(ConsumerConfig.GROUP_ID_CONFIG, UUID.randomUUID.toString)
+    val extractDataset = extract.KafkaExtract.extract(
+      KafkaExtract(
+        name="df", 
+        outputView=outputView, 
+        topic=topic,
+        bootstrapServers=bootstrapServers,
+        groupID=groupId,
+        maxPollRecords=None, 
+        timeout=timeout, 
+        autoCommit=Option(false), 
+        persist=true, 
+        numPartitions=None, 
+        params=Map.empty
+      )
+    ) 
 
+    val expected = dataset
+    val actual = extractDataset.select($"value").as[String]
 
-    val kafkaConsumer = new KafkaConsumer[String, String](props)
-    val actual = try {
-      val partitions = kafkaConsumer.partitionsFor(topic).asScala
-      val topicPartitions = partitions.map(partition => { new TopicPartition(partition.topic, partition.partition) })
-      val offsets = kafkaConsumer.endOffsets(topicPartitions.asJava).asScala
-      offsets.map({ case (key,value) => {value}}).filter(_ != 0)
-    } finally {
-      kafkaConsumer.close
+    val actualExceptExpectedCount = actual.except(expected).count
+    val expectedExceptActualCount = expected.except(actual).count
+    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
+      println("actual")
+      actual.show(false)
+      println("expected")
+      expected.show(false)  
     }
-
-    // ensure row counts match
-    assert(dataset.count === actual.reduce(_ + _))
+    assert(actualExceptExpectedCount === 0)
+    assert(expectedExceptActualCount === 0)
     // ensure partitions are utilised
     // note the default number of partitions is set in the KAFKA_NUM_PARTITIONS environment variable in the docker-compose file
-    assert(actual.size === 10)    
-  }   
+    assert(extractDataset.agg(countDistinct("partition")).take(1)(0).getLong(0) === 10)    
+  } 
+
+  test("KafkaLoad: (key, value)") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val topic = UUID.randomUUID.toString
+    val groupId = UUID.randomUUID.toString
+
+    val dataset = spark.sqlContext.range(0, 100)
+      .select("id")
+      .withColumn("key", $"id".cast("string"))
+      .withColumn("uniform", rand(seed=10))
+      .withColumn("normal", randn(seed=27))
+      .withColumn("value", to_json(struct($"uniform", $"normal")))
+      .select("key", "value")
+      .repartition(10)
+    dataset.createOrReplaceTempView(inputView)
+
+    load.KafkaLoad.load(
+      KafkaLoad(
+        name="df", 
+        inputView=inputView, 
+        topic=topic,
+        bootstrapServers=bootstrapServers,
+        acks= -1,
+        numPartitions=None, 
+        batchSize=None, 
+        retries=None, 
+        params=Map.empty
+      )
+    )   
+  
+    val extractDataset = extract.KafkaExtract.extract(
+      KafkaExtract(
+        name="df", 
+        outputView=outputView, 
+        topic=topic,
+        bootstrapServers=bootstrapServers,
+        groupID=groupId,
+        maxPollRecords=None, 
+        timeout=timeout, 
+        autoCommit=Option(false), 
+        persist=true, 
+        numPartitions=None, 
+        params=Map.empty
+      )
+    ) 
+
+    val expected = dataset
+    val actual = extractDataset.select($"key", $"value")
+
+    val actualExceptExpectedCount = actual.except(expected).count
+    val expectedExceptActualCount = expected.except(actual).count
+    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
+      println("actual")
+      actual.show(false)
+      println("expected")
+      expected.show(false)  
+    }
+    assert(actualExceptExpectedCount === 0)
+    assert(expectedExceptActualCount === 0)
+
+    // ensure partitions are utilised
+    // note the default number of partitions is set in the KAFKA_NUM_PARTITIONS environment variable in the docker-compose file
+    assert(extractDataset.agg(countDistinct("partition")).take(1)(0).getLong(0) === 10)    
+  }     
 }

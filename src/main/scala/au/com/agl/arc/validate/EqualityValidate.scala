@@ -55,7 +55,7 @@ object EqualityValidate {
     }      
 
     // test column type equality
-    if (leftDF.schema.map(_.dataType.typeName).toArray.deep != rightDF.schema.map(_.dataType.typeName).toArray.deep) {
+    if (leftDF.schema.map(_.dataType).toArray.deep != rightDF.schema.map(_.dataType).toArray.deep) {
       stageDetail.put("leftColumnsTypes", leftDF.schema.map(_.dataType.typeName).toArray)
       stageDetail.put("rightColumnsTypes", rightDF.schema.map(_.dataType.typeName).toArray)
 

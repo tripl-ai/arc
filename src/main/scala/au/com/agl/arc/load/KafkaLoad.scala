@@ -19,13 +19,15 @@ import scala.io.Source
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util._
 
+case class SimpleType(name: String, dataType: DataType)
+
 object KafkaLoad {
 
   def load(load: KafkaLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
 
-    val signature = "KafkaLoad requires inputView to be dataset with [value: string] signature."
+    val signature = "KafkaLoad requires inputView to be dataset with [key: string, value: string] or [value: string] signature."
 
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
@@ -42,11 +44,19 @@ object KafkaLoad {
 
     val df = spark.table(load.inputView)     
 
-    if (df.schema.length != 1 || df.schema(0).dataType != StringType) {
+    // enforce schema layout
+    val simpleSchema = df.schema.fields.map(field => {
+        SimpleType(field.name, field.dataType)
+    })
+    simpleSchema match {
+      case Array(SimpleType("key", StringType), SimpleType("value", StringType)) => 
+      case Array(SimpleType("value", StringType)) => 
+      case _ => { 
         throw new Exception(s"${signature} inputView '${load.inputView}' has ${df.schema.length} columns of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
-        override val detail = stageDetail          
-      }      
-    }     
+          override val detail = stageDetail          
+        }      
+      }
+    }
 
     val repartitionedDF = load.numPartitions match {
       case Some(partitions) => {
@@ -64,40 +74,79 @@ object KafkaLoad {
     recordAccumulator.reset
 
     try {
-      repartitionedDF.foreachPartition(partition => {
-        // KafkaProducer properties 
-        // https://kafka.apache.org/documentation/#producerconfigs
-        val props = new Properties
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, load.bootstrapServers)
-        props.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
 
-        // optional
-        for (retries <- load.retries) {
-          props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(retries))    
-          stageDetail.put(ProducerConfig.RETRIES_CONFIG, Integer.valueOf(retries))
+      repartitionedDF.schema.map(_.dataType) match {
+        case List(StringType) => {
+          repartitionedDF.foreachPartition(partition => {
+            // KafkaProducer properties 
+            // https://kafka.apache.org/documentation/#producerconfigs
+            val props = new Properties
+            props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, load.bootstrapServers)
+            props.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))
+            props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
+            props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
+
+            // optional
+            for (retries <- load.retries) {
+              props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(retries))    
+              stageDetail.put(ProducerConfig.RETRIES_CONFIG, Integer.valueOf(retries))
+            }
+            for (batchSize <- load.batchSize) {
+              props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(batchSize))    
+              stageDetail.put(ProducerConfig.BATCH_SIZE_CONFIG, Integer.valueOf(batchSize))
+            }   
+
+            // create producer
+            val kafkaProducer = new KafkaProducer[String, String](props)
+            try {
+              // send each message via producer
+              partition.foreach(row => {
+                // create payload and send sync
+                val producerRecord = new ProducerRecord[String,String](load.topic, row.getString(0))
+                kafkaProducer.send(producerRecord)
+                recordAccumulator.add(1)
+              }) 
+            } finally {
+              kafkaProducer.close
+            }          
+          })
         }
-        for (batchSize <- load.batchSize) {
-          props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(batchSize))    
-          stageDetail.put(ProducerConfig.BATCH_SIZE_CONFIG, Integer.valueOf(batchSize))
-        }   
+        case List(StringType, StringType) => {
+          repartitionedDF.foreachPartition(partition => {
+            // KafkaProducer properties 
+            // https://kafka.apache.org/documentation/#producerconfigs
+            val props = new Properties
+            props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, load.bootstrapServers)
+            props.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))
+            props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
+            props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
 
-        // create producer
-        val kafkaProducer = new KafkaProducer[String, String](props)
-        
-        // send each message via producer
-        try {
-          partition.foreach(row => {
-            // create payload and send sync
-            val producerRecord = new ProducerRecord[String, String](load.topic, row.getString(0))
-            kafkaProducer.send(producerRecord)
-            recordAccumulator.add(1)
-          })    
-        } finally {
-          kafkaProducer.close
-        }          
-      })
+            // optional
+            for (retries <- load.retries) {
+              props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(retries))    
+              stageDetail.put(ProducerConfig.RETRIES_CONFIG, Integer.valueOf(retries))
+            }
+            for (batchSize <- load.batchSize) {
+              props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(batchSize))    
+              stageDetail.put(ProducerConfig.BATCH_SIZE_CONFIG, Integer.valueOf(batchSize))
+            }   
+
+            // create producer
+            val kafkaProducer = new KafkaProducer[String, String](props)
+            try {
+              // send each message via producer
+              partition.foreach(row => {
+                // create payload and send sync
+                val producerRecord = new ProducerRecord[String,String](load.topic, row.getString(0), row.getString(1))
+                kafkaProducer.send(producerRecord)
+                recordAccumulator.add(1)
+              }) 
+            } finally {
+              kafkaProducer.close
+            }          
+          })
+        }
+      }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         stageDetail.put("records", Long.valueOf(recordAccumulator.value)) 
