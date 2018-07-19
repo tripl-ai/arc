@@ -12,12 +12,6 @@ It is designed to:
 - Support limited 'schema evolution' of source data in the form of allowed lists of accepted input formats.
 - Collect errors into array columns so that a user can decide how to handle errors once all have been collected.
 
-## Logical Flow
-
-The sequence that these fields are converted from `string` fields to `typed` fields is per this flow chart. Each value and its typing metadata is passed into this logical process:
-
-![Logical Flow for Data Typing](/img/typing_flow.png "Logical Flow for Data Typing")
-
 ## Common
 
 ### Attributes
