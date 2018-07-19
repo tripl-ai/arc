@@ -922,6 +922,8 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <p>The <code>TypingTransform</code> stage transforms the incoming dataset with based on metadata defined in the <a href="../metadata/">metadata</a> format.</p>
 
+<p>The logical process that is applied to perform the typing on a field-by-field basis is shown below.</p>
+
 <h3 id="parameters-5">Parameters</h3>
 
 <table>
@@ -1013,7 +1015,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <h3 id="logical-flow">Logical Flow</h3>
 
-<p>The sequence that these fields are converted from <code>string</code> fields to <code>typed</code> fields is per this flow chart. Each value and its typing metadata is passed into this logical process. For each row the returned <code>values</code> are returned as a table with the returned <code>error</code> values and concatentated into a field called <code>_errors</code>. Patterns for consuming the <code>_errors</code> array is are demonstrated in the <a href="../validate/#sqlvalidate">SQLValidate</a> stage.</p>
+<p>The sequence that these fields are converted from <code>string</code> fields to <code>typed</code> fields is per this flow chart. Each value and its typing metadata is passed into this logical process. For each the  <code>values</code> are returned as standard table columns and the returned <code>error</code> values are groupd into a field called <code>_errors</code> on a row-by-row basis. Patterns for consuming the <code>_errors</code> array is are demonstrated in the <a href="../validate/#sqlvalidate">SQLValidate</a> stage.</p>
 
 <p><img src="https://aglenergy.github.io/arc/img/typing_flow.png" alt="Logical Flow for Data Typing" title="Logical Flow for Data Typing" /></p>
 

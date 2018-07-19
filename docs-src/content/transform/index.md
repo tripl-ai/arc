@@ -236,6 +236,8 @@ The `TensorFlowServingTransform` stage transforms the incoming dataset by callin
 
 The `TypingTransform` stage transforms the incoming dataset with based on metadata defined in the [metadata](../metadata/) format. 
 
+The logical process that is applied to perform the typing on a field-by-field basis is shown below.
+
 ### Parameters
 
 | Attribute | Type | Required | Description |
@@ -270,6 +272,6 @@ The `TypingTransform` stage transforms the incoming dataset with based on metada
 
 ### Logical Flow
 
-The sequence that these fields are converted from `string` fields to `typed` fields is per this flow chart. Each value and its typing metadata is passed into this logical process. For each row the returned `values` are returned as a table with the returned `error` values and concatentated into a field called `_errors`. Patterns for consuming the `_errors` array is are demonstrated in the [SQLValidate](../validate/#sqlvalidate) stage.
+The sequence that these fields are converted from `string` fields to `typed` fields is per this flow chart. Each value and its typing metadata is passed into this logical process. For each the  `values` are returned as standard table columns and the returned `error` values are groupd into a field called `_errors` on a row-by-row basis. Patterns for consuming the `_errors` array is are demonstrated in the [SQLValidate](../validate/#sqlvalidate) stage.
 
 ![Logical Flow for Data Typing](/img/typing_flow.png "Logical Flow for Data Typing")
