@@ -1346,6 +1346,7 @@ object ConfigUtils {
 
     val (stages, errors) = pipelineStages.foldLeft[(List[PipelineStage], List[StageError])]( (Nil, Nil) ) { case ( (stages, errs), stageOrError ) =>
       stageOrError match {
+        case Right(PipelineExecute(_, _, subPipeline)) => (subPipeline.stages ::: stages, errs)
         case Right(s) => (s :: stages, errs)
         case Left(stageErrors) => (stages, stageErrors ::: errs)
       }
