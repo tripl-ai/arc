@@ -149,7 +149,7 @@ object ARC {
 
     // try to parse config
     val pipelineConfig = try {
-      ConfigUtils.parsePipeline()(spark, logger, argsMap, env)
+      ConfigUtils.parsePipeline(argsMap, env)(spark, logger)
     } catch {
       case e: Exception => 
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala

@@ -232,13 +232,13 @@ object API {
 
   case class KafkaCommitExecute(name: String, inputView: String, bootstrapServers: String, groupID: String, params: Map[String, String]) extends Execute  { val getType = "KafkaCommitExecute" }
 
+  case class PipelineExecute(name: String, uri: URI, pipeline: ETLPipeline) extends Execute  { val getType = "PipelineExecute" }
 
   sealed trait Validate extends PipelineStage
 
   case class EqualityValidate(name: String, leftView: String, rightView: String, params: Map[String, String]) extends Validate { val getType = "EqualityValidate" }
 
   case class SQLValidate(name: String, inputURI: URI, sql: String, sqlParams: Map[String, String], params: Map[String, String]) extends Validate { val getType = "SQLValidate" }
-
 
 
   sealed trait Authentication

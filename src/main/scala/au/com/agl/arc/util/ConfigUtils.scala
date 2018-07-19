@@ -27,16 +27,16 @@ object ConfigUtils {
       params.filter{ case (k,v) => options.contains(k) }
   }
 
-  def parsePipeline()(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, argsMap: collection.mutable.Map[String, String], env: String): Either[List[Error], ETLPipeline] = {
+  def parsePipeline(argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
     val configUri: Option[String] = argsMap.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))    
 
     configUri match {
-      case Some(uri) => parseConfig(new URI(uri))
+      case Some(uri) => parseConfig(new URI(uri), argsMap, env)
       case None => Left(ConfigError("file", s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
      }
   }
 
-  def parseConfig(uri: URI)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, argsMap: collection.mutable.Map[String, String], env: String): Either[List[Error], ETLPipeline] = {
+  def parseConfig(uri: URI, argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
     val base = ConfigFactory.load()    
 
     uri.getScheme match {
@@ -45,13 +45,13 @@ object ConfigUtils {
         val etlConfString = CloudUtils.getTextBlob(filePath)
         val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
         val c = etlConf.withFallback(base).resolve()
-        readPipeline(c, uri)
+        readPipeline(c, uri, argsMap, env)
       }      
       case "file" => {
         val etlConfString = CloudUtils.getTextBlob(uri.toString)
         val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
         val c = etlConf.withFallback(base).resolve()
-        readPipeline(c, uri)
+        readPipeline(c, uri, argsMap, env)
       }
       case "s3a" => {
         val s3aEndpoint: Option[String] = argsMap.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT")) 
@@ -82,7 +82,7 @@ object ConfigUtils {
         val etlConfString = CloudUtils.getTextBlob(uri.toString)
         val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
         val c = etlConf.withFallback(base).resolve()
-        readPipeline(c, uri)        
+        readPipeline(c, uri, argsMap, env)
       }
       case "wasbs" => {       
         val azureAccountName: Option[String] = argsMap.get("etl.config.fs.azure.account.name").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_NAME")) 
@@ -101,7 +101,7 @@ object ConfigUtils {
         val etlConfString = CloudUtils.getTextBlob(uri.toString)
         val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
         val c = etlConf.withFallback(base).resolve()
-        readPipeline(c, uri)
+        readPipeline(c, uri, argsMap, env)
       }
       case _ => {
         Left(ConfigError("file", "make sure url scheme is defined e.g. file://${pwd}") :: Nil)
@@ -413,7 +413,7 @@ object ConfigUtils {
     }
   }  
 
-  def readAvroExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readAvroExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputURI = getValue[String]("inputURI")
@@ -429,12 +429,12 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }  
 
   // extract
-  def readDelimitedExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+  def readDelimitedExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
@@ -486,11 +486,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, input, extractColumns, outputView, persist, numPartitions, header, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }  
 
-  def readHTTPExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readHTTPExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val uriKey = "uri"
@@ -510,11 +510,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, parsedURI, outputView, persist, numPartitions).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }  
 
-  def readJDBCExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readJDBCExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val outputView = getValue[String]("outputView")
@@ -533,11 +533,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }   
 
-  def readJSONExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readJSONExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
@@ -562,11 +562,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, input, outputView, persist, numPartitions, multiLine, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }
 
-  def readKafkaExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readKafkaExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val outputView = getValue[String]("outputView")
@@ -588,11 +588,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }  
 
-  def readORCExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readORCExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputURI = getValue[String]("inputURI")
@@ -608,11 +608,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }  
 
-  def readParquetExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readParquetExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputURI = getValue[String]("inputURI")
@@ -628,11 +628,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }
 
-  def readXMLExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readXMLExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputURI = getValue[String]("inputURI")
@@ -648,12 +648,12 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }
 
   // transform
-  def readDiffTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+  def readDiffTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputLeftView = getValue[String]("inputLeftView")
@@ -670,11 +670,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   } 
 
-  def readJSONTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+  def readJSONTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -688,11 +688,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputView, outputView, persist).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }  
 
-  def readMLTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+  def readMLTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val uriKey = "inputURI"
@@ -717,11 +717,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputURI, parsedURI, inputModel, inputView, outputView, persist).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }
 
-  def readSQLTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+  def readSQLTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val uriKey = "inputURI"
@@ -776,11 +776,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputURI, parsedURI, inputSQL, validSQL, outputView, persist).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   } 
 
-  def readTensorFlowServingTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+  def readTensorFlowServingTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -800,11 +800,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputView, outputView, hostname, port, modelName, signatureName, persist).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }
 
-  def readTypingTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+  def readTypingTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val uriKey = "inputURI"
@@ -825,13 +825,13 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputURI, parsedURI, extractColumns, inputView, outputView, persist, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }   
 
   // load
 
-  def readAvroLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readAvroLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -849,11 +849,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }    
 
-  def readAzureEventHubsLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readAzureEventHubsLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -873,11 +873,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputView, namespaceName, eventHubName, sharedAccessSignatureKeyName, sharedAccessSignatureKey, numPartitions, retryMinBackoff, retryMaxBackoff, retryCount).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }    
 
-  def readDelimitedLoad(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+  def readDelimitedLoad(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -920,11 +920,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputView, outputURI, header, authentication, numPartitions, saveMode).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }    
   
-  def readHTTPLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readHTTPLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -941,11 +941,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, parsedURI, inputView).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }  
 
-  def readJDBCLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readJDBCLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -969,11 +969,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }      
 
-  def readJSONLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readJSONLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -991,11 +991,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }
 
-  def readKafkaLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readKafkaLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -1014,11 +1014,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputView, topic, bootstrapServers, acks, retries, batchSize, numPartitions).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }   
 
-  def readORCLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readORCLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -1036,11 +1036,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }  
 
-  def readParquetLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readParquetLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -1058,11 +1058,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }  
 
-  def readXMLLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readXMLLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -1080,13 +1080,13 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }  
 
   // execute
 
-  def readHTTPExecute(name: StringConfigValue, params: Map[String, String])(implicit logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+  def readHTTPExecute(name: StringConfigValue, params: Map[String, String])(implicit logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val uri = getValue[String]("uri")
@@ -1102,11 +1102,11 @@ object ConfigUtils {
         val allErrors: Errors = List(uri).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }
 
-  def readJDBCExecute(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+  def readJDBCExecute(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val authentication = readAuthentication("authentication")  
@@ -1147,11 +1147,11 @@ object ConfigUtils {
 
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }
 
-  def readKafkaCommitExecute(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[StageError, PipelineStage] = {
+  def readKafkaCommitExecute(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
@@ -1165,13 +1165,37 @@ object ConfigUtils {
         val allErrors: Errors = List(name, inputView, bootstrapServers, groupID).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }    
 
+  def readPipelineExecute(name: StringConfigValue, params: Map[String, String], argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
+    import ConfigReader._
+
+    val uri = getValue[String]("uri")
+
+    (name, uri) match {
+      case (Right(n), Right(u)) => 
+        val uri = new URI(u)
+        val subPipeline = parseConfig(uri, argsMap, env)
+        subPipeline match {
+          case Right(etl) => Right(PipelineExecute(n, uri, etl))
+          case Left(errors) => {
+            val stageErrors = errors.collect { case s: StageError => s }
+            Left(stageErrors)
+          }
+        }
+      case _ =>
+        val allErrors: Errors = List(uri).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err :: Nil)
+    }
+  }
+
   // validate
 
-  def readEqualityValidate(name: StringConfigValue, params: Map[String, String])(implicit logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+  def readEqualityValidate(name: StringConfigValue, params: Map[String, String])(implicit logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val leftView = getValue[String]("leftView")
@@ -1184,11 +1208,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, leftView, rightView).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }  
   
-  def readSQLValidate(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+  def readSQLValidate(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val authentication = readAuthentication("authentication")  
@@ -1215,11 +1239,11 @@ object ConfigUtils {
         val allErrors: Errors = List(name, parsedURI, inputSQL, validSQL).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
-        Left(err)
+        Left(err :: Nil)
     }
   }    
 
-  def readPipeline(c: Config, uri: URI)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, env: String): Either[List[Error], ETLPipeline] = {
+  def readPipeline(c: Config, uri: URI, argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
     import ConfigReader._
 
     val startTime = System.currentTimeMillis() 
@@ -1230,7 +1254,7 @@ object ConfigUtils {
       .field("uri", uri.toString)        
       .log()    
 
-    val pipelineStages: List[Either[StageError, PipelineStage]] =
+    val pipelineStages: List[Either[List[StageError], PipelineStage]] =
       (for (stage <- configStages.asScala) yield {
         implicit val s = stage.toConfig
         val name: StringConfigValue = getValue[String]("name")
@@ -1309,11 +1333,13 @@ object ConfigUtils {
             case Right("HTTPExecute") => Option(readHTTPExecute(name, params))
             case Right("JDBCExecute") => Option(readJDBCExecute(name, params))
             case Right("KafkaCommitExecute") => Option(readKafkaCommitExecute(name, params))
+            case Right("PipelineExecute") => Option(readSQLValidate(name, params))
 
             case Right("EqualityValidate") => Option(readEqualityValidate(name, params))
             case Right("SQLValidate") => Option(readSQLValidate(name, params))
+
             
-            case _ => Option(Left(StageError("unknown", ConfigError("stages", s"Unknown stage type: '${_type}'") :: Nil)))
+            case _ => Option(Left(StageError("unknown", ConfigError("stages", s"Unknown stage type: '${_type}'") :: Nil) :: Nil))
           }
         }
       }).flatten.toList
@@ -1321,7 +1347,7 @@ object ConfigUtils {
     val (stages, errors) = pipelineStages.foldLeft[(List[PipelineStage], List[StageError])]( (Nil, Nil) ) { case ( (stages, errs), stageOrError ) =>
       stageOrError match {
         case Right(s) => (s :: stages, errs)
-        case Left(err) => (stages, err :: errs)
+        case Left(stageErrors) => (stages, stageErrors ::: errs)
       }
     }
 
