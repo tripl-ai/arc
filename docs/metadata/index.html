@@ -395,6 +395,12 @@
 <li>Collect errors into array columns so that a user can decide how to handle errors once all have been collected.</li>
 </ul>
 
+<h2 id="logical-flow">Logical Flow</h2>
+
+<p>The sequence that these fields are converted from <code>string</code> fields to <code>typed</code> fields is per this flow chart. Each value and its typing metadata is passed into this logical process:</p>
+
+<p><img src="https://aglenergy.github.io/arc/img/typing_flow.png" alt="Logical Flow for Data Typing" title="Logical Flow for Data Typing" /></p>
+
 <h2 id="common">Common</h2>
 
 <h3 id="attributes">Attributes</h3>
@@ -457,6 +463,13 @@
 <td>Array[String]</td>
 <td>false</td>
 <td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
+</tr>
+
+<tr>
+<td>nullReplacementValue</td>
+<td>String</td>
+<td>false</td>
+<td>An optional value that a null value input value is replaced with before typing.</td>
 </tr>
 
 <tr>

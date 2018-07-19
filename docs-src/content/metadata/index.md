@@ -12,6 +12,12 @@ It is designed to:
 - Support limited 'schema evolution' of source data in the form of allowed lists of accepted input formats.
 - Collect errors into array columns so that a user can decide how to handle errors once all have been collected.
 
+## Logical Flow
+
+The sequence that these fields are converted from `string` fields to `typed` fields is per this flow chart. Each value and its typing metadata is passed into this logical process:
+
+![Logical Flow for Data Typing](/img/typing_flow.png "Logical Flow for Data Typing")
+
 ## Common
 
 ### Attributes
@@ -25,6 +31,7 @@ It is designed to:
 |trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
 |nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
 |nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
+|nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 |primaryKey|Boolean|false|{{< readfile file="/content/partials/fields/primaryKey.md" markdown="true" >}}|
 |position|Integer|false|{{< readfile file="/content/partials/fields/position.md" markdown="true" >}}|
 

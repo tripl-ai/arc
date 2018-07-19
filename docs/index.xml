@@ -88,7 +88,7 @@ This stage will validate:
       <guid>https://aglenergy.github.io/arc/metadata/</guid>
       <description>The metadata format, consumed in the TypingTransform stage, is an opinionated format for specifying common data typing actions.
 It is designed to:
- Support common data typing conversions found in business datasets. Support limited &amp;lsquo;schema evolution&amp;rsquo; of source data in the form of allowed lists of accepted input formats. Collect errors into array columns so that a user can decide how to handle errors once all have been collected.  Common Attributes    Attribute Type Required Description     id String true A unique identifier for this field.</description>
+ Support common data typing conversions found in business datasets. Support limited &amp;lsquo;schema evolution&amp;rsquo; of source data in the form of allowed lists of accepted input formats. Collect errors into array columns so that a user can decide how to handle errors once all have been collected.  Logical Flow The sequence that these fields are converted from string fields to typed fields is per this flow chart.</description>
     </item>
     
     <item>
