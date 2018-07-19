@@ -18,9 +18,25 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:29092
+      KAFKA_LISTENERS: CLIENT://0.0.0.0:29092,INTERNAL://kafka:29093
+      KAFKA_ADVERTISED_LISTENERS: CLIENT://localhost:29092,INTERNAL://kafka:29093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLIENT:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_NUM_PARTITIONS: 10
+  
+  kafka-rest:
+    image: confluentinc/cp-kafka-rest:latest
+    ports:
+      - 8082:8082
+    depends_on:
+      - zookeeper
+      - kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_REST_BOOTSTRAP_SERVERS: kafka:29093
+      KAFKA_REST_HOST_NAME: kafka-rest
+      KAFKA_REST_LISTENERS: http://0.0.0.0:8082
 
   tensorflow_serving:
     image: tensorflow_serving/simple:latest
