@@ -21,7 +21,7 @@ The `HTTPExecute` takes an input `Map[String, String]` from the configuration an
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
 |payloads|Map[String, String]|false|{{< readfile file="/content/partials/fields/payloads.md" markdown="true" >}}|
 |validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}}|
-|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
@@ -62,7 +62,7 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
 |password|String|false|Database password for the given user. Optional, can also be in the url or params.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
-|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} All parameters will be added to the Connection Properties.|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} All parameters will be added to the Connection Properties.|
 
 ### Examples
 
@@ -101,7 +101,7 @@ For example, if a job reads from a Kafka topic and writes the results to `parque
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |bootstrapServers|String|true|{{< readfile file="/content/partials/fields/bootstrapServers.md" markdown="true" >}}|
 |groupID|String|true|{{< readfile file="/content/partials/fields/groupID.md" markdown="true" >}}|
-|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
