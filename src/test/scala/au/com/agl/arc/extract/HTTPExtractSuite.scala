@@ -99,7 +99,8 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        numPartitions=None
+        numPartitions=None,
+        partitionBy=Nil
       )
     )
 
@@ -138,7 +139,8 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        numPartitions=None
+        numPartitions=None,
+        partitionBy=Nil
       )
     )
 
@@ -160,7 +162,8 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          numPartitions=None
+          numPartitions=None,
+          partitionBy=Nil
         )
       )
     }
@@ -182,7 +185,8 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          numPartitions=None
+          numPartitions=None,
+          partitionBy=Nil
         )
       )
     }
@@ -204,7 +208,8 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          numPartitions=None
+          numPartitions=None,
+          partitionBy=Nil
         )
       )
     }

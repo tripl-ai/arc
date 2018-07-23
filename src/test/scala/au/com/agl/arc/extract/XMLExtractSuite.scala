@@ -66,7 +66,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         authentication=None,
         params=Map.empty,
         persist=false,
-        numPartitions=None
+        numPartitions=None,
+        partitionBy=Nil
       )
     )
 
@@ -103,7 +104,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         authentication=None,
         params=Map.empty,
         persist=false,
-        numPartitions=None
+        numPartitions=None,
+        partitionBy=Nil
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -118,7 +120,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         authentication=None,
         params=Map.empty,
         persist=true,
-        numPartitions=None
+        numPartitions=None,
+        partitionBy=Nil
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -147,14 +150,15 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val thrown0 = intercept[Exception with DetailException] {
       val extractDataset = extract.XMLExtract.extract(
         XMLExtract(
-        name=outputView,
-        cols=Nil,
-        outputView=outputView,
-        input=new URI(emptyWildcardDirectory),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None
+          name=outputView,
+          cols=Nil,
+          outputView=outputView,
+          input=new URI(emptyWildcardDirectory),
+          authentication=None,
+          params=Map.empty,
+          persist=false,
+          numPartitions=None,
+          partitionBy=Nil
         )
       )
     }
@@ -164,14 +168,15 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val thrown1 = intercept[Exception with DetailException] {
       val extractDataset = extract.XMLExtract.extract(
         XMLExtract(
-        name=outputView,
-        cols=Nil,
-        outputView=outputView,
-        input=new URI(emptyDirectory),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None
+          name=outputView,
+          cols=Nil,
+          outputView=outputView,
+          input=new URI(emptyDirectory),
+          authentication=None,
+          params=Map.empty,
+          persist=false,
+          numPartitions=None,
+          partitionBy=Nil
         )
       )
     }
@@ -180,14 +185,15 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     // try with column
     val extractDataset = extract.XMLExtract.extract(
       XMLExtract(
-      name=outputView,
-      cols=cols,
-      outputView=outputView,
-      input=new URI(emptyDirectory),
-      authentication=None,
-      params=Map.empty,
-      persist=false,
-      numPartitions=None
+        name=outputView,
+        cols=cols,
+        outputView=outputView,
+        input=new URI(emptyDirectory),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil
       )
     )
 
@@ -246,7 +252,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         authentication=None,
         params=Map.empty,
         persist=false,
-        numPartitions=None
+        numPartitions=None,
+        partitionBy=Nil
       )
     )
 

@@ -66,7 +66,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         authentication=None,
         params=Map.empty,
         persist=false,
-        numPartitions=None
+        numPartitions=None,
+        partitionBy=Nil
       )
     )
 
@@ -108,7 +109,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         authentication=None,
         params=Map.empty,
         persist=false,
-        numPartitions=None
+        numPartitions=None,
+        partitionBy=Nil
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -123,7 +125,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         authentication=None,
         params=Map.empty,
         persist=true,
-        numPartitions=None
+        numPartitions=None,
+        partitionBy=Nil
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -159,7 +162,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         authentication=None,
         params=Map.empty,
         persist=false,
-        numPartitions=None
+        numPartitions=None,
+        partitionBy=Nil
         )
       )
     }
@@ -176,7 +180,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         authentication=None,
         params=Map.empty,
         persist=false,
-        numPartitions=None
+        numPartitions=None,
+        partitionBy=Nil
         )
       )
     }
@@ -185,14 +190,15 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     // try with column
     val extractDataset = extract.AvroExtract.extract(
       AvroExtract(
-      name=outputView,
-      cols=cols,
-      outputView=outputView,
-      input=new URI(emptyDirectory),
-      authentication=None,
-      params=Map.empty,
-      persist=false,
-      numPartitions=None
+        name=outputView,
+        cols=cols,
+        outputView=outputView,
+        input=new URI(emptyDirectory),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil
       )
     )
 

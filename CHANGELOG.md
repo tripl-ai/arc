@@ -6,6 +6,7 @@
 - added the `EXPERIMENTAL` `KafkaExtract` stage - a stage which will read from a designated `topic` in Apache Kafka and produce a dataset.
 - added the `KafkaCommitExecute` stage - a stage which allows the commiting of the Kafka offsets to be deferred allowing quasi-transactional behaviour.
 - added integration tests for `KafkaLoad` and `KafkaExtract`. more to come.
+- added `partitionBy` to `*Extract`.
 
 # 1.0.7
 

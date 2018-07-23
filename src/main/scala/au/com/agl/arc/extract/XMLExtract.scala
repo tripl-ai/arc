@@ -81,10 +81,22 @@ object XMLExtract {
     }
          
     // repartition to distribute rows evenly
-    val repartitionedDF = extract.numPartitions match {
-      case Some(numPartitions) => enrichedDF.repartition(numPartitions)
-      case None => enrichedDF
-    }
+    val repartitionedDF = extract.partitionBy match {
+      case Nil => { 
+        extract.numPartitions match {
+          case Some(numPartitions) => enrichedDF.repartition(numPartitions)
+          case None => enrichedDF
+        }   
+      }
+      case partitionBy => {
+        // create a column array for repartitioning
+        val partitionCols = partitionBy.map(col => df(col))
+        extract.numPartitions match {
+          case Some(numPartitions) => enrichedDF.repartition(numPartitions, partitionCols:_*)
+          case None => enrichedDF.repartition(partitionCols:_*)
+        }
+      }
+    } 
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 
     stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
