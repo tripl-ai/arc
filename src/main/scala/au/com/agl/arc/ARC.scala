@@ -2,6 +2,7 @@ package au.com.agl.arc
 
 object ARC {
 
+  import java.util.UUID
   import org.apache.commons.lang3.exception.ExceptionUtils
   import scala.collection.JavaConverters._
 
@@ -41,7 +42,7 @@ object ARC {
     val spark: SparkSession = try {
       SparkSession
         .builder()
-        .appName(jobId.getOrElse(s"arc:${BuildInfo.version}"))
+        .appName(jobId.getOrElse(s"arc:${BuildInfo.version}-${UUID.randomUUID.toString}"))
         .config("spark.debug.maxToStringFields", "8192")
         .config("spark.kryo.registrator", classOf[GeoSparkKryoRegistrator].getName)
         .getOrCreate()  
@@ -56,7 +57,7 @@ object ARC {
         detail.put("messages", exceptionThrowablesMessages)
         detail.put("stackTrace", exceptionThrowablesStackTraces)
 
-        val logger = LoggerFactory.getLogger(jobId.getOrElse(s"arc:${BuildInfo.version}"))
+        val logger = LoggerFactory.getLogger(jobId.getOrElse(s"arc:${BuildInfo.version}-${UUID.randomUUID.toString}"))
         logger.error()
           .field("event", "exit")
           .field("status", "failure")
