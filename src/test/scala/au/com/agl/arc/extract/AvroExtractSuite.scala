@@ -67,7 +67,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 
@@ -110,7 +111,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -126,7 +128,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=true,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -155,15 +158,16 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     val thrown0 = intercept[Exception with DetailException] {
       val extractDataset = extract.AvroExtract.extract(
         AvroExtract(
-        name=outputView,
-        cols=Nil,
-        outputView=outputView,
-        input=new URI(emptyWildcardDirectory),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil
+          name=outputView,
+          cols=Nil,
+          outputView=outputView,
+          input=new URI(emptyWildcardDirectory),
+          authentication=None,
+          params=Map.empty,
+          persist=false,
+          numPartitions=None,
+          partitionBy=Nil,
+          contiguousIndex=None
         )
       )
     }
@@ -173,15 +177,16 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     val thrown1 = intercept[Exception with DetailException] {
       val extractDataset = extract.AvroExtract.extract(
         AvroExtract(
-        name=outputView,
-        cols=Nil,
-        outputView=outputView,
-        input=new URI(emptyDirectory),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil
+          name=outputView,
+          cols=Nil,
+          outputView=outputView,
+          input=new URI(emptyDirectory),
+          authentication=None,
+          params=Map.empty,
+          persist=false,
+          numPartitions=None,
+          partitionBy=Nil,
+          contiguousIndex=None
         )
       )
     }
@@ -198,7 +203,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 

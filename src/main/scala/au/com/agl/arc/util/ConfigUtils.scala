@@ -422,12 +422,13 @@ object ConfigUtils {
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
     val authentication = readAuthentication("authentication")
+    val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
 
-    (name, inputURI, outputView, persist, numPartitions, authentication) match {
-      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth)) => 
-        Right(AvroExtract(n, Nil, ov, new URI(in), auth, params, p, np, partitionBy))
+    (name, inputURI, outputView, persist, numPartitions, authentication, contiguousIndex) match {
+      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
+        Right(AvroExtract(n, Nil, ov, new URI(in), auth, params, p, np, partitionBy, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication, contiguousIndex).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -445,6 +446,7 @@ object ConfigUtils {
     val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
     val header = getOptionalValue[Boolean]("header")
     val authentication = readAuthentication("authentication")
+    val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
 
     val uriKey = "schemaURI"
     val stringURI = getOptionalValue[String](uriKey)
@@ -473,8 +475,8 @@ object ConfigUtils {
       }
     } else delimited.quote
 
-    (name, input, extractColumns, outputView, persist, numPartitions, header, authentication) match {
-      case (Right(n), Right(in), Right(cols), Right(ov), Right(p), Right(np), Right(head), Right(auth)) => 
+    (name, input, extractColumns, outputView, persist, numPartitions, header, authentication, contiguousIndex) match {
+      case (Right(n), Right(in), Right(cols), Right(ov), Right(p), Right(np), Right(head), Right(auth), Right(ci)) => 
 
         val header = head match {
           case Some(value) => value
@@ -482,10 +484,10 @@ object ConfigUtils {
         }
 
         val input = if(c.hasPath("inputView")) Left(in) else Right(new URI(in))
-        val extract = DelimitedExtract(n, cols, ov, input, Delimited(header=header, sep=delimiter, quote=quote), auth, params, p, np, partitionBy)
+        val extract = DelimitedExtract(n, cols, ov, input, Delimited(header=header, sep=delimiter, quote=quote), auth, params, p, np, partitionBy, ci)
         Right(extract)
       case _ =>
-        val allErrors: Errors = List(name, input, extractColumns, outputView, persist, numPartitions, header, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, input, extractColumns, outputView, persist, numPartitions, header, authentication, contiguousIndex).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -505,6 +507,7 @@ object ConfigUtils {
     val persist = getValue[Boolean]("persist")
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
 
     (name, parsedURI, outputView, persist, numPartitions) match {
       case (Right(n), Right(uri), Right(ov), Right(p), Right(np)) => 
@@ -529,6 +532,7 @@ object ConfigUtils {
     val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
     val fetchsize = getOptionalValue[Int]("fetchsize")
     val customSchema = getOptionalValue[String]("customSchema")
+    val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
 
     (name, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema) match {
       case (Right(n), Right(ov), Right(p), Right(ju), Right(d), Right(tn), Right(np), Right(fs), Right(cs)) => 
@@ -551,9 +555,10 @@ object ConfigUtils {
     val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
     val multiLine = getOptionalValue[Boolean]("multiLine")
     val authentication = readAuthentication("authentication")
+    val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
 
-    (name, input, outputView, persist, numPartitions, multiLine, authentication) match {
-      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(ml), Right(auth)) => 
+    (name, input, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex) match {
+      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci)) => 
         val input = if(c.hasPath("inputView")) Left(in) else Right(new URI(in))
 
         val json = JSON()
@@ -561,10 +566,10 @@ object ConfigUtils {
           case Some(b: Boolean) => b
           case _ => json.multiLine
         }
-        val extract = JSONExtract(n, Nil, ov, input, JSON(multiLine=multiLine), auth, params, p, np, partitionBy)
+        val extract = JSONExtract(n, Nil, ov, input, JSON(multiLine=multiLine), auth, params, p, np, partitionBy, ci)
         Right(extract)
       case _ =>
-        val allErrors: Errors = List(name, input, outputView, persist, numPartitions, multiLine, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, input, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -607,12 +612,13 @@ object ConfigUtils {
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
     val authentication = readAuthentication("authentication")
+    val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
 
-    (name, inputURI, outputView, persist, numPartitions, authentication) match {
-      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth)) => 
-        Right(ORCExtract(n, Nil, ov, new URI(in), auth, params, p, np, partitionBy))
+    (name, inputURI, outputView, persist, numPartitions, authentication, contiguousIndex) match {
+      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
+        Right(ORCExtract(n, Nil, ov, new URI(in), auth, params, p, np, partitionBy, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication, contiguousIndex).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -628,12 +634,13 @@ object ConfigUtils {
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
     val authentication = readAuthentication("authentication")
+    val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
 
-    (name, inputURI, outputView, persist, numPartitions, authentication) match {
-      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth)) => 
-        Right(ParquetExtract(n, Nil, ov, new URI(in), auth, params, p, np, partitionBy))
+    (name, inputURI, outputView, persist, numPartitions, authentication, contiguousIndex) match {
+      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
+        Right(ParquetExtract(n, Nil, ov, new URI(in), auth, params, p, np, partitionBy, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication, contiguousIndex).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
@@ -649,12 +656,13 @@ object ConfigUtils {
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
     val authentication = readAuthentication("authentication")
+    val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
 
-    (name, inputURI, outputView, persist, numPartitions, authentication) match {
-      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth)) => 
-        Right(XMLExtract(n, Nil, ov, new URI(in), auth, params, p, np, partitionBy))
+    (name, inputURI, outputView, persist, numPartitions, authentication, contiguousIndex) match {
+      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
+        Right(XMLExtract(n, Nil, ov, new URI(in), auth, params, p, np, partitionBy, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication, contiguousIndex).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)

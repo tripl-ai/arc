@@ -7,6 +7,7 @@
 - added the `KafkaCommitExecute` stage - a stage which allows the commiting of the Kafka offsets to be deferred allowing quasi-transactional behaviour.
 - added integration tests for `KafkaLoad` and `KafkaExtract`. more to come.
 - added `partitionBy` to `*Extract`.
+- added `contiguousIndex` option to file based `*Extract` which allows users to opt out of the expensive `_index` resolution from `_monotonically_increasing_id`.
 
 # 1.0.7
 

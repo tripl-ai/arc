@@ -69,9 +69,9 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 |sharedAccessSignatureKeyName|String|true|{{< readfile file="/content/partials/fields/sharedAccessSignatureKeyName.md" markdown="true" >}}|
 |sharedAccessSignatureKey|String|true|{{< readfile file="/content/partials/fields/sharedAccessSignatureKey.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} Azure EventHubs will throw a `ServerBusyException` if too many executors write to a target in parallel which can be decreased by reducing the number of partitions.|
-|retryMinBackoff|Long|false|The minimum time (in seconds) for the exponential backoff algorithm to wait between retries. Default: 0.|
-|retryMaxBackoff|Long|false|The maximum time (in seconds) for the exponential backoff algorithm to wait between retries. Default: 30.|
-|retryCount|Integer|false|The maximum number of retries for the exponential backoff algorithm. Default: 10.|
+|retryMinBackoff|Long|false|The minimum time (in seconds) for the exponential backoff algorithm to wait between retries.<br><br>Default: 0.|
+|retryMaxBackoff|Long|false|The maximum time (in seconds) for the exponential backoff algorithm to wait between retries.<br><br>Default: 30.|
+|retryCount|Integer|false|The maximum number of retries for the exponential backoff algorithm.<br><br>Default: 10.|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
@@ -275,8 +275,8 @@ In the future additional Transform stages (like `ProtoBufTransform`) may be adde
 |bootstrapServers|String|true|{{< readfile file="/content/partials/fields/bootstrapServers.md" markdown="true" >}}|
 |acks|Integer|true|{{< readfile file="/content/partials/fields/acks.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
-|batchSize|Integer|false|Number of records to send in single requet to reduce number of requests to Kafka. Default: 16384.|
-|retries|Integer|false|How many times to try to resend any record whose send fails with a potentially transient error. Default: 0.|
+|batchSize|Integer|false|Number of records to send in single requet to reduce number of requests to Kafka.<br><br>Default: 16384.|
+|retries|Integer|false|How many times to try to resend any record whose send fails with a potentially transient error.<br><br>Default: 0.|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples

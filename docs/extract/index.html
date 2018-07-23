@@ -469,6 +469,13 @@
 </tr>
 
 <tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -607,6 +614,13 @@
 <td>Boolean</td>
 <td>true</td>
 <td>Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named <code>_col1</code>, <code>_col2</code> &hellip; <code>_colN</code>.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
 </tr>
 
 <tr>
@@ -845,6 +859,13 @@
 </tr>
 
 <tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
 <td>params</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -963,7 +984,14 @@
 <td>multiLine</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether the input directory contains a single JSON object per file or multiple JSON records in a single file, one per line (see <a href="http://jsonlines.org/">JSONLines</a>. Default <code>true</code>.</td>
+<td>Whether the input directory contains a single JSON object per file or multiple JSON records in a single file, one per line (see <a href="http://jsonlines.org/">JSONLines</a>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
 </tr>
 
 <tr>
@@ -1066,7 +1094,7 @@
 <td>maxPollRecords</td>
 <td>Int</td>
 <td>false</td>
-<td>The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read. Default: 10000.</td>
+<td>The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read.<br><br>Default: 10000.</td>
 </tr>
 
 <tr>
@@ -1080,7 +1108,7 @@
 <td>autoCommit</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to update the offsets in Kafka automatically. To be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour. Default: false.<br><br>If <code>autoCommit</code> is set to <code>false</code> this stage will force <code>persist</code> equal to <code>true</code> so that Spark will not execute the Kafka extract process twice with a potentially different result (e.g. new messages added between extracts).</td>
+<td>Whether to update the offsets in Kafka automatically. To be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour.<br><br>If <code>autoCommit</code> is set to <code>false</code> this stage will force <code>persist</code> equal to <code>true</code> so that Spark will not execute the Kafka extract process twice with a potentially different result (e.g. new messages added between extracts).<br><br>Default: false.</td>
 </tr>
 
 <tr>
@@ -1212,6 +1240,13 @@
 </tr>
 
 <tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
 <td>params</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -1315,6 +1350,13 @@
 <td>Map[String, String]</td>
 <td>false</td>
 <td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
 </tr>
 
 <tr>
@@ -1428,6 +1470,13 @@
 <td>String</td>
 <td>true</td>
 <td>The row tag of your XML files to treat as a row. For example, in this XML: <code>&lt;books&gt;&lt;book&gt;1&lt;/book&gt;&lt;book&gt;2&lt;/book&gt;&lt;/books&gt;</code> the appropriate value would be <code>book</code>.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
 </tr>
 
 <tr>

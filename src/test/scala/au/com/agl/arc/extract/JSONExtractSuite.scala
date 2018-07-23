@@ -80,7 +80,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 
@@ -126,7 +127,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -143,7 +145,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=true,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)
@@ -181,7 +184,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
           params=Map.empty,
           persist=false,
           numPartitions=None,
-          partitionBy=Nil
+          partitionBy=Nil,
+          contiguousIndex=None
         )
       )
     }
@@ -201,7 +205,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
           params=Map.empty,
           persist=false,
           numPartitions=None,
-          partitionBy=Nil
+          partitionBy=Nil,
+          contiguousIndex=None
         )
       )
     }
@@ -220,7 +225,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 
@@ -259,7 +265,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 
@@ -274,7 +281,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 
@@ -328,7 +336,8 @@ test("JSONExtract: Input Schema") {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 

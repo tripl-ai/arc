@@ -5,7 +5,6 @@ import java.net.URI
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.storage.StorageLevel
@@ -20,11 +19,13 @@ object XMLExtract {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
+    val contiguousIndex = extract.contiguousIndex.getOrElse(true)
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
     stageDetail.put("input", extract.input.toString)  
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
+    stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
 
     val options = ConfigUtils.paramsToOptions(extract.params, "rowTag" :: Nil)
 
@@ -68,17 +69,7 @@ object XMLExtract {
     }
 
     // add meta columns including sequential index
-    // if schema already has metadata columns ignore
-    val enrichedDF = if (!emptyDataframeHandlerDF.schema.map(_.name).contains("_index")) {
-      val window = Window.partitionBy("_filename").orderBy("_monotonically_increasing_id")
-      emptyDataframeHandlerDF
-        .withColumn("_monotonically_increasing_id", monotonically_increasing_id())
-        .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))
-        .withColumn("_index", row_number().over(window).as("_index", new MetadataBuilder().putBoolean("internal", true).build()))
-        .drop("_monotonically_increasing_id")
-    } else {
-      emptyDataframeHandlerDF
-    }
+    val enrichedDF = ExtractUtils.addMetadata(emptyDataframeHandlerDF, contiguousIndex)
          
     // repartition to distribute rows evenly
     val repartitionedDF = extract.partitionBy match {

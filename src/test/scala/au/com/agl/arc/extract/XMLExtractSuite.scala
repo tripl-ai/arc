@@ -67,7 +67,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 
@@ -105,7 +106,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -121,7 +123,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=true,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -158,7 +161,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           params=Map.empty,
           persist=false,
           numPartitions=None,
-          partitionBy=Nil
+          partitionBy=Nil,
+          contiguousIndex=None
         )
       )
     }
@@ -176,7 +180,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           params=Map.empty,
           persist=false,
           numPartitions=None,
-          partitionBy=Nil
+          partitionBy=Nil,
+          contiguousIndex=None
         )
       )
     }
@@ -193,7 +198,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 
@@ -253,7 +259,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 

@@ -69,7 +69,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 
@@ -120,7 +121,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -137,7 +139,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=true,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -166,16 +169,17 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val thrown0 = intercept[Exception with DetailException] {
       val extractDataset = extract.DelimitedExtract.extract(
         DelimitedExtract(
-        name=outputView,
-        cols=Nil,
-        outputView=outputView,
-        input=Right(new URI(emptyWildcardDirectory)),
-        settings=new Delimited(),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil
+          name=outputView,
+          cols=Nil,
+          outputView=outputView,
+          input=Right(new URI(emptyWildcardDirectory)),
+          settings=new Delimited(),
+          authentication=None,
+          params=Map.empty,
+          persist=false,
+          numPartitions=None,
+          partitionBy=Nil,
+          contiguousIndex=None
         )
       )
     }
@@ -185,16 +189,17 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val thrown1 = intercept[Exception with DetailException] {
       val extractDataset = extract.DelimitedExtract.extract(
         DelimitedExtract(
-        name=outputView,
-        cols=Nil,
-        outputView=outputView,
-        input=Right(new URI(emptyDirectory)),
-        settings=new Delimited(),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil
+          name=outputView,
+          cols=Nil,
+          outputView=outputView,
+          input=Right(new URI(emptyDirectory)),
+          settings=new Delimited(),
+          authentication=None,
+          params=Map.empty,
+          persist=false,
+          numPartitions=None,
+          partitionBy=Nil,
+          contiguousIndex=None
         )
       )
     }
@@ -212,7 +217,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 
@@ -248,7 +254,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
 
@@ -276,7 +283,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
     val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
@@ -303,7 +311,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false,
         numPartitions=None,
-        partitionBy=Nil
+        partitionBy=Nil,
+        contiguousIndex=None
       )
     )
     val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
