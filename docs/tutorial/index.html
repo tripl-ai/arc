@@ -404,7 +404,7 @@
 
 <pre><code class="language-bash">export ETL_CONF_BASE_URL=/tutorial
 docker run \
--v $(pwd):${ETL_CONF_BASE_URL} \
+-v &quot;$(pwd):${ETL_CONF_BASE_URL}&quot; \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
 -it -p 4040:4040 seddonm1/arc:1.0.6 \
@@ -445,7 +445,7 @@ docker run \
 <p>At this stage you can run a job. The <code>--driver-memory=12G</code> option should be set with as much memory as you can give it. Also note the <code>+UseCGroupMemoryLimitForHeap</code> which is included so that the JVM can detect how much memory is available when running inside a Docker container.</p>
 
 <pre><code class="language-bash">docker run \
--v $(pwd):${ETL_CONF_BASE_URL} \
+-v &quot;$(pwd):${ETL_CONF_BASE_URL}&quot; \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
 -it -p 4040:4040 seddonm1/arc:1.0.6 \
@@ -1084,7 +1084,7 @@ FROM (
 <p>To run first set an environment variable which is going to tell Spark where to read all the data from. If you are running this locally export a variable. You may need to modify <code>run_etl_job_local.sh</code> to increase the <code>--driver-memory=</code> from <code>12G</code> as the job gets more complex - or if you are on a machine with not enough available memory disable the <code>&quot;persist&quot;: true</code> options at the expense of job runtime.</p>
 
 <pre><code class="language-bash">docker run \
--v $(pwd):${ETL_CONF_BASE_URL} \
+-v &quot;$(pwd):${ETL_CONF_BASE_URL}&quot; \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
 -it -p 4040:4040 seddonm1/arc:1.0.6 \

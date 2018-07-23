@@ -22,7 +22,7 @@ Run the tutorial by calling the Docker container from the directory in which you
 ```bash
 export ETL_CONF_BASE_URL=/tutorial
 docker run \
--v $(pwd):${ETL_CONF_BASE_URL} \
+-v "$(pwd):${ETL_CONF_BASE_URL}" \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}" \
 -it -p 4040:4040 seddonm1/arc:1.0.6 \
@@ -65,7 +65,7 @@ At this stage you can run a job. The `--driver-memory=12G` option should be set 
 
 ```bash
 docker run \
--v $(pwd):${ETL_CONF_BASE_URL} \
+-v "$(pwd):${ETL_CONF_BASE_URL}" \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}" \
 -it -p 4040:4040 seddonm1/arc:1.0.6 \
@@ -634,7 +634,7 @@ To run first set an environment variable which is going to tell Spark where to r
 
 ```bash
 docker run \
--v $(pwd):${ETL_CONF_BASE_URL} \
+-v "$(pwd):${ETL_CONF_BASE_URL}" \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}" \
 -it -p 4040:4040 seddonm1/arc:1.0.6 \
