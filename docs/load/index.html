@@ -1062,9 +1062,9 @@
 
 <h2 id="kafkaload">KafkaLoad</h2>
 
-<p>The <code>KafkaLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://kafka.apache.org/">Kafka</a> <code>topic</code>. The input to this stage needs to be a single column dataset of signature <code>value: string</code> and is intended to be used after a <a href="https://aglenergy.github.io/arc/load/#jsontransform">JSONTransform</a> stage which would prepare the data for sending to the Kafka server.</p>
+<p>The <code>KafkaLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://kafka.apache.org/">Kafka</a> <code>topic</code>. The input to this stage needs to be a single column dataset of signature <code>value: string</code> - intended to be used after a <a href="https://aglenergy.github.io/arc/load/#jsontransform">JSONTransform</a> stage - or a two columns of signature <code>key: string, value: string</code> which could be created by a <a href="https://aglenergy.github.io/arc/load/#sqltransform">SQLTransform</a> stage.</p>
 
-<p>In the future additional Transform stages (like <code>ProtoBufTransform</code>) could be added to prepare binary payloads instead of just <code>json</code> <code>string</code>.</p>
+<p>In the future additional Transform stages (like <code>ProtoBufTransform</code>) may be added to prepare binary payloads instead of just <code>json</code> <code>string</code>.</p>
 
 <h3 id="parameters-6">Parameters</h3>
 
@@ -1168,136 +1168,11 @@
 }
 </code></pre>
 
-<h2 id="delimitedload-1">DelimitedLoad</h2>
-
-<p>The <code>DelimitedLoad</code> writes an input <code>DataFrame</code> to a target delimited file.</p>
-
-<h3 id="parameters-7">Parameters</h3>
-
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>name</td>
-<td>String</td>
-<td>true</td>
-<td>Name of the stage for logging.</td>
-</tr>
-
-<tr>
-<td>environments</td>
-<td>Array[String]</td>
-<td>true</td>
-<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
-</tr>
-
-<tr>
-<td>inputView</td>
-<td>String</td>
-<td>true</td>
-<td>Name of incoming Spark dataset.</td>
-</tr>
-
-<tr>
-<td>outputURI</td>
-<td>URI</td>
-<td>true</td>
-<td>URI of the Delimited file to write to.</td>
-</tr>
-
-<tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
-</tr>
-
-<tr>
-<td>partitionBy</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>Columns to partition the data by.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
-<td>false</td>
-<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
-</tr>
-
-<tr>
-<td>delimiter</td>
-<td>String</td>
-<td>true</td>
-<td>The type of delimiter in the file. Supported values: <code>Comma</code>, <code>Pipe</code>, <code>DefaultHive</code>. <code>DefaultHive</code> is  ASCII character 1, the default delimiter for Apache Hive extracts.</td>
-</tr>
-
-<tr>
-<td>quote</td>
-<td>String</td>
-<td>true</td>
-<td>The type of quoting in the file. Supported values: <code>None</code>, <code>SingleQuote</code>, <code>DoubleQuote</code>.</td>
-</tr>
-
-<tr>
-<td>header</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named <code>_col1</code>, <code>_col2</code> &hellip; <code>_colN</code>.</td>
-</tr>
-
-<tr>
-<td>saveMode</td>
-<td>String</td>
-<td>false</td>
-<td>The mode for writing the output file to describe how errors are handled. Available options are: <code>Append</code>, <code>ErrorIfExists</code>, <code>Ignore</code>, <code>Overwrite</code>. Default is <code>Overwrite</code> if not specified.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
-</tbody>
-</table>
-
-<h3 id="examples-7">Examples</h3>
-
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;DelimitedLoad&quot;,
-    &quot;name&quot;: &quot;write out customer csvs&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputView&quot;: &quot;customer&quot;,            
-    &quot;outputURI&quot;: &quot;hdfs://input_data/customer/customer.csv&quot;,
-    &quot;delimiter&quot;: &quot;Comma&quot;,
-    &quot;quote&quot; : &quot;DoubleQuote&quot;,
-    &quot;header&quot;: true,
-    &quot;partitionBy&quot;: [&quot;active&quot;],
-    &quot;numPartitions&quot;: 10,
-    &quot;authentication&quot;: {
-        ...
-    },
-    &quot;saveMode&quot;: &quot;Append&quot;,
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
-
 <h2 id="orcload">ORCLoad</h2>
 
 <p>The <code>ORCLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://orc.apache.org/">Apache ORC</a> file.</p>
 
-<h3 id="parameters-8">Parameters</h3>
+<h3 id="parameters-7">Parameters</h3>
 
 <table>
 <thead>
@@ -1375,7 +1250,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-8">Examples</h3>
+<h3 id="examples-7">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;ORCLoad&quot;,
@@ -1400,7 +1275,7 @@
 
 <p>The <code>ParquetLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://parquet.apache.org/">Apache Parquet</a> file.</p>
 
-<h3 id="parameters-9">Parameters</h3>
+<h3 id="parameters-8">Parameters</h3>
 
 <table>
 <thead>
@@ -1478,7 +1353,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-9">Examples</h3>
+<h3 id="examples-8">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;ParquetLoad&quot;,
@@ -1503,7 +1378,7 @@
 
 <p>The <code>XMLLoad</code> writes an input <code>DataFrame</code> to a target XML file.</p>
 
-<h3 id="parameters-10">Parameters</h3>
+<h3 id="parameters-9">Parameters</h3>
 
 <table>
 <thead>
@@ -1574,7 +1449,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-10">Examples</h3>
+<h3 id="examples-9">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;XMLLoad&quot;,

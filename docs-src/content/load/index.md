@@ -259,9 +259,9 @@ The `JSONLoad` writes an input `DataFrame` to a target JSON file.
 
 ## KafkaLoad
 
-The `KafkaLoad` writes an input `DataFrame` to a target [Kafka](https://kafka.apache.org/) `topic`. The input to this stage needs to be a single column dataset of signature `value: string` and is intended to be used after a [JSONTransform](/load/#jsontransform) stage which would prepare the data for sending to the Kafka server.
+The `KafkaLoad` writes an input `DataFrame` to a target [Kafka](https://kafka.apache.org/) `topic`. The input to this stage needs to be a single column dataset of signature `value: string` - intended to be used after a [JSONTransform](/load/#jsontransform) stage - or a two columns of signature `key: string, value: string` which could be created by a [SQLTransform](/load/#sqltransform) stage.
 
-In the future additional Transform stages (like `ProtoBufTransform`) could be added to prepare binary payloads instead of just `json` `string`.
+In the future additional Transform stages (like `ProtoBufTransform`) may be added to prepare binary payloads instead of just `json` `string`.
 
 
 ### Parameters
@@ -294,50 +294,6 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
     "batchSize": 16384,
     "retries": 3,
     "params": {}
-}
-```
-
-## DelimitedLoad
-
-The `DelimitedLoad` writes an input `DataFrame` to a target delimited file. 
-
-### Parameters
-
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
-|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
-|outputURI|URI|true|URI of the Delimited file to write to.|
-|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
-|delimiter|String|true|The type of delimiter in the file. Supported values: `Comma`, `Pipe`, `DefaultHive`. `DefaultHive` is  ASCII character 1, the default delimiter for Apache Hive extracts.|
-|quote|String|true|The type of quoting in the file. Supported values: `None`, `SingleQuote`, `DoubleQuote`.|
-|header|Boolean|true|Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named `_col1`, `_col2` ... `_colN`.|
-|saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
-
-### Examples
-
-```json
-{
-    "type": "DelimitedLoad",
-    "name": "write out customer csvs",
-    "environments": ["production", "test"],
-    "inputView": "customer",            
-    "outputURI": "hdfs://input_data/customer/customer.csv",
-    "delimiter": "Comma",
-    "quote" : "DoubleQuote",
-    "header": true,
-    "partitionBy": ["active"],
-    "numPartitions": 10,
-    "authentication": {
-        ...
-    },
-    "saveMode": "Append",
-    "params": {
-    }
 }
 ```
 
