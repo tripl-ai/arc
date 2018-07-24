@@ -33,13 +33,13 @@ object Dependencies {
   val azureEventHub = "com.microsoft.azure" % "azure-eventhubs" % "1.0.2" % "provided"
   val qpid = "org.apache.qpid" % "proton-j" % "0.26.0" % "provided"
 
-
   // Azure AD
   val azureAD = "com.microsoft.azure" % "adal4j" % "1.2.0" % "provided"
   val azureKeyVault = "com.microsoft.azure" % "azure-keyvault" % "1.0.0" % "provided"
 
   // SQL Server
-  val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "6.2.1.jre8" % "provided"
+  val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "6.4.0.jre8" % "provided"
+  val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.2" % "provided"
 
   // geospark
   val geospark = "org.datasyslab" % "geospark" % "1.1.1"  % "provided"
@@ -78,6 +78,9 @@ object Dependencies {
     hadoopAzure,
     azureStorage,   
     sqlServerJDBC,
+
+    // postgres
+    postgresJDBC,
 
     scallop,
     typesafeConfig,

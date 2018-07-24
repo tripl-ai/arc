@@ -20,6 +20,8 @@ object JDBCLoad {
   def load(load: JDBCLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
+    val saveMode = load.saveMode.getOrElse(SaveMode.Overwrite)
+
     stageDetail.put("type", load.getType)
     stageDetail.put("name", load.name)
     stageDetail.put("inputView", load.inputView)  
@@ -27,8 +29,6 @@ object JDBCLoad {
     stageDetail.put("driver", load.driver.getClass.toString)  
     stageDetail.put("tableName", load.tableName)  
     stageDetail.put("bulkload", Boolean.valueOf(load.bulkload.getOrElse(false)))
-
-    val saveMode = load.saveMode.getOrElse(SaveMode.Overwrite)
     stageDetail.put("saveMode", saveMode.toString)
 
     val df = spark.table(load.inputView)
@@ -116,7 +116,6 @@ object JDBCLoad {
             stageDetail.put("isolationLevel", isolationLevel)  
           }
           for (batchsize <- load.batchsize) {
-            // connectionProperties is a [String]
             connectionProperties.put("batchsize", String.valueOf(batchsize))    
             stageDetail.put("batchsize", Integer.valueOf(batchsize))
           } 
