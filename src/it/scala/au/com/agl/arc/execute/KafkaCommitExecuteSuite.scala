@@ -86,6 +86,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         autoCommit=Option(false), 
         persist=true, 
         numPartitions=None, 
+        partitionBy=Nil,
         params=Map.empty
       )
     ) 
@@ -108,6 +109,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         autoCommit=Option(false), 
         persist=true, 
         numPartitions=None, 
+        partitionBy=Nil,
         params=Map.empty
       )
     ) 
@@ -141,6 +143,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         autoCommit=Option(false), 
         persist=true, 
         numPartitions=None, 
+        partitionBy=Nil,
         params=Map.empty
       )
     ) 
@@ -182,6 +185,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         autoCommit=Option(false), 
         persist=true, 
         numPartitions=None, 
+        partitionBy=Nil,
         params=Map.empty
       )
     ) 

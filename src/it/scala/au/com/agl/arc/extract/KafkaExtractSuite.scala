@@ -84,6 +84,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         autoCommit=Option(false), 
         persist=true, 
         numPartitions=None, 
+        partitionBy=Nil,
         params=Map.empty
       )
     ) 
@@ -145,6 +146,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         autoCommit=Option(false), 
         persist=true, 
         numPartitions=None, 
+        partitionBy=Nil,
         params=Map.empty
       )
     ) 
@@ -161,6 +163,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         autoCommit=Option(false), 
         persist=true, 
         numPartitions=None, 
+        partitionBy=Nil,
         params=Map.empty
       )
     )
@@ -224,6 +227,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         autoCommit=Option(true), 
         persist=true, 
         numPartitions=None, 
+        partitionBy=Nil,
         params=Map.empty
       )
     ) 
@@ -240,6 +244,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         autoCommit=Option(true), 
         persist=true, 
         numPartitions=None, 
+        partitionBy=Nil,
         params=Map.empty
       )
     )

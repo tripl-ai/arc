@@ -88,6 +88,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         autoCommit=Option(false), 
         persist=true, 
         numPartitions=None, 
+        partitionBy=Nil,
         params=Map.empty
       )
     ) 
@@ -154,6 +155,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         autoCommit=Option(false), 
         persist=true, 
         numPartitions=None, 
+        partitionBy=Nil,
         params=Map.empty
       )
     ) 
