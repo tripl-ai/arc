@@ -178,7 +178,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown0.getMessage === """java.lang.Exception: tableName should contain 3 components [database].[schema].[table] currently has 1 component(s).""")
+    assert(thrown0.getMessage === """java.lang.Exception: tableName should contain 3 components database.schema.table currently has 1 component(s).""")
 
     val thrown1 = intercept[Exception with DetailException] {
       load.JDBCLoad.load(

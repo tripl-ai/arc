@@ -84,14 +84,14 @@ object JDBCLoad {
           // ensure table name appears correct
           val tablePath = load.tableName.split("\\.")
           if (tablePath.length != 3) {
-            throw new Exception(s"tableName should contain 3 components [database].[schema].[table] currently has ${tablePath.length} component(s).")    
-          } 
+            throw new Exception(s"tableName should contain 3 components database.schema.table currently has ${tablePath.length} component(s).")    
+          }
 
           val bulkCopyConfig = com.microsoft.azure.sqldb.spark.config.Config(Map(
             "url"               -> s"${uri.getHost}:${uri.getPort}",
             "user"              -> load.params.get("user").getOrElse(""),
             "password"          -> load.params.get("password").getOrElse(""),
-            "databaseName"      -> tablePath(0),
+            "databaseName"      -> tablePath(0).replace("[", "").replace("]", ""),
             "dbTable"           -> s"${tablePath(1)}.${tablePath(2)}",
             "bulkCopyBatchSize" -> load.batchsize.getOrElse(10000).toString,
             "bulkCopyTableLock" -> "true",
