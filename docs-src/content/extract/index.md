@@ -116,7 +116,9 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 
 ## HTTPExtract
 
-The `HTTPExtract` executes a `GET` request against a remote HTTP service and returns a `DataFrame` which will have a single row and single column holding the value of the HTTP repsonse body. This would typically be used in conjuction with a `JSONExtract` stage by specifying `inputView` instead of `inputURI` - note setting `multiLine`=`true` allows processing of JSON array responses.
+The `HTTPExtract` executes either a `GET` or `POST` request against a remote HTTP service and returns a `DataFrame` which will have a single row and single column holding the value of the HTTP response body. 
+
+This stage would typically be used with a `JSONExtract` stage by specifying `inputView` instead of `inputURI` (setting `multiLine`=`true` allows processing of JSON array responses).
 
 ### Parameters
 
@@ -129,7 +131,9 @@ The `HTTPExtract` executes a `GET` request against a remote HTTP service and ret
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|method|String|false|The request type with valid values `GET` or `POST`.<br><br>Default: `GET`.|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
+|body|String|false|The request body/entity that is sent with a `POST` request.|
 |validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
@@ -148,6 +152,7 @@ The `HTTPExtract` executes a `GET` request against a remote HTTP service and ret
         "custom-header": "payload",
     },
     "validStatusCodes": [200],
+    "method": "GET",
     "params": {
     }
 }

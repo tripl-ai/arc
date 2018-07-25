@@ -214,6 +214,25 @@ object ConfigUtils {
     }
   }
 
+  def readHttpMethod(path: String)(implicit c: Config): Either[Errors, Option[String]] = {
+  
+    def err(msg: String): Either[Errors, Option[String]] = Left(ConfigError(path, msg) :: Nil)
+
+    try {
+      if (c.hasPath(path)) {
+        c.getString(path) match {
+          case "GET" => Right(Option("GET"))
+          case "POST" => Right(Option("POST"))
+          case _ =>  throw new Exception(s"""Unable to parse 'method' from: '${c.getString(path)}'. Must be one of ['GET', 'POST'].""")
+        }
+      } else {
+        Right(None)
+      }
+    } catch {
+      case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
+    }
+  }
+
   sealed trait Error
 
   object Error {
@@ -509,11 +528,14 @@ object ConfigUtils {
     val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
     val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
 
-    (name, parsedURI, outputView, persist, numPartitions) match {
-      case (Right(n), Right(uri), Right(ov), Right(p), Right(np)) => 
-        Right(HTTPExtract(n, uri, headers, validStatusCodes, ov, params, p, np, partitionBy))
+    val method = readHttpMethod("method")
+    val body = getOptionalValue[String]("body")
+
+    (name, parsedURI, outputView, persist, numPartitions, method, body) match {
+      case (Right(n), Right(uri), Right(ov), Right(p), Right(np), Right(m), Right(b)) => 
+        Right(HTTPExtract(n, uri, m, headers, b, validStatusCodes, ov, params, p, np, partitionBy))
       case _ =>
-        val allErrors: Errors = List(name, parsedURI, outputView, persist, numPartitions).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, parsedURI, outputView, persist, numPartitions, method, body).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)

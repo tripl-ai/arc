@@ -8,6 +8,7 @@ import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 import org.apache.http.impl.client.HttpClients
+import org.apache.http.impl.client.LaxRedirectStrategy
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._

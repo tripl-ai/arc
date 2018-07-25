@@ -8,6 +8,7 @@
 - added integration tests for `KafkaLoad` and `KafkaExtract`. more to come.
 - added `partitionBy` to `*Extract`.
 - added `contiguousIndex` option to file based `*Extract` which allows users to opt out of the expensive `_index` resolution from `_monotonically_increasing_id`.
+- added ability to send a `POST` request with `body` in `HTTPExtract`.
 
 # 1.0.7
 

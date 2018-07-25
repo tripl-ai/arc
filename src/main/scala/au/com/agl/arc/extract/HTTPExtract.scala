@@ -4,9 +4,10 @@ import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 
-import org.apache.http.client.methods.HttpGet
+import org.apache.http.client.methods.{HttpGet, HttpPost}
 import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.entity.StringEntity
+import org.apache.http.impl.client.LaxRedirectStrategy
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -29,6 +30,7 @@ object HTTPExtract {
     val startTime = System.currentTimeMillis() 
 
     val maskedHeaders = HTTPUtils.maskHeaders(extract.headers)
+    val method = extract.method.getOrElse("GET")
 
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", extract.getType)
@@ -36,6 +38,7 @@ object HTTPExtract {
     stageDetail.put("uri", extract.uri.toString)  
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
+    stageDetail.put("method", method)
     stageDetail.put("headers", maskedHeaders.asJava)
 
     logger.info()
@@ -45,16 +48,25 @@ object HTTPExtract {
 
     val uri = extract.uri.toString
 
-    val client = HttpClientBuilder.create.build
-    val get = new HttpGet(uri)
+    val client = HttpClientBuilder.create.setRedirectStrategy(new LaxRedirectStrategy()).build
 
+    val request = method match {
+      case "GET" => new HttpGet(uri)
+      case "POST" => { 
+        val post = new HttpPost(uri)
+        for (body <- extract.body) {
+          post.setEntity(new StringEntity(body))
+        }
+        post 
+      }
+    }
     // add headers
     for ((k,v) <- extract.headers) {
-      get.addHeader(k,v) 
+      request.addHeader(k,v) 
     }
-    
+
     // send the request
-    val response = client.execute(get)
+    val response = client.execute(request)
 
     val responseMap = new java.util.HashMap[String, Object]()
     responseMap.put("statusCode", new java.lang.Integer(response.getStatusLine.getStatusCode))
