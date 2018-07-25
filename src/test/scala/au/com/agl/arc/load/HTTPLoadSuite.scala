@@ -26,10 +26,14 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
 
   class FailureHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
-      if (Source.fromInputStream(request.getInputStream).mkString.contains("1520828868")) {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)
+      if (HttpConnection.getCurrentConnection.getRequest.getMethod == "POST") {
+        if (Source.fromInputStream(request.getInputStream).mkString.contains("1520828868")) {
+          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)
+        } else {
+          response.setStatus(HttpServletResponse.SC_OK)
+        }
       } else {
-        response.setStatus(HttpServletResponse.SC_OK)
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN)
       }
       HttpConnection.getCurrentConnection().getRequest().setHandled(true) 
     }
@@ -37,18 +41,26 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
 
   class SuccessHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
-      response.setStatus(HttpServletResponse.SC_OK)
+      if (HttpConnection.getCurrentConnection.getRequest.getMethod == "POST") {
+        response.setStatus(HttpServletResponse.SC_OK)
+      } else {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN)
+      }      
       HttpConnection.getCurrentConnection().getRequest().setHandled(true) 
     }
   } 
 
   class HeadersHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
-      if (request.getHeader("custom") == "success") {
-          response.setStatus(HttpServletResponse.SC_OK)
+      if (HttpConnection.getCurrentConnection.getRequest.getMethod == "POST") {
+        if (request.getHeader("custom") == "success") {
+            response.setStatus(HttpServletResponse.SC_OK)
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)
+        }
       } else {
-          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)
-      }
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN)
+      }        
       HttpConnection.getCurrentConnection().getRequest().setHandled(true) 
     }
   } 

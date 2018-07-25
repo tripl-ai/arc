@@ -32,11 +32,10 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         response.setContentType("text/html")
         response.setStatus(HttpServletResponse.SC_OK)
         response.getWriter().println(payload)
-        HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
       } else {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN)
-        HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
       }
+      HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
     }
   } 
 
@@ -49,29 +48,25 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         response.setContentType("text/html")
         response.setStatus(HttpServletResponse.SC_OK)
         response.getWriter().println(payload)
-        HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
       } else {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN)
-        HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
       }
+      HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
     }
   }   
 
   class PostPayloadHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
       if (HttpConnection.getCurrentConnection.getRequest.getMethod == "POST" ) {
-        val inputStream = HttpConnection.getCurrentConnection.getRequest.getInputStream
-        if (Source.fromInputStream(inputStream).mkString == body) {
+        if (Source.fromInputStream(request.getInputStream).mkString == body) {
           response.setStatus(HttpServletResponse.SC_OK)
-          HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
         } else {
           response.setStatus(HttpServletResponse.SC_FORBIDDEN)
-          HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
         }
       } else {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN)
-        HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
       }
+      HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
     }
   }   
 
