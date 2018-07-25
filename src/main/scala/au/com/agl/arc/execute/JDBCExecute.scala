@@ -64,7 +64,11 @@ object JDBCExecute {
     try {
       using(getConnection(url, user, password, params)) { conn =>
         using(conn.createStatement) { stmt =>
-          stmt.execute(sqlToExecute)
+          val res = stmt.execute(sqlToExecute)
+          // try to get results to throw error if one exists
+          if (res) {
+            stmt.getResultSet.next
+          }
         }
       }
 
