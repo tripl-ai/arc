@@ -210,7 +210,7 @@ object ARC {
         println(errorMsg)
 
         // TODO add errors to json as data
-        logger.info()
+        logger.error()
           .field("event", "config_errors")
           .field("message", errorMsg)
           .log()   
