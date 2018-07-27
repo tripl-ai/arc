@@ -9,6 +9,7 @@
 - added `partitionBy` to `*Extract`.
 - added `contiguousIndex` option to file based `*Extract` which allows users to opt out of the expensive `_index` resolution from `_monotonically_increasing_id`.
 - added ability to send a `POST` request with `body` in `HTTPExtract`.
+- changed hashing function for `DiffTransform` and `EqualityValidate` from inbuilt `hash` to `md5`.
 
 # 1.0.7
 
