@@ -32,8 +32,8 @@ object DiffTransform {
 
     // do a full join on a calculated hash of all values in row on each dataset
     // trying to calculate the hash value inside the joinWith method produced an inconsistent result
-    val leftHashDF = inputLeftDF.withColumn("_hash", md5(concat_ws("|", inputLeftDF.columns.map(col):_*)))
-    val rightHashDF = inputRightDF.withColumn("_hash", md5(concat_ws("|", inputRightDF.columns.map(col):_*)))
+    val leftHashDF = inputLeftDF.withColumn("_hash", sha2(concat_ws("|", inputLeftDF.columns.map(col):_*), 512))
+    val rightHashDF = inputRightDF.withColumn("_hash", sha2(concat_ws("|", inputRightDF.columns.map(col):_*), 512))
     val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF("_hash") === rightHashDF("_hash"), "full")
 
     if (transform.persist) {

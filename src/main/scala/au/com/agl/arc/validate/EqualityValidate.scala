@@ -66,12 +66,10 @@ object EqualityValidate {
 
     // do not test column nullable equality
 
-
-
     // do a full join on a calculated hash of all values in row on each dataset
     // trying to calculate the hash value inside the joinWith method produced an inconsistent result
-    val leftHashDF = leftDF.withColumn("_hash", md5(concat_ws("|", leftDF.columns.map(col):_*)))
-    val rightHashDF = rightDF.withColumn("_hash", md5(concat_ws("|", rightDF.columns.map(col):_*)))
+    val leftHashDF = leftDF.withColumn("_hash", sha2(concat_ws("|", leftDF.columns.map(col):_*), 512))
+    val rightHashDF = rightDF.withColumn("_hash", sha2(concat_ws("|", rightDF.columns.map(col):_*), 512))
     val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF("_hash") === rightHashDF("_hash"), "full")
 
     val leftExceptRight = transformedDF.filter(col("_2").isNull)
