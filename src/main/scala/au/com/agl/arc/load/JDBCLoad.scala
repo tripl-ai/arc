@@ -3,6 +3,7 @@ package au.com.agl.arc.load
 import java.lang._
 import java.net.URI
 import java.sql.DriverManager
+import java.sql.Connection
 import java.util.Properties
 import scala.collection.JavaConverters._
 
@@ -33,6 +34,12 @@ object JDBCLoad {
 
     val df = spark.table(load.inputView)
 
+    val numPartitions = load.numPartitions match {
+      case Some(numPartitions) => numPartitions
+      case None => df.rdd.getNumPartitions
+    }
+    stageDetail.put("numPartitions", Integer.valueOf(numPartitions))
+
     logger.info()
       .field("event", "enter")
       .map("stage", stageDetail)      
@@ -42,6 +49,7 @@ object JDBCLoad {
     if (!spark.catalog.isCached(load.inputView)) {
       df.cache
     }
+
     val sourceCount = df.count
     stageDetail.put("count", Long.valueOf(sourceCount))
 
@@ -76,10 +84,9 @@ object JDBCLoad {
 
           // remove the "jdbc:" prefix
           val uri = new URI(load.jdbcURL.substring(5))
-
-          for (batchsize <- load.batchsize) {
-            stageDetail.put("batchsize", Integer.valueOf(batchsize))
-          } 
+          
+          val batchsize = load.batchsize.getOrElse(10000)
+          stageDetail.put("batchsize", Integer.valueOf(batchsize))
 
           // ensure table name appears correct
           val tablePath = load.tableName.split("\\.")
@@ -93,24 +100,22 @@ object JDBCLoad {
             "password"          -> load.params.get("password").getOrElse(""),
             "databaseName"      -> tablePath(0).replace("[", "").replace("]", ""),
             "dbTable"           -> s"${tablePath(1)}.${tablePath(2)}",
-            "bulkCopyBatchSize" -> load.batchsize.getOrElse(10000).toString,
+            "bulkCopyBatchSize" -> batchsize.toString,
             "bulkCopyTableLock" -> "true",
-            "bulkCopyTimeout"   -> "600"
+            "bulkCopyTimeout"   -> "42300"
           ))
 
-          df.bulkCopyToSqlDB(bulkCopyConfig)
+          load.numPartitions match {
+            case Some(numPartitions) => df.drop(arrays:_*).drop(nulls:_*).repartition(numPartitions).bulkCopyToSqlDB(bulkCopyConfig)
+            case None => df.drop(arrays:_*).drop(nulls:_*).bulkCopyToSqlDB(bulkCopyConfig)
+          }
         }
 
         // default spark jdbc 
         case _ => {
-          load.numPartitions match {
-            case Some(partitions) => {
-              connectionProperties.put("numPartitions", String.valueOf(partitions))          
-              stageDetail.put("numPartitions", Integer.valueOf(partitions))
-            }
-            case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+          for (numPartitions <- load.numPartitions) {
+            connectionProperties.put("numPartitions", String.valueOf(numPartitions))    
           }
-
           for (isolationLevel <- load.isolationLevel) {
             connectionProperties.put("isolationLevel", isolationLevel)            
             stageDetail.put("isolationLevel", isolationLevel)  
@@ -143,13 +148,21 @@ object JDBCLoad {
         }
       }
 
-
       // execute a count query on target db to ensure correct number of rows
-      val connection = DriverManager.getConnection(load.jdbcURL, connectionProperties)
-      // theoretically vulnerable to sql injection but should fail in jdbc write stage
-      val resultSet = connection.createStatement().executeQuery(s"SELECT COUNT(*) AS count FROM ${load.tableName}")
-      resultSet.next()
-      val targetCount = resultSet.getInt("count")
+      var connection: Connection = null
+      val targetCount = try {
+        connection = DriverManager.getConnection(load.jdbcURL, connectionProperties)
+
+        val resultSet = connection.createStatement().executeQuery(s"SELECT COUNT(*) AS count FROM ${load.tableName}")
+        resultSet.next()
+        resultSet.getInt("count")
+      } catch {
+        case e: Exception => throw new Exception(e) with DetailException {
+          override val detail = stageDetail          
+        }      
+      } finally {
+        connection.close
+      }
 
       // log counts
       stageDetail.put("sourceCount", Long.valueOf(sourceCount))
