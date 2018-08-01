@@ -1,7 +1,9 @@
 package au.com.agl.arc
 
 import java.net.URI
+import java.sql.Connection
 import java.sql.DriverManager
+import java.util.Properties
 import java.util.UUID
 
 import org.scalatest.FunSuite
@@ -26,9 +28,19 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
 
   val sqlserverurl = "jdbc:sqlserver://localhost:1433"
   val postgresurl = "jdbc:postgresql://localhost:5432/"
-  val dbtable = s"a${UUID.randomUUID.toString.take(8)}"
+  val sqlserver_db = "hyphen-database"
+  val sqlserver_schema = "dbo"
+  val sqlserver_table = "hyphen-table"
+  val sqlserver_fullname = s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]"
+  val dbtable = "output"
+  val poastgrestable = "target"
+
   val user = "sa"
   val password = "SecretPass2018" // see docker-compose.yml for password
+  var connection: Connection = null
+
+  val connectionProperties = new Properties()
+
 
   before {
     implicit val spark = SparkSession
@@ -43,7 +55,18 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     
     // early resolution of jdbc drivers or else cannot find message
     DriverManager.getDrivers
+
+    connectionProperties.put("user", user)
+    connectionProperties.put("password", password)  
+
+    try {
+      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
+      connection.createStatement.execute(s"IF NOT EXISTS(select * from sys.databases where name='${sqlserver_db}') CREATE DATABASE [${sqlserver_db}]")
+    } finally {
+      connection.close
+    }    
   }
+
 
   after {
     session.stop
@@ -63,7 +86,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         inputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
-        tableName=dbtable, 
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
         partitionBy=Nil, 
         numPartitions=None, 
         isolationLevel=None,
@@ -82,20 +105,159 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       .option("url", sqlserverurl)
       .option("user", user)
       .option("password", password)
-      .option("dbtable", s"(SELECT COUNT(*) AS count FROM ${dbtable}) ${dbtable}")
+      .option("dbtable", s"(SELECT COUNT(*) AS count FROM [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]) result")
       .load()
     }
 
     assert(actual.first.getInt(0) == 2)
   }    
 
-  test("JDBCLoad: sqlserver bulk") {
+  test("JDBCLoad: sqlserver bulk SaveMode.Overwrite") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val dataset = TestDataUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
+
+    try {
+      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
+      connection.createStatement.execute(s"""
+      DROP TABLE IF EXISTS [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]
+      """)
+      connection.createStatement.execute(s"""
+      CREATE TABLE [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}] (
+        [booleanDatum] [bit] NOT NULL,
+        [dateDatum] [date] NULL,
+        [decimalDatum] [decimal](38, 18) NULL,
+        [doubleDatum] [float] NOT NULL,
+        [integerDatum] [int] NULL,
+        [longDatum] [bigint] NOT NULL,
+        [stringDatum] [nvarchar](max) NULL,
+        [timeDatum] [nvarchar](max) NULL,
+        [timestampDatum] [datetime] NULL
+      )
+      """)
+    } catch {
+      case e: Exception =>
+    } finally {
+      connection.close
+    }    
+
+    load.JDBCLoad.load(
+      JDBCLoad(
+        name="dataset",
+        inputView=dbtable, 
+        jdbcURL=sqlserverurl, 
+        driver=DriverManager.getDriver(sqlserverurl),
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        isolationLevel=None,
+        batchsize=None, 
+        truncate=None,
+        createTableOptions=None,
+        createTableColumnTypes=None,        
+        saveMode=None, 
+        bulkload=Option(true),
+        params=Map("user" -> user, "password" -> password)
+      )
+    )
+
+    val actual = { spark.read
+      .format("jdbc")
+      .option("url", sqlserverurl)
+      .option("user", user)
+      .option("password", password)      
+      .option("dbtable", s"(SELECT COUNT(*) AS count FROM [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]) result")
+      .load()
+    }
+
+    assert(actual.first.getInt(0) == 2)
+  }     
+
+  test("JDBCLoad: sqlserver bulk SaveMode.Overwrite truncate") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(dbtable)
+
+    try {
+      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
+      connection.createStatement.execute(s"""
+      DROP TABLE IF EXISTS [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]
+      """)
+      connection.createStatement.execute(s"""
+      CREATE TABLE [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}] (
+        [booleanDatum] [bit] NOT NULL,
+        [dateDatum] [date] NULL,
+        [decimalDatum] [decimal](38, 18) NULL,
+        [doubleDatum] [float] NOT NULL,
+        [integerDatum] [int] NULL,
+        [longDatum] [bigint] NOT NULL,
+        [stringDatum] [nvarchar](max) NULL,
+        [timeDatum] [nvarchar](max) NULL,
+        [timestampDatum] [datetime] NULL
+      )
+      """)
+    } catch {
+      case e: Exception =>
+    } finally {
+      connection.close
+    }     
+
+    load.JDBCLoad.load(
+      JDBCLoad(
+        name="dataset",
+        inputView=dbtable, 
+        jdbcURL=sqlserverurl, 
+        driver=DriverManager.getDriver(sqlserverurl),
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        isolationLevel=None,
+        batchsize=None, 
+        truncate=Option(true),
+        createTableOptions=None,
+        createTableColumnTypes=None,        
+        saveMode=Option(SaveMode.Append), 
+        bulkload=Option(true),
+        params=Map("user" -> user, "password" -> password)
+      )
+    )
+
+    val actual = { spark.read
+      .format("jdbc")
+      .option("url", sqlserverurl)
+      .option("user", user)
+      .option("password", password)      
+      .option("dbtable", s"(SELECT COUNT(*) AS count FROM [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]) result")
+      .load()
+    }
+
+    assert(actual.first.getInt(0) == 2)
+  }     
+
+  test("JDBCLoad: sqlserver bulk no table") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(dbtable)
+
+    try {
+      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
+      connection.createStatement.execute(s"""
+      DROP TABLE IF EXISTS [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]
+      """)
+    } catch {
+      case e: Exception =>
+    } finally {
+      connection.close
+    }     
 
     val thrown = intercept[Exception with DetailException] {
       load.JDBCLoad.load(
@@ -104,12 +266,12 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
           inputView=dbtable, 
           jdbcURL=sqlserverurl, 
           driver=DriverManager.getDriver(sqlserverurl),
-          tableName=s"master.dbo.${dbtable}", 
+          tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
           partitionBy=Nil, 
           numPartitions=None, 
           isolationLevel=None,
           batchsize=None, 
-          truncate=None,
+          truncate=Option(true),
           createTableOptions=None,
           createTableColumnTypes=None,        
           saveMode=None, 
@@ -118,19 +280,93 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown.getMessage.contains("""but source has 2 records and target has 4 records"""))  
+    assert(thrown.getMessage.contains(s"""java.lang.Exception: Table '[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]' does not exist and 'bulkLoad' equals 'true' so cannot continue."""))      
+  }     
+
+
+  test("JDBCLoad: sqlserver bulk SaveMode.Append") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(dbtable)
+
+    try {
+      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
+      connection.createStatement.execute(s"""
+      DROP TABLE IF EXISTS [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]
+      """)
+      connection.createStatement.execute(s"""
+      CREATE TABLE [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}] (
+        [booleanDatum] [bit] NOT NULL,
+        [dateDatum] [date] NULL,
+        [decimalDatum] [decimal](38, 18) NULL,
+        [doubleDatum] [float] NOT NULL,
+        [integerDatum] [int] NULL,
+        [longDatum] [bigint] NOT NULL,
+        [stringDatum] [nvarchar](max) NULL,
+        [timeDatum] [nvarchar](max) NULL,
+        [timestampDatum] [datetime] NULL
+      )
+      """)
+    } catch {
+      case e: Exception =>
+    } finally {
+      connection.close
+    }  
+
+    load.JDBCLoad.load(
+      JDBCLoad(
+        name="dataset",
+        inputView=dbtable, 
+        jdbcURL=sqlserverurl, 
+        driver=DriverManager.getDriver(sqlserverurl),
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        isolationLevel=None,
+        batchsize=None, 
+        truncate=None,
+        createTableOptions=None,
+        createTableColumnTypes=None,        
+        saveMode=Option(SaveMode.Overwrite), 
+        bulkload=Option(true),
+        params=Map("user" -> user, "password" -> password)
+      )
+    )
+
+    load.JDBCLoad.load(
+      JDBCLoad(
+        name="dataset",
+        inputView=dbtable, 
+        jdbcURL=sqlserverurl, 
+        driver=DriverManager.getDriver(sqlserverurl),
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        isolationLevel=None,
+        batchsize=None, 
+        truncate=None,
+        createTableOptions=None,
+        createTableColumnTypes=None,        
+        saveMode=Option(SaveMode.Append), 
+        bulkload=Option(true),
+        params=Map("user" -> user, "password" -> password)
+      )
+    )
 
     val actual = { spark.read
       .format("jdbc")
       .option("url", sqlserverurl)
       .option("user", user)
       .option("password", password)      
-      .option("dbtable", s"(SELECT COUNT(*) AS count FROM master.dbo.[${dbtable}]) result")
+      .option("dbtable", s"(SELECT COUNT(*) AS count FROM [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]) result")
       .load()
     }
 
     assert(actual.first.getInt(0) == 4)
-  }      
+  }          
 
   test("JDBCLoad: postgres normal") {
     implicit val spark = session
@@ -146,7 +382,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         inputView=dbtable, 
         jdbcURL=postgresurl, 
         driver=DriverManager.getDriver(postgresurl),
-        tableName=dbtable, 
+        tableName=s"sa.public.${dbtable}", 
         partitionBy=Nil, 
         numPartitions=None, 
         isolationLevel=None,
@@ -165,7 +401,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       .option("url", postgresurl)
       .option("user", user)
       .option("password", password)
-      .option("dbtable", s"(SELECT COUNT(*) AS count FROM ${dbtable}) ${dbtable}")
+      .option("dbtable", s"(SELECT COUNT(*) AS count FROM ${poastgrestable}) result")
       .load()
     }
 

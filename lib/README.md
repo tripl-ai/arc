@@ -1,0 +1,3 @@
+- azure-sqldb-spark-1.0.0.jar included as is not available on Maven
+- kafka_2.11-1.1.0.jar included to allow compilation of Kafka parts without conflicting inbuilt spark serializer
+- kafka-clients-1.1.0.jar included to allow compilation of Kafka parts without conflicting inbuilt spark serializer

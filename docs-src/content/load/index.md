@@ -189,7 +189,7 @@ Whilst it is possible to use `JDBCLoad` to create tables directly in the target 
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |jdbcURL|String|true|{{< readfile file="/content/partials/fields/jdbcURL.md" markdown="true" >}}|
-|tableName|String|true|{{< readfile file="/content/partials/fields/tableName.md" markdown="true" >}}|
+|tableName|String|true|The target JDBC table. Must be in `database`.`schema`.`table` format.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
 |isolationLevel|String|false|{{< readfile file="/content/partials/fields/isolationLevel.md" markdown="true" >}}|
 |batchsize|Integer|false|{{< readfile file="/content/partials/fields/batchsize.md" markdown="true" >}}|
