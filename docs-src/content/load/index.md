@@ -198,6 +198,7 @@ Whilst it is possible to use `JDBCLoad` to create tables directly in the target 
 |createTableColumnTypes|String|false|{{< readfile file="/content/partials/fields/createTableColumnTypes.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
 |bulkload|Boolean|false|{{< readfile file="/content/partials/fields/bulkload.md" markdown="true" >}}|
+|tablock|Boolean|false|When in `bulkload` mode whether to set `TABLOCK` on the driver.<br><br>Default: `true`.|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Currently requires `user` and `password` to be set here - see example below.|
 
 ### Examples

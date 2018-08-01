@@ -906,7 +906,7 @@
 <td>batchsize</td>
 <td>Integer</td>
 <td>false</td>
-<td>The JDBC batch size, which determines how many rows to insert per round trip. This can help performance on JDBC drivers. It defaults to <code>1000</code>.</td>
+<td>The JDBC batch size, which determines how many rows to insert per round trip. This can help performance on JDBC drivers.<br><br>Defaults:<br>Non-Bulkload: <code>1000</code><br>Bulkload: <code>10000</code>.</td>
 </tr>
 
 <tr>
@@ -942,6 +942,13 @@
 <td>Boolean</td>
 <td>false</td>
 <td>Whether to enable a <code>bulk</code> copy. This is currently only available for <code>sqlserver</code> targets but more targets can be added as drivers become available.</td>
+</tr>
+
+<tr>
+<td>tablock</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When in <code>bulkload</code> mode whether to set <code>TABLOCK</code> on the driver.<br><br>Default: <code>true</code>.</td>
 </tr>
 
 <tr>

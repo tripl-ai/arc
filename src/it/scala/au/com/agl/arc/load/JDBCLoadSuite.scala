@@ -33,7 +33,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
   val sqlserver_table = "hyphen-table"
   val sqlserver_fullname = s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]"
   val dbtable = "output"
-  val poastgrestable = "target"
+  val postgrestable = "target"
 
   val user = "sa"
   val password = "SecretPass2018" // see docker-compose.yml for password
@@ -96,6 +96,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         createTableColumnTypes=None,        
         saveMode=Some(SaveMode.Overwrite), 
         bulkload=Option(false),
+        tablock=None,
         params=Map("user" -> user, "password" -> password)
       )
     )
@@ -160,6 +161,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         createTableColumnTypes=None,        
         saveMode=None, 
         bulkload=Option(true),
+        tablock=None,
         params=Map("user" -> user, "password" -> password)
       )
     )
@@ -224,6 +226,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         createTableColumnTypes=None,        
         saveMode=Option(SaveMode.Append), 
         bulkload=Option(true),
+        tablock=None,
         params=Map("user" -> user, "password" -> password)
       )
     )
@@ -276,6 +279,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
           createTableColumnTypes=None,        
           saveMode=None, 
           bulkload=Option(true),
+          tablock=None,
           params=Map("user" -> user, "password" -> password)
         )
       )
@@ -332,6 +336,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         createTableColumnTypes=None,        
         saveMode=Option(SaveMode.Overwrite), 
         bulkload=Option(true),
+        tablock=None,
         params=Map("user" -> user, "password" -> password)
       )
     )
@@ -352,6 +357,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         createTableColumnTypes=None,        
         saveMode=Option(SaveMode.Append), 
         bulkload=Option(true),
+        tablock=None,
         params=Map("user" -> user, "password" -> password)
       )
     )
@@ -382,7 +388,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         inputView=dbtable, 
         jdbcURL=postgresurl, 
         driver=DriverManager.getDriver(postgresurl),
-        tableName=s"sa.public.${dbtable}", 
+        tableName=s"sa.public.${postgrestable}", 
         partitionBy=Nil, 
         numPartitions=None, 
         isolationLevel=None,
@@ -392,6 +398,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         createTableColumnTypes=None,        
         saveMode=Some(SaveMode.Overwrite), 
         bulkload=Option(false),
+        tablock=None,
         params=Map("user" -> user, "password" -> password)
       )
     )
@@ -401,7 +408,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       .option("url", postgresurl)
       .option("user", user)
       .option("password", password)
-      .option("dbtable", s"(SELECT COUNT(*) AS count FROM ${poastgrestable}) result")
+      .option("dbtable", s"(SELECT COUNT(*) AS count FROM ${postgrestable}) result")
       .load()
     }
 

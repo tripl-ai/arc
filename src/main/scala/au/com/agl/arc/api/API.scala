@@ -207,7 +207,7 @@ object API {
 
   case class HTTPLoad(name: String, inputView: String, outputURI: URI, headers: Map[String, String], validStatusCodes: Option[List[Int]], params: Map[String, String]) extends Load { val getType = "HTTPLoad" }
 
-  case class JDBCLoad(name: String, inputView: String, jdbcURL: String, tableName: String, partitionBy: List[String], numPartitions: Option[Int], isolationLevel: Option[String], batchsize: Option[Int], truncate: Option[Boolean], createTableOptions: Option[String], createTableColumnTypes: Option[String], saveMode: Option[SaveMode], driver: java.sql.Driver, bulkload: Option[Boolean], params: Map[String, String]) extends Load { val getType = "JDBCLoad" }
+  case class JDBCLoad(name: String, inputView: String, jdbcURL: String, tableName: String, partitionBy: List[String], numPartitions: Option[Int], isolationLevel: Option[String], batchsize: Option[Int], truncate: Option[Boolean], createTableOptions: Option[String], createTableColumnTypes: Option[String], saveMode: Option[SaveMode], driver: java.sql.Driver, bulkload: Option[Boolean], tablock: Option[Boolean], params: Map[String, String]) extends Load { val getType = "JDBCLoad" }
 
   case class JSONLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "JSONLoad" }
 

@@ -145,6 +145,9 @@ object JDBCLoad {
             val batchsize = load.batchsize.getOrElse(10000)
             stageDetail.put("batchsize", Integer.valueOf(batchsize))
 
+            val tablock = load.tablock.getOrElse(true)
+            stageDetail.put("tablock", Boolean.valueOf(tablock))            
+
             val bulkCopyConfig = com.microsoft.azure.sqldb.spark.config.Config(Map(
               "url"               -> s"${uri.getHost}:${uri.getPort}",
               "user"              -> load.params.get("user").getOrElse(""),
@@ -152,7 +155,7 @@ object JDBCLoad {
               "databaseName"      -> tablePath(0).replace("[", "").replace("]", ""),
               "dbTable"           -> s"${tablePath(1)}.${tablePath(2)}",
               "bulkCopyBatchSize" -> batchsize.toString,
-              "bulkCopyTableLock" -> "true",
+              "bulkCopyTableLock" -> tablock.toString,
               "bulkCopyTimeout"   -> "42300"
             ))
 
@@ -189,9 +192,7 @@ object JDBCLoad {
 
             load.partitionBy match {
               case Nil => { 
-                println("here0")
                 df.drop(arrays:_*).drop(nulls:_*).write.mode(saveMode).jdbc(load.jdbcURL, load.tableName, connectionProperties)
-                println("here1")
               }
               case partitionBy => {
                 df.drop(arrays:_*).drop(nulls:_*).write.partitionBy(partitionBy:_*).mode(saveMode).jdbc(load.jdbcURL, load.tableName, connectionProperties)

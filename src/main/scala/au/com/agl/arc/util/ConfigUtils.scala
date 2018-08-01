@@ -1000,12 +1000,13 @@ object ConfigUtils {
     val createTableColumnTypes = getOptionalValue[String]("createTableColumnTypes")
     val saveMode = readSaveMode("saveMode")
     val bulkload = getOptionalValue[Boolean]("bulkload")
+    val tablock = getOptionalValue[Boolean]("tablock")
 
-    (name, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload) match {
-      case (Right(n), Right(iv), Right(ju), Right(d), Right(tn), Right(np), Right(il), Right(bs), Right(t), Right(cto), Right(ctct), Right(sm), Right(bl)) => 
-        Right(JDBCLoad(n, iv, ju, tn, partitionBy, np, il, bs, t, cto, ctct, sm, d, bl, params))
+    (name, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock) match {
+      case (Right(n), Right(iv), Right(ju), Right(d), Right(tn), Right(np), Right(il), Right(bs), Right(t), Right(cto), Right(ctct), Right(sm), Right(bl), Right(tl)) => 
+        Right(JDBCLoad(n, iv, ju, tn, partitionBy, np, il, bs, t, cto, ctct, sm, d, bl, tl, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err)
