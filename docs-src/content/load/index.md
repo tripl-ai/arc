@@ -193,10 +193,10 @@ Whilst it is possible to use `JDBCLoad` to create tables directly in the target 
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
 |isolationLevel|String|false|{{< readfile file="/content/partials/fields/isolationLevel.md" markdown="true" >}}|
 |batchsize|Integer|false|{{< readfile file="/content/partials/fields/batchsize.md" markdown="true" >}}|
-|truncate|Boolean|false|{{< readfile file="/content/partials/fields/truncate.md" markdown="true" >}}|
 |createTableOptions|String|false|{{< readfile file="/content/partials/fields/createTableOptions.md" markdown="true" >}}|
 |createTableColumnTypes|String|false|{{< readfile file="/content/partials/fields/createTableColumnTypes.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
+|truncate|Boolean|false|{{< readfile file="/content/partials/fields/truncate.md" markdown="true" >}}|
 |bulkload|Boolean|false|{{< readfile file="/content/partials/fields/bulkload.md" markdown="true" >}}|
 |tablock|Boolean|false|When in `bulkload` mode whether to set `TABLOCK` on the driver.<br><br>Default: `true`.|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Currently requires `user` and `password` to be set here - see example below.|

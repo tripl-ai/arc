@@ -1,1 +1,1 @@
-This option causes Spark to `TRUNCATE TABLE` an existing table instead of executing a `DELETE FROM` statement if using `SaveMode` equal to `Overwrite`. `TRUNCATE` does not log the change so can be quicker for large tables but cannot be rolled back like `DELETE FROM`.
+If using `SaveMode` equal to `Overwrite`, this additional option causes Spark to `TRUNCATE TABLE` of existing data instead of executing a `DELETE FROM` statement.
