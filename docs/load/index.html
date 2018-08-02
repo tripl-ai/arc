@@ -913,7 +913,7 @@
 <td>truncate</td>
 <td>Boolean</td>
 <td>false</td>
-<td>This option causes Spark to truncate an existing table instead of dropping and recreating it.</td>
+<td>This option causes Spark to <code>TRUNCATE TABLE</code> an existing table instead of executing a <code>DELETE FROM</code> statement. <code>TRUNCATE</code> does not log the change so can be quicker for large tables but cannot be rolled back like <code>DELETE FROM</code>.</td>
 </tr>
 
 <tr>
