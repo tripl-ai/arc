@@ -409,7 +409,7 @@ object Typing {
 
       def timeOrError(col: TimeColumn, value: String): TypingResult[String] = {
         val tm = parseTime(col.formatters, value)        
-        val v = tm.map( _tm => _tm.toString)
+        val v = tm.map( _tm => _tm.format(DateTimeFormatter.ISO_LOCAL_TIME))
         if(v == None)        
           throw new Exception()        
         v -> None

@@ -323,7 +323,19 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
           }
           case (_,_) => assert(false)
         }
-      }                        
+      }       
+
+      {
+        val timeValue = "12:34:00"
+        val value = "12:34:00"
+        Typing.typeValue(value, col) match {
+          case (Some(res), err) => {
+            assert(res === timeValue)
+            assert(err === None)
+          }
+          case (_,_) => assert(false)
+        }
+      }                         
     }    
 
     // Test bad inputs
