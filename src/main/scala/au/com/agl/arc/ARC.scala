@@ -38,6 +38,9 @@ object ARC {
     }
 
     val jobId: Option[String] = argsMap.get("etl.config.job.id").orElse(envOrNone("ETL_CONF_JOB_ID"))
+    for (j <- jobId) {
+        MDC.put("jobId", j) 
+    }    
 
     val spark: SparkSession = try {
       SparkSession
