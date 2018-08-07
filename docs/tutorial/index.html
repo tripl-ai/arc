@@ -407,7 +407,7 @@ docker run \
 -v &quot;$(pwd):${ETL_CONF_BASE_URL}&quot; \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
--it -p 4040:4040 seddonm1/arc:1.0.6 \
+-it -p 4040:4040 seddonm1/arc:1.0.8 \
 /bin/sh -c '/opt/tutorial/nyctaxi/download_raw_data_small.sh'
 </code></pre>
 
@@ -448,7 +448,7 @@ docker run \
 -v &quot;$(pwd):${ETL_CONF_BASE_URL}&quot; \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
--it -p 4040:4040 seddonm1/arc:1.0.6 \
+-it -p 4040:4040 seddonm1/arc:1.0.8 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=12G \
@@ -651,7 +651,7 @@ job/0/nyctaxi.json
 <p>This format does not use input field names and will only try to convert data by its column index - meaning that the order of the fields in the meatadata file must match the input dataset.</p>
 </div>
 
-<p>Here is the full text which should already exist in <code>tutorial/nyctaxi/meta/green_tripdata/0/green_tripdata.json</code>. The description fields have come from the <a href="http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml">official data dictionary</a>.</p>
+<p>Here is the full text which should already exist in <code>tutorial/nyctaxi/meta/green_tripdata/0/green_tripdata.json</code> but you should create a copy of it to <code>meta/green_tripdata/0/green_tripdata.json</code>. The description fields have come from the <a href="http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml">official data dictionary</a>.</p>
 
 <pre><code>[
   {
@@ -1087,7 +1087,7 @@ FROM (
 -v &quot;$(pwd):${ETL_CONF_BASE_URL}&quot; \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
--it -p 4040:4040 seddonm1/arc:1.0.6 \
+-it -p 4040:4040 seddonm1/arc:1.0.8 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=12G \
