@@ -9,6 +9,7 @@ import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.execution.datasources.jdbc._
 
 // sqlserver bulk import - not limited to azure hosted sqlserver instances
 import com.microsoft.azure.sqldb.spark.connect._
@@ -71,11 +72,14 @@ object JDBCLoad {
     connectionProperties.put("user", load.params.get("user").getOrElse(""))
     connectionProperties.put("password", load.params.get("password").getOrElse(""))    
 
+    // build spark JDBCOptions object so we can utilise their inbuilt dialect support
+    val jdbcOptions = new JDBCOptions(Map("url"-> load.jdbcURL, "dbtable" -> load.tableName))
+
     // execute a count query on target db to get intial count
     val targetPreCount = try {
       connection = DriverManager.getConnection(load.jdbcURL, connectionProperties)
       // check if table exists
-      if (connection.getMetaData.getTables(tablePath(0).replace("[", "").replace("]", ""), tablePath(1).replace("[", "").replace("]", ""), tablePath(2).replace("[", "").replace("]", ""), null).next) {
+      if (JdbcUtils.tableExists(connection, jdbcOptions)) {
         saveMode match {
           case SaveMode.ErrorIfExists => {
             throw new Exception(s"Table '${load.tableName}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
@@ -86,11 +90,15 @@ object JDBCLoad {
           }          
           case SaveMode.Overwrite => {
             if (truncate) {
-              connection.createStatement.execute(s"TRUNCATE TABLE ${load.tableName}")
+              JdbcUtils.truncateTable(connection, jdbcOptions)
             } else {
-              connection.createStatement.execute(s"DELETE FROM ${load.tableName}")
+              val statement = connection.createStatement
+              try {
+                statement.executeUpdate(s"DELETE FROM ${load.tableName}")
+              } finally {
+                statement.close()
+              }              
             }
-
             0
           }
           case SaveMode.Append => {
