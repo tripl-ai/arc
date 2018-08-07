@@ -37,6 +37,11 @@ object ARC {
       }
     }
 
+    val jobName: Option[String] = argsMap.get("etl.config.job.name").orElse(envOrNone("ETL_CONF_JOB_NAME"))
+    for (j <- jobName) {
+        MDC.put("jobName", j) 
+    }    
+
     val jobId: Option[String] = argsMap.get("etl.config.job.id").orElse(envOrNone("ETL_CONF_JOB_ID"))
     for (j <- jobId) {
         MDC.put("jobId", j) 
