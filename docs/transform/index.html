@@ -575,7 +575,7 @@
 
 <h2 id="mltransform">MLTransform</h2>
 
-<p>The <code>MLTransform</code> stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a <code>PipelineModel</code> produced using Spark&rsquo;s Scala, Java, PySpark or SparkR API.</p>
+<p>The <code>MLTransform</code> stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a <code>PipelineModel</code> or <code>CrossValidatorModel</code> produced using Spark&rsquo;s Scala, Java, PySpark or SparkR API.</p>
 
 <h3 id="parameters-2">Parameters</h3>
 
@@ -608,7 +608,7 @@
 <td>inputURI</td>
 <td>URI</td>
 <td>true</td>
-<td>URI of the input PipelineModel.</td>
+<td>URI of the input <code>PipelineModel</code> or <code>CrossValidatorModel</code>.</td>
 </tr>
 
 <tr>

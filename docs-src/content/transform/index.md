@@ -87,7 +87,7 @@ The `JSONTransform` stage transforms the incoming dataset to rows of `json` stri
 
 ## MLTransform
 
-The `MLTransform` stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a `PipelineModel` produced using Spark's Scala, Java, PySpark or SparkR API.
+The `MLTransform` stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a `PipelineModel` or `CrossValidatorModel` produced using Spark's Scala, Java, PySpark or SparkR API.
 
 ### Parameters
 
@@ -95,7 +95,7 @@ The `MLTransform` stage transforms the incoming dataset with a pretrained Spark 
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputURI|URI|true|URI of the input PipelineModel.|
+|inputURI|URI|true|URI of the input `PipelineModel` or `CrossValidatorModel`.|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}} MLTransform will also log percentiles of prediction probabilities for classification models if this option is enabled.|
