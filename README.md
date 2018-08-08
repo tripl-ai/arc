@@ -155,6 +155,13 @@ To compile the main library (which will produce `target/scala-2.11/arc.jar`) in 
 sbt assembly
 ```
 
+If you are having problems compiling it is likely due to environmental setup. You can use these additional commands to build a reproducible build environment in Docker which could also be used in a CICD pipeline:
+
+```bash
+docker build . -t scala-sbt:latest -f BuildDockerfile 
+docker run -v $(pwd):/sbt scala-sbt:latest sbt assembly
+```
+
 The compiled JAR is then copied into the Docker image in the `Dockerfile`.
 
 ### Tests
