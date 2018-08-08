@@ -52,6 +52,7 @@ RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/sp
     # BigQueryJDBC uses difficult distribution mechanism
     wget -P /tmp https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.1.6.1006.zip && \   
     unzip -d ${SPARK_JARS} /tmp/SimbaJDBCDriverforGoogleBigQuery42_1.1.6.1006.zip *.jar && \
+    rm ${SPARK_JARS}/jackson-core-2.1.3.jar && \
     rm /tmp/SimbaJDBCDriverforGoogleBigQuery42_1.1.6.1006.zip && \
     # logging
     wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/applicationinsights-core/1.0.9/applicationinsights-core-1.0.9.jar && \           
