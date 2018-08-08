@@ -6,6 +6,7 @@ import java.sql.Driver
 
 import org.apache.spark.sql._
 import org.apache.spark.ml.PipelineModel
+import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.types.MetadataBuilder
 import org.apache.spark.sql.SaveMode
@@ -188,7 +189,7 @@ object API {
 
   case class JSONTransform(name: String, inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "JSONTransform" }
 
-  case class MLTransform(name: String, inputURI: URI, model: PipelineModel, inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "MLTransform" }
+  case class MLTransform(name: String, inputURI: URI, model: Either[PipelineModel, CrossValidatorModel], inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "MLTransform" }
 
   case class SQLTransform(name: String, inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean) extends Transform { val getType = "SQLTransform" }
 

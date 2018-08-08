@@ -11,6 +11,8 @@ import org.apache.commons.io.IOUtils
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
+import org.apache.spark.ml.tuning._
+import org.apache.spark.ml.evaluation._
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
@@ -23,7 +25,8 @@ import au.com.agl.arc.util.TestDataUtils
 class MLTransformSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "spark-logistic-regression-model" 
+  val pipelineModelTargetFile = FileUtils.getTempDirectoryPath() + "spark-logistic-regression-model-pipelinemodel" 
+  val crossValidatorModelTargetFile = FileUtils.getTempDirectoryPath() + "spark-logistic-regression-model-crossvalidatormodel" 
   val inputView = "inputView"
   val outputView = "outputView"
 
@@ -39,7 +42,8 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     session = spark
 
     // ensure targets removed
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
+    FileUtils.deleteQuietly(new java.io.File(pipelineModelTargetFile))     
+    FileUtils.deleteQuietly(new java.io.File(crossValidatorModelTargetFile))   
 
     // Train an ML pipeline, which consists of three stages: tokenizer, hashingTF, and lr.
     val training = spark.createDataFrame(Seq(
@@ -65,19 +69,31 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val pipeline = new Pipeline()
       .setStages(Array(tokenizer, hashingTF, lr))
 
-    val model = pipeline.fit(training)
+    val pipelineModel = pipeline.fit(training)
+    pipelineModel.write.overwrite().save(pipelineModelTargetFile)    
 
-    model.write.overwrite().save(targetFile)    
+    val paramGrid = new ParamGridBuilder().build()
+
+    val crossValidator = new CrossValidator()
+      .setEstimator(pipeline)
+      .setEvaluator(new MulticlassClassificationEvaluator().setLabelCol("label").setPredictionCol("prediction").setMetricName("f1"))
+      .setEstimatorParamMaps(paramGrid)
+      .setNumFolds(2) // Use 3+ in practice
+
+    val crossValidatorModel = crossValidator.fit(training)
+    crossValidatorModel.write.overwrite().save(crossValidatorModelTargetFile) 
+
   }
 
   after {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))     
+    FileUtils.deleteQuietly(new java.io.File(pipelineModelTargetFile))     
+    FileUtils.deleteQuietly(new java.io.File(crossValidatorModelTargetFile))     
   }
 
-  test("MLTransform") {
+  test("MLTransform: pipelineModel") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -93,8 +109,8 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.MLTransform.transform(
       MLTransform(
         name="MLTransform", 
-        inputURI=new URI(targetFile),
-        model=PipelineModel.load(targetFile),
+        inputURI=new URI(pipelineModelTargetFile),
+        model=Left(PipelineModel.load(pipelineModelTargetFile)),
         inputView=inputView,
         outputView=outputView,
         persist=true,
@@ -116,4 +132,44 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     assert(actual.except(expected).count === 0)
     assert(expected.except(actual).count === 0)
   }  
+
+  test("MLTransform: crossValidatorModelTargetFile") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val expected = spark.createDataFrame(Seq(
+      (4L, "spark i j k", 1.0, 0.8),
+      (5L, "l m n", 0.0, 0.8),
+      (6L, "spark hadoop spark", 1.0, 0.9),
+      (7L, "apache hadoop", 0.0, 1.0)
+    )).toDF("id", "text", "prediction", "probability")
+    expected.drop("prediction").drop("probability").createOrReplaceTempView(inputView)
+
+    val transformed = transform.MLTransform.transform(
+      MLTransform(
+        name="MLTransform", 
+        inputURI=new URI(crossValidatorModelTargetFile),
+        model=Right(CrossValidatorModel.load(crossValidatorModelTargetFile)),
+        inputView=inputView,
+        outputView=outputView,
+        persist=true,
+        params=Map.empty
+      )
+    )
+
+    // round due to random seed changing
+    val actual = transformed.withColumn("probability", round($"probability", 1))
+
+    val actualExceptExpectedCount = actual.except(expected).count
+    val expectedExceptActualCount = expected.except(actual).count
+    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
+      println("actual")
+      actual.show(false)
+      println("expected")
+      expected.show(false)  
+    }
+    assert(actual.except(expected).count === 0)
+    assert(expected.except(actual).count === 0)
+  }    
 }

@@ -34,25 +34,40 @@ object MLTransform {
 
     val df = spark.table(transform.inputView)
 
-    // apply model
-    val fullTransformedDF = try {
-      transform.model.transform(df)
+    val model = transform.model match {
+      case Right(crossValidatorModel) => crossValidatorModel
+      case Left(pipelineModel) => pipelineModel
+    }    
+
+    val stages = try {
+      transform.model match {
+        case Right(crossValidatorModel) => crossValidatorModel.bestModel.asInstanceOf[PipelineModel].stages
+        case Left(pipelineModel) => pipelineModel.stages
+      } 
     } catch {
-      case e: Exception with DetailException => throw e
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          
       }      
-    }       
+    }             
+
+    // apply model
+    val fullTransformedDF = try {
+      model.transform(df)
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }      
+    } 
 
     // select only input fields, predictedCol(s), probabilityCol(s)
     val inputCols = df.schema.fields.map(f => col(f.name)) 
-    val predictionCols = transform.model.stages
+    val predictionCols = stages
       .filter(stage => stage.hasParam("predictionCol"))
       .map(stage => stage.get(stage.getParam("predictionCol")))
       .map(predictionCol => predictionCol.getOrElse("prediction"))
       .map(_.toString)
       .map(col(_))
-    val probabilityCols = transform.model.stages
+    val probabilityCols = stages
       .filter(stage => stage.hasParam("probabilityCol"))
       .map(stage => stage.get(stage.getParam("probabilityCol")))
       .map(predictionCol => predictionCol.getOrElse("probability"))
@@ -72,7 +87,7 @@ object MLTransform {
       transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
       stageDetail.put("records", Long.valueOf(transformedDF.count))
 
-      // add percentiles to an list for loggig
+      // add percentiles to an list for logging
       var approxQuantileMap = new java.util.HashMap[String, Array[Double]]()
       probabilityCols.foreach(col => {
           approxQuantileMap.put(col.toString, transformedDF.stat.approxQuantile(col.toString, Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0), 0.1).map(col => Double.valueOf(col)))

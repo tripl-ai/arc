@@ -13,6 +13,8 @@ import com.typesafe.config._
 
 import org.apache.spark.sql._
 import org.apache.spark.ml.PipelineModel
+import org.apache.spark.ml.tuning.CrossValidatorModel
+import org.apache.spark.ml.Model
 import org.apache.spark.SparkFiles
 
 import au.com.agl.arc.api._
@@ -379,13 +381,19 @@ object ConfigUtils {
     }
   }  
 
-  private def getModel(path: String, uri: URI)(implicit spark: SparkSession): Either[Errors, PipelineModel] = {
-    def err(msg: String): Either[Errors, PipelineModel] = Left(ConfigError(path, msg) :: Nil)
+  private def getModel(path: String, uri: URI)(implicit spark: SparkSession): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = {
+    def err(msg: String): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = Left(ConfigError(path, msg) :: Nil)
 
     try {
-      Right(PipelineModel.load(uri.toString))
+      Right(Left(PipelineModel.load(uri.toString)))
     } catch {
-      case e: Exception => err(s"${e.getMessage}")
+      case e: Exception => {
+        try{
+         Right(Right(CrossValidatorModel.load(uri.toString)))
+        } catch {
+          case e: Exception => err(s"${e.getMessage}")
+        }
+      }
     }
   }    
 
