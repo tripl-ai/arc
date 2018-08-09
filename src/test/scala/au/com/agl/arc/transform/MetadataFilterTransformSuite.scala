@@ -34,7 +34,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    // spark.sparkContext.setLogLevel("ERROR")
 
     session = spark
     import spark.implicits._
@@ -80,7 +80,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         name="MetadataFilterTransform", 
         inputView=outputView,
         inputURI=new URI(targetFile),
-        sql=s"SELECT * FROM metadata WHERE metadata.private=true",
+        sql=s"SELECT * FROM metadata WHERE metadata.private=false",
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,
@@ -131,7 +131,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         name="MetadataFilterTransform", 
         inputView=outputView,
         inputURI=new URI(targetFile),
-        sql=s"SELECT * FROM metadata WHERE metadata.securityLevel > 4",
+        sql=s"SELECT * FROM metadata WHERE metadata.securityLevel <= 4",
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,

@@ -96,9 +96,9 @@ The `MetadataFilterTransform` is currently in experimental state whilst the requ
 This means this API is likely to change.
 {{</note>}}
 
-The `MetadataFilterTransform` stage transforms the incoming dataset by filtering out columns using the embedded column [metadata](../metadata/). Any column which is returned by the SQL statement will be **removed** in the `outputView`.
+The `MetadataFilterTransform` stage transforms the incoming dataset by filtering columns using the embedded column [metadata](../metadata/).
 
-Underneath Arc will register the `metadata` of the `inputView` so that complex SQL statements can be executed against it to return columns to be removed from the `inputView` as the `outputView`. The available columns in the `metadata` table are:
+Underneath Arc will register a table called `metadata` which contains the metadata of the `inputView`. This allows complex SQL statements to be executed which returns which columns to retain from the `inputView` in the `outputView`. The available columns in the `metadata` table are:
 
 | Field | Description |
 |-------|-------------|
@@ -106,7 +106,35 @@ Underneath Arc will register the `metadata` of the `inputView` so that complex S
 |type|The field type.|
 |metadata|The field metadata.|
 
-e.g. `SELECT name FROM metadata WHERE metadata.pii = true` will produce an `outputView` which removes any column from `inputView` where the `inputView` metadata contains a key `pii` which has the value equal to `true`.
+This can be used like:
+
+```sql
+-- only select columns which are not personally identifiable information
+SELECT 
+    name 
+FROM metadata 
+WHERE metadata.pii = false
+```
+
+Will produce an `outputView` which only contains the columns in `inputView` where the `inputView` column metadata contains a key `pii` which has the value equal to `false`. 
+
+If the `sqlParams` contains boolean parameter `pii_authorized` if the job is authorised to use Personally identifiable information or not then it could be used like:
+
+```sql
+-- only select columns which job is authorised to access based on ${pii_authorized}
+SELECT 
+    name 
+FROM metadata 
+WHERE metadata.pii = (
+    CASE 
+        WHEN ${pii_authorized} = true 
+        THEN metadata.pii   -- this will allow both true and false metadata.pii values if pii_authorized = true
+        ELSE false          -- else if pii_authorized = false only allow metadata.pii = false values
+    END
+)
+```
+
+The `inputView` and `outputView` can be set to the same name so that downstream stages have no way of accessing the pre-filtered data accidentially.
 
 ### Parameters
 
@@ -114,12 +142,12 @@ e.g. `SELECT name FROM metadata WHERE metadata.pii = true` will produce an `outp
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}<br><br>This statement must be written to query against a table called `metadata` and must return at least the `name` column.|
+|inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}<br><br>This statement must be written to query against a table called `metadata` and must return at least the `name` column or an error will be raised.|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}<br><br>For example if the `sqlParams` contains boolean parameter `pii_authorized` if the job is authorised to use Personally identifiable information or not then it could be used like: `SELECT name FROM metadata WHERE metadata.pii = (CASE WHEN ${pii_authorized} = true THEN null ELSE true END)`.|
+|sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples

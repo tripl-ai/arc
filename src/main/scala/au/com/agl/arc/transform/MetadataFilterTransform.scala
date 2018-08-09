@@ -45,13 +45,15 @@ object MetadataFilterTransform {
     }
 
     // get fields that meet condition from query result
-    val filtered = filterDF.collect.map(field => { field.getString(field.fieldIndex("name")) }).toList
-    if (!filtered.isEmpty) {
-      stageDetail.put("filteredColumns", filtered.asJava)
-    }
+    val inputFields = df.columns.toSet
+    val includeColumns = filterDF.collect.map(field => { field.getString(field.fieldIndex("name")) }).toSet
+    val excldueColumns = inputFields.diff(includeColumns)
 
-    // drop fields in the filtered result
-    val transformedDF = df.drop(filtered:_*)
+    stageDetail.put("includedColumns", includeColumns.asJava)
+    stageDetail.put("excludedColumns", excldueColumns.asJava)
+
+    // drop fields in the excluded set
+    val transformedDF = df.drop(excldueColumns.toList:_*)
     transformedDF.createOrReplaceTempView(transform.outputView)
 
     if (transform.persist) {
