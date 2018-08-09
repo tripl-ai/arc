@@ -19,7 +19,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test trimming
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), primaryKey = Option(true), nullable = true, nullReplacementValue = Some("42.22"), trim = true, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42.22"), trim = true, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None, metadata=None)
       val decimalValue = Decimal(42.22);
       // value is null -> nullReplacementValue
       {
@@ -92,7 +92,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test not trimming
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), primaryKey = Option(true), nullable = true, nullReplacementValue = Some("42.22"), trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42.22"), trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None, metadata=None)
 
       {
         val value = "   42.22"
@@ -110,7 +110,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITH nullReplacementValue
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), primaryKey = Option(true), nullable = true, nullReplacementValue = Some("42.22"), trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42.22"), trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None, metadata=None)
       val decimalValue = Decimal(42.22);
       // value is null -> nullReplacementValue
       {
@@ -148,7 +148,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITHOUT nullReplacementValue
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), primaryKey = Option(true), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None, metadata=None)
 
       // value.isNull
       {
@@ -188,7 +188,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
     // Test other miscellaneous input types
 
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), primaryKey = Option(true), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 10, scale = 0, formatter = None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 10, scale = 0, formatter = None, metadata=None)
 
       // value contains non numbers or characters
       {
@@ -205,7 +205,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     // test valid precision value for Long range
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), primaryKey = Option(true), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 10, scale = 0, formatter = None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 10, scale = 0, formatter = None, metadata=None)
 
       // precision '10' is valid for integer value that is converted to Long
       {
@@ -225,7 +225,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     // test invalid precision value
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), primaryKey = Option(true), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 9, scale = 0, formatter = None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 9, scale = 0, formatter = None, metadata=None)
 
       // invalid precision(<10) for the value that is converted to Long
       {
@@ -247,7 +247,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     //test negative decimal
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), primaryKey = Option(true), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None, metadata=None)
 
       // value contains negative number
       {
@@ -263,7 +263,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
     }
 
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), primaryKey = Option(true), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None, metadata=None)
 
       // value contains complex characters
       {

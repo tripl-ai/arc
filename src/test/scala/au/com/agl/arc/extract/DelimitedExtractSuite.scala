@@ -156,13 +156,13 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         id="1",
         name="booleanDatum",
         description=None,
-        primaryKey=Option(false),
         nullable=true,
         nullReplacementValue=None,
         trim=false,
         nullableValues=Nil, 
         trueValues=Nil, 
-        falseValues=Nil
+        falseValues=Nil,
+        metadata=None
       ) :: Nil    
 
     // try with wildcard

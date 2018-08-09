@@ -22,7 +22,7 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
     {
       val timeValue = "12:34:56"
       val fmt = List("HH:mm:ss")
-      val col = TimeColumn(id="1", name="name", description=Some("description"), primaryKey=Option(true), nullable=true, nullReplacementValue=Some("12:34:56"), trim=true, nullableValues="" :: Nil, formatters=fmt)
+      val col = TimeColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("12:34:56"), trim=true, nullableValues="" :: Nil, formatters=fmt, metadata=None)
 
       // value is null -> nullReplacementValue
       {
@@ -85,7 +85,7 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
     {
       val timeValue = "12:34:56"
       val fmt = List("HH:mm:ss")
-      val col = TimeColumn(id="1", name="name", description=Some("description"), primaryKey=Option(true), nullable=true, nullReplacementValue=Some("12:34:56"), trim=false, nullableValues="" :: Nil, formatters=fmt)
+      val col = TimeColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("12:34:56"), trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None)
 
             // value has leading spaces
             {
@@ -142,7 +142,7 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
     {
       val timeValue = "12:34:56"
       val fmt = List("HH:mm:ss")
-      val col = TimeColumn(id="1", name="name", description=Some("description"), primaryKey=Option(true), nullable=true, nullReplacementValue=Some("12:34:56"), trim=false, nullableValues="" :: Nil, formatters=fmt)
+      val col = TimeColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("12:34:56"), trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None)
 
       // value.isNull
       {
@@ -182,7 +182,7 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
     {
       val timeValue = Time.valueOf("12:34:56").toString
       val fmt = List("HH:mm:ss")
-      val col = TimeColumn(id="1", name="name", description=Some("description"), primaryKey=Option(true), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt)
+      val col = TimeColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None)
 
       // value.isNull
       {
@@ -221,7 +221,7 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
     // Test other miscellaneous input types
     {
       val fmt = List("HH:mm:ss")
-      val col = TimeColumn(id="1", name="name", description=Some("description"), primaryKey=Option(true), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt)
+      val col = TimeColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None)
 
       // format is different (e.g. dd-mm-yyyy)
       {
@@ -287,7 +287,7 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
     // Test multiple formatters
     {
       val fmt = List("HH:mm:ss", "HH:mm:ss.nnnnnnnnn", "HHmmss")
-      val col = TimeColumn(id="1", name="name", description=Some("description"), primaryKey=Option(true), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt)
+      val col = TimeColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None)
 
       {
         val timeValue = "12:34:56.987654321"
@@ -341,7 +341,7 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
     // Test bad inputs
     {
       val fmt = List("HH:mm:ss")
-      val col = TimeColumn(id="1", name="name", description=Some("description"), primaryKey=Option(true), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt)
+      val col = TimeColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None)
 
       {
         val value = "24:10:31"

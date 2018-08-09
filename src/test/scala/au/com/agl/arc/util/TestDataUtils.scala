@@ -77,7 +77,17 @@ object TestDataUtils {
             ],
             "falseValues": [
                 "false"
-            ]
+            ],
+            "metadata": {
+                "booleanMeta": true,
+                "booleanArrayMeta": [true, false],
+                "stringMeta": "string",
+                "stringArrayMeta": ["string0", "string1"],
+                "longMeta": 10,
+                "longArrayMeta": [10,20],
+                "doubleMeta": 0.141,
+                "doubleArrayMeta": [0.141, 0.52]
+            }
         },
         {
             "id": "0e8109ba-1000-4b7d-8a4c-b01bae07027f",
