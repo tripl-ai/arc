@@ -397,6 +397,8 @@
 
 <h2 id="difftransform">DiffTransform</h2>
 
+<h3 id="since-1-0-8">Since: 1.0.8</h3>
+
 <p>The <code>DiffTransform</code> stage calculates the difference between two input datasets and produces three datasets:</p>
 
 <ul>
@@ -500,6 +502,8 @@
 
 <h2 id="jsontransform">JSONTransform</h2>
 
+<h3 id="since-1-0-0">Since: 1.0.0</h3>
+
 <p>The <code>JSONTransform</code> stage transforms the incoming dataset to rows of <code>json</code> strings with the column name <code>value</code>. It is intended to be used before stages like <a href="https://aglenergy.github.io/arc/load/#httpload">HTTPLoad</a> to prepare the data for sending externally.</p>
 
 <h3 id="parameters-1">Parameters</h3>
@@ -573,11 +577,155 @@
 }
 </code></pre>
 
+<h2 id="metadatafiltertransform">MetadataFilterTransform</h2>
+
+<h3 id="since-1-0-9">Since: 1.0.9</h3>
+
+<div class="admonition note">
+<p class="admonition-title">Experimental</p>
+<p><p>The <code>MetadataFilterTransform</code> is currently in experimental state whilst the requirements become clearer.</p>
+
+<p>This means this API is likely to change.</p>
+</p>
+</div>
+
+<p>The <code>MetadataFilterTransform</code> stage transforms the incoming dataset by filtering out columns using the embedded column <a href="../metadata/">metadata</a>. Any column which is returned by the SQL statement will be <strong>removed</strong> in the <code>outputView</code>.</p>
+
+<p>Underneath Arc will register the <code>metadata</code> of the <code>inputView</code> so that complex SQL statements can be executed against it to return columns to be removed from the <code>inputView</code> as the <code>outputView</code>. The available columns in the <code>metadata</code> table are:</p>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>The field name.</td>
+</tr>
+
+<tr>
+<td>type</td>
+<td>The field type.</td>
+</tr>
+
+<tr>
+<td>metadata</td>
+<td>The field metadata.</td>
+</tr>
+</tbody>
+</table>
+
+<p>e.g. <code>SELECT name FROM metadata WHERE metadata.pii = true</code> will produce an <code>outputView</code> which removes any column from <code>inputView</code> where the <code>inputView</code> metadata contains a key <code>pii</code> which has the value equal to <code>true</code>.</p>
+
+<h3 id="parameters-2">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the input file containing the SQL statement.<br><br>This statement must be written to query against a table called <code>metadata</code> and must return at least the <code>name</code> column.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>sqlParams</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.<br><br>For example if the <code>sqlParams</code> contains boolean parameter <code>pii_authorized</code> if the job is authorised to use Personally identifiable information or not then it could be used like: <code>SELECT name FROM metadata WHERE metadata.pii = (CASE WHEN ${pii_authorized} = true THEN null ELSE true END)</code>.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-2">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;MetadataFilterTransform&quot;,
+    &quot;name&quot;: &quot;filter out Personally identifiable information (pii)&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputURI&quot;: &quot;hdfs://datalake/sql/0.0.1/filterPii.sql&quot;,
+    &quot;inputView&quot;: &quot;customerData&quot;,         
+    &quot;outputView&quot;: &quot;safeCustomerData&quot;,            
+    &quot;persist&quot;: false,
+    &quot;authentication&quot;: {
+        ...
+    },
+    &quot;sqlParams&quot;: {
+    },       
+    &quot;params&quot;: {
+    }
+}
+</code></pre>
+
 <h2 id="mltransform">MLTransform</h2>
+
+<h3 id="since-1-0-0-1">Since: 1.0.0</h3>
 
 <p>The <code>MLTransform</code> stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a <code>PipelineModel</code> or <code>CrossValidatorModel</code> produced using Spark&rsquo;s Scala, Java, PySpark or SparkR API.</p>
 
-<h3 id="parameters-2">Parameters</h3>
+<h3 id="parameters-3">Parameters</h3>
 
 <table>
 <thead>
@@ -648,7 +796,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-2">Examples</h3>
+<h3 id="examples-3">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;MLTransform&quot;,
@@ -668,6 +816,8 @@
 
 <h2 id="sqltransform">SQLTransform</h2>
 
+<h3 id="since-1-0-0-2">Since: 1.0.0</h3>
+
 <p>The <code>SQLTransform</code> stage transforms the incoming dataset with a <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL</a> statement. This stage relies on previous stages to load and register the dataset views (<code>outputView</code>) and will execute arbitrary SQL statements against those datasets.</p>
 
 <div class="admonition note">
@@ -678,7 +828,7 @@
 </p>
 </div>
 
-<h3 id="parameters-3">Parameters</h3>
+<h3 id="parameters-4">Parameters</h3>
 
 <table>
 <thead>
@@ -749,7 +899,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-3">Examples</h3>
+<h3 id="examples-4">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;SQLTransform&quot;,
@@ -786,6 +936,8 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <h2 id="tensorflowservingtransform">TensorFlowServingTransform</h2>
 
+<h3 id="since-1-0-0-3">Since: 1.0.0</h3>
+
 <div class="admonition note">
 <p class="admonition-title">Experimental</p>
 <p><p>The <code>TensorFlowServingTransform</code> is currently in experimental state whilst the requirements become clearer.</p>
@@ -796,7 +948,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <p>The <code>TensorFlowServingTransform</code> stage transforms the incoming dataset by calling a <a href="https://www.tensorflow.org/serving/">TensorFlow Serving</a> service. Because each call is atomic the TensorFlow Serving instances could be behind a load balancer to increase throughput.</p>
 
-<h3 id="parameters-4">Parameters</h3>
+<h3 id="parameters-5">Parameters</h3>
 
 <table>
 <thead>
@@ -895,7 +1047,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tbody>
 </table>
 
-<h3 id="examples-4">Examples</h3>
+<h3 id="examples-5">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;environments&quot;: [&quot;prd&quot;,&quot;tst&quot;],
@@ -920,11 +1072,13 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <h2 id="typingtransform">TypingTransform</h2>
 
+<h3 id="since-1-0-0-4">Since: 1.0.0</h3>
+
 <p>The <code>TypingTransform</code> stage transforms the incoming dataset with based on metadata defined in the <a href="../metadata/">metadata</a> format.</p>
 
 <p>The logical process that is applied to perform the typing on a field-by-field basis is shown below.</p>
 
-<h3 id="parameters-5">Parameters</h3>
+<h3 id="parameters-6">Parameters</h3>
 
 <table>
 <thead>
@@ -995,7 +1149,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tbody>
 </table>
 
-<h3 id="examples-5">Examples</h3>
+<h3 id="examples-6">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;TypingTransform&quot;,

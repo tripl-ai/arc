@@ -13,6 +13,7 @@ type: blog
 - Allow for [Predicate Pushdown](http://www.dbms2.com/2014/07/15/the-point-of-predicate-pushdown/) depending on data source.
 
 ## AvroExtract
+### Since: 1.0.0
 
 The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/) files and returns a `DataFrame`. 
 
@@ -51,6 +52,7 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 ```
 
 ## DelimitedExtract
+### Since: 1.0.0
 
 The `DelimitedExtract` stage reads either one or more delimited text files or an input `Dataset[String]` and returns a `DataFrame`. `DelimitedExtract` will always set the underlying Spark configuration option of `inferSchema` to `false` to ensure consistent results.
 
@@ -115,6 +117,7 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 ```
 
 ## HTTPExtract
+### Since: 1.0.0
 
 The `HTTPExtract` executes either a `GET` or `POST` request against a remote HTTP service and returns a `DataFrame` which will have a single row and single column holding the value of the HTTP response body. 
 
@@ -159,6 +162,7 @@ This stage would typically be used with a `JSONExtract` stage by specifying `inp
 ```
 
 ## JDBCExtract
+### Since: 1.0.0
 
 The `JDBCExtract` reads directly from a JDBC Database and returns a `DataFrame`. See [Spark JDBC documentation](https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases).
 
@@ -199,6 +203,7 @@ The `JDBCExtract` reads directly from a JDBC Database and returns a `DataFrame`.
 ```
 
 ## JSONExtract
+### Since: 1.0.0
 
 The `JSONExtract` stage reads either one or more JSON files or an input `Dataset[String]` and returns a `DataFrame`. 
 
@@ -240,6 +245,7 @@ The `JSONExtract` stage reads either one or more JSON files or an input `Dataset
 ```
 
 ## KafkaExtract
+### Since: 1.0.8
 
 {{< note title="Experimental" >}}
 The `KafkaExtract` is currently in experimental state whilst the requirements become clearer. 
@@ -289,6 +295,7 @@ Can be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecu
 ```
 
 ## ORCExtract
+### Since: 1.0.0
 
 The `ORCExtract` stage reads one or more [Apache ORC](https://orc.apache.org/) files and returns a `DataFrame`. 
 
@@ -327,6 +334,7 @@ The `ORCExtract` stage reads one or more [Apache ORC](https://orc.apache.org/) f
 ```
 
 ## ParquetExtract
+### Since: 1.0.0
 
 The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.apache.org/) files and returns a `DataFrame`. 
 
@@ -365,6 +373,7 @@ The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.ap
 ```
 
 ## XMLExtract
+### Since: 1.0.0
 
 The `XMLExtract` stage reads one or more XML files and returns a `DataFrame`. 
 

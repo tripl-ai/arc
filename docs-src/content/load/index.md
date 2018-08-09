@@ -12,6 +12,7 @@ type: blog
 - Perform target specific validation that the dataset has been written correctly.
 
 ## AvroLoad
+### Since: 1.0.0
 
 The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avro.apache.org/) file. 
 
@@ -52,6 +53,7 @@ The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avr
 ```
 
 ## AzureEventHubsLoad
+### Since: 1.0.0
 
 The `AzureEventHubsLoad` writes an input `DataFrame` to a target [Azure Event Hubs](https://azure.microsoft.com/en-gb/services/event-hubs/) stream. The input to this stage needs to be a single column dataset of signature `value: string` and is intended to be used after a [JSONTransform](/load/#jsontransform) stage which would prepare the data for sending to the external server.
 
@@ -95,6 +97,7 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 ```
 
 ## DelimitedLoad
+### Since: 1.0.0
 
 The `DelimitedLoad` writes an input `DataFrame` to a target delimited file. 
 
@@ -139,6 +142,7 @@ The `DelimitedLoad` writes an input `DataFrame` to a target delimited file.
 ```
 
 ## HTTPLoad
+### Since: 1.0.0
 
 The `HTTPLoad` takes an input `DataFrame` and executes a series of `POST` requests against a remote HTTP service. The input to this stage needs to be a single column dataset of signature `value: string` and is intended to be used after a [JSONTransform](/load/#jsontransform) stage which would prepare the data for sending to the external server.
 
@@ -176,6 +180,7 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 ```
 
 ## JDBCLoad
+### Since: 1.0.0
 
 The `JDBCLoad` writes an input `DataFrame` to a target JDBC Database. See [Spark JDBC documentation](https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases).
 
@@ -225,6 +230,7 @@ Whilst it is possible to use `JDBCLoad` to create tables directly in the target 
 ```
 
 ## JSONLoad
+### Since: 1.0.0
 
 The `JSONLoad` writes an input `DataFrame` to a target JSON file. 
 
@@ -259,6 +265,7 @@ The `JSONLoad` writes an input `DataFrame` to a target JSON file.
 ```
 
 ## KafkaLoad
+### Since: 1.0.8
 
 The `KafkaLoad` writes an input `DataFrame` to a target [Kafka](https://kafka.apache.org/) `topic`. The input to this stage needs to be a single column dataset of signature `value: string` - intended to be used after a [JSONTransform](/load/#jsontransform) stage - or a two columns of signature `key: string, value: string` which could be created by a [SQLTransform](/load/#sqltransform) stage.
 
@@ -299,6 +306,7 @@ In the future additional Transform stages (like `ProtoBufTransform`) may be adde
 ```
 
 ## ORCLoad
+### Since: 1.0.0
 
 The `ORCLoad` writes an input `DataFrame` to a target [Apache ORC](https://orc.apache.org/) file. 
 
@@ -339,6 +347,7 @@ The `ORCLoad` writes an input `DataFrame` to a target [Apache ORC](https://orc.a
 ```
 
 ## ParquetLoad
+### Since: 1.0.0
 
 The `ParquetLoad` writes an input `DataFrame` to a target [Apache Parquet](https://parquet.apache.org/) file. 
 
@@ -379,6 +388,7 @@ The `ParquetLoad` writes an input `DataFrame` to a target [Apache Parquet](https
 ```
 
 ## XMLLoad
+### Since: 1.0.0
 
 The `XMLLoad` writes an input `DataFrame` to a target XML file. 
 

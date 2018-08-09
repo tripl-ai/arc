@@ -389,6 +389,8 @@
 
 <h2 id="equalityvalidate">EqualityValidate</h2>
 
+<h3 id="since-1-0-0">Since: 1.0.0</h3>
+
 <p>The <code>EqualityValidate</code> takes two input <code>DataFrame</code> and will succeed if they are identical or fail if not. This stage is useful to use in automated testing as it can be used to validate a derived dataset equals a known &lsquo;good&rsquo; dataset.</p>
 
 <p>This stage will validate:</p>
@@ -465,6 +467,8 @@
 
 <h2 id="sqlvalidate">SQLValidate</h2>
 
+<h3 id="since-1-0-0-1">Since: 1.0.0</h3>
+
 <p>The <code>SQLValidate</code> takes an input SQL statement which must return [Boolean, Option[String]] and will succeed if the first return value is true or fail if not. The second return value will be logged in case of success or failure which can be useful for understanding reason for job success/failure. This stage is exteremely powerful as abritrary job validation rules, expressed as SQL statements, can be executed to allow/prevent the job to succeed.</p>
 
 <p>For example it can be used to perform automated extract validation against file formats which may have a header/footer layout or datasets where a certain level of data conversion errors are acceptable.</p>
@@ -511,7 +515,7 @@
 <td>sqlParams</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.<br><br>For example if the sqlParams contains parameter <code>current_timestamp</code> of value <code>2018-11-24 14:48:56</code> then this statement would execute in a deterministic way: <code>SELECT * FROM customer WHERE expiry &gt; FROM_UNIXTIME(UNIX_TIMESTAMP('${current_timestamp}', 'yyyy-MM-dd HH:mm:ss'))</code> (so would be testable).</td>
+<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.</td>
 </tr>
 
 <tr>

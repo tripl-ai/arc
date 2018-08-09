@@ -396,6 +396,8 @@
 
 <h2 id="avroload">AvroLoad</h2>
 
+<h3 id="since-1-0-0">Since: 1.0.0</h3>
+
 <p>The <code>AvroLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://avro.apache.org/">Apache Avro</a> file.</p>
 
 <h3 id="parameters">Parameters</h3>
@@ -498,6 +500,8 @@
 </code></pre>
 
 <h2 id="azureeventhubsload">AzureEventHubsLoad</h2>
+
+<h3 id="since-1-0-0-1">Since: 1.0.0</h3>
 
 <p>The <code>AzureEventHubsLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://azure.microsoft.com/en-gb/services/event-hubs/">Azure Event Hubs</a> stream. The input to this stage needs to be a single column dataset of signature <code>value: string</code> and is intended to be used after a <a href="https://aglenergy.github.io/arc/load/#jsontransform">JSONTransform</a> stage which would prepare the data for sending to the external server.</p>
 
@@ -622,6 +626,8 @@
 </code></pre>
 
 <h2 id="delimitedload">DelimitedLoad</h2>
+
+<h3 id="since-1-0-0-2">Since: 1.0.0</h3>
 
 <p>The <code>DelimitedLoad</code> writes an input <code>DataFrame</code> to a target delimited file.</p>
 
@@ -748,6 +754,8 @@
 
 <h2 id="httpload">HTTPLoad</h2>
 
+<h3 id="since-1-0-0-3">Since: 1.0.0</h3>
+
 <p>The <code>HTTPLoad</code> takes an input <code>DataFrame</code> and executes a series of <code>POST</code> requests against a remote HTTP service. The input to this stage needs to be a single column dataset of signature <code>value: string</code> and is intended to be used after a <a href="https://aglenergy.github.io/arc/load/#jsontransform">JSONTransform</a> stage which would prepare the data for sending to the external server.</p>
 
 <p>In the future additional Transform stages (like <code>ProtoBufTransform</code>) could be added to prepare binary payloads instead of just <code>json</code> <code>string</code>.</p>
@@ -835,6 +843,8 @@
 </code></pre>
 
 <h2 id="jdbcload">JDBCLoad</h2>
+
+<h3 id="since-1-0-0-4">Since: 1.0.0</h3>
 
 <p>The <code>JDBCLoad</code> writes an input <code>DataFrame</code> to a target JDBC Database. See <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases">Spark JDBC documentation</a>.</p>
 
@@ -984,6 +994,8 @@
 
 <h2 id="jsonload">JSONLoad</h2>
 
+<h3 id="since-1-0-0-5">Since: 1.0.0</h3>
+
 <p>The <code>JSONLoad</code> writes an input <code>DataFrame</code> to a target JSON file.</p>
 
 <h3 id="parameters-5">Parameters</h3>
@@ -1068,6 +1080,8 @@
 </code></pre>
 
 <h2 id="kafkaload">KafkaLoad</h2>
+
+<h3 id="since-1-0-8">Since: 1.0.8</h3>
 
 <p>The <code>KafkaLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://kafka.apache.org/">Kafka</a> <code>topic</code>. The input to this stage needs to be a single column dataset of signature <code>value: string</code> - intended to be used after a <a href="https://aglenergy.github.io/arc/load/#jsontransform">JSONTransform</a> stage - or a two columns of signature <code>key: string, value: string</code> which could be created by a <a href="https://aglenergy.github.io/arc/load/#sqltransform">SQLTransform</a> stage.</p>
 
@@ -1177,6 +1191,8 @@
 
 <h2 id="orcload">ORCLoad</h2>
 
+<h3 id="since-1-0-0-6">Since: 1.0.0</h3>
+
 <p>The <code>ORCLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://orc.apache.org/">Apache ORC</a> file.</p>
 
 <h3 id="parameters-7">Parameters</h3>
@@ -1280,6 +1296,8 @@
 
 <h2 id="parquetload">ParquetLoad</h2>
 
+<h3 id="since-1-0-0-7">Since: 1.0.0</h3>
+
 <p>The <code>ParquetLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://parquet.apache.org/">Apache Parquet</a> file.</p>
 
 <h3 id="parameters-8">Parameters</h3>
@@ -1382,6 +1400,8 @@
 </code></pre>
 
 <h2 id="xmlload">XMLLoad</h2>
+
+<h3 id="since-1-0-0-8">Since: 1.0.0</h3>
 
 <p>The <code>XMLLoad</code> writes an input <code>DataFrame</code> to a target XML file.</p>
 

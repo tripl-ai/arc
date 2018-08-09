@@ -1,1 +1,1 @@
-Parameters to inject into the SQL statement before executing. The parameters use the `${}` format.<br><br>For example if the sqlParams contains parameter `current_timestamp` of value `2018-11-24 14:48:56` then this statement would execute in a deterministic way: `SELECT * FROM customer WHERE expiry > FROM_UNIXTIME(UNIX_TIMESTAMP('${current_timestamp}', 'yyyy-MM-dd HH:mm:ss'))` (so would be testable).
+Parameters to inject into the SQL statement before executing. The parameters use the `${}` format.

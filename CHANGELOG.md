@@ -1,5 +1,10 @@
 ## Change Log
 
+# 1.0.9
+
+- added the ability to add column level `metadata`.
+- added the `MetadataFilterTransform` component.
+
 # 1.0.8
 
 - added the `KafkaLoad` stage - a stage which will write a dataset to a designated `topic` in Apache Kafka.

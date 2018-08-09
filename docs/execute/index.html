@@ -389,6 +389,8 @@
 
 <h2 id="httpexecute">HTTPExecute</h2>
 
+<h3 id="since-1-0-0">Since: 1.0.0</h3>
+
 <p>The <code>HTTPExecute</code> takes an input <code>Map[String, String]</code> from the configuration and executes a <code>POST</code> request against a remote HTTP service. This could be used to initialise another process that depends on the output of data pipeline.</p>
 
 <h3 id="parameters">Parameters</h3>
@@ -486,6 +488,8 @@
 
 <h2 id="jdbcexecute">JDBCExecute</h2>
 
+<h3 id="since-1-0-0-1">Since: 1.0.0</h3>
+
 <p>The <code>JDBCExecute</code> executes a SQL statement against an external JDBC connection.</p>
 
 <h3 id="parameters-1">Parameters</h3>
@@ -554,7 +558,7 @@
 <td>sqlParams</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.<br><br>For example if the sqlParams contains parameter <code>current_timestamp</code> of value <code>2018-11-24 14:48:56</code> then this statement would execute in a deterministic way: <code>SELECT * FROM customer WHERE expiry &gt; FROM_UNIXTIME(UNIX_TIMESTAMP('${current_timestamp}', 'yyyy-MM-dd HH:mm:ss'))</code> (so would be testable).</td>
+<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.</td>
 </tr>
 
 <tr>
@@ -588,6 +592,8 @@
 </code></pre>
 
 <h2 id="kafkacommitexecute">KafkaCommitExecute</h2>
+
+<h3 id="since-1-0-8">Since: 1.0.8</h3>
 
 <p>The <code>KafkaCommitExecute</code> takes the resulting <code>DataFrame</code> from a <a href="../extract/#kafkaextract">KafkaExtract</a> stage and commits the offsets back to Kafka. This is used so that a user is able to perform a quasi-transaction by specifing a series of stages that must be succesfully executed prior to <code>committing</code> the offset back to Kafka. To use this stage ensure that the <code>autoCommit</code> option on the <a href="../extract/#kafkaextract">KafkaExtract</a> stage is set to <code>false</code>.</p>
 

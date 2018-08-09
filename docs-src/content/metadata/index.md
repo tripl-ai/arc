@@ -26,8 +26,7 @@ It is designed to:
 |nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
 |nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
 |nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
-|primaryKey|Boolean|false|{{< readfile file="/content/partials/fields/primaryKey.md" markdown="true" >}}|
-|position|Integer|false|{{< readfile file="/content/partials/fields/position.md" markdown="true" >}}|
+|metadata|Object|false|{{< readfile file="/content/partials/fields/metadata.md" markdown="true" >}}|
 
 ### Examples
 
@@ -40,8 +39,10 @@ It is designed to:
   "trim" : true,
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
-  "primaryKey" : true,
-  "position": 1
+  "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  }
 }
 ```
 
@@ -65,10 +66,12 @@ It is designed to:
   "trim" : true,
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
-  "primaryKey" : false,
-  "position" : 2,
   "trueValues" : [ "true", "TRUE", "t", "1" ],
   "falseValues" : [ "false", "FALSE", "f", "0" ],
+  "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  }  
 }
 ```
 
@@ -97,9 +100,11 @@ This means that if users will be executing SQL statements which have conditional
   "trim" : true,
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
-  "primaryKey" : false,
-  "position" : 2,
   "formatters" : [ "yyyyMMdd", "yyyy-MM-dd" ],
+  "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  }  
 }
 ```
 
@@ -123,10 +128,12 @@ This means that if users will be executing SQL statements which have conditional
   "trim" : true,
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
-  "primaryKey" : false,
-  "position" : 3,s
   "precision": 10,
   "scale": 2,
+  "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  }  
 }
 ```
 
@@ -153,7 +160,10 @@ No additional attributes.
   "trim" : true,
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
-  "primaryKey" : false
+  "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  }
 }
 ```
 
@@ -176,7 +186,10 @@ No additional attributes.
   "trim" : true,
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
-  "primaryKey" : false
+  "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  }
 }
 ```
 
@@ -199,7 +212,10 @@ No additional attributes.
   "trim" : true,
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
-  "primaryKey" : false
+  "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  }
 }
 ```
 
@@ -223,8 +239,10 @@ No additional attributes.
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
   "primaryKey" : false,
-  "position" : 1,
-  "length" : 6  
+  "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  }
 }
 ```
 
@@ -251,9 +269,11 @@ Spark does not have an internal `TimeType` representation of time. This type can
   "trim" : true,
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
-  "primaryKey" : false,
-  "position" : 19,
   "formatters" : [ "HHmmss" ],
+  "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  }  
 }
 ```
 
@@ -278,8 +298,6 @@ Spark does not have an internal `TimeType` representation of time. This type can
   "trim" : true,
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
-  "primaryKey" : false,
-  "position" : 2,
   "formatters": [
     "dd/MM/yyyy HH:mm:ss",
     "dd/MM/yyyy H:mm:ss",
@@ -291,6 +309,10 @@ Spark does not have an internal `TimeType` representation of time. This type can
     "d/MM/yyyy H:mm"
   ],
   "timezoneId": "+1000",    
+   "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  } 
 }
 ```
 
@@ -305,8 +327,6 @@ For converting a `Date` label into a `Timestamp` supply the `time` key:
   "trim" : true,
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
-  "primaryKey" : false,
-  "position" : 2,
   "formatters": [
     "dd/MM/yyyy",
   ],
@@ -316,6 +336,10 @@ For converting a `Date` label into a `Timestamp` supply the `time` key:
     "minute": 59,
     "second": 59,
     "nano": 0,
-  }
+  },
+  "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  }  
 }
 ```

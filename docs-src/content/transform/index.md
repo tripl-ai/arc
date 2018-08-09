@@ -13,6 +13,7 @@ Transformers should meet this criteria:
 - Utilise Spark [internal functionality](https://spark.apache.org/docs/latest/sql-programming-guide.html) where possible.
 
 ## DiffTransform
+### Since: 1.0.8
 
 The `DiffTransform` stage calculates the difference between two input datasets and produces three datasets: 
 
@@ -56,6 +57,7 @@ This stage performs this 'diffing' operation in a single pass so if multiple of 
 ```
 
 ## JSONTransform
+### Since: 1.0.0
 
 The `JSONTransform` stage transforms the incoming dataset to rows of `json` strings with the column name `value`. It is intended to be used before stages like [HTTPLoad](/load/#httpload) to prepare the data for sending externally. 
 
@@ -85,7 +87,64 @@ The `JSONTransform` stage transforms the incoming dataset to rows of `json` stri
 }
 ```
 
+## MetadataFilterTransform
+### Since: 1.0.9
+
+{{< note title="Experimental" >}}
+The `MetadataFilterTransform` is currently in experimental state whilst the requirements become clearer. 
+
+This means this API is likely to change.
+{{</note>}}
+
+The `MetadataFilterTransform` stage transforms the incoming dataset by filtering out columns using the embedded column [metadata](../metadata/). Any column which is returned by the SQL statement will be **removed** in the `outputView`.
+
+Underneath Arc will register the `metadata` of the `inputView` so that complex SQL statements can be executed against it to return columns to be removed from the `inputView` as the `outputView`. The available columns in the `metadata` table are:
+
+| Field | Description |
+|-------|-------------|
+|name|The field name.|
+|type|The field type.|
+|metadata|The field metadata.|
+
+e.g. `SELECT name FROM metadata WHERE metadata.pii = true` will produce an `outputView` which removes any column from `inputView` where the `inputView` metadata contains a key `pii` which has the value equal to `true`.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}<br><br>This statement must be written to query against a table called `metadata` and must return at least the `name` column.|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}<br><br>For example if the `sqlParams` contains boolean parameter `pii_authorized` if the job is authorised to use Personally identifiable information or not then it could be used like: `SELECT name FROM metadata WHERE metadata.pii = (CASE WHEN ${pii_authorized} = true THEN null ELSE true END)`.|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "MetadataFilterTransform",
+    "name": "filter out Personally identifiable information (pii)",
+    "environments": ["production", "test"],
+    "inputURI": "hdfs://datalake/sql/0.0.1/filterPii.sql",
+    "inputView": "customerData",         
+    "outputView": "safeCustomerData",            
+    "persist": false,
+    "authentication": {
+        ...
+    },
+    "sqlParams": {
+    },       
+    "params": {
+    }
+}
+```
+
 ## MLTransform
+### Since: 1.0.0
 
 The `MLTransform` stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a `PipelineModel` or `CrossValidatorModel` produced using Spark's Scala, Java, PySpark or SparkR API.
 
@@ -122,6 +181,7 @@ The `MLTransform` stage transforms the incoming dataset with a pretrained Spark 
 ```
 
 ## SQLTransform
+### Since: 1.0.0
 
 The `SQLTransform` stage transforms the incoming dataset with a [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) statement. This stage relies on previous stages to load and register the dataset views (`outputView`) and will execute arbitrary SQL statements against those datasets.
 
@@ -141,7 +201,7 @@ Whilst SQL is capable of converting data types using the `CAST` function (e.g. `
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
+|sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}<br><br>For example if the sqlParams contains parameter `current_timestamp` of value `2018-11-24 14:48:56` then this statement would execute in a deterministic way: `SELECT * FROM customer WHERE expiry > FROM_UNIXTIME(UNIX_TIMESTAMP('${current_timestamp}', 'yyyy-MM-dd HH:mm:ss'))` (so would be testable).|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
@@ -182,6 +242,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 ```
 
 ## TensorFlowServingTransform
+### Since: 1.0.0
 
 {{< note title="Experimental" >}}
 The `TensorFlowServingTransform` is currently in experimental state whilst the requirements become clearer. 
@@ -233,6 +294,7 @@ The `TensorFlowServingTransform` stage transforms the incoming dataset by callin
 ```
 
 ## TypingTransform
+### Since: 1.0.0
 
 The `TypingTransform` stage transforms the incoming dataset with based on metadata defined in the [metadata](../metadata/) format. 
 

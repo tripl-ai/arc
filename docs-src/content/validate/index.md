@@ -7,6 +7,7 @@ type: blog
 `*Validate` stages are used to perform validation and basic workflow controls..
 
 ## EqualityValidate
+### Since: 1.0.0
 
 The `EqualityValidate` takes two input `DataFrame` and will succeed if they are identical or fail if not. This stage is useful to use in automated testing as it can be used to validate a derived dataset equals a known 'good' dataset.
 
@@ -42,6 +43,7 @@ This stage will validate:
 ```
 
 ## SQLValidate
+### Since: 1.0.0
 
 The `SQLValidate` takes an input SQL statement which must return [Boolean, Option[String]] and will succeed if the first return value is true or fail if not. The second return value will be logged in case of success or failure which can be useful for understanding reason for job success/failure. This stage is exteremely powerful as abritrary job validation rules, expressed as SQL statements, can be executed to allow/prevent the job to succeed.
 
