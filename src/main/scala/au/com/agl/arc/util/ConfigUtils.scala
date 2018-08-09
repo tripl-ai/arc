@@ -739,6 +739,38 @@ object ConfigUtils {
     }
   }  
 
+  def readMetadataFilterTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
+    import ConfigReader._
+
+    val uriKey = "inputURI"
+    val inputURI = getValue[String](uriKey)
+    val parsedURI = inputURI.rightFlatMap(uri => parseURI(uriKey, uri))
+    val authentication = readAuthentication("authentication")  
+    val inputSQL = parsedURI.rightFlatMap { uri =>
+        authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))  
+        getBlob(uriKey, uri)
+    }
+    val inputView = getValue[String]("inputView")
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist")
+    val sqlParams = readMap("sqlParams", c)
+
+    // try to verify if sql is technically valid against HQL dialect (will not check dependencies)
+    val validSQL = inputSQL.rightFlatMap { sql =>
+      validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams))
+    }
+
+    (name, parsedURI, inputSQL, validSQL, inputView, outputView, persist) match {
+      case (Right(n), Right(uri), Right(isql), Right(vsql), Right(iv), Right(ov), Right(p)) => 
+        Right(MetadataFilterTransform(n, iv, uri, vsql, ov, params, sqlParams, p))
+      case _ =>
+        val allErrors: Errors = List(name, inputURI, parsedURI, inputSQL, validSQL, inputView, outputView, persist).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err)
+    }
+  }   
+
   def readMLTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[StageError, PipelineStage] = {
     import ConfigReader._
 
@@ -1338,6 +1370,7 @@ object ConfigUtils {
 
             case Right("DiffTransform") => Option(readDiffTransform(name, params))
             case Right("JSONTransform") => Option(readJSONTransform(name, params))
+            case Right("MetadataFilterTransform") => Option(readMetadataFilterTransform(name, params))
             case Right("MLTransform") => Option(readMLTransform(name, params))
             case Right("SQLTransform") => Option(readSQLTransform(name, params))
             case Right("TensorFlowServingTransform") => Option(readTensorFlowServingTransform(name, params))

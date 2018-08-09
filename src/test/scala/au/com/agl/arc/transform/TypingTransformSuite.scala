@@ -63,7 +63,6 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     // load csv
-    // val extractDataset = spark.read.csv(targetFile).withColumn("_c7", substring($"_c7",0,23))
     val extractDataset = spark.read.csv(targetFile)
     extractDataset.createOrReplaceTempView("inputDS")
 

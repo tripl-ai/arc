@@ -48,13 +48,15 @@ object MetadataSchema {
             val valid = validateMetadata(name, n.get("metadata"))
             val isValid = valid.filter(_.isLeft).size == 0
             if (isValid) {
-              Right(Option(objectMapper.writeValueAsString(elements(0).get("metadata"))))
+              Right(Option(objectMapper.writeValueAsString(n.get("metadata"))))
             } else {
               Left(valid.collect { case Left(error) => error }.mkString(", "))
             }
           } else {
             Right(None)
           }
+
+          
 
           metadata match {
             case Left(errors) => Left("invalid metadata: " + errors)
