@@ -77,7 +77,19 @@ object TestDataUtils {
             ],
             "falseValues": [
                 "false"
-            ]
+            ],
+            "metadata": {
+                "booleanMeta": true,
+                "booleanArrayMeta": [true, false],
+                "stringMeta": "string",
+                "stringArrayMeta": ["string0", "string1"],
+                "longMeta": 10,
+                "longArrayMeta": [10,20],
+                "doubleMeta": 0.141,
+                "doubleArrayMeta": [0.141, 0.52],
+                "private": false,
+                "securityLevel": 0
+            }
         },
         {
             "id": "0e8109ba-1000-4b7d-8a4c-b01bae07027f",
@@ -92,7 +104,11 @@ object TestDataUtils {
             ],
             "formatters": [
                 "yyyy-MM-dd"
-            ]
+            ],
+            "metadata": {
+                "private": true,
+                "securityLevel": 3
+            }
         },
         {
             "id": "9712c383-22d1-44a6-9ca2-0087af4857f1",
@@ -106,7 +122,11 @@ object TestDataUtils {
                 "null"
             ],
             "precision": 38,
-            "scale": 18
+            "scale": 18,
+            "metadata": {
+                "private": true,
+                "securityLevel": 2
+            }            
         },
         {
             "id": "31541ea3-5b74-4753-857c-770bd601c35b",
@@ -118,7 +138,11 @@ object TestDataUtils {
             "nullableValues": [
                 "",
                 "null"
-            ]
+            ],
+            "metadata": {
+                "private": true,
+                "securityLevel": 8
+            }            
         },
         {
             "id": "a66f3bbe-d1c6-44c7-b096-a4be59fdcd78",
@@ -130,7 +154,11 @@ object TestDataUtils {
             "nullableValues": [
                 "",
                 "null"
-            ]
+            ],
+            "metadata": {
+                "private": true,
+                "securityLevel": 10
+            }            
         },
         {
             "id": "1c0eec1d-17cd-45da-8744-7a9ef5b8b086",
@@ -142,7 +170,11 @@ object TestDataUtils {
             "nullableValues": [
                 "",
                 "null"
-            ]
+            ],
+            "metadata": {
+                "private": false,
+                "securityLevel": 0
+            }            
         },
         {
             "id": "9712c383-22d1-44a6-9ca2-0087af4857f1",
@@ -154,7 +186,11 @@ object TestDataUtils {
             "nullableValues": [
                 "",
                 "null"
-            ]
+            ],
+            "metadata": {
+                "private": false,
+                "securityLevel": 0
+            }            
         },
         {
             "id": "eb17a18e-4664-4016-8beb-cd2a492d4f20",
@@ -169,7 +205,11 @@ object TestDataUtils {
             ],
             "formatters": [
                 "HH:mm:ss"
-            ]
+            ],
+            "metadata": {
+                "private": true,
+                "securityLevel": 8
+            }            
         },        
         {
             "id": "8e42c8f0-22a8-40db-9798-6dd533c1de36",
@@ -185,7 +225,11 @@ object TestDataUtils {
             "formatters": [
                 "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
             ],
-            "timezoneId": "UTC"
+            "timezoneId": "UTC",
+            "metadata": {
+                "private": true,
+                "securityLevel": 7
+            }            
         }       
     ]
     """

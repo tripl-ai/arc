@@ -18,7 +18,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
    // Test trimming
     {
-      val col = StringColumn(id="1", name="name", description=Some("description"), primaryKey=Option(true), nullable=true, nullReplacementValue=Some("Maurice"), trim=true, nullableValues="" :: Nil, length=Option(7))
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("Maurice"), trim=true, nullableValues="" :: Nil,  metadata=None)
       
       // value is null -> nullReplacementValue
       {
@@ -78,7 +78,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test not trimming
     {
-      val col = StringColumn(id="1", name="name", description=Some("description"), primaryKey=Option(true), nullable=true, nullReplacementValue=Some("Maurice"), trim=false, nullableValues="" :: Nil, length=Option(7))
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("Maurice"), trim=false, nullableValues="" :: Nil,  metadata=None)
       
       // value has leading spaces
       {
@@ -127,7 +127,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITH nullReplacementValue
     {
-      val col = StringColumn(id="1", name="name", description=Some("description"), primaryKey=Option(true), nullable=true, nullReplacementValue=Some("Maurice"), trim=false, nullableValues="" :: Nil, length=Option(7))
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("Maurice"), trim=false, nullableValues="" :: Nil,  metadata=None)
  
       // value.isNull
       {
@@ -165,7 +165,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITHOUT nullReplacementValue
     {
-      val col = StringColumn(id="2", name="name", description=Some("description"), primaryKey=Option(true), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, None)      
+      val col = StringColumn(id="2", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, metadata=None)      
 
       // value.isNull
       {
@@ -203,7 +203,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test complex nullableValues (unicode)
     {
-      val col = StringColumn(id="1", name="name", description=Some("description"), primaryKey=Option(true), nullable=true, nullReplacementValue=Some("ኃይሌ ገብረሥላሴ"), trim=false, nullableValues="español" :: "lamfo340jnf34" :: " a " :: Nil, length=Option(7))
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("ኃይሌ ገብረሥላሴ"), trim=false, nullableValues="español" :: "lamfo340jnf34" :: " a " :: Nil, metadata=None)
  
       // value.isAllowedNullValue
       {

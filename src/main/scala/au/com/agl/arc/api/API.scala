@@ -36,8 +36,6 @@ object API {
 
     def description(): Option[String]
 
-    def primaryKey(): Option[Boolean]
-
     def nullable(): Boolean
 
     def sparkDataType(): DataType
@@ -51,6 +49,7 @@ object API {
       */
     def nullableValues: List[String]
 
+    def metadata(): Option[String]
   }
 
   object ExtractColumn {
@@ -60,73 +59,67 @@ object API {
       * parquet.
       */
     def toStructField(col: ExtractColumn): StructField = {
-      val metadata = new MetadataBuilder()
-      for (desc <- col.description) {
-        metadata.putString("description", desc)
-      }
-      for (key <- col.primaryKey) {
-        metadata.putBoolean("primaryKey", key)
-      }  
-      metadata.putBoolean("nullable", col.nullable)
-      col match {
-        case sc:StringColumn => {
-          for (len <- sc.length) {
-            metadata.putLong("length", len)
-          }  
-        }
-        case _ =>
-      }
-      metadata.putBoolean("internal", false)
 
-      StructField(col.name, col.sparkDataType, col.nullable, metadata.build())
+      val metadataBuilder = col.metadata match {
+        case Some(meta) => new MetadataBuilder().withMetadata(Metadata.fromJson(meta))
+        case None => new MetadataBuilder()
+      }
+
+      for (desc <- col.description) {
+        metadataBuilder.putString("description", desc)
+      }
+      metadataBuilder.putBoolean("nullable", col.nullable)
+      metadataBuilder.putBoolean("internal", false)
+
+      StructField(col.name, col.sparkDataType, col.nullable, metadataBuilder.build())
     }
   }
 
-  case class StringColumn(id: String, name: String, description: Option[String], primaryKey: Option[Boolean], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], length: Option[Int]) extends ExtractColumn {
+  case class StringColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = StringType
   }
 
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class DateColumn(id: String, name: String, description: Option[String], primaryKey: Option[Boolean], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String]) extends ExtractColumn {
+  case class DateColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = DateType
   }
 
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class TimeColumn(id: String, name: String, description: Option[String], primaryKey: Option[Boolean], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String]) extends ExtractColumn {
+  case class TimeColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = StringType
   }
 
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class TimestampColumn(id: String, name: String, description: Option[String], primaryKey: Option[Boolean], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], timezoneId: String, formatters: List[String], time: Option[LocalTime]) extends ExtractColumn {
+  case class TimestampColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], timezoneId: String, formatters: List[String], time: Option[LocalTime], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = TimestampType
   }
 
   /** true / false values are lists of strings that are considered equivalent
     * to true or false e.g. "Y", "yes", "N", "no".
     */
-  case class BooleanColumn(id: String, name: String, description: Option[String], primaryKey: Option[Boolean], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], trueValues: List[String], falseValues: List[String]) extends ExtractColumn {
+  case class BooleanColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], trueValues: List[String], falseValues: List[String], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = BooleanType
   }
 
-  case class IntegerColumn(id: String, name: String, description: Option[String], primaryKey: Option[Boolean], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean = true, nullableValues: List[String]) extends ExtractColumn {
+  case class IntegerColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean = true, nullableValues: List[String], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = IntegerType
   }
 
-  case class LongColumn(id: String, name: String, description: Option[String], primaryKey: Option[Boolean], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String]) extends ExtractColumn {
+  case class LongColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = LongType
   }
 
-  case class DoubleColumn(id: String, name: String, description: Option[String], primaryKey: Option[Boolean], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String]) extends ExtractColumn {
+  case class DoubleColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = DoubleType
   }
 
-  case class DecimalColumn(id: String, name: String, description: Option[String], primaryKey: Option[Boolean], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], precision: Int, scale: Int, formatter: Option[String]) extends ExtractColumn {
+  case class DecimalColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], precision: Int, scale: Int, formatter: Option[String], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = DecimalType(precision, scale)
   }
 
@@ -188,6 +181,8 @@ object API {
   case class DiffTransform(name: String, inputLeftView: String, inputRightView: String, outputIntersectionView: Option[String], outputLeftView: Option[String], outputRightView: Option[String], params: Map[String, String], persist: Boolean) extends Transform { val getType = "DiffTransform" }
 
   case class JSONTransform(name: String, inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "JSONTransform" }
+
+  case class MetadataFilterTransform(name: String, inputView: String, inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean) extends Transform { val getType = "MetadataFilterTransform" }
 
   case class MLTransform(name: String, inputURI: URI, model: Either[PipelineModel, CrossValidatorModel], inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "MLTransform" }
 

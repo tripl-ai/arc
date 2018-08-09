@@ -285,6 +285,8 @@ object ARC {
           transform.DiffTransform.transform(t)
         case t : JSONTransform =>
           transform.JSONTransform.transform(t)
+        case t : MetadataFilterTransform =>
+          transform.MetadataFilterTransform.transform(t)                 
         case t : MLTransform =>
           transform.MLTransform.transform(t)          
         case t : SQLTransform =>

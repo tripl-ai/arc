@@ -11,6 +11,7 @@ import java.time.temporal.ChronoField
 
 import org.apache.spark.rdd._
 import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 import au.com.agl.arc.api._
@@ -84,10 +85,17 @@ object Typing {
     val typedSchema = StructType(
       schema.fields.toList ::: internalFields ::: Typing.typedFields
     )
-    
+
+    // applies data types but not metadata
     val typedDS = performTyping(untypedDataframe, extract, typedSchema)
 
-    typedDS.toDF
+    // re-attach metadata to result
+    var typedDF = typedDS.toDF
+    typedSchema.foreach(field => {
+      typedDF = typedDF.withColumn(field.name, col(field.name).as(field.name, field.metadata))
+    })
+
+    typedDF  
   }
 
   // +--------------+--------------------------+--------------------------+--------------+-----------------------------+
