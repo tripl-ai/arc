@@ -68,8 +68,14 @@ object XMLExtract {
       df
     }
 
-    // add meta columns including sequential index
-    val enrichedDF = ExtractUtils.addMetadata(emptyDataframeHandlerDF, contiguousIndex)
+    // add source data including index
+    val sourceEnrichedDF = ExtractUtils.addSourceMetadata(emptyDataframeHandlerDF, contiguousIndex)
+
+    // set column metadata if exists
+    val enrichedDF = extract.cols match {
+      case Nil => sourceEnrichedDF
+      case cols => MetadataUtils.setMetadata(sourceEnrichedDF, Extract.toStructType(cols))
+    }
          
     // repartition to distribute rows evenly
     val repartitionedDF = extract.partitionBy match {

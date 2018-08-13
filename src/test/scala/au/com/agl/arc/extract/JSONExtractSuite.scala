@@ -69,10 +69,13 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
+    // parse json schema to List[ExtractColumn]
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
+
     val extractDataset = extract.JSONExtract.extract(
       JSONExtract(
         name=outputView,
-        cols=Nil,
+        cols=cols.right.getOrElse(Nil),
         outputView=outputView,
         input=Right(new URI(targetFile)),
         settings=new JSON(multiLine=false),
@@ -89,7 +92,10 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     assert(extractDataset.filter($"_filename".contains(targetFile)).count != 0)
 
     val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val actual = extractDataset.drop(internal:_*)
+    val actual = extractDataset
+      .drop(internal:_*)
+      .withColumn("decimalDatum", $"decimalDatum".cast("double"))
+      .withColumn("timestampDatum", from_unixtime(unix_timestamp($"timestampDatum"), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))      
 
     // JSON does not have DecimalType or TimestampType
     // JSON will silently drop NullType on write
@@ -108,6 +114,10 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     }
     assert(actual.except(expected).count === 0)
     assert(expected.except(actual).count === 0)
+
+    // test metadata
+    val timeDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timeDatum")).metadata    
+    assert(timeDatumMetadata.getLong("securityLevel") == 8)        
   }  
 
   test("JSONExtract: Caching") {

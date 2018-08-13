@@ -11,9 +11,9 @@ import org.apache.spark.storage.StorageLevel
 
 object ExtractUtils {
 
-  // add meta columns including sequential index
-  // if schema already has metadata any columns ignore
-  def addMetadata(input: DataFrame, contiguousIndex: Boolean): DataFrame = {
+  def addSourceMetadata(input: DataFrame, contiguousIndex: Boolean): DataFrame = {
+    // add meta columns including sequential index
+    // if schema already has metadata any columns ignore
     if (!input.schema.map(_.name).intersect(List("_index","_monotonically_increasing_id")).nonEmpty) {
       val window = Window.partitionBy("_filename").orderBy("_monotonically_increasing_id")
       if (contiguousIndex) {

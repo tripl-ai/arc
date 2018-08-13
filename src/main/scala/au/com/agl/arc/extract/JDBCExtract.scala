@@ -54,12 +54,18 @@ object JDBCExtract {
       }      
     }
 
+    // set column metadata if exists
+    val enrichedDF = extract.cols match {
+      case Nil => df
+      case cols => MetadataUtils.setMetadata(df, Extract.toStructType(cols))
+    }
+
     // repartition to distribute rows evenly
     val repartitionedDF = extract.partitionBy match {
       case Nil => { 
         extract.numPartitions match {
-          case Some(numPartitions) => df.repartition(numPartitions)
-          case None => df
+          case Some(numPartitions) => enrichedDF.repartition(numPartitions)
+          case None => enrichedDF
         }   
       }
       case partitionBy => {

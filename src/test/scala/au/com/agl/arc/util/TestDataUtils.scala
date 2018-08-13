@@ -94,7 +94,7 @@ object TestDataUtils {
         {
             "id": "0e8109ba-1000-4b7d-8a4c-b01bae07027f",
             "name": "dateDatum",
-            "description": "CdateDatum",
+            "description": "dateDatum",
             "type": "date",
             "trim": true,
             "nullable": true,

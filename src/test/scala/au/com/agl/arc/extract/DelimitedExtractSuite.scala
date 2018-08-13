@@ -58,10 +58,13 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
+    // parse json schema to List[ExtractColumn]
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
+
     val extractDataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
-        cols=Nil,
+        cols=cols.right.getOrElse(Nil),
         outputView=outputView,
         input=Right(new URI(targetFile)),
         settings=new Delimited(header=true, sep=Delimiter.Comma),
@@ -102,6 +105,10 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     }
     assert(actual.except(expected).count === 0)
     assert(expected.except(actual).count === 0)
+
+    // test metadata
+    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata    
+    assert(timestampDatumMetadata.getLong("securityLevel") == 7)    
   }  
 
   test("DelimitedExtract Caching") {

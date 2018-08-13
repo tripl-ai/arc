@@ -439,7 +439,14 @@
 <td>schemaURI</td>
 <td>URI</td>
 <td>false</td>
-<td>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>dataframe</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+</td>
 </tr>
 
 <tr>
@@ -561,7 +568,14 @@
 <td>schemaURI</td>
 <td>URI</td>
 <td>false</td>
-<td>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>dataframe</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+</td>
 </tr>
 
 <tr>
@@ -849,6 +863,20 @@
 </tr>
 
 <tr>
+<td>schemaURI</td>
+<td>URI</td>
+<td>false</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>dataframe</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+</td>
+</tr>
+
+<tr>
 <td>jdbcURL</td>
 <td>String</td>
 <td>true</td>
@@ -888,6 +916,13 @@
 <td>Boolean</td>
 <td>false</td>
 <td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -969,7 +1004,14 @@
 <td>schemaURI</td>
 <td>URI</td>
 <td>false</td>
-<td>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>dataframe</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.</td>
 </tr>
 
 <tr>
@@ -1232,7 +1274,14 @@
 <td>schemaURI</td>
 <td>URI</td>
 <td>false</td>
-<td>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>dataframe</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+</td>
 </tr>
 
 <tr>
@@ -1347,7 +1396,14 @@
 <td>schemaURI</td>
 <td>URI</td>
 <td>false</td>
-<td>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>dataframe</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+</td>
 </tr>
 
 <tr>
@@ -1462,7 +1518,14 @@
 <td>schemaURI</td>
 <td>URI</td>
 <td>false</td>
-<td>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>dataframe</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>dataframe</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.</td>
 </tr>
 
 <tr>
