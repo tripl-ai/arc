@@ -158,7 +158,7 @@ object ARC {
 
     // try to parse config
     val pipelineConfig = try {
-      ConfigUtils.parsePipeline()(spark, logger, argsMap, env)
+      ConfigUtils.parsePipeline(argsMap, env)(spark, logger)
     } catch {
       case e: Exception => 
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
@@ -322,12 +322,13 @@ object ARC {
         case x : JDBCExecute =>
           execute.JDBCExecute.execute(x)
         case x : KafkaCommitExecute =>
-          execute.KafkaCommitExecute.execute(x)          
+          execute.KafkaCommitExecute.execute(x)
+        case _ : PipelineExecute => // skip as placeholder for other pipeline stages
 
         case v : EqualityValidate =>
           validate.EqualityValidate.validate(v)           
         case v : SQLValidate =>
-          validate.SQLValidate.validate(v)                     
+          validate.SQLValidate.validate(v)
       }
     }
 
