@@ -6,7 +6,6 @@ import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
 import org.apache.commons.io.FileUtils
-import org.apache.commons.io.IOUtils
 
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.classification.LogisticRegression
@@ -16,7 +15,6 @@ import org.apache.spark.ml.evaluation._
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
-import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.log.LoggerFactory 
 
@@ -116,7 +114,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         params=Map.empty
       )
-    )
+    ).get
 
     // round due to random seed changing
     val actual = transformed.withColumn("probability", round($"probability", 1))
@@ -156,7 +154,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         params=Map.empty
       )
-    )
+    ).get
 
     // round due to random seed changing
     val actual = transformed.withColumn("probability", round($"probability", 1))

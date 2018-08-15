@@ -71,7 +71,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty
       )
-    )
+    ).get
 
     val actual = transformed.drop($"nullDatum")
     val expected = dataset.filter(dataset("booleanDatum")===false).drop($"nullDatum")
@@ -141,7 +141,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map("sql_boolean_param" -> "FALSE"),
         params=Map.empty
       )
-    )
+    ).get
 
     val actual = transformed.drop($"nullDatum")
     val expected = dataset.filter(dataset("booleanDatum")===false).drop($"nullDatum")
@@ -160,7 +160,6 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("SQLTransform: partitionPushdown") {
     implicit val spark = session
-    import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val transformed = transform.SQLTransform.transform(
@@ -173,7 +172,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map("sql_boolean_param" -> "FALSE"),
         params=Map.empty
       )
-    )
+    ).get
 
     val partitionFilters = QueryExecutionUtils.getPartitionFilters(transformed.queryExecution.executedPlan).toArray.mkString(",")
     assert(partitionFilters.contains("(dayofmonth(dateDatum"))
@@ -182,7 +181,6 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("SQLTransform: predicatePushdown") {
     implicit val spark = session
-    import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val transformed = transform.SQLTransform.transform(
@@ -195,7 +193,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map("sql_boolean_param" -> "FALSE"),
         params=Map.empty
       )
-    )
+    ).get
 
     val dataFilters = QueryExecutionUtils.getDataFilters(transformed.queryExecution.executedPlan).toArray.mkString(",")
     assert(dataFilters.contains("isnotnull(booleanDatum"))
@@ -205,7 +203,6 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("SQLTransform: partitionPushdown and predicatePushdown") {
     implicit val spark = session
-    import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val transformed = transform.SQLTransform.transform(
@@ -218,7 +215,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map("sql_boolean_param" -> "FALSE"),
         params=Map.empty
       )
-    )
+    ).get
 
     val partitionFilters = QueryExecutionUtils.getPartitionFilters(transformed.queryExecution.executedPlan).toArray.mkString(",")
     assert(partitionFilters.contains("(dayofmonth(dateDatum"))

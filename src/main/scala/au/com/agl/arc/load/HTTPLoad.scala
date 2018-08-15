@@ -27,7 +27,7 @@ case class Response(
 
 object HTTPLoad {
 
-  def load(load: HTTPLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+  def load(load: HTTPLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val signature = "HTTPLoad requires inputView to be dataset with [value: string] signature."
@@ -132,6 +132,8 @@ object HTTPLoad {
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)      
-      .log()   
+      .log()
+
+    Option(df)
   }
 }

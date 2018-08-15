@@ -74,7 +74,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=None
       )
-    )
+    ).get
 
     // test that the filename is correctly populated
     assert(extractDataset.filter($"_filename".contains(targetFile)).count != 0)
@@ -102,7 +102,6 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
 
   test("ParquetExtract Caching") {
     implicit val spark = session
-    import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     // no cache
@@ -211,7 +210,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=None
       )
-    )
+    ).get
 
     val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
     val actual = extractDataset.drop(internal:_*)

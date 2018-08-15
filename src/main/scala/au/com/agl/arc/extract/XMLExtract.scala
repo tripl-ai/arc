@@ -15,7 +15,7 @@ import au.com.agl.arc.util._
 
 object XMLExtract {
 
-  def extract(extract: XMLExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): DataFrame = {
+  def extract(extract: XMLExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
@@ -111,7 +111,7 @@ object XMLExtract {
       .map("stage", stageDetail)      
       .log() 
 
-    repartitionedDF
+    Option(repartitionedDF)
   }
 
 }

@@ -23,7 +23,7 @@ case class SimpleType(name: String, dataType: DataType)
 
 object KafkaLoad {
 
-  def load(load: KafkaLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+  def load(load: KafkaLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
 
@@ -160,6 +160,8 @@ object KafkaLoad {
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)      
-      .log()   
+      .log()
+
+    Option(repartitionedDF)
   }
 }

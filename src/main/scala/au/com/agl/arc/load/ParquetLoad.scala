@@ -11,7 +11,7 @@ import au.com.agl.arc.util._
 
 object ParquetLoad {
 
-  def load(load: ParquetLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+  def load(load: ParquetLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
@@ -45,22 +45,24 @@ object ParquetLoad {
       dropMap.put("NullType", nulls.asJava)
     }
 
-    stageDetail.put("drop", dropMap) 
+    stageDetail.put("drop", dropMap)
+
+    val nonNullDF = df.drop(nulls:_*)
 
     try {
       load.partitionBy match {
         case Nil => { 
           load.numPartitions match {
-            case Some(n) => df.drop(nulls:_*).repartition(n).write.mode(saveMode).parquet(load.outputURI.toString)
-            case None => df.drop(nulls:_*).write.mode(saveMode).parquet(load.outputURI.toString)  
+            case Some(n) => nonNullDF.repartition(n).write.mode(saveMode).parquet(load.outputURI.toString)
+            case None => nonNullDF.write.mode(saveMode).parquet(load.outputURI.toString)
           }   
         }
         case partitionBy => {
           // create a column array for repartitioning
           val partitionCols = partitionBy.map(col => df(col))
           load.numPartitions match {
-            case Some(n) => df.drop(nulls:_*).repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).parquet(load.outputURI.toString)
-            case None => df.drop(nulls:_*).repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).parquet(load.outputURI.toString)
+            case Some(n) => nonNullDF.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).parquet(load.outputURI.toString)
+            case None => nonNullDF.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).parquet(load.outputURI.toString)
           }   
         }
       } 
@@ -74,6 +76,8 @@ object ParquetLoad {
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)      
-      .log()  
+      .log()
+
+    Option(nonNullDF)
   }
 }

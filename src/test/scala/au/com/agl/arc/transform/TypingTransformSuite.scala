@@ -78,7 +78,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty,
         persist=false
       )
-    )
+    ).get
 
     // add errors array to schema using udf
     val errorStructType: StructType =

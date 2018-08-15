@@ -86,7 +86,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty
       )
-    )
+    ).get
 
     val actual = transformed.drop($"_errors")
     val expected = TestDataUtils.getKnownDataset.select($"booleanDatum", $"longDatum", $"stringDatum")
@@ -137,7 +137,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty
       )
-    )
+    ).get
 
     val actual = transformed.drop($"_errors")
     val expected = TestDataUtils.getKnownDataset.select($"booleanDatum", $"dateDatum", $"decimalDatum", $"longDatum", $"stringDatum")

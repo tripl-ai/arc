@@ -12,7 +12,7 @@ import au.com.agl.arc.util._
 
 object JSONTransform {
 
-  def transform(transform: JSONTransform)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): DataFrame = {
+  def transform(transform: JSONTransform)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", transform.getType)
@@ -59,7 +59,7 @@ object JSONTransform {
       .map("stage", stageDetail)      
       .log()  
 
-    transformedDF
+    Option(transformedDF)
   }
 
 }

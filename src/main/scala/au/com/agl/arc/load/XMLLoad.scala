@@ -11,7 +11,7 @@ import au.com.agl.arc.util._
 
 object XMLLoad {
 
-  def load(load: XMLLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+  def load(load: XMLLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
@@ -76,6 +76,8 @@ object XMLLoad {
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)      
-      .log()  
+      .log()
+
+    Option(df)
   }
 }

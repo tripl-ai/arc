@@ -11,7 +11,7 @@ import au.com.agl.arc.util._
 
 object JSONLoad {
 
-  def load(load: JSONLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+  def load(load: JSONLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
@@ -50,11 +50,11 @@ object JSONLoad {
     
     try {
       load.partitionBy match {
-        case Nil => { 
+        case Nil => {
           load.numPartitions match {
             case Some(n) => df.repartition(n).write.mode(saveMode).json(load.outputURI.toString)
-            case None => df.write.mode(saveMode).json(load.outputURI.toString)  
-          }   
+            case None => df.write.mode(saveMode).json(load.outputURI.toString)
+          }
         }
         case partitionBy => {
           // create a column array for repartitioning
@@ -62,19 +62,21 @@ object JSONLoad {
           load.numPartitions match {
             case Some(n) => df.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).json(load.outputURI.toString)
             case None => df.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).json(load.outputURI.toString)
-          }   
+          }
         }
-      } 
+      }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
-      }      
-    }          
+        override val detail = stageDetail
+      }
+    }
 
     logger.info()
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)      
-      .log()  
+      .log()
+
+    Option(df)
   }
 }
