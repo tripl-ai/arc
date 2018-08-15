@@ -5,13 +5,11 @@ import java.net.URI
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
-import com.typesafe.config._
+import org.apache.spark.sql._
 
 import au.com.agl.arc.api.API._
-import au.com.agl.arc.util.ConfigUtils._
-import au.com.agl.arc.util.log.LoggerFactory 
-
-import org.apache.spark.sql._
+import au.com.agl.arc.api.{Delimited, Delimiter, QuoteCharacter}
+import au.com.agl.arc.util.log.LoggerFactory
 
 class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
@@ -32,152 +30,97 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  test("Read ParquetExtract with missing value errors") {
+  test("Read simple config") {
     implicit val spark = session
-    implicit val env = "tst"
-    import spark.implicits._
-
-    val etlConfString = """|stages = [
-                           |  {
-                           |    "environments": ["tst"]  
-                           |    "type": "ParquetExtract"     
-                           |  }
-                           |]
-                           |""".stripMargin
 
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    val base = ConfigFactory.load() 
 
-    val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base).resolve()
+    val env = "test"
 
-    val pipeline = ConfigUtils.readPipeline(config, uri=new URI("http://test.test"))
+    val argsMap = collection.mutable.HashMap[String, String]()
+    argsMap += "etl.config.uri" -> "classpath://conf/simple.conf"
 
-    val errors = ConfigError.err("name", "No value found for name") :::
-                 ConfigError.err("inputURI", "No value found for inputURI") :::
-                 ConfigError.err("outputView", "No value found for outputView") :::
-                 ConfigError.err("persist", "No value found for persist") ::: Nil
+    val pipeline = ConfigUtils.parsePipeline(argsMap, env)
 
-    assert(pipeline === Left(List(StageError("unnamed stage", errors))))
+    val stage = DelimitedExtract(
+      name = "file extract",
+      cols = Nil,
+      outputView = "green_tripdata0_raw",
+      input = Right(URI.create("/data/green_tripdata/0/*.csv")),
+      settings = Delimited(Delimiter.Comma, QuoteCharacter.DoubleQuote, true, false),
+      authentication = None,
+      params = Map.empty,
+      persist = false,
+      numPartitions = None
+    )
+
+    val subDelimitedExtractStage = DelimitedExtract(
+      name = "extract data from green_tripdata/1",
+      cols = Nil,
+      outputView = "green_tripdata1_raw",
+      input = Right(URI.create("/data/green_tripdata/1/*.csv")),
+      settings = Delimited(Delimiter.Comma, QuoteCharacter.DoubleQuote, true, false),
+      authentication = None,
+      params = Map.empty,
+      persist = false,
+      numPartitions = None
+    )
+
+    val schema =
+      IntegerColumn(
+        id = "f457e562-5c7a-4215-a754-ab749509f3fb",
+        name = "vendor_id",
+        description = Some("A code indicating the TPEP provider that provided the record."),
+        primaryKey = Some(false),
+        nullable = true,
+        nullReplacementValue = None,
+        trim = true,
+        nullableValues = "" :: "null" :: Nil) ::
+      TimestampColumn(
+        id = "d61934ed-e32e-406b-bd18-8d6b7296a8c0",
+        name = "lpep_pickup_datetime",
+        description = Some("The date and time when the meter was engaged."),
+        primaryKey = Some(false),
+        nullable = true,
+        nullReplacementValue = None,
+        trim = true,
+        nullableValues = "" :: "null" :: Nil,
+        timezoneId = "America/New_York",
+        formatters = "yyyy-MM-dd HH:mm:ss" :: Nil,
+        time = None) :: Nil
+
+
+    val subTypingTransformStage = TypingTransform(
+      name = "apply green_tripdata/1 data types",
+      cols = schema,
+      inputView = "green_tripdata1_raw",
+      outputView = "green_tripdata1",
+      params = Map.empty,
+      persist = true
+    )
+
+    val subSQLValidateStage = SQLValidate(
+      name = "ensure no errors exist after data typing",
+      inputURI = URI.create("classpath://conf/sql/sqlvalidate_errors.sql"),
+      sql =
+        """|SELECT
+           |  SUM(error) = 0
+           |  ,TO_JSON(NAMED_STRUCT('count', COUNT(error), 'errors', SUM(error)))
+           |FROM (
+           |  SELECT
+           |    CASE
+           |      WHEN SIZE(_errors) > 0 THEN 1
+           |      ELSE 0
+           |    END AS error
+           |  FROM ${table_name}
+           |) input_table""".stripMargin,
+      sqlParams = Map("table_name" -> "green_tripdata1"),
+      params = Map.empty
+    )
+
+    val expected = ETLPipeline(stage :: subDelimitedExtractStage :: subTypingTransformStage :: subSQLValidateStage :: Nil)
+
+    assert(pipeline === Right(expected))
   }
 
-//   test("Read invalid Authentication no values") {
-//     implicit val spark = session
-//     implicit val env = "test"
-//     import spark.implicits._
-
-//     val etlConfString = """|stages = [
-//                            |  {
-//                            |    "type": "ParquetExtract"
-//                            |    "authentication": {
-//                            |      "method": "AzureSharedKey"
-//                            |    }
-//                            |  }
-//                            |]
-//                            |""".stripMargin
-
-//     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-//     val base = ConfigFactory.load() 
-
-//     val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-//     val config = etlConf.withFallback(base).resolve()
-
-//     val pipeline = ConfigUtils.readPipeline(config, uri=new URI("http://test.test"))
-
-//     val errors = ConfigError.err("name", "No value found for name") :::
-//                  ConfigError.err("inputURI", "No value found for inputURI") :::
-//                  ConfigError.err("outputView", "No value found for outputView") :::
-//                  ConfigError.err("persist", "No value found for persist") :::
-//                  ConfigError.err("authentication", "Unable to read config value: Authentication method 'AzureSharedKey' requires 'accountName' parameter.") ::: Nil                 
-
-//     assert(pipeline === Left(List(StageError("unnamed stage", errors))))
-//   }
-  
-//   test("Read invalid Authentication partial value") {
-//     implicit val spark = session
-//     import spark.implicits._
-
-//     val etlConfString = """|stages = [
-//                            |  {
-//                            |    "type": "ParquetExtract"
-//                            |    "authentication": {
-//                            |      "method": "AzureSharedKey",
-//                            |      "accountName": "a",
-//                            |    }
-//                            |  }
-//                            |]
-//                            |""".stripMargin
-
-//     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-//     val base = ConfigFactory.load() 
-
-//     val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-//     val c = etlConf.withFallback(base).resolve()
-
-//     val pipeline = ConfigUtils.readPipeline(c)
-
-//     val errors = ConfigError.err("name", "No value found for name") :::
-//                  ConfigError.err("inputURI", "No value found for inputURI") :::
-//                  ConfigError.err("outputView", "No value found for outputView") :::
-//                  ConfigError.err("persist", "No value found for persist") :::
-//                  ConfigError.err("authentication", "Unable to read config value: Authentication method 'AzureSharedKey' requires 'signature' parameter.") ::: Nil                 
-
-//     assert(pipeline === Left(List(StageError("unnamed stage", errors))))
-//   }
-
-//   test("Read valid pipeline") {
-//     implicit val spark = session
-//     import spark.implicits._
-
-//     val etlConfString = """|stages = [
-//                            |  {
-//                            |    "type": "ParquetExtract"
-//                            |    "name": "test",
-//                            |    "inputURI": "wasbs://test",
-//                            |    "outputView": "test",
-//                            |    "persist": false,
-//                            |    "authentication": {
-//                            |      "method": "AzureSharedKey",
-//                            |      "accountName": "a",
-//                            |      "signature": "b"
-//                            |    }
-//                            |  }
-//                            |]
-//                            |""".stripMargin
-
-//     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-//     val base = ConfigFactory.load() 
-
-//     val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-//     val c = etlConf.withFallback(base).resolve()
-
-//     val pipeline = ConfigUtils.readPipeline(c)
-
-//     val stage = Right(ETLPipeline(List(ParquetExtract("test",Nil,"test",new URI("wasbs://test"),Some(Authentication.AzureSharedKey("a","b")),Map.empty,false))))
-
-//     assert(pipeline === stage)
-//   }  
-
-//   test("Read Unknown Stage") {
-//     implicit val spark = session
-//     import spark.implicits._
-
-//     val etlConfString = """|stages = [
-//                            |  {
-//                            |  }
-//                            |]
-//                            |""".stripMargin
-
-//     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-//     val base = ConfigFactory.load() 
-
-//     val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-//     val c = etlConf.withFallback(base).resolve()
-
-//     val pipeline = ConfigUtils.readPipeline(c)
-//   }
 }

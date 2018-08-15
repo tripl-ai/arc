@@ -1,9 +1,6 @@
 package au.com.agl.arc.util
 
 import java.net.URI
-import java.io.File
-import java.io.FileNotFoundException
-import java.lang.IllegalArgumentException
 import java.sql.DriverManager
 
 import scala.collection.JavaConverters._
@@ -17,9 +14,8 @@ import org.apache.spark.SparkFiles
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
-
+import au.com.agl.arc.util.ControlUtils._
 import au.com.agl.arc.util.EitherUtils._
-import au.com.agl.arc.util.JDBCUtils._
 
 object ConfigUtils {
 
@@ -103,6 +99,15 @@ object ConfigUtils {
         val c = etlConf.withFallback(base).resolve()
         readPipeline(c, uri, argsMap, env)
       }
+      case "classpath" => {
+        val path = s"/${uri.getHost}${uri.getPath}"
+        using(getClass.getResourceAsStream(path)) { is =>
+          val etlConfString = scala.io.Source.fromInputStream(is).mkString
+          val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+          val c = etlConf.withFallback(base).resolve()
+          readPipeline(c, uri, argsMap, env)
+        }
+      }      
       case _ => {
         Left(ConfigError("file", "make sure url scheme is defined e.g. file://${pwd}") :: Nil)
       }
@@ -343,6 +348,21 @@ object ConfigUtils {
     }
   }
 
+  private def textContentForURI(uri: URI, uriKey: String, authentication: Either[Errors, Option[Authentication]])
+                               (implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[Errors, String] = {
+    uri.getScheme match {
+      case "classpath" =>
+        val path = s"/${uri.getHost}${uri.getPath}"
+        using(getClass.getResourceAsStream(path)) { is =>
+          val text = scala.io.Source.fromInputStream(is).mkString
+          Right(text)
+        }
+      case _ =>
+        authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))
+        getBlob(uriKey, uri)
+    }
+  }
+
   private def getBlob(path: String, uri: URI)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[Errors, String] = {
     import spark.sparkContext.{hadoopConfiguration => hc}
 
@@ -371,14 +391,11 @@ object ConfigUtils {
   }    
 
   private def getExtractColumns(parsedURI: Either[Errors, Option[URI]], uriKey: String, authentication: Either[Errors, Option[Authentication]])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[Errors, List[ExtractColumn]] = {
-    val schema: Either[Errors, Option[String]] = parsedURI.rightFlatMap { optUri => 
-        optUri match {
-          case Some(uri) => 
-            authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth) )
-            getBlob(uriKey, uri).rightFlatMap(text => Right(Option(text)))
-          case None => Right(None)
-        }
-    }        
+    val schema: Either[Errors, Option[String]] = parsedURI.rightFlatMap {
+      case Some(uri) =>
+        textContentForURI(uri, uriKey, authentication).rightFlatMap(text => Right(Option(text)))
+      case None => Right(None)
+    }
 
     schema.rightFlatMap { sch =>
       val cols = sch.map{ s => MetadataSchema.parseJsonMetadata(s) }.getOrElse(Right(Nil))
@@ -728,10 +745,7 @@ object ConfigUtils {
     val inputURI = getValue[String](uriKey)
     val parsedURI = inputURI.rightFlatMap(uri => parseURI(uriKey, uri))
     val authentication = readAuthentication("authentication")  
-    val inputSQL = parsedURI.rightFlatMap { uri =>
-        authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))  
-        getBlob(uriKey, uri)
-    }
+    val inputSQL = parsedURI.rightFlatMap{ uri => textContentForURI(uri, uriKey, authentication) }
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
     val sqlParams = readMap("sqlParams", c)
@@ -1220,10 +1234,7 @@ object ConfigUtils {
     val uriKey = "inputURI"
     val inputURI = getValue[String](uriKey)
     val parsedURI = inputURI.rightFlatMap(uri => parseURI(uriKey, uri))
-    val inputSQL = parsedURI.rightFlatMap { uri =>
-        authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))    
-        getBlob(uriKey, uri)
-    }
+    val inputSQL = parsedURI.rightFlatMap{ uri => textContentForURI(uri, uriKey, authentication) }
 
     val sqlParams = readMap("sqlParams", c) 
 
@@ -1277,7 +1288,7 @@ object ConfigUtils {
           case _ => environments
         }
 
-        // skip stange if not in environment
+        // skip stage if not in environment
         if (!depricationEnvironments.contains(env)) {
             logger.info()
               .field("event", "validateConfig")
@@ -1333,7 +1344,7 @@ object ConfigUtils {
             case Right("HTTPExecute") => Option(readHTTPExecute(name, params))
             case Right("JDBCExecute") => Option(readJDBCExecute(name, params))
             case Right("KafkaCommitExecute") => Option(readKafkaCommitExecute(name, params))
-            case Right("PipelineExecute") => Option(readSQLValidate(name, params))
+            case Right("PipelineExecute") => Option(readPipelineExecute(name, params, argsMap, env))
 
             case Right("EqualityValidate") => Option(readEqualityValidate(name, params))
             case Right("SQLValidate") => Option(readSQLValidate(name, params))
@@ -1346,7 +1357,7 @@ object ConfigUtils {
 
     val (stages, errors) = pipelineStages.foldLeft[(List[PipelineStage], List[StageError])]( (Nil, Nil) ) { case ( (stages, errs), stageOrError ) =>
       stageOrError match {
-        case Right(PipelineExecute(_, _, subPipeline)) => (subPipeline.stages ::: stages, errs)
+        case Right(PipelineExecute(_, _, subPipeline)) => (subPipeline.stages.reverse ::: stages, errs)
         case Right(s) => (s :: stages, errs)
         case Left(stageErrors) => (stages, stageErrors ::: errs)
       }

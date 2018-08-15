@@ -1,0 +1,32 @@
+[
+  {
+    "id": "f457e562-5c7a-4215-a754-ab749509f3fb",
+    "name": "vendor_id",
+    "description": "A code indicating the TPEP provider that provided the record.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "d61934ed-e32e-406b-bd18-8d6b7296a8c0",
+    "name": "lpep_pickup_datetime",
+    "description": "The date and time when the meter was engaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "timestamp",
+    "formatters": [
+      "yyyy-MM-dd HH:mm:ss"
+    ],
+    "timezoneId": "America/New_York",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  }
+]
