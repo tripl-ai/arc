@@ -51,7 +51,9 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       authentication = None,
       params = Map.empty,
       persist = false,
-      numPartitions = None
+      numPartitions = None,
+      partitionBy = Nil,
+      contiguousIndex = None
     )
 
     val subDelimitedExtractStage = DelimitedExtract(
@@ -63,7 +65,9 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       authentication = None,
       params = Map.empty,
       persist = false,
-      numPartitions = None
+      numPartitions = None,
+      partitionBy = Nil,
+      contiguousIndex = None
     )
 
     val schema =
@@ -71,23 +75,23 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         id = "f457e562-5c7a-4215-a754-ab749509f3fb",
         name = "vendor_id",
         description = Some("A code indicating the TPEP provider that provided the record."),
-        primaryKey = Some(false),
         nullable = true,
         nullReplacementValue = None,
         trim = true,
-        nullableValues = "" :: "null" :: Nil) ::
+        nullableValues = "" :: "null" :: Nil,
+        metadata = None) ::
       TimestampColumn(
         id = "d61934ed-e32e-406b-bd18-8d6b7296a8c0",
         name = "lpep_pickup_datetime",
         description = Some("The date and time when the meter was engaged."),
-        primaryKey = Some(false),
         nullable = true,
         nullReplacementValue = None,
         trim = true,
         nullableValues = "" :: "null" :: Nil,
         timezoneId = "America/New_York",
         formatters = "yyyy-MM-dd HH:mm:ss" :: Nil,
-        time = None) :: Nil
+        time = None,
+        metadata = None) :: Nil
 
 
     val subTypingTransformStage = TypingTransform(
