@@ -12,7 +12,7 @@ import au.com.agl.arc.util._
 
 object AvroLoad {
 
-  def load(load: AvroLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+  def load(load: AvroLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
@@ -51,33 +51,41 @@ object AvroLoad {
     stageDetail.put("drop", dropMap) 
 
     // Avro will convert date and times to epoch milliseconds
-    try {
-      load.partitionBy match {
-        case Nil => { 
-          load.numPartitions match {
-            case Some(n) => df.drop(nulls:_*).repartition(n).write.mode(saveMode).format("com.databricks.spark.avro").save(load.outputURI.toString)
-            case None => df.drop(nulls:_*).write.mode(saveMode).format("com.databricks.spark.avro").save(load.outputURI.toString)  
-          }   
+    val outputDF =
+      try {
+        val nonNullDF = df.drop(nulls:_*)
+        load.partitionBy match {
+          case Nil =>
+            val dfToWrite = load.numPartitions.map(nonNullDF.repartition(_)).getOrElse(nonNullDF)
+            dfToWrite.write.mode(saveMode).format("com.databricks.spark.avro").save(load.outputURI.toString)
+            dfToWrite
+          case partitionBy => {
+            // create a column array for repartitioning
+            val partitionCols = partitionBy.map(col => df(col))
+            load.numPartitions match {
+              case Some(n) =>
+                val dfToWrite = nonNullDF.repartition(n, partitionCols:_*)
+                dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).format("com.databricks.spark.avro").save(load.outputURI.toString)
+                dfToWrite
+              case None =>
+                val dfToWrite = nonNullDF.repartition(partitionCols:_*)
+                dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).format("com.databricks.spark.avro").save(load.outputURI.toString)
+                dfToWrite
+            }
+          }
         }
-        case partitionBy => {
-          // create a column array for repartitioning
-          val partitionCols = partitionBy.map(col => df(col))
-          load.numPartitions match {
-            case Some(n) => df.drop(nulls:_*).repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).format("com.databricks.spark.avro").save(load.outputURI.toString)
-            case None => df.drop(nulls:_*).repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).format("com.databricks.spark.avro").save(load.outputURI.toString)
-          }   
+      } catch {
+        case e: Exception => throw new Exception(e) with DetailException {
+          override val detail = stageDetail
         }
-      }    
-    } catch {
-      case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
-      }      
-    }
+      }
 
     logger.info()
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)      
-      .log()       
+      .log()
+
+    Option(outputDF)
   }
 }

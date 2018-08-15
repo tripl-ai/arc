@@ -32,7 +32,7 @@ case class KafkaRecord (
 
 object KafkaExtract {
 
-  def extract(extract: KafkaExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): DataFrame = {
+  def extract(extract: KafkaExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
 
@@ -177,7 +177,7 @@ object KafkaExtract {
       .map("stage", stageDetail)      
       .log() 
 
-    repartitionedDF
+    Option(repartitionedDF)
   }
 
 }

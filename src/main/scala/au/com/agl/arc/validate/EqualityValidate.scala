@@ -10,7 +10,7 @@ import au.com.agl.arc.util._
 
 object EqualityValidate {
 
-  def validate(validate: EqualityValidate)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+  def validate(validate: EqualityValidate)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", validate.getType)
@@ -90,6 +90,8 @@ object EqualityValidate {
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)
-      .log()    
+      .log()
+
+    None
   }
 }

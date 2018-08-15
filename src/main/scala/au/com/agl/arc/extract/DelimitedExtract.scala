@@ -15,7 +15,7 @@ import au.com.agl.arc.util._
 
 object DelimitedExtract {
 
-  def extract(extract: DelimitedExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): DataFrame = {
+  def extract(extract: DelimitedExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
@@ -117,7 +117,7 @@ object DelimitedExtract {
       .map("stage", stageDetail)      
       .log()
 
-    repartitionedDF
+    Option(repartitionedDF)
   }
 
 }

@@ -86,7 +86,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=None
       )
-    )
+    ).get
 
     // test that the filename is correctly populated
     assert(extractDataset.filter($"_filename".contains(targetFile)).count != 0)
@@ -238,7 +238,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=None
       )
-    )
+    ).get
 
     val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
     val actual = extractDataset.drop(internal:_*)
@@ -278,7 +278,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=None
       )
-    )
+    ).get
 
     val actual1 = extract.JSONExtract.extract(
       JSONExtract(
@@ -294,7 +294,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=None
       )
-    )
+    ).get
 
     // check the filenames are both present
     assert(actual1.filter($"_filename".contains(multiLineFile0)).count == 1)
@@ -349,7 +349,7 @@ test("JSONExtract: Input Schema") {
         partitionBy=Nil,
         contiguousIndex=None
       )
-    )
+    ).get
 
     val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
     val actual = extractDataset.drop(internal:_*)

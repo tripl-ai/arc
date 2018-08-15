@@ -42,7 +42,7 @@ object JDBCExecute {
     }
   }
 
-  def execute(exec: JDBCExecute)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+  def execute(exec: JDBCExecute)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import exec._
 
     val startTime = System.currentTimeMillis() 
@@ -82,7 +82,9 @@ object JDBCExecute {
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)      
-      .log()   
+      .log()
+
+    None
   }
 
 }

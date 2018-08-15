@@ -260,7 +260,7 @@ object ARC {
   def run(pipeline: ETLPipeline)
   (implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger) = {
 
-    def processStage(stage: PipelineStage) {
+    def processStage(stage: PipelineStage): Option[DataFrame] = {
       stage match {
         case e : AvroExtract =>
           extract.AvroExtract.extract(e)          
@@ -323,7 +323,7 @@ object ARC {
           execute.JDBCExecute.execute(x)
         case x : KafkaCommitExecute =>
           execute.KafkaCommitExecute.execute(x)
-        case _ : PipelineExecute => // skip as placeholder for other pipeline stages
+        case _ : PipelineExecute => None // skip as placeholder for other pipeline stages
 
         case v : EqualityValidate =>
           validate.EqualityValidate.validate(v)           

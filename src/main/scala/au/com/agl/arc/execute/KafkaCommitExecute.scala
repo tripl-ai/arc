@@ -18,7 +18,7 @@ import au.com.agl.arc.util._
 
 object KafkaCommitExecute {
 
-  def execute(exec: KafkaCommitExecute)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+  def execute(exec: KafkaCommitExecute)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
 
     val stageDetail = new java.util.HashMap[String, Object]()
@@ -77,6 +77,8 @@ object KafkaCommitExecute {
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)      
-      .log()   
+      .log()
+
+    None
   }
 }

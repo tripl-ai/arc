@@ -16,7 +16,7 @@ import au.com.agl.arc.util._
 
 object HTTPExecute {
 
-  def execute(exec: HTTPExecute)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Int = {
+  def execute(exec: HTTPExecute)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
 
     val maskedHeaders = HTTPUtils.maskHeaders(exec.headers)
@@ -79,7 +79,7 @@ object HTTPExecute {
       .map("stage", stageDetail)      
       .log()   
 
-    response.getStatusLine.getStatusCode  
+    None
   }
 }
 

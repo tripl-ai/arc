@@ -11,7 +11,7 @@ import au.com.agl.arc.util._
 
 object DelimitedLoad {
 
-  def load(load: DelimitedLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+  def load(load: DelimitedLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
@@ -58,20 +58,27 @@ object DelimitedLoad {
 
     stageDetail.put("drop", dropMap) 
 
-    try {
+    val outputDF =
+      try {
+        val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)
       load.partitionBy match {
-        case Nil => { 
-          load.numPartitions match {
-            case Some(n) => df.drop(arrays:_*).drop(nulls:_*).repartition(n).write.mode(saveMode).options(options).format("csv").save(load.outputURI.toString)
-            case None => df.drop(arrays:_*).drop(nulls:_*).write.mode(saveMode).options(options).format("csv").save(load.outputURI.toString)
-          }   
+        case Nil => {
+          val dfToWrite = load.numPartitions.map(nonNullDF.repartition(_)).getOrElse(nonNullDF)
+          dfToWrite.write.mode(saveMode).options(options).format("csv").save(load.outputURI.toString)
+          dfToWrite
         }
         case partitionBy => {
           // create a column array for repartitioning
           val partitionCols = partitionBy.map(col => df(col))
           load.numPartitions match {
-            case Some(n) => df.drop(arrays:_*).drop(nulls:_*).repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).options(options).format("csv").save(load.outputURI.toString)
-            case None => df.drop(arrays:_*).drop(nulls:_*).repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).options(options).format("csv").save(load.outputURI.toString)
+            case Some(n) =>
+              val dfToWrite = nonNullDF.repartition(n, partitionCols:_*)
+              dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).options(options).format("csv").save(load.outputURI.toString)
+              dfToWrite
+            case None =>
+              val dfToWrite = nonNullDF.repartition(partitionCols:_*)
+              dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).options(options).format("csv").save(load.outputURI.toString)
+              dfToWrite
           }   
         }
       }    
@@ -85,7 +92,9 @@ object DelimitedLoad {
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)      
-      .log()   
+      .log()
+
+    Option(outputDF)
   }
 }
 

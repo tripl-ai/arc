@@ -154,7 +154,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         method=Option("GET"),
         body=None
       )
-    )
+    ).get
 
     val actual = spark.read.option("multiLine", "true").json(extractDataset.as[String])
 
@@ -196,7 +196,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         method=Option("POST"),
         body=None
       )
-    )
+    ).get
 
     val actual = spark.read.option("multiLine", "true").json(extractDataset.as[String])
 
@@ -221,7 +221,6 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPExtract: Can post data (POST)") {
     implicit val spark = session
-    import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val extractDataset = extract.HTTPExtract.extract(
@@ -260,14 +259,13 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         method=None,
         body=None   
       )
-    )
+    ).get
 
     assert(actual.first.getString(0) == "")
   }      
 
   test("HTTPExtract: Throws exception with 404") {
     implicit val spark = session
-    import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val thrown = intercept[Exception with DetailException] {
@@ -292,7 +290,6 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPExtract: validStatusCodes") {
     implicit val spark = session
-    import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val thrown = intercept[Exception with DetailException] {
@@ -317,7 +314,6 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPExtract: broken url throws exception") {
     implicit val spark = session
-    import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val thrown = intercept[Exception with DetailException] {

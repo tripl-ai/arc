@@ -1,6 +1,5 @@
 package au.com.agl.arc.load
 
-import java.net.URI
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
@@ -11,7 +10,7 @@ import au.com.agl.arc.util._
 
 object ORCLoad {
 
-  def load(load: ORCLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+  def load(load: ORCLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
@@ -48,20 +47,22 @@ object ORCLoad {
 
     stageDetail.put("drop", dropMap) 
 
+    val nonNullDF = df.drop(nulls:_*)
+
     try {
       load.partitionBy match {
         case Nil => { 
           load.numPartitions match {
-            case Some(n) => df.drop(nulls:_*).repartition(n).write.mode(saveMode).orc(load.outputURI.toString)
-            case None => df.drop(nulls:_*).write.mode(saveMode).orc(load.outputURI.toString)  
+            case Some(n) => nonNullDF.repartition(n).write.mode(saveMode).orc(load.outputURI.toString)
+            case None => nonNullDF.write.mode(saveMode).orc(load.outputURI.toString)
           }   
         }
         case partitionBy => {
           // create a column array for repartitioning
           val partitionCols = partitionBy.map(col => df(col))
           load.numPartitions match {
-            case Some(n) => df.drop(nulls:_*).repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).orc(load.outputURI.toString)
-            case None => df.drop(nulls:_*).repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).orc(load.outputURI.toString)
+            case Some(n) => nonNullDF.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).orc(load.outputURI.toString)
+            case None => nonNullDF.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).orc(load.outputURI.toString)
           }   
         }
       }
@@ -75,6 +76,8 @@ object ORCLoad {
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)      
-      .log()  
+      .log()
+
+    Option(nonNullDF)
   }
 }

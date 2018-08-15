@@ -88,7 +88,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty, 
         persist=false
       )
-    )
+    ).get
 
     val expected = TestDataUtils.getKnownDataset.drop($"nullDatum")
 
@@ -128,7 +128,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty, 
         persist=false
       )
-    )
+    ).get
 
     val expected = TestDataUtils.getKnownDataset.drop($"nullDatum")
 
@@ -164,7 +164,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty, 
         persist=false
       )
-    )
+    ).get
 
     val expected = TestDataUtils.getKnownDataset.drop($"nullDatum")
 

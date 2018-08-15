@@ -15,7 +15,7 @@ import au.com.agl.arc.util._
 
 object ORCExtract {
 
-  def extract(extract: ORCExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): DataFrame = {
+  def extract(extract: ORCExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
@@ -101,7 +101,7 @@ object ORCExtract {
       .map("stage", stageDetail)      
       .log() 
 
-    repartitionedDF
+    Option(repartitionedDF)
   }
 
 }

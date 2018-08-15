@@ -12,7 +12,7 @@ import au.com.agl.arc.util._
 
 object SQLValidate {
 
-  def validate(validate: SQLValidate)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
+  def validate(validate: SQLValidate)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis()
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", validate.getType)
@@ -90,7 +90,9 @@ object SQLValidate {
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)
-      .log()    
+      .log()
+
+    None
   }
 }
 

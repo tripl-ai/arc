@@ -1,17 +1,10 @@
 package au.com.agl.arc
 
-import java.net.URI
-
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.IOUtils
-
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions._
 
-import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.log.LoggerFactory 
 
@@ -45,7 +38,6 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("JSONTransform") {
     implicit val spark = session
-    import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     TestDataUtils.getKnownDataset.createOrReplaceTempView(inputView)
@@ -58,7 +50,7 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         params=Map.empty
       )
-    )
+    ).get
 
     // check constants in case of change in future spark version
     assert(transformed.count == 2)
