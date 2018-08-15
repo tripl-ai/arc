@@ -389,7 +389,7 @@
 
 <h2 id="httpexecute">HTTPExecute</h2>
 
-<h3 id="since-1-0-0">Since: 1.0.0</h3>
+<h5 id="since-1-0-0">Since: 1.0.0</h5>
 
 <p>The <code>HTTPExecute</code> takes an input <code>Map[String, String]</code> from the configuration and executes a <code>POST</code> request against a remote HTTP service. This could be used to initialise another process that depends on the output of data pipeline.</p>
 
@@ -488,7 +488,7 @@
 
 <h2 id="jdbcexecute">JDBCExecute</h2>
 
-<h3 id="since-1-0-0-1">Since: 1.0.0</h3>
+<h5 id="since-1-0-0-1">Since: 1.0.0</h5>
 
 <p>The <code>JDBCExecute</code> executes a SQL statement against an external JDBC connection.</p>
 
@@ -593,7 +593,7 @@
 
 <h2 id="kafkacommitexecute">KafkaCommitExecute</h2>
 
-<h3 id="since-1-0-8">Since: 1.0.8</h3>
+<h5 id="since-1-0-8">Since: 1.0.8</h5>
 
 <p>The <code>KafkaCommitExecute</code> takes the resulting <code>DataFrame</code> from a <a href="../extract/#kafkaextract">KafkaExtract</a> stage and commits the offsets back to Kafka. This is used so that a user is able to perform a quasi-transaction by specifing a series of stages that must be succesfully executed prior to <code>committing</code> the offset back to Kafka. To use this stage ensure that the <code>autoCommit</code> option on the <a href="../extract/#kafkaextract">KafkaExtract</a> stage is set to <code>false</code>.</p>
 
@@ -665,6 +665,68 @@
     &quot;inputView&quot;: &quot;customer&quot;,
     &quot;bootstrapServers&quot;: &quot;kafka:29092&quot;, 
     &quot;groupID&quot;: &quot;spark-customer-extract-job&quot;,
+    &quot;params&quot;: {}
+}
+</code></pre>
+
+<h2 id="pipelineexecute">PipelineExecute</h2>
+
+<h5 id="since-1-0-9">Since: 1.0.9</h5>
+
+<p>The <code>PipelineExecute</code> stage allows the embedding of another Arc pipeline within the current pipeline. This means it is possible to compose pipelines together without having to <a href="../load">serialise</a> and <a href="../extract">deserialise</a> the results.</p>
+
+<p>An example use case could be a <code>pipeline</code> which defines how your organisation defines active customer records which could then be embedded in multiple downstream <code>pipelines</code> to ensure definition consistency.</p>
+
+<h3 id="parameters-3">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>uri</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>URI of the input file containing the definition of the <code>pipeline</code> to include.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-3">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;PipelineExecute&quot;,
+    &quot;name&quot;: &quot;embed the active customer pipeline&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;uri&quot;: &quot;hdfs://datalake/jobs/active_customers.json&quot;,  
     &quot;params&quot;: {}
 }
 </code></pre>

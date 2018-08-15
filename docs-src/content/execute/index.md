@@ -7,7 +7,7 @@ type: blog
 `*Execute` stages are used to execute arbitrary commands against external systems such as Databases and APIs.
 
 ## HTTPExecute
-### Since: 1.0.0
+##### Since: 1.0.0
 
 The `HTTPExecute` takes an input `Map[String, String]` from the configuration and executes a `POST` request against a remote HTTP service. This could be used to initialise another process that depends on the output of data pipeline.
 
@@ -48,7 +48,7 @@ The `HTTPExecute` takes an input `Map[String, String]` from the configuration an
 ```
 
 ## JDBCExecute
-### Since: 1.0.0
+##### Since: 1.0.0
 
 The `JDBCExecute` executes a SQL statement against an external JDBC connection.
 
@@ -89,7 +89,7 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
 ```
 
 ## KafkaCommitExecute
-### Since: 1.0.8
+##### Since: 1.0.8
 
 The `KafkaCommitExecute` takes the resulting `DataFrame` from a [KafkaExtract](../extract/#kafkaextract) stage and commits the offsets back to Kafka. This is used so that a user is able to perform a quasi-transaction by specifing a series of stages that must be succesfully executed prior to `committing` the offset back to Kafka. To use this stage ensure that the `autoCommit` option on the [KafkaExtract](../extract/#kafkaextract) stage is set to `false`.
 
@@ -116,6 +116,34 @@ For example, if a job reads from a Kafka topic and writes the results to `parque
     "inputView": "customer",
     "bootstrapServers": "kafka:29092", 
     "groupID": "spark-customer-extract-job",
+    "params": {}
+}
+```
+
+## PipelineExecute
+##### Since: 1.0.9
+
+The `PipelineExecute` stage allows the embedding of another Arc pipeline within the current pipeline. This means it is possible to compose pipelines together without having to [serialise](../load) and [deserialise](../extract) the results.
+
+An example use case could be a `pipeline` which defines how your organisation defines active customer records which could then be embedded in multiple downstream `pipelines` to ensure definition consistency.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|uri|Array[String]|true|URI of the input file containing the definition of the `pipeline` to include.|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "PipelineExecute",
+    "name": "embed the active customer pipeline",
+    "environments": ["production", "test"],
+    "uri": "hdfs://datalake/jobs/active_customers.json",  
     "params": {}
 }
 ```

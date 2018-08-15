@@ -4,6 +4,7 @@
 
 - added the ability to add column level `metadata`.
 - added the `MetadataFilterTransform` component.
+- added the `PipelineExecute` component.
 
 # 1.0.8
 

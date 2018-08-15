@@ -13,7 +13,7 @@ Transformers should meet this criteria:
 - Utilise Spark [internal functionality](https://spark.apache.org/docs/latest/sql-programming-guide.html) where possible.
 
 ## DiffTransform
-### Since: 1.0.8
+##### Since: 1.0.8
 
 The `DiffTransform` stage calculates the difference between two input datasets and produces three datasets: 
 
@@ -57,7 +57,7 @@ This stage performs this 'diffing' operation in a single pass so if multiple of 
 ```
 
 ## JSONTransform
-### Since: 1.0.0
+##### Since: 1.0.0
 
 The `JSONTransform` stage transforms the incoming dataset to rows of `json` strings with the column name `value`. It is intended to be used before stages like [HTTPLoad](/load/#httpload) to prepare the data for sending externally. 
 
@@ -88,7 +88,7 @@ The `JSONTransform` stage transforms the incoming dataset to rows of `json` stri
 ```
 
 ## MetadataFilterTransform
-### Since: 1.0.9
+##### Since: 1.0.9
 
 {{< note title="Experimental" >}}
 The `MetadataFilterTransform` is currently in experimental state whilst the requirements become clearer. 
@@ -172,7 +172,7 @@ The `inputView` and `outputView` can be set to the same name so that downstream 
 ```
 
 ## MLTransform
-### Since: 1.0.0
+##### Since: 1.0.0
 
 The `MLTransform` stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a `PipelineModel` or `CrossValidatorModel` produced using Spark's Scala, Java, PySpark or SparkR API.
 
@@ -209,7 +209,7 @@ The `MLTransform` stage transforms the incoming dataset with a pretrained Spark 
 ```
 
 ## SQLTransform
-### Since: 1.0.0
+##### Since: 1.0.0
 
 The `SQLTransform` stage transforms the incoming dataset with a [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) statement. This stage relies on previous stages to load and register the dataset views (`outputView`) and will execute arbitrary SQL statements against those datasets.
 
@@ -270,7 +270,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 ```
 
 ## TensorFlowServingTransform
-### Since: 1.0.0
+##### Since: 1.0.0
 
 {{< note title="Experimental" >}}
 The `TensorFlowServingTransform` is currently in experimental state whilst the requirements become clearer. 
@@ -322,7 +322,7 @@ The `TensorFlowServingTransform` stage transforms the incoming dataset by callin
 ```
 
 ## TypingTransform
-### Since: 1.0.0
+##### Since: 1.0.0
 
 The `TypingTransform` stage transforms the incoming dataset with based on metadata defined in the [metadata](../metadata/) format. 
 
