@@ -16,6 +16,7 @@ import com.microsoft.azure.sqldb.spark.connect._
 
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util._
+import au.com.agl.arc.util.ControlUtils._
 
 
 object JDBCLoad {
@@ -27,7 +28,6 @@ object JDBCLoad {
     val stageDetail = new java.util.HashMap[String, Object]()
     val saveMode = load.saveMode.getOrElse(SaveMode.Overwrite)
     val truncate = load.truncate.getOrElse(false)
-    var connection: Connection = null
 
     stageDetail.put("type", load.getType)
     stageDetail.put("name", load.name)
@@ -77,48 +77,46 @@ object JDBCLoad {
 
     // execute a count query on target db to get intial count
     val targetPreCount = try {
-      connection = DriverManager.getConnection(load.jdbcURL, connectionProperties)
-      // check if table exists
-      if (JdbcUtils.tableExists(connection, jdbcOptions)) {
-        saveMode match {
-          case SaveMode.ErrorIfExists => {
-            throw new Exception(s"Table '${load.tableName}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
-          }
-          case SaveMode.Ignore => {
-            // return a constant if table exists and SaveMode.Ignore
-            SaveModeIgnore
-          }          
-          case SaveMode.Overwrite => {
-            if (truncate) {
-              JdbcUtils.truncateTable(connection, jdbcOptions)
-            } else {
-              val statement = connection.createStatement
-              try {
-                statement.executeUpdate(s"DELETE FROM ${load.tableName}")
-              } finally {
-                statement.close()
+      using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>
+        // check if table exists
+        if (JdbcUtils.tableExists(connection, jdbcOptions)) {
+          saveMode match {
+            case SaveMode.ErrorIfExists => {
+              throw new Exception(s"Table '${load.tableName}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
+            }
+            case SaveMode.Ignore => {
+              // return a constant if table exists and SaveMode.Ignore
+              SaveModeIgnore
+            }          
+            case SaveMode.Overwrite => {
+              if (truncate) {
+                JdbcUtils.truncateTable(connection, jdbcOptions)
+              } else {
+                using(connection.createStatement) { statement =>
+                  statement.executeUpdate(s"DELETE FROM ${load.tableName}")
+                }
+              }
+              0
+            }
+            case SaveMode.Append => {
+              using(connection.createStatement) { statement =>
+                val resultSet = statement.executeQuery(s"SELECT COUNT(*) AS count FROM ${load.tableName}")
+                resultSet.next
+                resultSet.getInt("count")                  
               }              
             }
-            0
           }
-          case SaveMode.Append => {
-            val resultSet = connection.createStatement.executeQuery(s"SELECT COUNT(*) AS count FROM ${load.tableName}")
-            resultSet.next
-            resultSet.getInt("count")
+        } else {
+          if (load.bulkload.getOrElse(false)) {
+            throw new Exception(s"Table '${load.tableName}' does not exist and 'bulkLoad' equals 'true' so cannot continue.")
           }
+          0
         }
-      } else {
-        if (load.bulkload.getOrElse(false)) {
-          throw new Exception(s"Table '${load.tableName}' does not exist and 'bulkLoad' equals 'true' so cannot continue.")
-        }
-        0
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
-      }      
-    } finally {
-      connection.close
+        override val detail = stageDetail         
+      }
     }
 
     // if not table exists and SaveMode.Ignore
@@ -211,17 +209,15 @@ object JDBCLoad {
 
         // execute a count query on target db to ensure correct number of rows
         val targetPostCount = try {
-          connection = DriverManager.getConnection(load.jdbcURL, connectionProperties)
-
-          val resultSet = connection.createStatement.executeQuery(s"SELECT COUNT(*) AS count FROM ${load.tableName}")
-          resultSet.next
-          resultSet.getInt("count")
+          using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>
+            val resultSet = connection.createStatement.executeQuery(s"SELECT COUNT(*) AS count FROM ${load.tableName}")
+            resultSet.next
+            resultSet.getInt("count")
+          }
         } catch {
           case e: Exception => throw new Exception(e) with DetailException {
             override val detail = stageDetail          
           }      
-        } finally {
-          connection.close
         }
 
         // log counts

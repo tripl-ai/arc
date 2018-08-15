@@ -50,7 +50,7 @@ services:
       - 1433:1433
     environment:
       ACCEPT_EULA: Y
-      SA_PASSWORD: SecretPass2018
+      SA_PASSWORD: "SecretPass!2018"
       MSSQL_PID: Express
 
   postgres:
@@ -59,4 +59,4 @@ services:
       - 5432:5432    
     environment:
       POSTGRES_USER: sa
-      POSTGRES_PASSWORD: SecretPass2018
+      POSTGRES_PASSWORD: "SecretPass!2018"

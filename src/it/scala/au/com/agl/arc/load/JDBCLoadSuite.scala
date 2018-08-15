@@ -21,6 +21,7 @@ import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.log.LoggerFactory 
 
 import au.com.agl.arc.util._
+import au.com.agl.arc.util.ControlUtils._
 
 class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
 
@@ -36,10 +37,10 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
   val postgrestable = "target"
 
   val user = "sa"
-  val password = "SecretPass2018" // see docker-compose.yml for password
-  var connection: Connection = null
+  val password = "SecretPass!2018" // see docker-compose.yml for password
 
   val connectionProperties = new Properties()
+  var connection: Connection = null
 
 
   before {
@@ -59,12 +60,9 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     connectionProperties.put("user", user)
     connectionProperties.put("password", password)  
 
-    try {
-      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
+    using(DriverManager.getConnection(sqlserverurl, connectionProperties)) { connection =>
       connection.createStatement.execute(s"IF NOT EXISTS(select * from sys.databases where name='${sqlserver_db}') CREATE DATABASE [${sqlserver_db}]")
-    } finally {
-      connection.close
-    }    
+    }
   }
 
 
