@@ -27,7 +27,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
   val outputView = "dataset"
   var testURI = FileUtils.getTempDirectoryPath()
   val user = "sa"
-  val password = "SecretPass2018" // see docker-compose.yml for password  
+  val password = "SecretPass!2018" // see docker-compose.yml for password  
 
   before {
     implicit val spark = SparkSession

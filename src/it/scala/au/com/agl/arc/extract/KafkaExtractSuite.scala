@@ -87,7 +87,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         params=Map.empty
       )
-    ) 
+    ).get
 
     val expected = dataset
     val actual = extractDataset.select($"value").as[String]
@@ -149,7 +149,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         params=Map.empty
       )
-    ) 
+    ).get
 
     val extractDataset1 = extract.KafkaExtract.extract(
       KafkaExtract(
@@ -166,7 +166,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         params=Map.empty
       )
-    )
+    ).get
 
     assert(spark.catalog.isCached(outputView) === true)
 
@@ -230,7 +230,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         params=Map.empty
       )
-    ) 
+    ).get
 
     val extractDataset1 = extract.KafkaExtract.extract(
       KafkaExtract(
@@ -247,7 +247,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         params=Map.empty
       )
-    )
+    ).get
 
     assert(spark.catalog.isCached(outputView) === true)
 

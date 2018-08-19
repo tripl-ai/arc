@@ -33,11 +33,11 @@ object JDBCExtract {
     connectionProperties.put("password", extract.params.get("password").getOrElse(""))
 
     for (numPartitions <- extract.numPartitions) {
-      connectionProperties.put("numPartitions", Integer.valueOf(numPartitions))    
+      connectionProperties.put("numPartitions", numPartitions.toString)    
     }
 
     for (fetchsize <- extract.fetchsize) {
-      connectionProperties.put("fetchsize", Integer.valueOf(fetchsize))    
+      connectionProperties.put("fetchsize", fetchsize.toString)    
       stageDetail.put("fetchsize", Integer.valueOf(fetchsize))
     }     
 

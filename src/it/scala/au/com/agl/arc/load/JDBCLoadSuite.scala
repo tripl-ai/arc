@@ -282,7 +282,8 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown.getMessage.contains(s"""java.lang.Exception: Table '[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]' does not exist and 'bulkLoad' equals 'true' so cannot continue."""))      
+
+    assert(thrown.getMessage.contains(s"""java.lang.Exception: Table 'dbo.[hyphen-table]' does not exist in database 'hyphen-database' and 'bulkLoad' equals 'true' so cannot continue."""))      
   }     
 
 

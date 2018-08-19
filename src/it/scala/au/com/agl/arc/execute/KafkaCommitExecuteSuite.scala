@@ -71,7 +71,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         retries=None, 
         params=Map.empty
       )
-    )   
+    )
 
     // read should have no offset saved as using uuid group id so get all 100 records
     val extractDataset0 = extract.KafkaExtract.extract(
@@ -89,7 +89,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         params=Map.empty
       )
-    ) 
+    ).get
 
     var expected = dataset0
     var actual = extractDataset0.select($"value").as[String]
@@ -112,7 +112,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         params=Map.empty
       )
-    ) 
+    ).get
 
     expected = dataset0
     actual = extractDataset1.select($"value").as[String]
@@ -146,7 +146,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         params=Map.empty
       )
-    ) 
+    ).get
     actual = extractDataset2.select($"value").as[String]
     assert(actual.count === 0)
 
@@ -188,7 +188,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         params=Map.empty
       )
-    ) 
+    ).get
 
     expected = dataset1
     actual = extractDataset3.select($"value").as[String]

@@ -91,7 +91,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         params=Map.empty
       )
-    ) 
+    ).get 
 
     val expected = dataset
     val actual = extractDataset.select($"value").as[String]
@@ -158,7 +158,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         params=Map.empty
       )
-    ) 
+    ).get
 
     val expected = dataset
     val actual = extractDataset.select($"key", $"value")

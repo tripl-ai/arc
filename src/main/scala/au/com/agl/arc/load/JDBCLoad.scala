@@ -58,6 +58,9 @@ object JDBCLoad {
       throw new Exception(s"tableName should contain 3 components database.schema.table currently has ${tablePath.length} component(s).")    
     }
 
+    val databaseName = tablePath(0).replace("[", "").replace("]", "")
+    val tableName = s"${tablePath(1)}.${tablePath(2)}"
+
     // force cache the table so that when write verification is performed any upstream calculations are not executed twice
     if (!spark.catalog.isCached(load.inputView)) {
       df.cache
@@ -71,9 +74,10 @@ object JDBCLoad {
     val connectionProperties = new Properties
     connectionProperties.put("user", load.params.get("user").getOrElse(""))
     connectionProperties.put("password", load.params.get("password").getOrElse(""))    
+    connectionProperties.put("databaseName", databaseName)    
 
     // build spark JDBCOptions object so we can utilise their inbuilt dialect support
-    val jdbcOptions = new JDBCOptions(Map("url"-> load.jdbcURL, "dbtable" -> load.tableName))
+    val jdbcOptions = new JDBCOptions(Map("url"-> load.jdbcURL, "dbtable" -> tableName))
 
     // execute a count query on target db to get intial count
     val targetPreCount = try {
@@ -82,7 +86,7 @@ object JDBCLoad {
         if (JdbcUtils.tableExists(connection, jdbcOptions)) {
           saveMode match {
             case SaveMode.ErrorIfExists => {
-              throw new Exception(s"Table '${load.tableName}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
+              throw new Exception(s"Table '${tableName}' already exists in database '${databaseName}' and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
             }
             case SaveMode.Ignore => {
               // return a constant if table exists and SaveMode.Ignore
@@ -93,14 +97,14 @@ object JDBCLoad {
                 JdbcUtils.truncateTable(connection, jdbcOptions)
               } else {
                 using(connection.createStatement) { statement =>
-                  statement.executeUpdate(s"DELETE FROM ${load.tableName}")
+                  statement.executeUpdate(s"DELETE FROM ${tableName}")
                 }
               }
               0
             }
             case SaveMode.Append => {
               using(connection.createStatement) { statement =>
-                val resultSet = statement.executeQuery(s"SELECT COUNT(*) AS count FROM ${load.tableName}")
+                val resultSet = statement.executeQuery(s"SELECT COUNT(*) AS count FROM ${tableName}")
                 resultSet.next
                 resultSet.getInt("count")                  
               }              
@@ -108,7 +112,7 @@ object JDBCLoad {
           }
         } else {
           if (load.bulkload.getOrElse(false)) {
-            throw new Exception(s"Table '${load.tableName}' does not exist and 'bulkLoad' equals 'true' so cannot continue.")
+            throw new Exception(s"Table '${tableName}' does not exist in database '${databaseName}' and 'bulkLoad' equals 'true' so cannot continue.")
           }
           0
         }
@@ -162,8 +166,8 @@ object JDBCLoad {
                   "url"               -> s"${uri.getHost}:${uri.getPort}",
                   "user"              -> load.params.get("user").getOrElse(""),
                   "password"          -> load.params.get("password").getOrElse(""),
-                  "databaseName"      -> tablePath(0).replace("[", "").replace("]", ""),
-                  "dbTable"           -> s"${tablePath(1)}.${tablePath(2)}",
+                  "databaseName"      -> databaseName,
+                  "dbTable"           -> tableName,
                   "bulkCopyBatchSize" -> batchsize.toString,
                   "bulkCopyTableLock" -> tablock.toString,
                   "bulkCopyTimeout"   -> "42300"
@@ -177,14 +181,14 @@ object JDBCLoad {
               // default spark jdbc
               case _ => {
                 for (numPartitions <- load.numPartitions) {
-                  connectionProperties.put("numPartitions", String.valueOf(numPartitions))
+                  connectionProperties.put("numPartitions", numPartitions.toString)
                 }
                 for (isolationLevel <- load.isolationLevel) {
                   connectionProperties.put("isolationLevel", isolationLevel)
                   stageDetail.put("isolationLevel", isolationLevel)
                 }
                 for (batchsize <- load.batchsize) {
-                  connectionProperties.put("batchsize", String.valueOf(batchsize))
+                  connectionProperties.put("batchsize", batchsize.toString)
                   stageDetail.put("batchsize", Integer.valueOf(batchsize))
                 }
                 for (truncate <- load.truncate) {
@@ -201,10 +205,10 @@ object JDBCLoad {
 
                 load.partitionBy match {
                   case Nil => {
-                    nonNullDF.write.mode(saveMode).jdbc(load.jdbcURL, load.tableName, connectionProperties)
+                    nonNullDF.write.mode(saveMode).jdbc(load.jdbcURL, tableName, connectionProperties)
                   }
                   case partitionBy => {
-                    nonNullDF.write.partitionBy(partitionBy:_*).mode(saveMode).jdbc(load.jdbcURL, load.tableName, connectionProperties)
+                    nonNullDF.write.partitionBy(partitionBy:_*).mode(saveMode).jdbc(load.jdbcURL, tableName, connectionProperties)
                   }
                 }
                 nonNullDF
@@ -214,7 +218,7 @@ object JDBCLoad {
             // execute a count query on target db to ensure correct number of rows
             val targetPostCount = try {
               using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>
-                val resultSet = connection.createStatement.executeQuery(s"SELECT COUNT(*) AS count FROM ${load.tableName}")
+                val resultSet = connection.createStatement.executeQuery(s"SELECT COUNT(*) AS count FROM ${tableName}")
                 resultSet.next
                 resultSet.getInt("count")
               }
@@ -230,7 +234,7 @@ object JDBCLoad {
             stageDetail.put("targetPostCount", Long.valueOf(targetPostCount))
 
             if (sourceCount != targetPostCount - targetPreCount) {
-              throw new Exception(s"JDBCLoad should create same number of records in the target ('${load.tableName}') as exist in source ('${load.inputView}') but source has ${sourceCount} records and target created ${targetPostCount-targetPreCount} records.")
+              throw new Exception(s"JDBCLoad should create same number of records in the target ('${tableName}') as exist in source ('${load.inputView}') but source has ${sourceCount} records and target created ${targetPostCount-targetPreCount} records.")
             }
 
             resultDF
