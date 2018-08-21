@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.core._
 
 import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 case class KnownData(
@@ -24,6 +25,40 @@ case class KnownData(
 )
 
 object TestDataUtils {
+
+    def datasetEquality(expected: DataFrame, actual: DataFrame)(implicit spark: SparkSession): Boolean = {
+        import spark.implicits._
+
+        // if both are empty ignore
+        if (expected.count != 0 || actual.count != 0) {
+
+            val expectedHashDF = expected.withColumn("_data", to_json(struct(expected.columns.map(col):_*))).withColumn("_hash", sha2(to_json(struct(expected.columns.map(col):_*)),512))
+            val actualHashDF = actual.withColumn("_data", to_json(struct(actual.columns.map(col):_*))).withColumn("_hash", sha2(to_json(struct(actual.columns.map(col):_*)),512))
+            val transformedDF = expectedHashDF
+                .joinWith(actualHashDF, expectedHashDF("_hash") === actualHashDF("_hash"), "full")
+                .withColumnRenamed("_1", "expected")
+                .withColumnRenamed("_2", "actual")
+
+            val expectedExceptActual = transformedDF.filter(col("actual").isNull)
+            val actialExceptExpected = transformedDF.filter(col("expected").isNull)
+            val expectedExceptActualCount = expectedExceptActual.count
+            val actialExceptExpectedCount = actialExceptExpected.count     
+
+            if (expectedExceptActualCount != 0 || actialExceptExpectedCount != 0) {
+                println("EXPECTED")
+                println(expected.schema)
+                expectedHashDF.select(col("_data"), col("_hash")).show(false)
+                println("ACTUAL")
+                println(actual.schema)
+                actualHashDF.select(col("_data"), col("_hash")).show(false)
+                false
+            } else {
+                true
+            }  
+        } else {
+            true
+        }  
+    }
 
     def getKnownDataset()(implicit spark: SparkSession): DataFrame = {
         import spark.implicits._

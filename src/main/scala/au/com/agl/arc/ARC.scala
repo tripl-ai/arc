@@ -283,6 +283,8 @@ object ARC {
           
         case t : DiffTransform =>
           transform.DiffTransform.transform(t)
+        case t : HTTPTransform =>
+          transform.HTTPTransform.transform(t)          
         case t : JSONTransform =>
           transform.JSONTransform.transform(t)
         case t : MetadataFilterTransform =>

@@ -180,6 +180,8 @@ object API {
 
   case class DiffTransform(name: String, inputLeftView: String, inputRightView: String, outputIntersectionView: Option[String], outputLeftView: Option[String], outputRightView: Option[String], params: Map[String, String], persist: Boolean) extends Transform { val getType = "DiffTransform" }
 
+  case class HTTPTransform(name: String, uri: URI, headers: Map[String, String], validStatusCodes: Option[List[Int]], inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "HTTPTransform" }  
+  
   case class JSONTransform(name: String, inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "JSONTransform" }
 
   case class MetadataFilterTransform(name: String, inputView: String, inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean) extends Transform { val getType = "MetadataFilterTransform" }

@@ -3,8 +3,9 @@
 # 1.0.9
 
 - added the ability to add column level `metadata`.
-- added the `MetadataFilterTransform` component.
-- added the `PipelineExecute` component.
+- added the `MetadataFilterTransform` stage - a stage which allows filtering of columns by their metadata.
+- added the `PipelineExecute` stage - a stage which allows embeding other pipelines.
+- added the `HTTPTransform` stage - a stage which calls an external API and adds result to Dataframe.
 
 # 1.0.8
 
