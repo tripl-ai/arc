@@ -799,6 +799,30 @@ object ConfigUtils {
     }
   } 
 
+  def readHTTPTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
+    import ConfigReader._
+
+    val httpUriKey = "uri"
+    val inputURI = getValue[String](httpUriKey)
+    val parsedHttpURI = inputURI.rightFlatMap(uri => parseURI(httpUriKey, uri))
+    val headers = readMap("headers", c)
+    val validStatusCodes = if (c.hasPath("validStatusCodes")) Some(c.getIntList("validStatusCodes").asScala.map(f => f.toInt).toList) else None
+
+    val inputView = getValue[String]("inputView")
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist")
+
+    (name, inputView, outputView, parsedHttpURI, persist) match {
+      case (Right(n), Right(iv), Right(ov), Right(uri), Right(p)) => 
+        Right(HTTPTransform(n, uri, headers, validStatusCodes, iv, ov, params, p))
+      case _ =>
+        val allErrors: Errors = List(name, inputView, outputView, parsedHttpURI,  persist).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err :: Nil)
+    }
+  }  
+
   def readJSONTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
@@ -1465,6 +1489,7 @@ object ConfigUtils {
             case Right("XMLExtract") => Option(readXMLExtract(name, params))
 
             case Right("DiffTransform") => Option(readDiffTransform(name, params))
+            case Right("HTTPTransform") => Option(readHTTPTransform(name, params))
             case Right("JSONTransform") => Option(readJSONTransform(name, params))
             case Right("MetadataFilterTransform") => Option(readMetadataFilterTransform(name, params))
             case Right("MLTransform") => Option(readMLTransform(name, params))

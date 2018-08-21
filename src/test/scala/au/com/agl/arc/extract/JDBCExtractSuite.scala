@@ -73,7 +73,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     // parse json schema to List[ExtractColumn]
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
 
-    val actual = extract.JDBCExtract.extract(
+    val result = extract.JDBCExtract.extract(
       JDBCExtract(
         name=outputView, 
         cols=cols.right.getOrElse(Nil),
@@ -90,18 +90,10 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
+    var actual = result.withColumn("decimalDatum", col("decimalDatum").cast("decimal(38,18)"))
     val expected = TestDataUtils.getKnownDataset.drop($"nullDatum")
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+    assert(TestDataUtils.datasetEquality(expected, actual))
 
     // test metadata
     val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata    
@@ -113,7 +105,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
-    val actual = extract.JDBCExtract.extract(
+    val result = extract.JDBCExtract.extract(
       JDBCExtract(
         name=outputView, 
         cols=Nil,
@@ -130,18 +122,10 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
+    var actual = result.withColumn("decimalDatum", col("decimalDatum").cast("decimal(38,18)"))
     val expected = TestDataUtils.getKnownDataset.drop($"nullDatum")
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+    assert(TestDataUtils.datasetEquality(expected, actual))
   }   
 
   test("JDBCExtract: Query returning Empty Dataset") {
@@ -149,7 +133,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
-    val actual = extract.JDBCExtract.extract(
+    val result = extract.JDBCExtract.extract(
       JDBCExtract(
         name=outputView, 
         cols=Nil,
@@ -166,6 +150,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
+    var actual = result.withColumn("decimalDatum", col("decimalDatum").cast("decimal(38,18)"))
     val expected = TestDataUtils.getKnownDataset.drop($"nullDatum")
 
     // data types will mismatch due to derby but test that we have at least same column names

@@ -72,7 +72,7 @@ object HTTPLoad {
           }
 
           // add payload
-          val stringEntity = new StringEntity(row.getString(0))
+          val stringEntity = new StringEntity(row.getString(row.fieldIndex("value")))
           post.setEntity(stringEntity)
           
           try {

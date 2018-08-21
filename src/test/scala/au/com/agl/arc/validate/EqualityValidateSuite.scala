@@ -43,27 +43,6 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  // test("EqualityValidate") {
-  //   implicit val spark = session
-  //   import spark.implicits._
-  //   implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-  //   val dataset = TestDataUtils.getKnownDataset
-  //   dataset.createOrReplaceTempView(leftView)
-  //   dataset.createOrReplaceTempView(rightView)
-
-  //   validate.EqualityValidate.validate(
-  //     EqualityValidate(
-  //       name=testName, 
-  //       leftView=leftView,
-  //       rightView=rightView,
-  //       params=Map.empty
-  //     )
-  //   )
-
-
-  // }  
-
   test("EqualityValidate: different number of columns") {
     implicit val spark = session
     import spark.implicits._

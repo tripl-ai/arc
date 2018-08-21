@@ -34,7 +34,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    // spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("ERROR")
 
     session = spark
     import spark.implicits._
@@ -91,16 +91,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = transformed.drop($"_errors")
     val expected = TestDataUtils.getKnownDataset.select($"booleanDatum", $"longDatum", $"stringDatum")
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)  
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+    assert(TestDataUtils.datasetEquality(expected, actual))
   }  
 
   test("MetadataFilterTransform: securityLevel") {
@@ -142,15 +133,6 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = transformed.drop($"_errors")
     val expected = TestDataUtils.getKnownDataset.select($"booleanDatum", $"dateDatum", $"decimalDatum", $"longDatum", $"stringDatum")
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)  
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+    assert(TestDataUtils.datasetEquality(expected, actual))
   }    
 }

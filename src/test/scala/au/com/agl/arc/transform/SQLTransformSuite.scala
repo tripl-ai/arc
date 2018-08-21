@@ -76,16 +76,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = transformed.drop($"nullDatum")
     val expected = dataset.filter(dataset("booleanDatum")===false).drop($"nullDatum")
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)  
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+    assert(TestDataUtils.datasetEquality(expected, actual))
   }  
 
   test("SQLTransform: persist") {
@@ -146,16 +137,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = transformed.drop($"nullDatum")
     val expected = dataset.filter(dataset("booleanDatum")===false).drop($"nullDatum")
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)  
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+    assert(TestDataUtils.datasetEquality(expected, actual))
   }     
 
   test("SQLTransform: partitionPushdown") {

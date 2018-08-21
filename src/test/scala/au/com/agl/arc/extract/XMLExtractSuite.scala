@@ -83,14 +83,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
 
     val expected = TestDataUtils.getKnownDataset.drop($"nullDatum")
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      actual.show(false)
-      expected.show(false)
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+    assert(TestDataUtils.datasetEquality(expected, actual))
 
     // test metadata
     val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata    
@@ -215,16 +208,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
 
     val expected = TestDataUtils.getKnownDataset.select($"booleanDatum").limit(0)
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)  
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+    assert(TestDataUtils.datasetEquality(expected, actual))
   }  
 
   test("XMLExtract: Input Schema") {
@@ -275,15 +259,6 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extractDataset.drop(internal:_*)
     val expected = TestDataUtils.getKnownDataset.select($"booleanDatum", $"integerDatum")
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+    assert(TestDataUtils.datasetEquality(expected, actual))
   }  
 }

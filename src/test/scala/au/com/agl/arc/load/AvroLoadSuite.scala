@@ -71,18 +71,10 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
       .drop($"nullDatum")
       .withColumn("dateDatum", unix_timestamp($"dateDatum")*1000)
       .withColumn("timestampDatum", unix_timestamp($"timestampDatum")*1000)
+      .withColumn("decimalDatum", $"decimalDatum".cast("string"))
     val actual = spark.read.format("com.databricks.spark.avro").load(targetFile)
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)  
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+    assert(TestDataUtils.datasetEquality(expected, actual))
   }  
 
   test("AvroLoad: partitionBy") {
@@ -102,7 +94,7 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
         partitionBy="booleanDatum" :: Nil, 
         numPartitions=None, 
         authentication=None, 
-          saveMode=Some(SaveMode.Overwrite), 
+        saveMode=Some(SaveMode.Overwrite), 
         params=Map.empty
       )
     )

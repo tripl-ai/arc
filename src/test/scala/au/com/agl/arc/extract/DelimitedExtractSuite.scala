@@ -95,16 +95,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       .withColumn("timestampDatum", from_unixtime(unix_timestamp($"timestampDatum"), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))
       .drop($"nullDatum")
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+
+    assert(TestDataUtils.datasetEquality(expected, actual))
 
     // test metadata
     val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata    

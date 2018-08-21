@@ -79,23 +79,15 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     assert(extractDataset.filter($"_filename".contains(targetFile)).count != 0)  
 
     val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val actual = extractDataset.drop(internal:_*)
 
     val expected = TestDataUtils.getKnownDataset
       .drop($"nullDatum")
       .withColumn("dateDatum", unix_timestamp($"dateDatum")*1000)
       .withColumn("timestampDatum", unix_timestamp($"timestampDatum")*1000)
+      .withColumn("decimalDatum", $"decimalDatum".cast("string"))
+    val actual = extractDataset.drop(internal:_*)
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)  
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+    assert(TestDataUtils.datasetEquality(expected, actual))
 
     // test metadata
     val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata    
@@ -220,15 +212,6 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
 
     val expected = TestDataUtils.getKnownDataset.select($"booleanDatum").limit(0)
 
-    val actualExceptExpectedCount = actual.except(expected).count
-    val expectedExceptActualCount = expected.except(actual).count
-    if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
-      println("actual")
-      actual.show(false)
-      println("expected")
-      expected.show(false)  
-    }
-    assert(actual.except(expected).count === 0)
-    assert(expected.except(actual).count === 0)
+    assert(TestDataUtils.datasetEquality(expected, actual))
   }  
 }

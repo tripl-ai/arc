@@ -87,7 +87,7 @@ object HTTPExtract {
 
     // read and close response
     val responseEntity = response.getEntity.getContent
-    val body = Source.fromInputStream(responseEntity).mkString
+    val body = Source.fromInputStream(responseEntity).mkString.replace("\n", "")
     response.close
 
     val df = spark.sparkContext.parallelize(Array(body)).toDF
