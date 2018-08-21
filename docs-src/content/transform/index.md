@@ -56,10 +56,50 @@ This stage performs this 'diffing' operation in a single pass so if multiple of 
 }
 ```
 
+## HTTPTransform
+##### Since: 1.0.9
+
+The `HTTPTransform` stage transforms the incoming dataset by `POST`ing the value in the incoming dataset with column name `value` and appending the response body from an external API as `body`.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|uri|URI|true|URI of the HTTP server.|
+|headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
+|validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}} Note: all request response codes must be contained in this list for the stage to be successful.|
+|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "HTTPTransform",
+    "name": "call the machine learning model",
+    "environments": ["production", "test"],
+    "inputView": "cutomers",            
+    "outputView": "customers_scored",   
+    "outputURI": "http://internalserver/api/customer_scoring_v101/",
+    "headers": {
+        "Authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
+        "custom-header": "payload",
+    },
+    "validStatusCodes": [200],             
+    "persist": false,
+    "params": {
+    }
+}
+```
+
 ## JSONTransform
 ##### Since: 1.0.0
 
-The `JSONTransform` stage transforms the incoming dataset to rows of `json` strings with the column name `value`. It is intended to be used before stages like [HTTPLoad](/load/#httpload) to prepare the data for sending externally. 
+The `JSONTransform` stage transforms the incoming dataset to rows of `json` strings with the column name `value`. It is intended to be used before stages like [HTTPLoad](/load/#httpload) or [HTTPTransform](/transform/#httptransform) to prepare the data for sending externally. 
 
 ### Parameters
 

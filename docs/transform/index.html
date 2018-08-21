@@ -500,13 +500,117 @@
 }
 </code></pre>
 
+<h2 id="httptransform">HTTPTransform</h2>
+
+<h5 id="since-1-0-9">Since: 1.0.9</h5>
+
+<p>The <code>HTTPTransform</code> stage transforms the incoming dataset by <code>POST</code>ing the value in the incoming dataset with column name <code>value</code> and appending the response body from an external API as <code>body</code>.</p>
+
+<h3 id="parameters-1">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>uri</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the HTTP server.</td>
+</tr>
+
+<tr>
+<td>headers</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td><a href="https://en.wikipedia.org/wiki/List_of_HTTP_header_fields">HTTP Headers</a> to set for the HTTP request. These are not limited to the Internet Engineering Task Force standard headers.</td>
+</tr>
+
+<tr>
+<td>validStatusCodes</td>
+<td>Array[Integer]</td>
+<td>false</td>
+<td>A list of valid status codes which will result in a successful stage if the list contains the HTTP server response code. If not provided the default values are <code>[200, 201, 202]</code>. Note: all request response codes must be contained in this list for the stage to be successful.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-1">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;HTTPTransform&quot;,
+    &quot;name&quot;: &quot;call the machine learning model&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputView&quot;: &quot;cutomers&quot;,            
+    &quot;outputView&quot;: &quot;customers_scored&quot;,   
+    &quot;outputURI&quot;: &quot;http://internalserver/api/customer_scoring_v101/&quot;,
+    &quot;headers&quot;: {
+        &quot;Authorization&quot;: &quot;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&quot;,
+        &quot;custom-header&quot;: &quot;payload&quot;,
+    },
+    &quot;validStatusCodes&quot;: [200],             
+    &quot;persist&quot;: false,
+    &quot;params&quot;: {
+    }
+}
+</code></pre>
+
 <h2 id="jsontransform">JSONTransform</h2>
 
 <h5 id="since-1-0-0">Since: 1.0.0</h5>
 
-<p>The <code>JSONTransform</code> stage transforms the incoming dataset to rows of <code>json</code> strings with the column name <code>value</code>. It is intended to be used before stages like <a href="https://aglenergy.github.io/arc/load/#httpload">HTTPLoad</a> to prepare the data for sending externally.</p>
+<p>The <code>JSONTransform</code> stage transforms the incoming dataset to rows of <code>json</code> strings with the column name <code>value</code>. It is intended to be used before stages like <a href="https://aglenergy.github.io/arc/load/#httpload">HTTPLoad</a> or <a href="https://aglenergy.github.io/arc/transform/#httptransform">HTTPTransform</a> to prepare the data for sending externally.</p>
 
-<h3 id="parameters-1">Parameters</h3>
+<h3 id="parameters-2">Parameters</h3>
 
 <table>
 <thead>
@@ -563,7 +667,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-1">Examples</h3>
+<h3 id="examples-2">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;JSONTransform&quot;,
@@ -579,7 +683,7 @@
 
 <h2 id="metadatafiltertransform">MetadataFilterTransform</h2>
 
-<h5 id="since-1-0-9">Since: 1.0.9</h5>
+<h5 id="since-1-0-9-1">Since: 1.0.9</h5>
 
 <div class="admonition note">
 <p class="admonition-title">Experimental</p>
@@ -647,7 +751,7 @@ WHERE metadata.pii = (
 
 <p>The <code>inputView</code> and <code>outputView</code> can be set to the same name so that downstream stages have no way of accessing the pre-filtered data accidentially.</p>
 
-<h3 id="parameters-2">Parameters</h3>
+<h3 id="parameters-3">Parameters</h3>
 
 <table>
 <thead>
@@ -725,7 +829,7 @@ WHERE metadata.pii = (
 </tbody>
 </table>
 
-<h3 id="examples-2">Examples</h3>
+<h3 id="examples-3">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;MetadataFilterTransform&quot;,
@@ -751,7 +855,7 @@ WHERE metadata.pii = (
 
 <p>The <code>MLTransform</code> stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a <code>PipelineModel</code> or <code>CrossValidatorModel</code> produced using Spark&rsquo;s Scala, Java, PySpark or SparkR API.</p>
 
-<h3 id="parameters-3">Parameters</h3>
+<h3 id="parameters-4">Parameters</h3>
 
 <table>
 <thead>
@@ -822,7 +926,7 @@ WHERE metadata.pii = (
 </tbody>
 </table>
 
-<h3 id="examples-3">Examples</h3>
+<h3 id="examples-4">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;MLTransform&quot;,
@@ -854,7 +958,7 @@ WHERE metadata.pii = (
 </p>
 </div>
 
-<h3 id="parameters-4">Parameters</h3>
+<h3 id="parameters-5">Parameters</h3>
 
 <table>
 <thead>
@@ -925,7 +1029,7 @@ WHERE metadata.pii = (
 </tbody>
 </table>
 
-<h3 id="examples-4">Examples</h3>
+<h3 id="examples-5">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;SQLTransform&quot;,
@@ -974,7 +1078,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <p>The <code>TensorFlowServingTransform</code> stage transforms the incoming dataset by calling a <a href="https://www.tensorflow.org/serving/">TensorFlow Serving</a> service. Because each call is atomic the TensorFlow Serving instances could be behind a load balancer to increase throughput.</p>
 
-<h3 id="parameters-5">Parameters</h3>
+<h3 id="parameters-6">Parameters</h3>
 
 <table>
 <thead>
@@ -1073,7 +1177,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tbody>
 </table>
 
-<h3 id="examples-5">Examples</h3>
+<h3 id="examples-6">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;environments&quot;: [&quot;prd&quot;,&quot;tst&quot;],
@@ -1104,7 +1208,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <p>The logical process that is applied to perform the typing on a field-by-field basis is shown below.</p>
 
-<h3 id="parameters-6">Parameters</h3>
+<h3 id="parameters-7">Parameters</h3>
 
 <table>
 <thead>
@@ -1175,7 +1279,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tbody>
 </table>
 
-<h3 id="examples-6">Examples</h3>
+<h3 id="examples-7">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;TypingTransform&quot;,
