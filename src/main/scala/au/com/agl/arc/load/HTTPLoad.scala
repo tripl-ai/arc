@@ -5,7 +5,7 @@ import java.net.URI
 import scala.collection.JavaConverters._
 
 import org.apache.http.client.methods.HttpPost
-import org.apache.http.entity.StringEntity
+import org.apache.http.entity.{StringEntity, ByteArrayEntity}
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.impl.client.LaxRedirectStrategy
@@ -63,7 +63,19 @@ object HTTPLoad {
                 .build()
         val uri = load.outputURI.toString
 
-        partition.map(row => {
+        // we are using a BufferedIterator so we can 'peek' at the first row to get column types without advancing the iterator
+        // meaning we don't have to keep finding fieldIndex and dataType for each row (inefficient as they will not change)
+        val bufferedPartition = partition.buffered
+        val fieldIndex = bufferedPartition.hasNext match {
+          case true => bufferedPartition.head.fieldIndex("value")
+          case false => 0
+        }
+        val dataType = bufferedPartition.hasNext match {
+          case true => bufferedPartition.head.schema(fieldIndex).dataType
+          case false => NullType
+        }        
+
+        bufferedPartition.map(row => {
           val post = new HttpPost(uri)
 
           // add headers
@@ -72,8 +84,11 @@ object HTTPLoad {
           }
 
           // add payload
-          val stringEntity = new StringEntity(row.getString(row.fieldIndex("value")))
-          post.setEntity(stringEntity)
+          val entity = dataType match {
+            case _: StringType => new StringEntity(row.getString(fieldIndex))
+            case _: BinaryType => new ByteArrayEntity(row.get(fieldIndex).asInstanceOf[Array[scala.Byte]])
+          }
+          post.setEntity(entity)
           
           try {
             // send the request

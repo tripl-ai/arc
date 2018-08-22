@@ -29,6 +29,7 @@ object HTTPTransform {
     import spark.implicits._
     
     val startTime = System.currentTimeMillis() 
+    val signature = "HTTPTransform requires a field named 'value' of type 'string' or 'binary'."
 
     val maskedHeaders = HTTPUtils.maskHeaders(transform.headers)
 
@@ -45,6 +46,23 @@ object HTTPTransform {
       .log()      
 
     val df = spark.table(transform.inputView)      
+    val schema = df.schema
+
+    val fieldIndex = try { 
+      schema.fieldIndex("value")
+    } catch {
+      case e: Exception => throw new Exception(s"""${signature} inputView has: [${df.schema.map(_.name).mkString(", ")}].""") with DetailException {
+        override val detail = stageDetail          
+      }   
+    }
+
+    schema.fields(fieldIndex).dataType match {
+      case _: StringType => 
+      case _: BinaryType => 
+      case _ => throw new Exception(s"""${signature} 'value' is of type: '${schema.fields(fieldIndex).dataType.simpleString}'.""") with DetailException {
+        override val detail = stageDetail          
+      }  
+    }
 
     val typedSchema = StructType(
       df.schema.fields.toList ::: List(new StructField("statusCode", IntegerType, false), new StructField("reasonPhrase", StringType, false), new StructField("body", StringType, false))
@@ -65,7 +83,19 @@ object HTTPTransform {
                 .build()
         val uri = transform.uri.toString
 
-        partition.map[TypedRow] { row: Row =>
+        // we are using a BufferedIterator so we can 'peek' at the first row to get column types without advancing the iterator
+        // meaning we don't have to keep finding fieldIndex and dataType for each row (inefficient as they will not change)
+        val bufferedPartition = partition.buffered
+        val fieldIndex = bufferedPartition.hasNext match {
+          case true => bufferedPartition.head.fieldIndex("value")
+          case false => 0
+        }
+        val dataType = bufferedPartition.hasNext match {
+          case true => bufferedPartition.head.schema(fieldIndex).dataType
+          case false => NullType
+        }
+
+        bufferedPartition.map[TypedRow] { row: Row =>
           val post = new HttpPost(uri)
 
           // add headers
@@ -74,8 +104,6 @@ object HTTPTransform {
           }
 
           // add payload
-          val fieldIndex = row.fieldIndex("value")
-          val dataType = row.schema(fieldIndex).dataType
           val entity = dataType match {
             case _: StringType => new StringEntity(row.getString(fieldIndex))
             case _: BinaryType => new ByteArrayEntity(row.get(fieldIndex).asInstanceOf[Array[scala.Byte]])

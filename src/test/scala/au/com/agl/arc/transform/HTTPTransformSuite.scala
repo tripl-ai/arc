@@ -240,5 +240,69 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = transformDataset.select(col("body")).withColumnRenamed("body", "value")
 
     assert(TestDataUtils.datasetEquality(expected, actual))
+  }  
+
+  test("HTTPTransform: Missing 'value' column") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(inputView)
+    var payloadDataset = spark.sql(s"""
+      SELECT * FROM ${inputView}
+    """)
+    val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
+    inputDataset.createOrReplaceTempView(inputView)
+
+    val thrown0 = intercept[Exception with DetailException] {
+      val transformDataset = transform.HTTPTransform.transform(
+        HTTPTransform(
+          name=outputView,
+          uri=new URI(s"${uri}/${echo}/"),
+          headers=Map.empty,
+          validStatusCodes=None,
+          inputView=inputView,
+          outputView=outputView,
+          params=Map.empty,
+          persist=false
+        )
+      ).get
+    }
+    assert(thrown0.getMessage === "HTTPTransform requires a field named 'value' of type 'string' or 'binary'. inputView has: [booleanDatum, dateDatum, decimalDatum, doubleDatum, integerDatum, longDatum, stringDatum, timeDatum, timestampDatum, nullDatum].")
+  }        
+
+  test("HTTPTransform: Wrong type of 'value' column") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(inputView)
+    var payloadDataset = spark.sql(s"""
+      SELECT *, dateDatum AS value FROM ${inputView}
+    """)
+    val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
+    inputDataset.createOrReplaceTempView(inputView)
+
+    val thrown0 = intercept[Exception with DetailException] {
+      val transformDataset = transform.HTTPTransform.transform(
+        HTTPTransform(
+          name=outputView,
+          uri=new URI(s"${uri}/${echo}/"),
+          headers=Map.empty,
+          validStatusCodes=None,
+          inputView=inputView,
+          outputView=outputView,
+          params=Map.empty,
+          persist=false
+        )
+      ).get
+    }
+    assert(thrown0.getMessage === "HTTPTransform requires a field named 'value' of type 'string' or 'binary'. 'value' is of type: 'date'.")
   }      
 }
