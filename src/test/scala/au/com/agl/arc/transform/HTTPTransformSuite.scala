@@ -23,22 +23,6 @@ import au.com.agl.arc.util._
 
 class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
-  class PostDataHandler extends AbstractHandler {
-    val payload = """[{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-20T21:46:54.000Z"},
-      |{"booleanDatum":false,"dateDatum":"2016-12-19","decimalDatum":12.345000000000000000,"doubleDatum":21.2121,"integerDatum":34,"longDatum":1520828123,"stringDatum":"breakdelimiter,test","timeDatum":"23:45:16","timestampDatum":"2017-12-29T17:21:49.000Z"}]""".stripMargin
-
-    override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
-      if (HttpConnection.getCurrentConnection.getRequest.getMethod == "POST") {
-        response.setContentType("text/html")
-        response.setStatus(HttpServletResponse.SC_OK)
-        response.getWriter().println(Source.fromInputStream(request.getInputStream).mkString)
-      } else {
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN)
-      }
-      HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
-    }
-  }   
-
   class PostEchoHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
       if (HttpConnection.getCurrentConnection.getRequest.getMethod == "POST") {
@@ -67,7 +51,6 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   val outputView = "outputView"
   val uri = s"http://localhost:${port}"
   val badUri = s"http://localhost:${port+1}"
-  val post = "post"
   val echo = "echo"
   val empty = "empty"
   val body = "testpayload"
@@ -87,10 +70,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")    
 
-    // register handlers
-    val postContext = new ContextHandler(s"/${post}")
-    postContext.setAllowNullPathInfo(false) 
-    postContext.setHandler(new PostDataHandler)    
+    // register handlers 
     val postEchoContext = new ContextHandler(s"/${echo}")
     postEchoContext.setAllowNullPathInfo(false)   
     postEchoContext.setHandler(new PostEchoHandler)   
@@ -98,7 +78,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     emptyContext.setAllowNullPathInfo(false)
     emptyContext.setHandler(new EmptyHandler)    
     val contexts = new ContextHandlerCollection()
-    contexts.setHandlers(Array(postContext, postEchoContext, emptyContext));
+    contexts.setHandlers(Array(postEchoContext, emptyContext));
     server.setHandler(contexts)
 
     // start http server
@@ -119,8 +99,15 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
-    val dataset = TestDataUtils.getKnownDataset.toJSON.toDF
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    val dataset = TestDataUtils.getKnownDataset
     dataset.createOrReplaceTempView(inputView)
+    var payloadDataset = spark.sql(s"""
+      SELECT *, TO_JSON(NAMED_STRUCT('dateDatum', dateDatum)) AS value FROM ${inputView}
+    """)
+    val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
+    inputDataset.createOrReplaceTempView(inputView)
 
     val transformDataset = transform.HTTPTransform.transform(
       HTTPTransform(
@@ -139,6 +126,10 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = transformDataset.select(col("body")).withColumnRenamed("body", "value")
 
     assert(TestDataUtils.datasetEquality(expected, actual))
+
+    // test metadata
+    val timestampDatumMetadata = transformDataset.schema.fields(transformDataset.schema.fieldIndex("timestampDatum")).metadata    
+    assert(timestampDatumMetadata.getLong("securityLevel") == 7)      
   }  
 
   test("HTTPTransform: Can handle empty response") {

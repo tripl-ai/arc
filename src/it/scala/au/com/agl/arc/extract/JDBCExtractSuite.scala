@@ -112,6 +112,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         customSchema=None, 
         persist=false,
+        partitionColumn=None,
         params=Map("user" -> user, "password" -> password)
       )
     ).get

@@ -41,6 +41,9 @@ object Dependencies {
   val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "6.4.0.jre8" % "provided"
   val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.2" % "provided"
 
+  // google cloud
+  // val gcsConnector = "com.google.cloud.bigdataoss" % "gcs-connector" % "hadoop2-1.9.5" % "provided"
+
   // geospark
   val geospark = "org.datasyslab" % "geospark" % "1.1.1"  % "provided"
   val geosparkSQL = "org.datasyslab" % "geospark-sql_2.3" % "1.1.1" % "provided"
@@ -99,6 +102,8 @@ object Dependencies {
     // Azure EventHubs
     azureEventHub,
     qpid
+
+    // gcsConnector
 
     // Kafka
     // kafka,

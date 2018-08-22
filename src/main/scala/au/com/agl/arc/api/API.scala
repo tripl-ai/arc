@@ -162,7 +162,7 @@ object API {
 
   case class HTTPExtract(name: String, uri: URI, method: Option[String], headers: Map[String, String], body: Option[String], validStatusCodes: Option[List[Int]], outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "HTTPExtract" }
 
-  case class JDBCExtract(name: String, cols: List[ExtractColumn], outputView: String, jdbcURL: String, tableName: String, numPartitions: Option[Int], fetchsize: Option[Int], customSchema: Option[String], driver: java.sql.Driver, params: Map[String, String], persist: Boolean, partitionBy: List[String]) extends Extract { val getType = "JDBCExtract" }
+  case class JDBCExtract(name: String, cols: List[ExtractColumn], outputView: String, jdbcURL: String, tableName: String, numPartitions: Option[Int], fetchsize: Option[Int], customSchema: Option[String], driver: java.sql.Driver, partitionColumn: Option[String], params: Map[String, String], persist: Boolean, partitionBy: List[String]) extends Extract { val getType = "JDBCExtract" }
 
   case class JSONExtract(name: String, cols: List[ExtractColumn], outputView: String, input: Either[String, URI], settings: JSON, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Option[Boolean]) extends ColumnarExtract { val getType = "JSONExtract" }
 
@@ -244,6 +244,7 @@ object API {
     case class AmazonAccessKey(accessKeyID: String, secretAccessKey: String) extends Authentication
     case class AzureSharedKey(accountName: String, signature: String) extends Authentication
     case class AzureSharedAccessSignature(accountName: String, container: String, token: String) extends Authentication
+    case class GoogleCloudStorageKeyFile(projectID: String, keyFilePath: String) extends Authentication
   }
 
   case class ETLPipeline(stages: List[PipelineStage])

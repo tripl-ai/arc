@@ -37,6 +37,17 @@ object CloudUtils {
           .field(s"fs.azure.sas.${container}.${accountName}.blob.core.windows.net", token)        
           .log()                    
       }
+      case Some(API.Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)) => {
+        hc.set("google.cloud.auth.service.account.enable", "true")
+        hc.set("fs.gs.project.id", projectID)
+        hc.set("google.cloud.auth.service.account.json.keyfile", keyFilePath)
+        logger.debug()
+          .message("hadoopConfiguration.set()")
+          .field("google.cloud.auth.service.account.enable", "true")        
+          .field("fs.gs.project.id", projectID)        
+          .field("google.cloud.auth.service.account.json.keyfile", keyFilePath)        
+          .log()                    
+      }      
       case None =>   
     }
   }  

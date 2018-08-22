@@ -41,6 +41,11 @@ object JDBCExtract {
       stageDetail.put("fetchsize", Integer.valueOf(fetchsize))
     }     
 
+    for (partitionColumn <- extract.partitionColumn) {
+      connectionProperties.put("partitionColumn", partitionColumn)    
+      stageDetail.put("partitionColumn", partitionColumn)
+    }  
+
     logger.info()
       .field("event", "enter")
       .map("stage", stageDetail)      

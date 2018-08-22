@@ -132,7 +132,12 @@ object HTTPTransform {
       }
     }     
 
-    val transformedDF = responses.drop(col("statusCode")).drop(col("reasonPhrase"))
+    // re-attach metadata to result
+    var transformedDF = responses.drop(col("statusCode")).drop(col("reasonPhrase"))
+    df.schema.fields.foreach(field => {
+      transformedDF = transformedDF.withColumn(field.name, col(field.name).as(field.name, field.metadata))
+    })
+
     transformedDF.createOrReplaceTempView(transform.outputView)
 
     if (transform.persist) {

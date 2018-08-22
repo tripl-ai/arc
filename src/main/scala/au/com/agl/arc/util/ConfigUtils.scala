@@ -51,6 +51,7 @@ object ConfigUtils {
         val c = etlConf.withFallback(base).resolve()
         readPipeline(c, uri, argsMap, env)
       }
+      // amazon s3
       case "s3a" => {
         val s3aEndpoint: Option[String] = argsMap.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT")) 
         val s3aConnectionSSLEnabled: Option[String] = argsMap.get("etl.config.fs.s3a.connection.ssl.enabled").orElse(envOrNone("ETL_CONF_S3A_CONNECTION_SSL_ENABLED")) 
@@ -82,6 +83,7 @@ object ConfigUtils {
         val c = etlConf.withFallback(base).resolve()
         readPipeline(c, uri, argsMap, env)
       }
+      // azure blob
       case "wasbs" => {       
         val azureAccountName: Option[String] = argsMap.get("etl.config.fs.azure.account.name").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_NAME")) 
         val azureAccountKey: Option[String] = argsMap.get("etl.config.fs.azure.account.key").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_KEY")) 
@@ -101,6 +103,26 @@ object ConfigUtils {
         val c = etlConf.withFallback(base).resolve()
         readPipeline(c, uri, argsMap, env)
       }
+      // google cloud
+      case "gs" => {       
+        val gsProjectID: Option[String] = argsMap.get("etl.config.fs.gs.project.id").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_PROJECT_ID")) 
+        val gsKeyfilePath: Option[String] = argsMap.get("etl.config.fs.google.cloud.auth.service.account.json.keyfile").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE")) 
+        
+        val projectID = gsProjectID match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Google Cloud Project ID not provided for: ${uri}. Set etl.config.fs.gs.project.id or ETL_CONF_GOOGLE_CLOUD_PROJECT_ID environment variable.")
+        }
+        val keyFilePath = gsKeyfilePath match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Google Cloud KeyFile Path not provided for: ${uri}. Set etl.config.fs.google.cloud.auth.service.account.json.keyfile property or ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE environment variable.")
+        }        
+
+        CloudUtils.setHadoopConfiguration(Some(Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)))
+        val etlConfString = CloudUtils.getTextBlob(uri.toString)
+        val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+        val c = etlConf.withFallback(base).resolve()
+        readPipeline(c, uri, argsMap, env)
+      }      
       case "classpath" => {
         val path = s"/${uri.getHost}${uri.getPath}"
         using(getClass.getResourceAsStream(path)) { is =>
@@ -590,6 +612,7 @@ object ConfigUtils {
     val fetchsize = getOptionalValue[Int]("fetchsize")
     val customSchema = getOptionalValue[String]("customSchema")
     val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
+    val partitionColumn = getOptionalValue[String]("partitionColumn")
 
     val authentication = readAuthentication("authentication")
     val uriKey = "schemaURI"
@@ -602,11 +625,11 @@ object ConfigUtils {
     )
     val extractColumns = getExtractColumns(parsedURI, uriKey, authentication)  
 
-    (name, extractColumns, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema) match {
-      case (Right(n), Right(ec), Right(ov), Right(p), Right(ju), Right(d), Right(tn), Right(np), Right(fs), Right(cs)) => 
-        Right(JDBCExtract(n, ec, ov, ju, tn, np, fs, cs, d, params, p, partitionBy))
+    (name, extractColumns, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, partitionColumn) match {
+      case (Right(n), Right(ec), Right(ov), Right(p), Right(ju), Right(d), Right(tn), Right(np), Right(fs), Right(cs), Right(pc)) => 
+        Right(JDBCExtract(n, ec, ov, ju, tn, np, fs, cs, d, pc, params, p, partitionBy))
       case _ =>
-        val allErrors: Errors = List(name, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, extractColumns).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, extractColumns, partitionColumn).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)

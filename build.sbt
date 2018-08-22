@@ -44,5 +44,6 @@ assemblyShadeRules in assembly := Seq(
   ShadeRule.rename("com.google.protobuf.**" -> "shadeio.@1").inAll,
   ShadeRule.rename("com.google.guava.**" -> "shadeio.@1").inAll,
   ShadeRule.rename("com.google.common.**" -> "shadeio.@1").inAll,
+  ShadeRule.rename("com.google.**" -> "shadeio.@1").inAll,
   ShadeRule.rename("io.netty.**" -> "shadeio.@1").inAll
 )

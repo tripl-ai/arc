@@ -85,6 +85,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         fetchsize=None, 
         customSchema=None,
+        partitionColumn=None,
         params=Map.empty, 
         persist=false
       )
@@ -117,6 +118,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         fetchsize=None, 
         customSchema=None,
+        partitionColumn=None,
         params=Map.empty, 
         persist=false
       )
@@ -145,6 +147,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         fetchsize=None, 
         customSchema=None,
+        partitionColumn=None,
         params=Map.empty, 
         persist=false
       )
