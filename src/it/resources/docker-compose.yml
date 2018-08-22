@@ -60,3 +60,9 @@ services:
     environment:
       POSTGRES_USER: sa
       POSTGRES_PASSWORD: "SecretPass!2018"
+
+  flask_serving:
+    image: flask_serving/simple:latest
+    build: flask_serving/.
+    ports:
+      - 5000:5000
