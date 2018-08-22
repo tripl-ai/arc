@@ -39,7 +39,9 @@ object SQLValidate {
     val count = df.count
 
     if (df.count != 1 || df.schema.length != 2) {
-        throw new Exception(s"${signature} Query returned ${count} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].")      
+      throw new Exception(s"""${signature} Query returned ${count} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].""") with DetailException {
+        override val detail = stageDetail          
+      }
     }
 
     var messageMap = new java.util.HashMap[String, Object]()
