@@ -178,6 +178,7 @@ The `JDBCExtract` reads directly from a JDBC Database and returns a `DataFrame`.
 |jdbcURL|String|true|{{< readfile file="/content/partials/fields/jdbcURL.md" markdown="true" >}}|
 |tableName|String|true|{{< readfile file="/content/partials/fields/tableName.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
+|partitionColumn|String|false|The name of a numeric column from the table in question which defines how to partition the table when reading in parallel from multiple workers. If set `numPartitions` must also be set.|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |fetchsize|Integer|false|{{< readfile file="/content/partials/fields/fetchsize.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|

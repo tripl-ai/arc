@@ -121,4 +121,106 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     assert(expected.except(actual).count === 0)
   }    
 
+
+  test("JDBCLoad: sqlserver partitionColumn") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(dbtable)
+
+    val expected = load.JDBCLoad.load(
+      JDBCLoad(
+        name="dataset",
+        inputView=dbtable, 
+        jdbcURL=sqlserverurl, 
+        driver=DriverManager.getDriver(sqlserverurl),
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        isolationLevel=None,
+        batchsize=None, 
+        truncate=None,
+        createTableOptions=None,
+        createTableColumnTypes=None,        
+        saveMode=Some(SaveMode.Overwrite), 
+        bulkload=Option(false),
+        tablock=None,
+        params=Map("user" -> user, "password" -> password)
+      )
+    ).get
+
+    val actual = extract.JDBCExtract.extract(
+      JDBCExtract(
+        name="dataset",
+        cols=Nil,
+        outputView=dbtable, 
+        jdbcURL=sqlserverurl, 
+        driver=DriverManager.getDriver(sqlserverurl),
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
+        numPartitions=Option(2), 
+        fetchsize=None,
+        partitionBy=Nil,
+        customSchema=None, 
+        persist=false,
+        partitionColumn=Option("integerDatum"),
+        params=Map("user" -> user, "password" -> password)
+      )
+    ).get
+
+    assert(actual.except(expected).count === 0)
+    assert(expected.except(actual).count === 0)
+  }   
+
+  test("JDBCLoad: sqlserver partitionColumn with Subquery") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(dbtable)
+
+    val expected = load.JDBCLoad.load(
+      JDBCLoad(
+        name="dataset",
+        inputView=dbtable, 
+        jdbcURL=sqlserverurl, 
+        driver=DriverManager.getDriver(sqlserverurl),
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        isolationLevel=None,
+        batchsize=None, 
+        truncate=None,
+        createTableOptions=None,
+        createTableColumnTypes=None,        
+        saveMode=Some(SaveMode.Overwrite), 
+        bulkload=Option(false),
+        tablock=None,
+        params=Map("user" -> user, "password" -> password)
+      )
+    ).get
+
+    val actual = extract.JDBCExtract.extract(
+      JDBCExtract(
+        name="dataset",
+        cols=Nil,
+        outputView=dbtable, 
+        jdbcURL=sqlserverurl, 
+        driver=DriverManager.getDriver(sqlserverurl),
+        tableName=s"(SELECT * FROM [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]) ds", 
+        numPartitions=Option(2), 
+        fetchsize=None,
+        partitionBy=Nil,
+        customSchema=None, 
+        persist=false,
+        partitionColumn=Option("integerDatum"),
+        params=Map("user" -> user, "password" -> password)
+      )
+    ).get
+
+    assert(actual.except(expected).count === 0)
+    assert(expected.except(actual).count === 0)
+  }     
 }

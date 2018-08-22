@@ -2,6 +2,7 @@ package au.com.agl.arc.extract
 
 import java.lang._
 import java.net.URI
+import java.sql.DriverManager
 import java.util.Properties
 import scala.collection.JavaConverters._
 
@@ -12,6 +13,7 @@ import org.apache.spark.storage.StorageLevel
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util._
+import au.com.agl.arc.util.ControlUtils._
 
 object JDBCExtract {
 
@@ -41,9 +43,35 @@ object JDBCExtract {
       stageDetail.put("fetchsize", Integer.valueOf(fetchsize))
     }     
 
+
     for (partitionColumn <- extract.partitionColumn) {
       connectionProperties.put("partitionColumn", partitionColumn)    
       stageDetail.put("partitionColumn", partitionColumn)
+
+      // automatically set the lowerBound and upperBound
+      try {
+        using(DriverManager.getConnection(extract.jdbcURL, connectionProperties)) { connection =>
+          using(connection.createStatement) { statement =>
+            val res = statement.execute(s"SELECT MIN(${partitionColumn}), MAX(${partitionColumn}) FROM ${extract.tableName}")
+            // try to get results to throw error if one exists
+            if (res) {
+              statement.getResultSet.next
+
+              val lowerBound = statement.getResultSet.getLong(1)
+              val upperBound = statement.getResultSet.getLong(2)
+
+              connectionProperties.put("lowerBound", lowerBound.toString)    
+              stageDetail.put("lowerBound", Long.valueOf(lowerBound))
+              connectionProperties.put("upperBound", upperBound.toString)    
+              stageDetail.put("upperBound", Long.valueOf(upperBound))
+            }
+          }
+        }
+      } catch {
+        case e: Exception => throw new Exception(e) with DetailException {
+          override val detail = stageDetail          
+        } 
+      }
     }  
 
     logger.info()
