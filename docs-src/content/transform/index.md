@@ -59,7 +59,7 @@ This stage performs this 'diffing' operation in a single pass so if multiple of 
 ## HTTPTransform
 ##### Since: 1.0.9
 
-The `HTTPTransform` stage transforms the incoming dataset by `POST`ing the value in the incoming dataset with column name `value` and appending the response body from an external API as `body`.
+The `HTTPTransform` stage transforms the incoming dataset by `POST`ing the value in the incoming dataset with column name `value` (must be of type `string` or `bytes`) and appending the response body from an external API as `body`.
 
 ### Parameters
 

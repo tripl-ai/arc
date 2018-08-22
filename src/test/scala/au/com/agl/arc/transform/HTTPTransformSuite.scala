@@ -52,6 +52,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   val uri = s"http://localhost:${port}"
   val badUri = s"http://localhost:${port+1}"
   val echo = "echo"
+  val binary = "binary"
   val empty = "empty"
   val body = "testpayload"
 
@@ -73,7 +74,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     // register handlers 
     val postEchoContext = new ContextHandler(s"/${echo}")
     postEchoContext.setAllowNullPathInfo(false)   
-    postEchoContext.setHandler(new PostEchoHandler)   
+    postEchoContext.setHandler(new PostEchoHandler)    
     val emptyContext = new ContextHandler(s"/${empty}")
     emptyContext.setAllowNullPathInfo(false)
     emptyContext.setHandler(new EmptyHandler)    
@@ -205,5 +206,39 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(thrown.getMessage == "HTTPTransform expects all response StatusCode(s) in [201] but server responded with [2 reponses 200 (OK)].")    
-  }        
+  }     
+
+  test("HTTPTransform: Can echo post data - binary") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(inputView)
+    var payloadDataset = spark.sql(s"""
+      SELECT *, BINARY(stringDatum) AS value FROM ${inputView}
+    """)
+    val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
+    inputDataset.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.HTTPTransform.transform(
+      HTTPTransform(
+        name=outputView,
+        uri=new URI(s"${uri}/${echo}/"),
+        headers=Map.empty,
+        validStatusCodes=None,
+        inputView=inputView,
+        outputView=outputView,
+        params=Map.empty,
+        persist=false
+      )
+    ).get
+
+    val expected = transformDataset.select(col("stringDatum")).withColumnRenamed("stringDatum", "value")
+    val actual = transformDataset.select(col("body")).withColumnRenamed("body", "value")
+
+    assert(TestDataUtils.datasetEquality(expected, actual))
+  }      
 }

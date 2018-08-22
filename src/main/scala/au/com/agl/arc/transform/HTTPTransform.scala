@@ -4,7 +4,7 @@ import java.lang._
 import scala.collection.JavaConverters._
 
 import org.apache.http.client.methods.HttpPost
-import org.apache.http.entity.StringEntity
+import org.apache.http.entity.{StringEntity, ByteArrayEntity}
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.impl.client.LaxRedirectStrategy
@@ -74,8 +74,13 @@ object HTTPTransform {
           }
 
           // add payload
-          val stringEntity = new StringEntity(row.getString(row.fieldIndex("value")))
-          post.setEntity(stringEntity)
+          val fieldIndex = row.fieldIndex("value")
+          val dataType = row.schema(fieldIndex).dataType
+          val entity = dataType match {
+            case _: StringType => new StringEntity(row.getString(fieldIndex))
+            case _: BinaryType => new ByteArrayEntity(row.get(fieldIndex).asInstanceOf[Array[scala.Byte]])
+          }
+          post.setEntity(entity)
           
           try {
             // send the request
