@@ -61,6 +61,7 @@ object HTTPTransform {
         poolingHttpClientConnectionManager.setMaxTotal(50)
         val httpClient = HttpClients.custom()
                 .setConnectionManager(poolingHttpClientConnectionManager)
+                .setRedirectStrategy(new LaxRedirectStrategy())
                 .build()
         val uri = transform.uri.toString
 
