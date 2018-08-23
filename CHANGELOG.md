@@ -7,6 +7,7 @@
 - added the `PipelineExecute` stage - a stage which allows embeding other pipelines.
 - added the `HTTPTransform` stage - a stage which calls an external API and adds result to Dataframe.
 - added support for Google Cloud Storage - prefix: `gs://`
+- added support for Azure Data Lake Storage - prefix: `adl://`
 
 # 1.0.8
 

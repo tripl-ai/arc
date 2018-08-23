@@ -406,7 +406,7 @@
 <td>method</td>
 <td>String</td>
 <td>true</td>
-<td>A value of <code>AzureSharedKey</code>, <code>AzureSharedAccessSignature</code>, <code>AmazonAccessKey</code> which defines which method should be used to authenticate with the remote service.</td>
+<td>A value of <code>AzureSharedKey</code>, <code>AzureSharedAccessSignature</code>, <code>AzureDataLakeStorageToken</code>, <code>AmazonAccessKey</code>, <code>GoogleCloudStorageKeyFile</code> which defines which method should be used to authenticate with the remote service.</td>
 </tr>
 
 <tr>
@@ -438,6 +438,20 @@
 </tr>
 
 <tr>
+<td>clientID</td>
+<td>String</td>
+<td>false*</td>
+<td>Required for <code>AzureDataLakeStorageToken</code>.</td>
+</tr>
+
+<tr>
+<td>refreshToken</td>
+<td>String</td>
+<td>false*</td>
+<td>Required for <code>AzureDataLakeStorageToken</code>.</td>
+</tr>
+
+<tr>
 <td>accessKeyID</td>
 <td>String</td>
 <td>false*</td>
@@ -449,6 +463,20 @@
 <td>String</td>
 <td>false*</td>
 <td>Required for <code>AmazonAccessKey</code>.</td>
+</tr>
+
+<tr>
+<td>projectID</td>
+<td>String</td>
+<td>false*</td>
+<td>Required for <code>GoogleCloudStorageKeyFile</code>.</td>
+</tr>
+
+<tr>
+<td>keyFilePath</td>
+<td>String</td>
+<td>false*</td>
+<td>Required for <code>GoogleCloudStorageKeyFile</code>.</td>
 </tr>
 </tbody>
 </table>

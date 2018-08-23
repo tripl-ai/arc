@@ -13,13 +13,17 @@ The `Authentication` map defines the authentication parameters for connecting to
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
-|method|String|true|A value of `AzureSharedKey`, `AzureSharedAccessSignature`, `AmazonAccessKey` which defines which method should be used to authenticate with the remote service.|
+|method|String|true|A value of `AzureSharedKey`, `AzureSharedAccessSignature`, `AzureDataLakeStorageToken`, `AmazonAccessKey`, `GoogleCloudStorageKeyFile` which defines which method should be used to authenticate with the remote service.|
 |accountName|String|false*|Required for `AzureSharedKey` and `AzureSharedAccessSignature`.|
 |signature|String|false*|Required for `AzureSharedKey`.|
 |container|String|false*|Required for `AzureSharedAccessSignature`.|
 |token|String|false*|Required for `AzureSharedAccessSignature`.|
+|clientID|String|false*|Required for `AzureDataLakeStorageToken`.|
+|refreshToken|String|false*|Required for `AzureDataLakeStorageToken`.|
 |accessKeyID|String|false*|Required for `AmazonAccessKey`.|
 |secretAccessKey|String|false*|Required for `AmazonAccessKey`.|
+|projectID|String|false*|Required for `GoogleCloudStorageKeyFile`.|
+|keyFilePath|String|false*|Required for `GoogleCloudStorageKeyFile`.|
 
 ### Examples
 

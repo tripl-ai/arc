@@ -103,6 +103,26 @@ object ConfigUtils {
         val c = etlConf.withFallback(base).resolve()
         readPipeline(c, uri, argsMap, env)
       }
+      // azure data lake storage
+      case "adl" => {       
+        val adlClientID: Option[String] = argsMap.get("etl.config.fs.adl.oauth2.client.id").orElse(envOrNone("ETL_CONF_ADL_OAUTH2_CLIENT_ID")) 
+        val adlRefreshToken: Option[String] = argsMap.get("etl.config.fs.adl.oauth2.refresh.token").orElse(envOrNone("ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN")) 
+        
+        val clientID = adlClientID match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Azure Data Lake Storage Client ID not provided for: ${uri}. Set etl.config.fs.adl.oauth2.client.id or ETL_CONF_ADL_OAUTH2_CLIENT_ID environment variable.")
+        }
+        val refreshToken = adlRefreshToken match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Azure Data Lake Storage Refresh Token not provided for: ${uri}. Set etl.config.fs.adl.oauth2.refresh.token property or ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN environment variable.")
+        }        
+
+        CloudUtils.setHadoopConfiguration(Some(Authentication.AzureDataLakeStorageToken(clientID, refreshToken)))
+        val etlConfString = CloudUtils.getTextBlob(uri.toString)
+        val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+        val c = etlConf.withFallback(base).resolve()
+        readPipeline(c, uri, argsMap, env)
+      }
       // google cloud
       case "gs" => {       
         val gsProjectID: Option[String] = argsMap.get("etl.config.fs.gs.project.id").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_PROJECT_ID")) 
@@ -192,6 +212,17 @@ object ConfigUtils {
               }                 
               Right(Some(Authentication.AzureSharedAccessSignature(accountName, container, token)))
             } 
+            case Some("AzureDataLakeStorageToken") => {
+              val clientID = authentication.get("clientID") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageToken' requires 'clientID' parameter.")
+              }
+              val refreshToken = authentication.get("refreshToken") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageToken' requires 'refreshToken' parameter.")
+              }
+              Right(Some(Authentication.AzureDataLakeStorageToken(clientID, refreshToken)))
+            }             
             case Some("AmazonAccessKey") => {
               val accessKeyID = authentication.get("accessKeyID") match {
                 case Some(v) => v
@@ -202,7 +233,18 @@ object ConfigUtils {
                 case None => throw new Exception(s"Authentication method 'AmazonAccessKey' requires 'secretAccessKey' parameter.")
               }       
               Right(Some(Authentication.AmazonAccessKey(accessKeyID, secretAccessKey)))
-            }                            
+            }
+            case Some("GoogleCloudStorageKeyFile") => {
+              val projectID = authentication.get("projectID") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'GoogleCloudStorageKeyFile' requires 'projectID' parameter.")
+              } 
+              val keyFilePath = authentication.get("keyFilePath") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'GoogleCloudStorageKeyFile' requires 'keyFilePath' parameter.")
+              }       
+              Right(Some(Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)))
+            }                                 
             case _ =>  throw new Exception(s"""Unable to parse authentication method: '${authentication.get("method").getOrElse("")}'""")
           }
         }

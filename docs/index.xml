@@ -98,7 +98,7 @@ It is designed to:
       
       <guid>https://aglenergy.github.io/arc/partials/</guid>
       <description>Authentication The Authentication map defines the authentication parameters for connecting to a remote service (e.g. HDFS, Blob Storage, etc.).
-Parameters    Attribute Type Required Description     method String true A value of AzureSharedKey, AzureSharedAccessSignature, AmazonAccessKey which defines which method should be used to authenticate with the remote service.   accountName String false* Required for AzureSharedKey and AzureSharedAccessSignature.   signature String false* Required for AzureSharedKey.</description>
+Parameters    Attribute Type Required Description     method String true A value of AzureSharedKey, AzureSharedAccessSignature, AzureDataLakeStorageToken, AmazonAccessKey, GoogleCloudStorageKeyFile which defines which method should be used to authenticate with the remote service.   accountName String false* Required for AzureSharedKey and AzureSharedAccessSignature.   signature String false* Required for AzureSharedKey.</description>
     </item>
     
     <item>
