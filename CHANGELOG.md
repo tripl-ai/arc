@@ -6,6 +6,7 @@
 - added the `MetadataFilterTransform` stage - a stage which allows filtering of columns by their metadata.
 - added the `PipelineExecute` stage - a stage which allows embeding other pipelines.
 - added the `HTTPTransform` stage - a stage which calls an external API and adds result to Dataframe.
+- added support for Google Cloud Storage - prefix: `gs://`
 
 # 1.0.8
 
