@@ -113,12 +113,13 @@ object ARC {
         MDC.put("environmentId", e) 
     }         
 
+    MDC.put("applicationId", spark.sparkContext.applicationId) 
+
     logger.info()
       .field("event", "enter")
       .field("config", sparkConf)
       .field("sparkVersion", spark.version)
       .field("frameworkVersion", BuildInfo.version)
-      .field("applicationId", spark.sparkContext.applicationId)
       .field("environment", env)
       .log()   
 
