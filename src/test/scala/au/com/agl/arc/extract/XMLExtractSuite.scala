@@ -21,10 +21,12 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _  
   val targetFile = FileUtils.getTempDirectoryPath() + "extract.xml" 
+  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.xml" 
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.xml" 
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.xml.gz" 
   val zipSingleRecord = getClass.getResource("/note.xml.zip").toString
   val zipMultipleRecord =  getClass.getResource("/notes.xml.zip").toString
+  val inputView = "dataset"
   val outputView = "dataset"
 
   before {
@@ -68,7 +70,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=cols.right.getOrElse(Nil),
         outputView=outputView,
-        input=new URI(targetFile),
+        input=Right(targetFileGlob),
         authentication=None,
         params=Map.empty,
         persist=false,
@@ -106,7 +108,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=new URI(targetFile),
+        input=Right(targetFile),
         authentication=None,
         params=Map.empty,
         persist=false,
@@ -123,7 +125,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=new URI(targetFile),
+        input=Right(targetFile),
         authentication=None,
         params=Map.empty,
         persist=true,
@@ -161,7 +163,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           cols=Nil,
           outputView=outputView,
-          input=new URI(emptyWildcardDirectory),
+          input=Right(emptyWildcardDirectory),
           authentication=None,
           params=Map.empty,
           persist=false,
@@ -180,7 +182,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           cols=Nil,
           outputView=outputView,
-          input=new URI(emptyDirectory),
+          input=Right(emptyDirectory),
           authentication=None,
           params=Map.empty,
           persist=false,
@@ -198,7 +200,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=cols,
         outputView=outputView,
-        input=new URI(emptyDirectory),
+        input=Right(emptyDirectory),
         authentication=None,
         params=Map.empty,
         persist=false,
@@ -226,7 +228,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=new URI(zipSingleRecord),
+        input=Right(zipSingleRecord),
         authentication=None,
         params=Map.empty,
         persist=false,
@@ -251,7 +253,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=new URI(zipMultipleRecord),
+        input=Right(zipMultipleRecord),
         authentication=None,
         params=Map.empty,
         persist=false,
@@ -267,5 +269,42 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     assert(extractDataset.count == 2)
 
   } 
+
+  test("XMLExtract from Dataframe") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    // temporarily remove the delimiter so all the data is loaded as a single line
+    spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", s"${0x0 : Char}")       
+
+    val textFile = spark.sparkContext.textFile(targetFileGlob)
+    textFile.toDF.createOrReplaceTempView(inputView)
+
+    val extractDataset = extract.XMLExtract.extract(
+      XMLExtract(
+        name=outputView,
+        cols=Nil,
+        outputView=outputView,
+        input=Left(inputView),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=None
+      )
+    ).get
+
+    val expected = TestDataUtils.getKnownDataset
+      .withColumn("decimalDatum", col("decimalDatum").cast("double"))
+      .drop($"nullDatum")
+  
+    val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = extractDataset.drop(internal:_*)
+
+    assert(TestDataUtils.datasetEquality(expected, actual))
+
+  }  
 
 }

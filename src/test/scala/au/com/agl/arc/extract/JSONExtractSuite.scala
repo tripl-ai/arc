@@ -21,6 +21,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _  
   val targetFile = FileUtils.getTempDirectoryPath() + "extract.json" 
+  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.json" 
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.json" 
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.json.gz" 
   val outputView = "dataset"
@@ -77,7 +78,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=cols.right.getOrElse(Nil),
         outputView=outputView,
-        input=Right(new URI(targetFile)),
+        input=Right(targetFileGlob),
         settings=new JSON(multiLine=false),
         authentication=None,
         params=Map.empty,
@@ -122,7 +123,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=Right(new URI(targetFile)),
+        input=Right(targetFile),
         settings=new JSON(multiLine=false),
         authentication=None,
         params=Map.empty,
@@ -140,7 +141,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=Right(new URI(targetFile)),
+        input=Right(targetFile),
         settings=new JSON(),
         authentication=None,
         params=Map.empty,
@@ -179,7 +180,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           cols=Nil,
           outputView=outputView,
-          input=Right(new URI(emptyWildcardDirectory)),
+          input=Right(emptyWildcardDirectory),
           settings=new JSON(multiLine=false),
           authentication=None,
           params=Map.empty,
@@ -200,7 +201,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           cols=Nil,
           outputView=outputView,
-          input=Right(new URI(emptyDirectory)),
+          input=Right(emptyDirectory),
           settings=new JSON(multiLine=false),
           authentication=None,
           params=Map.empty,
@@ -220,7 +221,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=cols,
         outputView=outputView,
-        input=Right(new URI(emptyDirectory)),
+        input=Right(emptyDirectory),
         settings=new JSON(multiLine=false),
         authentication=None,
         params=Map.empty,
@@ -251,7 +252,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=Right(new URI(multiLineMatcher)),
+        input=Right(multiLineMatcher),
         settings=new JSON(multiLine=false),
         authentication=None,
         params=Map.empty,
@@ -267,7 +268,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=Right(new URI(multiLineMatcher)),
+        input=Right(multiLineMatcher),
         settings=new JSON(multiLine=true),
         authentication=None,
         params=Map.empty,
@@ -322,7 +323,7 @@ test("JSONExtract: Input Schema") {
         name=outputView,
         cols=cols,
         outputView=outputView,
-        input=Right(new URI(targetFile)),
+        input=Right(targetFile),
         settings=new JSON(multiLine=false),
         authentication=None,
         params=Map.empty,

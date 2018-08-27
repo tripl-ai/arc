@@ -21,6 +21,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _  
   val targetFile = FileUtils.getTempDirectoryPath() + "extract.parquet" 
+  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.parquet" 
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.parquet" 
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.parquet.gz" 
   val outputView = "dataset"
@@ -66,7 +67,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=cols.right.getOrElse(Nil),
         outputView=outputView,
-        input=new URI(targetFile),
+        input=targetFileGlob,
         authentication=None,
         params=Map.empty,
         persist=false,
@@ -101,7 +102,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=new URI(targetFile),
+        input=targetFile,
         authentication=None,
         params=Map.empty,
         persist=false,
@@ -118,7 +119,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=new URI(targetFile),
+        input=targetFile,
         authentication=None,
         params=Map.empty,
         persist=true,
@@ -156,7 +157,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           cols=Nil,
           outputView=outputView,
-          input=new URI(emptyWildcardDirectory),
+          input=emptyWildcardDirectory,
           authentication=None,
           params=Map.empty,
           persist=false,
@@ -175,7 +176,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           cols=Nil,
           outputView=outputView,
-          input=new URI(emptyDirectory),
+          input=emptyDirectory,
           authentication=None,
           params=Map.empty,
           persist=false,
@@ -193,7 +194,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=cols,
         outputView=outputView,
-        input=new URI(emptyDirectory),
+        input=emptyDirectory,
         authentication=None,
         params=Map.empty,
         persist=false,

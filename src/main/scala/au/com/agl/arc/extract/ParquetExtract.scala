@@ -22,7 +22,7 @@ object ParquetExtract {
     val contiguousIndex = extract.contiguousIndex.getOrElse(true)
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
-    stageDetail.put("input", extract.input.toString)  
+    stageDetail.put("input", extract.input)  
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
     stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
@@ -36,7 +36,7 @@ object ParquetExtract {
 
     // if incoming dataset is empty create empty dataset with a known schema
     val df = try {
-        spark.read.option("mergeSchema", "true").parquet(extract.input.toString)
+        spark.read.option("mergeSchema", "true").parquet(extract.input)
     } catch {
         case e: AnalysisException if (e.getMessage == "Unable to infer schema for Parquet. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) => 
           spark.emptyDataFrame

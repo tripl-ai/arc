@@ -10,6 +10,7 @@
 - added support for Azure Data Lake Storage - prefix: `adl://`
 - added `partitionColumn` to `JDBCExtract` to support parallel extract.
 - changed `XMLExtract` to be able to support reading `.zip` files.
+- changed `*Extract` to allow input `glob` patterns not just simple `URI`.
 
 # 1.0.8
 

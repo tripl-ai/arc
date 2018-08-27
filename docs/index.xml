@@ -29,8 +29,8 @@ It is a great dataset as it has a lot of the attributes of real-world data we wa
       <guid>https://aglenergy.github.io/arc/extract/</guid>
       <description>*Extract stages read in data from a database or file system.
 *Extract stages should meet this criteria:
- Read data from local or remote filesystems and return a DataFrame. Do not transform/mutate the data. Allow for Predicate Pushdown depending on data source.  AvroExtract Since: 1.0.0 The AvroExtract stage reads one or more Apache Avro files and returns a DataFrame.
-Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
+ Read data from local or remote filesystems and return a DataFrame. Do not transform/mutate the data. Allow for Predicate Pushdown depending on data source.  File based *Extract stages can accept glob patterns as input filenames:
+   Pattern Description     * Matches zero or more characters.   ?</description>
     </item>
     
     <item>

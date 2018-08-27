@@ -29,7 +29,7 @@ object DelimitedExtract {
     val options: Map[String, String] = Delimited.toSparkOptions(extract.settings)
 
     val inputValue = extract.input match {
-      case Right(uri) => uri.toString
+      case Right(glob) => glob
       case Left(view) => view
     }
 
@@ -43,11 +43,11 @@ object DelimitedExtract {
     
     val df = try {
       extract.input match {
-        case Right(uri) =>
+        case Right(glob) =>
           CloudUtils.setHadoopConfiguration(extract.authentication)
 
           try {
-            spark.read.options(options).csv(uri.toString)
+            spark.read.options(options).csv(glob)
           } catch {
             case e: AnalysisException if (e.getMessage == "Unable to infer schema for CSV. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) => 
               spark.emptyDataFrame

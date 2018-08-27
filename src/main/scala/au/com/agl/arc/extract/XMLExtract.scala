@@ -24,7 +24,7 @@ object XMLExtract {
     val contiguousIndex = extract.contiguousIndex.getOrElse(true)
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
-    stageDetail.put("input", extract.input.toString)  
+    stageDetail.put("input", extract.input)  
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
     stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
@@ -34,31 +34,38 @@ object XMLExtract {
       .map("stage", stageDetail)      
       .log()    
 
-    // the xml reader does not yet support loading from a string dataset
-    CloudUtils.setHadoopConfiguration(extract.authentication)
+
     val df = try {
+      extract.input match {
+        case Right(glob) => {
+          CloudUtils.setHadoopConfiguration(extract.authentication)
 
-      // remove the crlf delimiter so it is read as a full object per file
-      val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
-      val newDelimiter = s"${0x0 : Char}"
-      // temporarily remove the delimiter so all the data is loaded as a single line
-      spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)              
+          // remove the crlf delimiter so it is read as a full object per file
+          val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
+          val newDelimiter = s"${0x0 : Char}"
+          // temporarily remove the delimiter so all the data is loaded as a single line
+          spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)              
 
-      // read the file but do not cache. caching will break the input_file_name() function
-      val textFile = spark.sparkContext.textFile(extract.input.toString)
+          // read the file but do not cache. caching will break the input_file_name() function
+          val textFile = spark.sparkContext.textFile(glob)
 
-      val xmlReader = new XmlReader
-      val xml = xmlReader.xmlRdd(spark.sqlContext, textFile)
+          val xmlReader = new XmlReader
+          val xml = xmlReader.xmlRdd(spark.sqlContext, textFile)
 
-      // reset delimiter
-      if (oldDelimiter == null) {
-        spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")              
-      } else {
-        spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)        
-      }
+          // reset delimiter
+          if (oldDelimiter == null) {
+            spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")              
+          } else {
+            spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)        
+          }
 
-      xml      
-  
+          xml            
+        }
+        case Left(view) => {
+          val xmlReader = new XmlReader
+          xmlReader.xmlRdd(spark.sqlContext, spark.table(view).as[String].rdd)
+        }
+      }     
     } catch {
       case e: org.apache.hadoop.mapred.InvalidInputException if (e.getMessage.contains("matches 0 files")) => {
         spark.emptyDataFrame

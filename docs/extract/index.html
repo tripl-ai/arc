@@ -395,6 +395,61 @@
 <li>Allow for <a href="http://www.dbms2.com/2014/07/15/the-point-of-predicate-pushdown/">Predicate Pushdown</a> depending on data source.</li>
 </ul>
 
+<p>File based <code>*Extract</code> stages can accept <code>glob</code> patterns as input filenames:</p>
+
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>*</code></td>
+<td>Matches zero or more characters.</td>
+</tr>
+
+<tr>
+<td><code>?</code></td>
+<td>Matches any single character.</td>
+</tr>
+
+<tr>
+<td><code>[abc]</code></td>
+<td>Matches a single character in the set <code>{a, b, c}</code>.</td>
+</tr>
+
+<tr>
+<td><code>[a-b]</code></td>
+<td>Matches a single character from the character range <code>{a...b}</code>.</td>
+</tr>
+
+<tr>
+<td><code>[^a-b]</code></td>
+<td>Matches a single character that is not from character set or range <code>{a...b}</code>.</td>
+</tr>
+
+<tr>
+<td><code>{a,b}</code></td>
+<td>Matches either expression <code>a</code> or <code>b</code>.</td>
+</tr>
+
+<tr>
+<td><code>\c</code></td>
+<td>Removes (escapes) any special meaning of character <code>c</code>.</td>
+</tr>
+
+<tr>
+<td><code>{ab,c{de, fg}}</code></td>
+<td>Matches a string from the string set <code>{ab, cde, cfg}</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<p>Spark will automatically match file extensions of <code>.zip</code>, <code>.bz2&quot;</code>, <code>.deflate</code> and <code>.gz</code> and perform decompression automatically.</p>
+
 <h2 id="avroextract">AvroExtract</h2>
 
 <h5 id="since-1-0-0">Since: 1.0.0</h5>
@@ -1004,7 +1059,7 @@
 <td>inputURI</td>
 <td>URI</td>
 <td>false*</td>
-<td>URI of the input delimited text files. If not present <code>inputView</code> is requred.</td>
+<td>URI of the input <code>json</code> files. If not present <code>inputView</code> is requred.</td>
 </tr>
 
 <tr>
@@ -1485,7 +1540,7 @@
 
 <h5 id="since-1-0-0-7">Since: 1.0.0</h5>
 
-<p>The <code>XMLExtract</code> stage reads one or more XML files and returns a <code>DataFrame</code>.</p>
+<p>The <code>XMLExtract</code> stage reads one or more XML files or an input <code>Dataset[String]</code> and returns a <code>DataFrame</code>.</p>
 
 <h3 id="parameters-8">Parameters</h3>
 
@@ -1515,10 +1570,17 @@
 </tr>
 
 <tr>
+<td>inputView</td>
+<td>String</td>
+<td>false*</td>
+<td>Name of the incoming Spark dataset. If not present <code>inputURI</code> is requred.</td>
+</tr>
+
+<tr>
 <td>inputURI</td>
 <td>URI</td>
-<td>true</td>
-<td>URI of the input XML files.</td>
+<td>false*</td>
+<td>URI of the input delimited  XML files. If not present <code>inputView</code> is requred.</td>
 </tr>
 
 <tr>

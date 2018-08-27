@@ -12,6 +12,21 @@ type: blog
 - Do not [transform/mutate](../transform) the data.
 - Allow for [Predicate Pushdown](http://www.dbms2.com/2014/07/15/the-point-of-predicate-pushdown/) depending on data source.
 
+File based `*Extract` stages can accept `glob` patterns as input filenames:
+
+| Pattern | Description |
+|---------|-------------|
+|`*`|Matches zero or more characters.|
+|`?`|Matches any single character.|
+|`[abc]`|Matches a single character in the set `{a, b, c}`.|
+|`[a-b]`|Matches a single character from the character range `{a...b}`.|
+|`[^a-b]`|Matches a single character that is not from character set or range `{a...b}`.|
+|`{a,b}`|Matches either expression `a` or `b`.|
+|`\c`|Removes (escapes) any special meaning of character `c`.|
+|`{ab,c{de, fg}}`|Matches a string from the string set `{ab, cde, cfg}`.|
+
+Spark will automatically match file extensions of `.zip`, `.bz2"`, `.deflate` and `.gz` and perform decompression automatically.
+
 ## AvroExtract
 ##### Since: 1.0.0
 
@@ -217,7 +232,7 @@ The `JSONExtract` stage reads either one or more JSON files or an input `Dataset
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|false*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
-|inputURI|URI|false*|URI of the input delimited text files. If not present `inputView` is requred.|
+|inputURI|URI|false*|URI of the input `json` files. If not present `inputView` is requred.|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -378,7 +393,7 @@ The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.ap
 ## XMLExtract
 ##### Since: 1.0.0
 
-The `XMLExtract` stage reads one or more XML files and returns a `DataFrame`. 
+The `XMLExtract` stage reads one or more XML files or an input `Dataset[String]` and returns a `DataFrame`. 
 
 ### Parameters
 
@@ -386,7 +401,8 @@ The `XMLExtract` stage reads one or more XML files and returns a `DataFrame`.
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputURI|URI|true|URI of the input XML files.|
+|inputView|String|false*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
+|inputURI|URI|false*|URI of the input delimited  XML files. If not present `inputView` is requred.|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|

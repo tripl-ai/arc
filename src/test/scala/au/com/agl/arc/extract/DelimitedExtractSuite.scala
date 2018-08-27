@@ -21,6 +21,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   // currently assuming local file system
   var session: SparkSession = _  
   val targetFile = FileUtils.getTempDirectoryPath() + "extract.csv" 
+  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.csv" 
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.csv" 
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.csv.gz" 
   val outputView = "dataset"
@@ -66,7 +67,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=cols.right.getOrElse(Nil),
         outputView=outputView,
-        input=Right(new URI(targetFile)),
+        input=Right(targetFileGlob),
         settings=new Delimited(header=true, sep=Delimiter.Comma),
         authentication=None,
         params=Map.empty,
@@ -114,7 +115,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=Right(new URI(targetFile)),
+        input=Right(targetFile),
         settings=new Delimited(),
         authentication=None,
         params=Map.empty,
@@ -132,7 +133,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=Right(new URI(targetFile)),
+        input=Right(targetFile),
         settings=new Delimited(header=true, sep=Delimiter.Comma),
         authentication=None,
         params=Map.empty,
@@ -171,7 +172,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           cols=Nil,
           outputView=outputView,
-          input=Right(new URI(emptyWildcardDirectory)),
+          input=Right(emptyWildcardDirectory),
           settings=new Delimited(),
           authentication=None,
           params=Map.empty,
@@ -191,7 +192,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           cols=Nil,
           outputView=outputView,
-          input=Right(new URI(emptyDirectory)),
+          input=Right(emptyDirectory),
           settings=new Delimited(),
           authentication=None,
           params=Map.empty,
@@ -210,7 +211,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=cols,
         outputView=outputView,
-        input=Right(new URI(emptyDirectory)),
+        input=Right(emptyDirectory),
         settings=new Delimited(),
         authentication=None,
         params=Map.empty,
@@ -246,7 +247,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=Right(new URI(targetFile)),
+        input=Right(targetFile),
         settings=new Delimited(header=true, sep=Delimiter.Pipe, inferSchema=false),
         authentication=None,
         params=Map.empty,
@@ -275,7 +276,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=Right(new URI(targetFile)),
+        input=Right(targetFile),
         settings=new Delimited(header=false, sep=Delimiter.Comma, inferSchema=false),
         authentication=None,
         params=Map.empty,
@@ -303,7 +304,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         cols=Nil,
         outputView=outputView,
-        input=Right(new URI(targetFile)),
+        input=Right(targetFile),
         settings=new Delimited(header=true, sep=Delimiter.Comma, inferSchema=true),
         authentication=None,
         params=Map.empty,

@@ -23,7 +23,7 @@ object AvroExtract {
     val contiguousIndex = extract.contiguousIndex.getOrElse(true)
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
-    stageDetail.put("input", extract.input.toString)  
+    stageDetail.put("input", extract.input)  
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
     stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
@@ -37,7 +37,7 @@ object AvroExtract {
 
     // if incoming dataset is empty create empty dataset with a known schema
     val df = try {
-        spark.read.format("com.databricks.spark.avro").load(extract.input.toString)
+        spark.read.format("com.databricks.spark.avro").load(extract.input)
     } catch {
         case e: FileNotFoundException => 
           spark.emptyDataFrame

@@ -23,7 +23,7 @@ object JSONExtract {
     val contiguousIndex = extract.contiguousIndex.getOrElse(true)
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
-    stageDetail.put("input", extract.input.toString)  
+    stageDetail.put("input", extract.input)  
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
     stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
@@ -31,7 +31,7 @@ object JSONExtract {
     val options: Map[String, String] = JSON.toSparkOptions(extract.settings)
 
     val inputValue = extract.input match {
-      case Right(uri) => uri.toString
+      case Right(glob) => glob
       case Left(view) => view
     }
 
@@ -45,7 +45,7 @@ object JSONExtract {
 
     val df = try {
       extract.input match {
-        case Right(uri) =>
+        case Right(glob) =>
           CloudUtils.setHadoopConfiguration(extract.authentication)
           // spark does not cope well reading many small files into json directly from hadoop file systems
           // by reading first as text time drops by ~75%
@@ -60,7 +60,7 @@ object JSONExtract {
               spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)              
 
               // read the file but do not cache. caching will break the input_file_name() function
-              val textFile = spark.sparkContext.textFile(uri.toString)
+              val textFile = spark.sparkContext.textFile(glob)
 
               val json = extract.cols match {
                 case Nil => spark.read.options(options).json(textFile.toDS)
@@ -80,7 +80,7 @@ object JSONExtract {
               json
             } else {
               // read the file but do not cache. caching will break the input_file_name() function              
-              val textFile = spark.sparkContext.textFile(uri.toString)
+              val textFile = spark.sparkContext.textFile(glob)
 
               val json = extract.cols match {
                 case Nil => spark.read.options(options).json(textFile.toDS)
