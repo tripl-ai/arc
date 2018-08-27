@@ -47,10 +47,10 @@ object TestDataUtils {
             if (expectedExceptActualCount != 0 || actialExceptExpectedCount != 0) {
                 println("EXPECTED")
                 println(expected.schema)
-                expectedHashDF.select(col("_data"), col("_hash")).show(false)
+                expected.show(false)
                 println("ACTUAL")
                 println(actual.schema)
-                actualHashDF.select(col("_data"), col("_hash")).show(false)
+                actual.show(false)
                 false
             } else {
                 true

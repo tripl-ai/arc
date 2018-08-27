@@ -9,6 +9,8 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.storage.StorageLevel
 
+import com.databricks.spark.xml._
+
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util._
@@ -27,10 +29,6 @@ object XMLExtract {
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
     stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
 
-    val options = ConfigUtils.paramsToOptions(extract.params, "rowTag" :: Nil)
-
-    stageDetail.put("options", options.asJava)
-
     logger.info()
       .field("event", "enter")
       .map("stage", stageDetail)      
@@ -39,15 +37,30 @@ object XMLExtract {
     // the xml reader does not yet support loading from a string dataset
     CloudUtils.setHadoopConfiguration(extract.authentication)
     val df = try {
-      extract.cols match {
-        case Nil => spark.read.format("com.databricks.spark.xml").options(options).load(extract.input.toString) 
-        case cols => { 
-          val schema = Extract.toStructType(cols)
-          spark.read.format("com.databricks.spark.xml").options(options).schema(schema).load(extract.input.toString) 
-        }                
-      }      
+
+      // remove the crlf delimiter so it is read as a full object per file
+      val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
+      val newDelimiter = s"${0x0 : Char}"
+      // temporarily remove the delimiter so all the data is loaded as a single line
+      spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)              
+
+      // read the file but do not cache. caching will break the input_file_name() function
+      val textFile = spark.sparkContext.textFile(extract.input.toString)
+
+      val xmlReader = new XmlReader
+      val xml = xmlReader.xmlRdd(spark.sqlContext, textFile)
+
+      // reset delimiter
+      if (oldDelimiter == null) {
+        spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")              
+      } else {
+        spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)        
+      }
+
+      xml      
+  
     } catch {
-      case e: org.apache.hadoop.mapreduce.lib.input.InvalidInputException if (e.getMessage.contains("matches 0 files")) => {
+      case e: org.apache.hadoop.mapred.InvalidInputException if (e.getMessage.contains("matches 0 files")) => {
         spark.emptyDataFrame
       }         
       case e: Exception => throw new Exception(e) with DetailException {
@@ -65,7 +78,15 @@ object XMLExtract {
       }
       spark.createDataFrame(spark.sparkContext.emptyRDD[Row], schema)
     } else {
-      df
+      // try to explode the rows returned by the XML reader
+      if (df.schema.length == 1) {
+        df.schema.fields(0).dataType.typeName match {
+          case "array" => df.select(explode(col(df.schema.fieldNames(0)))).select("col.*")
+          case _ => df.select(s"${df.schema.fieldNames(0)}.*")
+        }
+      } else {
+        df
+      }
     }
 
     // add source data including index

@@ -23,6 +23,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
   val targetFile = FileUtils.getTempDirectoryPath() + "extract.xml" 
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.xml" 
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.xml.gz" 
+  val zipSingleRecord = getClass.getResource("/note.xml.zip").toString
+  val zipMultipleRecord =  getClass.getResource("/notes.xml.zip").toString
   val outputView = "dataset"
 
   before {
@@ -35,13 +37,14 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("ERROR")
 
     session = spark
+    spark.sparkContext.hadoopConfiguration.set("io.compression.codecs", classOf[au.com.agl.arc.util.ZipCodec].getName)
 
     // recreate test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile)) 
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory)) 
     FileUtils.forceMkdir(new java.io.File(emptyDirectory))
     // XML will silently drop NullType on write
-    TestDataUtils.getKnownDataset.write.format("com.databricks.spark.xml").save(targetFile)
+    TestDataUtils.getKnownDataset.write.option("rowTag", "testRow").format("com.databricks.spark.xml").save(targetFile)
   }
 
   after {
@@ -78,10 +81,12 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     // test that the filename is correctly populated
     assert(extractDataset.filter($"_filename".contains(targetFile)).count != 0)    
 
+    val expected = TestDataUtils.getKnownDataset
+      .withColumn("decimalDatum", col("decimalDatum").cast("double"))
+      .drop($"nullDatum")
+  
     val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
     val actual = extractDataset.drop(internal:_*)
-
-    val expected = TestDataUtils.getKnownDataset.drop($"nullDatum")
 
     assert(TestDataUtils.datasetEquality(expected, actual))
 
@@ -203,49 +208,25 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val actual = extractDataset.drop(internal:_*)
-
     val expected = TestDataUtils.getKnownDataset.select($"booleanDatum").limit(0)
+
+    val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = extractDataset.drop(internal:_*)    
 
     assert(TestDataUtils.datasetEquality(expected, actual))
   }  
 
-  test("XMLExtract: Input Schema") {
+  test("XMLExtract: .zip single record") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
-    val cols = 
-      BooleanColumn(
-        id="1",
-        name="booleanDatum",
-        description=None,
-        nullable=true,
-        nullReplacementValue=None,
-        trim=false,
-        nullableValues=Nil, 
-        trueValues=Nil, 
-        falseValues=Nil,
-        metadata=None        
-      ) :: 
-      IntegerColumn(
-        id="2",
-        name="integerDatum",
-        description=None,
-        nullable=true,
-        nullReplacementValue=None,
-        trim=false,
-        nullableValues=Nil,
-        metadata=None        
-      ) :: Nil
-
     val extractDataset = extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
-        cols=cols,
+        cols=Nil,
         outputView=outputView,
-        input=new URI(targetFile),
+        input=new URI(zipSingleRecord),
         authentication=None,
         params=Map.empty,
         persist=false,
@@ -255,10 +236,36 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val actual = extractDataset.drop(internal:_*)
-    val expected = TestDataUtils.getKnownDataset.select($"booleanDatum", $"integerDatum")
-
-    assert(TestDataUtils.datasetEquality(expected, actual))
+    // test that the filename is correctly populated
+    assert(extractDataset.filter($"_filename".contains(zipSingleRecord)).count != 0)    
+    assert(extractDataset.schema.fieldNames.contains("body"))
   }  
+
+  test("XMLExtract: .zip multiple record") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val extractDataset = extract.XMLExtract.extract(
+      XMLExtract(
+        name=outputView,
+        cols=Nil,
+        outputView=outputView,
+        input=new URI(zipMultipleRecord),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=None
+      )
+    ).get
+
+    // test that the filename is correctly populated
+    assert(extractDataset.filter($"_filename".contains(zipMultipleRecord)).count != 0)    
+    assert(extractDataset.schema.fieldNames.contains("body"))
+    assert(extractDataset.count == 2)
+
+  } 
+
 }

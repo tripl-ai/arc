@@ -393,7 +393,6 @@ The `XMLExtract` stage reads one or more XML files and returns a `DataFrame`.
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|rowTag|String|true|{{< readfile file="/content/partials/fields/rowTag.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
@@ -407,7 +406,6 @@ The `XMLExtract` stage reads one or more XML files and returns a `DataFrame`.
     "inputURI": "hdfs://input_data/customer/*.xml",
     "outputView": "customer",            
     "persist": false,
-    "rowTag": "customer",
     "authentication": {
         ...
     },    

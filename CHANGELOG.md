@@ -8,6 +8,8 @@
 - added the `HTTPTransform` stage - a stage which calls an external API and adds result to Dataframe.
 - added support for Google Cloud Storage - prefix: `gs://`
 - added support for Azure Data Lake Storage - prefix: `adl://`
+- added `partitionColumn` to `JDBCExtract` to support parallel extract.
+- changed `XMLExtract` to be able to support reading `.zip` files.
 
 # 1.0.8
 
