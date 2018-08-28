@@ -7,4 +7,4 @@ RUN apt-get update && apt-get install -y curl libcurl4 gnupg apt-utils \
 
 COPY models /models
 
-ENTRYPOINT ["tensorflow_model_server", "--port=9000", "--model_name=simple", "--model_base_path=/models/simple_model"]
+ENTRYPOINT ["tensorflow_model_server", "--port=9000", "--rest_api_port=9001", "--model_name=simple", "--model_base_path=/models/simple_model"]

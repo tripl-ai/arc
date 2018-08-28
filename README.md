@@ -175,7 +175,7 @@ sbt test
 To run integration tests:
 
 ```bash
-docker-compose -f src/it/resources/docker-compose.yml up -d
+docker-compose -f src/it/resources/docker-compose.yml up --build -d
 sbt it:test
 docker-compose -f src/it/resources/docker-compose.yml down
 ```
