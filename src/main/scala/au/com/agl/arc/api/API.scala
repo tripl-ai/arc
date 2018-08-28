@@ -174,6 +174,8 @@ object API {
 
   case class XMLExtract(name: String, cols: List[ExtractColumn], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Option[Boolean]) extends Extract { val getType = "XMLExtract" }
 
+  case class BytesExtract(name: String, outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Option[Boolean]) extends Extract { val getType = "BytesExtract" }
+
 
 
   sealed trait Transform extends PipelineStage
