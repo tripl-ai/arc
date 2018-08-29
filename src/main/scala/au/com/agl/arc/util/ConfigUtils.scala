@@ -556,13 +556,16 @@ object ConfigUtils {
         case None => Right(None)
       }
     )
-    val extractColumns = getExtractColumns(parsedURI, uriKey, authentication)    
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    (name, extractColumns, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
-      case (Right(n), Right(ec), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
-        Right(AvroExtract(n, ec, ov, pg, auth, params, p, np, partitionBy, ci))
+    (name, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
+      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
+        val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
+
+        Right(AvroExtract(n, schema, ov, pg, auth, params, p, np, partitionBy, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
@@ -596,7 +599,8 @@ object ConfigUtils {
         case None => Right(None)
       }
     )
-    val extractColumns = getExtractColumns(parsedURI, uriKey, authentication)
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
     // @TODO: FiX delimited OPTIONS
     val delimited = Delimited()
@@ -615,8 +619,8 @@ object ConfigUtils {
       }
     } else delimited.quote
 
-    (name, input, parsedGlob, extractColumns, outputView, persist, numPartitions, header, authentication, contiguousIndex) match {
-      case (Right(n), Right(in), Right(pg), Right(cols), Right(ov), Right(p), Right(np), Right(head), Right(auth), Right(ci)) => 
+    (name, input, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, header, authentication, contiguousIndex) match {
+      case (Right(n), Right(in), Right(pg), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(head), Right(auth), Right(ci)) => 
 
         val header = head match {
           case Some(value) => value
@@ -624,7 +628,8 @@ object ConfigUtils {
         }
 
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
-        val extract = DelimitedExtract(n, cols, ov, input, Delimited(header=header, sep=delimiter, quote=quote), auth, params, p, np, partitionBy, ci)
+        val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
+        val extract = DelimitedExtract(n, schema, ov, input, Delimited(header=header, sep=delimiter, quote=quote), auth, params, p, np, partitionBy, ci)
         Right(extract)
       case _ =>
         val allErrors: Errors = List(name, input, parsedGlob, extractColumns, outputView, persist, numPartitions, header, authentication, contiguousIndex).collect{ case Left(errs) => errs }.flatten
@@ -677,6 +682,7 @@ object ConfigUtils {
     val customSchema = getOptionalValue[String]("customSchema")
     val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
     val partitionColumn = getOptionalValue[String]("partitionColumn")
+    val predicates = if (c.hasPath("predicates")) c.getStringList("predicates").asScala.toList else Nil
 
     val authentication = readAuthentication("authentication")
     val uriKey = "schemaURI"
@@ -687,13 +693,15 @@ object ConfigUtils {
         case None => Right(None)
       }
     )
-    val extractColumns = getExtractColumns(parsedURI, uriKey, authentication)  
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    (name, extractColumns, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, partitionColumn) match {
-      case (Right(n), Right(ec), Right(ov), Right(p), Right(ju), Right(d), Right(tn), Right(np), Right(fs), Right(cs), Right(pc)) => 
-        Right(JDBCExtract(n, ec, ov, ju, tn, np, fs, cs, d, pc, params, p, partitionBy))
+    (name, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, partitionColumn) match {
+      case (Right(n), Right(cols), Right(sv), Right(ov), Right(p), Right(ju), Right(d), Right(tn), Right(np), Right(fs), Right(cs), Right(pc)) => 
+        val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
+        Right(JDBCExtract(n, schema, ov, ju, tn, np, fs, cs, d, pc, params, p, partitionBy, predicates))
       case _ =>
-        val allErrors: Errors = List(name, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, extractColumns, partitionColumn).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, outputView, schemaView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, extractColumns, partitionColumn).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
@@ -726,21 +734,23 @@ object ConfigUtils {
         case None => Right(None)
       }
     )
-    val extractColumns = getExtractColumns(parsedURI, uriKey, authentication)      
 
-    (name, extractColumns, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex) match {
-      case (Right(n), Right(ec), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci)) => 
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
+
+    (name, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex) match {
+      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci)) => 
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
+        val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
         val json = JSON()
         val multiLine = ml match {
           case Some(b: Boolean) => b
           case _ => json.multiLine
         }
-        val extract = JSONExtract(n, ec, ov, input, JSON(multiLine=multiLine), auth, params, p, np, partitionBy, ci)
-        Right(extract)
+        Right(JSONExtract(n, schema, ov, input, JSON(multiLine=multiLine), auth, params, p, np, partitionBy, ci))
       case _ =>
-        val allErrors: Errors = List(name, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, input, schemaView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
@@ -794,13 +804,15 @@ object ConfigUtils {
         case None => Right(None)
       }
     )
-    val extractColumns = getExtractColumns(parsedURI, uriKey, authentication)  
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    (name, extractColumns, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
-      case (Right(n), Right(ec), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
-        Right(ORCExtract(n, ec, ov, pg, auth, params, p, np, partitionBy, ci))
+    (name, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
+      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
+        val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
+        Right(ORCExtract(n, schema, ov, pg, auth, params, p, np, partitionBy, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
@@ -827,13 +839,15 @@ object ConfigUtils {
         case None => Right(None)
       }
     )
-    val extractColumns = getExtractColumns(parsedURI, uriKey, authentication)      
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")  
 
-    (name, extractColumns, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
-      case (Right(n), Right(ec), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
-        Right(ParquetExtract(n, ec, ov, pg, auth, params, p, np, partitionBy, ci))
+    (name, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
+      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
+        val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
+        Right(ParquetExtract(n, schema, ov, pg, auth, params, p, np, partitionBy, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
@@ -865,15 +879,17 @@ object ConfigUtils {
         case None => Right(None)
       }
     )
-    val extractColumns = getExtractColumns(parsedURI, uriKey, authentication)       
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")  
 
-    (name, extractColumns, input, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
-      case (Right(n), Right(ec), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
+    (name, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
+      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
+        val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
-        Right(XMLExtract(n, ec, ov, input, auth, params, p, np, partitionBy, ci))
+        Right(XMLExtract(n, schema, ov, input, auth, params, p, np, partitionBy, ci))
       case _ =>
-        val allErrors: Errors = List(name, input, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, input, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
@@ -1093,17 +1109,20 @@ object ConfigUtils {
     val parsedURI = inputURI.rightFlatMap(uri => parseURI(uriKey, uri)).rightFlatMap(uri => Right(Option(uri)))
     val authentication = readAuthentication("authentication")  
 
-    val extractColumns = getExtractColumns(parsedURI, uriKey, authentication)
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
 
-    (name, extractColumns, inputView, outputView, persist) match {
-      case (Right(n), Right(cols), Right(iv), Right(ov), Right(p)) => 
-        Right(TypingTransform(n, cols, iv, ov, params, p))
+    (name, extractColumns, schemaView, inputView, outputView, persist) match {
+      case (Right(n), Right(cols), Right(sv), Right(iv), Right(ov), Right(p)) => 
+        val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
+
+        Right(TypingTransform(n, schema, iv, ov, params, p))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, parsedURI, extractColumns, inputView, outputView, persist, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, parsedURI, extractColumns, schemaView, inputView, outputView, persist, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)

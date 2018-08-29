@@ -17,7 +17,6 @@ object TypingTransform {
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
     stageDetail.put("outputView", transform.outputView)   
-    stageDetail.put("columns", transform.cols.map(_.name).asJava)
     stageDetail.put("persist", Boolean.valueOf(transform.persist))
 
     logger.info()
@@ -25,25 +24,45 @@ object TypingTransform {
       .map("stage", stageDetail)      
       .log()   
  
+    val cols = transform.cols match {
+      case Right(cols) => {
+        cols match {
+          case Nil => throw new Exception(s"""TypingTransform requires an input schema to define how to transform data but the provided schema has 0 columns.""") with DetailException {
+            override val detail = stageDetail          
+          } 
+          case c => c
+        }
+      }
+      case Left(view) => {
+        val parseResult: au.com.agl.arc.util.MetadataSchema.ParseResult = au.com.agl.arc.util.MetadataSchema.parseDataFrameMetadata(spark.table(view))
+        parseResult match {
+          case Right(cols) => cols
+          case Left(errors) => throw new Exception(s"""Schema view '${view}' to cannot be parsed as it has errors: ${errors.mkString(", ")}.""") with DetailException {
+            override val detail = stageDetail          
+          }  
+        }
+      }
+    }
+    stageDetail.put("columns", cols.map(_.name).asJava)
 
     val df = spark.table(transform.inputView)
 
     // get schema length filtering out any internal fields
-    val schemaLength = df.schema.filter(row => { 
+    val inputColumnCount = df.schema.filter(row => { 
       !row.metadata.contains("internal") || (row.metadata.contains("internal") && row.metadata.getBoolean("internal") == false) 
     }).length
 
-    if (schemaLength != transform.cols.length) {
-      stageDetail.put("columnCount", Integer.valueOf(transform.cols.length))
-      stageDetail.put("schemaLength", Integer.valueOf(schemaLength))
+    if (inputColumnCount != cols.length) {
+      stageDetail.put("schemaColumnCount", Integer.valueOf(cols.length))
+      stageDetail.put("inputColumnCount", Integer.valueOf(inputColumnCount))
 
-      throw new Exception(s"TypingTransform can only be performed on tables with the same number of columns, but the schema has ${transform.cols.length} columns and the data table has ${schemaLength} columns.") with DetailException {
+      throw new Exception(s"TypingTransform can only be performed on tables with the same number of columns, but the schema has ${cols.length} columns and the data table has ${inputColumnCount} columns.") with DetailException {
         override val detail = stageDetail          
       }    
     }
 
     val transformedDF = try {
-      Typing.typeDataFrame(df, transform)
+      Typing.typeDataFrame(df, cols)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          

@@ -68,7 +68,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
-        cols=cols.right.getOrElse(Nil),
+        cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=Right(targetFileGlob),
         authentication=None,
@@ -106,7 +106,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
-        cols=Nil,
+        cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         authentication=None,
@@ -123,7 +123,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
-        cols=Nil,
+        cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         authentication=None,
@@ -161,7 +161,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.XMLExtract.extract(
         XMLExtract(
           name=outputView,
-          cols=Nil,
+          cols=Right(Nil),
           outputView=outputView,
           input=Right(emptyWildcardDirectory),
           authentication=None,
@@ -173,14 +173,14 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown0.getMessage === "XMLExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown0.getMessage === "Extract has produced 0 columns and no schema has been provided to create an empty dataframe.")
     
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
       val extractDataset = extract.XMLExtract.extract(
         XMLExtract(
           name=outputView,
-          cols=Nil,
+          cols=Right(Nil),
           outputView=outputView,
           input=Right(emptyDirectory),
           authentication=None,
@@ -192,13 +192,13 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown1.getMessage === "XMLExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown1.getMessage === "Extract has produced 0 columns and no schema has been provided to create an empty dataframe.")
     
     // try with column
     val extractDataset = extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
-        cols=cols,
+        cols=Right(cols),
         outputView=outputView,
         input=Right(emptyDirectory),
         authentication=None,
@@ -226,7 +226,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
-        cols=Nil,
+        cols=Right(Nil),
         outputView=outputView,
         input=Right(zipSingleRecord),
         authentication=None,
@@ -251,7 +251,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
-        cols=Nil,
+        cols=Right(Nil),
         outputView=outputView,
         input=Right(zipMultipleRecord),
         authentication=None,
@@ -284,7 +284,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
-        cols=Nil,
+        cols=Right(Nil),
         outputView=outputView,
         input=Left(inputView),
         authentication=None,

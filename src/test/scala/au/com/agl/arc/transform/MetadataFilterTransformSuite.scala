@@ -67,7 +67,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     transform.TypingTransform.transform(
       TypingTransform(
         name="TypingTransform",
-        cols=cols.right.getOrElse(null), 
+        cols=Right(cols.right.getOrElse(null)), 
         inputView=inputView,
         outputView=outputView, 
         params=Map.empty,
@@ -109,7 +109,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     transform.TypingTransform.transform(
       TypingTransform(
         name="TypingTransform",
-        cols=cols.right.getOrElse(null), 
+        cols=Right(cols.right.getOrElse(null)), 
         inputView=inputView,
         outputView=outputView, 
         params=Map.empty,

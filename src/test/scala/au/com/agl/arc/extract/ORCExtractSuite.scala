@@ -65,7 +65,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.ORCExtract.extract(
       ORCExtract(
         name=outputView,
-        cols=cols.right.getOrElse(Nil),
+        cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=targetFileGlob,
         authentication=None,
@@ -100,7 +100,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ORCExtract.extract(
       ORCExtract(
         name=outputView,
-        cols=Nil,
+        cols=Right(Nil),
         outputView=outputView,
         input=targetFile,
         authentication=None,
@@ -118,7 +118,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ORCExtract.extract(
       ORCExtract(
         name=outputView,
-        cols=Nil,
+        cols=Right(Nil),
         outputView=outputView,
         input=targetFile,
         authentication=None,
@@ -156,7 +156,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.ORCExtract.extract(
         ORCExtract(
           name=outputView,
-          cols=Nil,
+          cols=Right(Nil),
           outputView=outputView,
           input=emptyWildcardDirectory,
           authentication=None,
@@ -168,14 +168,14 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown0.getMessage === "ORCExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown0.getMessage === "Extract has produced 0 columns and no schema has been provided to create an empty dataframe.")
     
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
       val extractDataset = extract.ORCExtract.extract(
         ORCExtract(
           name=outputView,
-          cols=Nil,
+          cols=Right(Nil),
           outputView=outputView,
           input=emptyDirectory,
           authentication=None,
@@ -187,13 +187,13 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown1.getMessage === "ORCExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown1.getMessage === "Extract has produced 0 columns and no schema has been provided to create an empty dataframe.")
     
     // try with column
     val extractDataset = extract.ORCExtract.extract(
       ORCExtract(
         name=outputView,
-        cols=cols,
+        cols=Right(cols),
         outputView=outputView,
         input=emptyDirectory,
         authentication=None,

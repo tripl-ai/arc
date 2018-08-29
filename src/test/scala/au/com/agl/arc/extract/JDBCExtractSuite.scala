@@ -76,7 +76,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val result = extract.JDBCExtract.extract(
       JDBCExtract(
         name=outputView, 
-        cols=cols.right.getOrElse(Nil),
+        cols=Right(cols.right.getOrElse(Nil)),
         outputView=dbtable, 
         jdbcURL=url,
         driver=DriverManager.getDriver(url),
@@ -86,6 +86,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         fetchsize=None, 
         customSchema=None,
         partitionColumn=None,
+        predicates=Nil,
         params=Map.empty, 
         persist=false
       )
@@ -109,7 +110,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val result = extract.JDBCExtract.extract(
       JDBCExtract(
         name=outputView, 
-        cols=Nil,
+        cols=Right(Nil),
         outputView=dbtable, 
         jdbcURL=url, 
         driver=DriverManager.getDriver(url),
@@ -119,6 +120,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         fetchsize=None, 
         customSchema=None,
         partitionColumn=None,
+        predicates=Nil,
         params=Map.empty, 
         persist=false
       )
@@ -138,7 +140,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val result = extract.JDBCExtract.extract(
       JDBCExtract(
         name=outputView, 
-        cols=Nil,
+        cols=Right(Nil),
         outputView=dbtable, 
         jdbcURL=url, 
         driver=DriverManager.getDriver(url),
@@ -148,6 +150,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         fetchsize=None, 
         customSchema=None,
         partitionColumn=None,
+        predicates=Nil,
         params=Map.empty, 
         persist=false
       )

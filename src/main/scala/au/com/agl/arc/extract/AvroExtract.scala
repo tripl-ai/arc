@@ -33,11 +33,21 @@ object AvroExtract {
       .map("stage", stageDetail)      
       .log()
 
+
+    // try to get the schema
+    val optionSchema = try {
+      ExtractUtils.GetSchema(extract.cols)(spark)
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }      
+    }        
+
     CloudUtils.setHadoopConfiguration(extract.authentication)
 
     // if incoming dataset is empty create empty dataset with a known schema
     val df = try {
-        spark.read.format("com.databricks.spark.avro").load(extract.input)
+      spark.read.format("com.databricks.spark.avro").load(extract.input)
     } catch {
         case e: FileNotFoundException => 
           spark.emptyDataFrame
@@ -46,31 +56,26 @@ object AvroExtract {
         case e: Exception => throw new Exception(e) with DetailException {
           override val detail = stageDetail          
         }
-            
-    }    
-
-    // if incoming dataset has 0 columns then create empty dataset with correct schema
-    val emptyDataframeHandlerDF = if (df.schema.length == 0) {
-      val schema = extract.cols match {
-        case Nil => throw new Exception(s"AvroExtract has produced 0 columns and no schema has been provided to create an empty dataframe.") with DetailException {
-          override val detail = stageDetail          
-        }
-        case cols => Extract.toStructType(cols)
-      }
-      spark.createDataFrame(spark.sparkContext.emptyRDD[Row], schema)
-    } else {
-      df
-    }     
-
-    // add source data including index
-    val sourceEnrichedDF = ExtractUtils.addSourceMetadata(emptyDataframeHandlerDF, contiguousIndex)
-
-    // set column metadata if exists
-    val enrichedDF = extract.cols match {
-      case Nil => sourceEnrichedDF
-      case cols => MetadataUtils.setMetadata(sourceEnrichedDF, Extract.toStructType(cols))
     }
 
+    // if incoming dataset has 0 columns then create empty dataset with correct schema
+    val emptyDataframeHandlerDF = try {
+      ExtractUtils.EmptyDataFrameHandler(df, optionSchema)(spark)
+    } catch {
+      case e: Exception => throw new Exception(e.getMessage) with DetailException {
+        override val detail = stageDetail          
+      }      
+    }    
+
+    // add internal columns data _filename, _index
+    val sourceEnrichedDF = ExtractUtils.AddInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
+
+    // set column metadata if exists
+    val enrichedDF = optionSchema match {
+        case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
+        case None => sourceEnrichedDF   
+    }
+  
     // repartition to distribute rows evenly
     val repartitionedDF = extract.partitionBy match {
       case Nil => { 

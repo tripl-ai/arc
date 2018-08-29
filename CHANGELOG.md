@@ -9,8 +9,10 @@
 - added support for Google Cloud Storage - prefix: `gs://`
 - added support for Azure Data Lake Storage - prefix: `adl://`
 - added `partitionColumn` to `JDBCExtract` to support parallel extract.
+- added `predicates` to `JDBCExtract` to allow manual partition definitions.
 - changed `XMLExtract` to be able to support reading `.zip` files.
 - changed `*Extract` to allow input `glob` patterns not just simple `URI`.
+- changed `*Extract` to support the schema to be provided as `schemaView`.
 
 # 1.0.8
 

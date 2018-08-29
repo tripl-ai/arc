@@ -7,16 +7,22 @@ import scala.collection.JavaConverters._
 import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.node._
 
+import org.apache.spark.sql._
+
 import au.com.agl.arc.api.API._
 
 object MetadataSchema {
 
   type ParseResult = Either[List[String], List[ExtractColumn]]
 
-  def parseJsonMetadata(sourceJson: String): ParseResult = {
+  def parseDataFrameMetadata(source: DataFrame): ParseResult = {  
+    parseJsonMetadata(s"""[${source.toJSON.collect.mkString(",")}]""")
+  }
+
+  def parseJsonMetadata(source: String): ParseResult = {
 
     val objectMapper = new ObjectMapper()
-    val rootNode = objectMapper.readTree(sourceJson)
+    val rootNode = objectMapper.readTree(source)
 
     val res: ParseResult = if (!rootNode.isArray) {
       Left("Expected Json Array" :: Nil)
@@ -45,18 +51,22 @@ object MetadataSchema {
           }
 
           val metadata: Either[String, Option[String]] = if( n.has("metadata") ) {
-            val valid = validateMetadata(name, n.get("metadata"))
+            val metadata = n.get("metadata")
+            // deal with embedded strings from sources like JDBC
+            val parsedMetadata = metadata.getNodeType.toString match {
+              case "STRING" => objectMapper.readTree(metadata.asText)
+              case _ => metadata
+            }
+            val valid = validateMetadata(name, parsedMetadata)
             val isValid = valid.filter(_.isLeft).size == 0
             if (isValid) {
-              Right(Option(objectMapper.writeValueAsString(n.get("metadata"))))
+              Right(Option(objectMapper.writeValueAsString(parsedMetadata)))
             } else {
               Left(valid.collect { case Left(error) => error }.mkString(", "))
             }
           } else {
             Right(None)
           }
-
-          
 
           metadata match {
             case Left(errors) => Left("invalid metadata: " + errors)
@@ -87,7 +97,13 @@ object MetadataSchema {
                   val time = n.has("time") match {
                     case true => {
                       val timeConfig = n.get("time")
-                      Option(LocalTime.of(timeConfig.get("hour").asInt, timeConfig.get("minute").asInt, timeConfig.get("second").asInt, timeConfig.get("nano").asInt))
+                      // deal with embedded strings from sources like JDBC
+                      val parsedTimeConfig = timeConfig.getNodeType.toString match {
+                        case "STRING" => objectMapper.readTree(timeConfig.asText)
+                        case _ => timeConfig
+                      }
+
+                      Option(LocalTime.of(parsedTimeConfig.get("hour").asInt, parsedTimeConfig.get("minute").asInt, parsedTimeConfig.get("second").asInt, parsedTimeConfig.get("nano").asInt))
                     }
                     case false => None
                   }
