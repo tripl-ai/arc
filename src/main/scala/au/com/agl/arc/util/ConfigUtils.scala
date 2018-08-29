@@ -535,6 +535,8 @@ object ConfigUtils {
     }
   }  
 
+
+  // extract
   def readAvroExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
@@ -569,7 +571,28 @@ object ConfigUtils {
     }
   }  
 
-  // extract
+  def readBytesExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
+    import ConfigReader._
+
+    val inputURI = getValue[String]("inputURI")
+    val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val authentication = readAuthentication("authentication")
+    val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
+
+    (name, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
+      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) =>
+        Right(BytesExtract(n, ov, in, auth, params, p, np, ci))
+      case _ =>
+        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err :: Nil)
+    }
+  }  
+
   def readDelimitedExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
@@ -880,27 +903,6 @@ object ConfigUtils {
     }
   }
 
-  def readBytesExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
-    import ConfigReader._
-
-    val inputURI = getValue[String]("inputURI")
-    val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
-    val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist")
-    val numPartitions = getOptionalValue[Int]("numPartitions")
-    val authentication = readAuthentication("authentication")
-    val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
-
-    (name, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
-      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) =>
-        Right(BytesExtract(n, ov, in, auth, params, p, np, ci))
-      case _ =>
-        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
-        val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, allErrors)
-        Left(err :: Nil)
-    }
-  }
 
   // transform
   def readDiffTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
@@ -1604,6 +1606,7 @@ object ConfigUtils {
           _type match {
 
             case Right("AvroExtract") => Option(readAvroExtract(name, params))
+            case Right("BytesExtract") => Option(readBytesExtract(name, params))
             case Right("DelimitedExtract") => Option(readDelimitedExtract(name, params))
             case Right("HTTPExtract") => Option(readHTTPExtract(name, params))
             case Right("JDBCExtract") => Option(readJDBCExtract(name, params))
@@ -1612,7 +1615,6 @@ object ConfigUtils {
             case Right("ORCExtract") => Option(readORCExtract(name, params))
             case Right("ParquetExtract") => Option(readParquetExtract(name, params))
             case Right("XMLExtract") => Option(readXMLExtract(name, params))
-            case Right("BytesExtract") => Option(readBytesExtract(name, params))
 
             case Right("DiffTransform") => Option(readDiffTransform(name, params))
             case Right("HTTPTransform") => Option(readHTTPTransform(name, params))

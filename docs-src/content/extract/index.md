@@ -66,6 +66,44 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 }
 ```
 
+## BytesExtract
+##### Since: 1.0.9
+
+The `BytesExtract` stage reads one or more binary files and returns a `DataFrame` containing the file path (named `path`) and a `Array[Byte]` of the file contents (named `raw_content`). 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|input|URI|true|URI/Glob of the input binary files.|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "BytesExtract",
+    "name": "load images from the customer vehicle photos directory",
+    "environments": ["production", "test"],
+    "input": "hdfs://input_data/customer/vehicles/*.jpg",
+    "outputView": "customer_vehicles_photos",            
+    "persist": false,
+    "numPartitions": 10,
+    "authentication": {
+        ...
+    },    
+    "params": {
+    }
+}
+```
+
 ## DelimitedExtract
 ##### Since: 1.0.0
 
@@ -78,7 +116,7 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|false*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
-|inputURI|URI|false*|URI of the input delimited text files. If not present `inputView` is requred.|
+|inputURI|URI|false*|URI/Glob of the input delimited text files. If not present `inputView` is requred.|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -232,7 +270,7 @@ The `JSONExtract` stage reads either one or more JSON files or an input `Dataset
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|false*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
-|inputURI|URI|false*|URI of the input `json` files. If not present `inputView` is requred.|
+|inputURI|URI|false*|URI/Glob of the input `json` files. If not present `inputView` is requred.|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -323,7 +361,7 @@ The `ORCExtract` stage reads one or more [Apache ORC](https://orc.apache.org/) f
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputURI|URI|true|URI of the input ORC files.|
+|inputURI|URI|true|URI/Glob of the input ORC files.|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -362,7 +400,7 @@ The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.ap
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputURI|URI|true|URI of the input Parquet files.|
+|inputURI|URI|true|URI/Glob of the input Parquet files.|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -402,7 +440,7 @@ The `XMLExtract` stage reads one or more XML files or an input `Dataset[String]`
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|false*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
-|inputURI|URI|false*|URI of the input delimited  XML files. If not present `inputView` is requred.|
+|inputURI|URI|false*|URI/Glob of the input delimited  XML files. If not present `inputView` is requred.|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
