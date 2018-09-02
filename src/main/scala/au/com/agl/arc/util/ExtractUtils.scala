@@ -13,7 +13,7 @@ import au.com.agl.arc.api.API._
 
 object ExtractUtils {
 
-  def GetSchema(schema: Either[String, List[ExtractColumn]])(spark: SparkSession): Option[StructType] = {
+  def getSchema(schema: Either[String, List[ExtractColumn]])(spark: SparkSession): Option[StructType] = {
     schema match {
       case Right(cols) => {
         cols match {
@@ -31,7 +31,7 @@ object ExtractUtils {
     }
   }   
 
-  def EmptyDataFrameHandler(df: DataFrame, schema: Option[StructType])(spark: SparkSession): DataFrame = {
+  def emptyDataFrameHandler(df: DataFrame, schema: Option[StructType])(spark: SparkSession): DataFrame = {
     // if incoming dataset has 0 columns then create empty dataset with correct schema
    if (df.schema.length == 0) {
      schema match {
@@ -43,7 +43,7 @@ object ExtractUtils {
     } 
   }  
 
-  def AddInternalColumns(input: DataFrame, contiguousIndex: Boolean): DataFrame = {
+  def addInternalColumns(input: DataFrame, contiguousIndex: Boolean): DataFrame = {
     // add meta columns including sequential index
     // if schema already has metadata any columns ignore
     if (!input.schema.map(_.name).intersect(List("_index","_monotonically_increasing_id")).nonEmpty) {

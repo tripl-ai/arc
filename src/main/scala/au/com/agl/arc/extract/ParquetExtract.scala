@@ -34,7 +34,7 @@ object ParquetExtract {
 
     // try to get the schema
     val optionSchema = try {
-      ExtractUtils.GetSchema(extract.cols)(spark)
+      ExtractUtils.getSchema(extract.cols)(spark)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          
@@ -56,7 +56,7 @@ object ParquetExtract {
 
     // if incoming dataset has 0 columns then create empty dataset with correct schema
     val emptyDataframeHandlerDF = try {
-      ExtractUtils.EmptyDataFrameHandler(df, optionSchema)(spark)
+      ExtractUtils.emptyDataFrameHandler(df, optionSchema)(spark)
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
         override val detail = stageDetail          
@@ -64,7 +64,7 @@ object ParquetExtract {
     }    
 
     // add internal columns data _filename, _index
-    val sourceEnrichedDF = ExtractUtils.AddInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
+    val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
 
     // set column metadata if exists
     val enrichedDF = optionSchema match {
