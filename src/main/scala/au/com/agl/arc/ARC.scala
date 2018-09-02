@@ -1,5 +1,7 @@
 package au.com.agl.arc
 
+import au.com.agl.arc.udf.UDF
+
 object ARC {
 
   import java.util.UUID
@@ -193,6 +195,7 @@ object ARC {
     val error: Boolean = pipelineConfig match {
       case Right(pipeline) =>
         try {
+          UDF.registerUDFs(spark.sqlContext)
           ARC.run(pipeline)(spark, logger)
           false
         } catch {
@@ -281,6 +284,8 @@ object ARC {
           extract.ParquetExtract.extract(e)
         case e : XMLExtract =>
           extract.XMLExtract.extract(e)
+        case e : BytesExtract =>
+          extract.BytesExtract.extract(e)
           
         case t : DiffTransform =>
           transform.DiffTransform.transform(t)

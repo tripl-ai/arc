@@ -579,13 +579,115 @@
 }
 </code></pre>
 
+<h2 id="bytesextract">BytesExtract</h2>
+
+<h5 id="since-1-0-9">Since: 1.0.9</h5>
+
+<p>The <code>BytesExtract</code> stage reads one or more binary files and returns a <code>DataFrame</code> containing the file path (named <code>path</code>) and a <code>Array[Byte]</code> of the file contents (named <code>raw_content</code>).</p>
+
+<h3 id="parameters-1">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>input</td>
+<td>URI</td>
+<td>true</td>
+<td>URI/Glob of the input binary files.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-1">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;BytesExtract&quot;,
+    &quot;name&quot;: &quot;load images from the customer vehicle photos directory&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;input&quot;: &quot;hdfs://input_data/customer/vehicles/*.jpg&quot;,
+    &quot;outputView&quot;: &quot;customer_vehicles_photos&quot;,            
+    &quot;persist&quot;: false,
+    &quot;numPartitions&quot;: 10,
+    &quot;authentication&quot;: {
+        ...
+    },    
+    &quot;params&quot;: {
+    }
+}
+</code></pre>
+
 <h2 id="delimitedextract">DelimitedExtract</h2>
 
 <h5 id="since-1-0-0-1">Since: 1.0.0</h5>
 
 <p>The <code>DelimitedExtract</code> stage reads either one or more delimited text files or an input <code>Dataset[String]</code> and returns a <code>DataFrame</code>. <code>DelimitedExtract</code> will always set the underlying Spark configuration option of <code>inferSchema</code> to <code>false</code> to ensure consistent results.</p>
 
-<h3 id="parameters-1">Parameters</h3>
+<h3 id="parameters-2">Parameters</h3>
 
 <table>
 <thead>
@@ -623,7 +725,7 @@
 <td>inputURI</td>
 <td>URI</td>
 <td>false*</td>
-<td>URI of the input delimited text files. If not present <code>inputView</code> is requred.</td>
+<td>URI/Glob of the input delimited text files. If not present <code>inputView</code> is requred.</td>
 </tr>
 
 <tr>
@@ -719,7 +821,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-1">Examples</h3>
+<h3 id="examples-2">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;DelimitedExtract&quot;,
@@ -765,7 +867,7 @@
 
 <p>This stage would typically be used with a <code>JSONExtract</code> stage by specifying <code>inputView</code> instead of <code>inputURI</code> (setting <code>multiLine</code>=<code>true</code> allows processing of JSON array responses).</p>
 
-<h3 id="parameters-2">Parameters</h3>
+<h3 id="parameters-3">Parameters</h3>
 
 <table>
 <thead>
@@ -864,7 +966,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-2">Examples</h3>
+<h3 id="examples-3">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;HTTPExtract&quot;,
@@ -890,7 +992,7 @@
 
 <p>The <code>JDBCExtract</code> reads directly from a JDBC Database and returns a <code>DataFrame</code>. See <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases">Spark JDBC documentation</a>.</p>
 
-<h3 id="parameters-3">Parameters</h3>
+<h3 id="parameters-4">Parameters</h3>
 
 <table>
 <thead>
@@ -1024,7 +1126,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-3">Examples</h3>
+<h3 id="examples-4">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;JDBCExtract&quot;,
@@ -1049,7 +1151,7 @@
 
 <p>The <code>JSONExtract</code> stage reads either one or more JSON files or an input <code>Dataset[String]</code> and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-4">Parameters</h3>
+<h3 id="parameters-5">Parameters</h3>
 
 <table>
 <thead>
@@ -1087,7 +1189,7 @@
 <td>inputURI</td>
 <td>URI</td>
 <td>false*</td>
-<td>URI of the input <code>json</code> files. If not present <code>inputView</code> is requred.</td>
+<td>URI/Glob of the input <code>json</code> files. If not present <code>inputView</code> is requred.</td>
 </tr>
 
 <tr>
@@ -1169,7 +1271,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-4">Examples</h3>
+<h3 id="examples-5">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;JSONExtract&quot;,
@@ -1203,7 +1305,7 @@
 
 <p>Can be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour (with <code>autoCommit</code> set to <code>false</code>) - in that the offset commit can be deferred until certain dependent stages are sucessfully executed.</p>
 
-<h3 id="parameters-5">Parameters</h3>
+<h3 id="parameters-6">Parameters</h3>
 
 <table>
 <thead>
@@ -1309,7 +1411,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-5">Examples</h3>
+<h3 id="examples-6">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;KafkaExtract&quot;,
@@ -1332,135 +1434,6 @@
 <h5 id="since-1-0-0-5">Since: 1.0.0</h5>
 
 <p>The <code>ORCExtract</code> stage reads one or more <a href="https://orc.apache.org/">Apache ORC</a> files and returns a <code>DataFrame</code>.</p>
-
-<h3 id="parameters-6">Parameters</h3>
-
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>name</td>
-<td>String</td>
-<td>true</td>
-<td>Name of the stage for logging.</td>
-</tr>
-
-<tr>
-<td>environments</td>
-<td>Array[String]</td>
-<td>true</td>
-<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
-</tr>
-
-<tr>
-<td>inputURI</td>
-<td>URI</td>
-<td>true</td>
-<td>URI of the input ORC files.</td>
-</tr>
-
-<tr>
-<td>schemaURI</td>
-<td>URI</td>
-<td>false</td>
-<td><p>Used for multiple purposes:</p>
-
-<ul>
-<li><p>Can be used to set metadata on a the extracted <code>DataFrame</code>. Note this will overwrite the existing metadata if it exists.</p></li>
-
-<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>DataFrame</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
-</ul>
-</td>
-</tr>
-
-<tr>
-<td>schemaView</td>
-<td>URI</td>
-<td>false</td>
-<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
-</tr>
-
-<tr>
-<td>outputView</td>
-<td>String</td>
-<td>true</td>
-<td>Name of outgoing Spark dataset after processing.</td>
-</tr>
-
-<tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
-<td>false</td>
-<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
-</tr>
-
-<tr>
-<td>partitionBy</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>Columns to partition the data by.</td>
-</tr>
-
-<tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
-</tr>
-
-<tr>
-<td>contiguousIndex</td>
-<td>Boolean</td>
-<td>false</td>
-<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
-</tbody>
-</table>
-
-<h3 id="examples-6">Examples</h3>
-
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;ParquetExtract&quot;,
-    &quot;name&quot;: &quot;load customer orc extract&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://input_data/customer/*.orc&quot;,
-    &quot;outputView&quot;: &quot;customer&quot;,            
-    &quot;persist&quot;: false,
-    &quot;authentication&quot;: {
-        ...
-    },    
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
-
-<h2 id="parquetextract">ParquetExtract</h2>
-
-<h5 id="since-1-0-0-6">Since: 1.0.0</h5>
-
-<p>The <code>ParquetExtract</code> stage reads one or more <a href="https://parquet.apache.org/">Apache Parquet</a> files and returns a <code>DataFrame</code>.</p>
 
 <h3 id="parameters-7">Parameters</h3>
 
@@ -1493,7 +1466,7 @@
 <td>inputURI</td>
 <td>URI</td>
 <td>true</td>
-<td>URI of the input Parquet files.</td>
+<td>URI/Glob of the input ORC files.</td>
 </tr>
 
 <tr>
@@ -1572,6 +1545,135 @@
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;ParquetExtract&quot;,
+    &quot;name&quot;: &quot;load customer orc extract&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputURI&quot;: &quot;hdfs://input_data/customer/*.orc&quot;,
+    &quot;outputView&quot;: &quot;customer&quot;,            
+    &quot;persist&quot;: false,
+    &quot;authentication&quot;: {
+        ...
+    },    
+    &quot;params&quot;: {
+    }
+}
+</code></pre>
+
+<h2 id="parquetextract">ParquetExtract</h2>
+
+<h5 id="since-1-0-0-6">Since: 1.0.0</h5>
+
+<p>The <code>ParquetExtract</code> stage reads one or more <a href="https://parquet.apache.org/">Apache Parquet</a> files and returns a <code>DataFrame</code>.</p>
+
+<h3 id="parameters-8">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI/Glob of the input Parquet files.</td>
+</tr>
+
+<tr>
+<td>schemaURI</td>
+<td>URI</td>
+<td>false</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>DataFrame</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>DataFrame</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td>schemaView</td>
+<td>URI</td>
+<td>false</td>
+<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-8">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;ParquetExtract&quot;,
     &quot;name&quot;: &quot;load customer parquet extract&quot;,
     &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
     &quot;inputURI&quot;: &quot;hdfs://input_data/customer/*.parquet&quot;,
@@ -1591,7 +1693,7 @@
 
 <p>The <code>XMLExtract</code> stage reads one or more XML files or an input <code>Dataset[String]</code> and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-8">Parameters</h3>
+<h3 id="parameters-9">Parameters</h3>
 
 <table>
 <thead>
@@ -1629,7 +1731,7 @@
 <td>inputURI</td>
 <td>URI</td>
 <td>false*</td>
-<td>URI of the input delimited  XML files. If not present <code>inputView</code> is requred.</td>
+<td>URI/Glob of the input delimited  XML files. If not present <code>inputView</code> is requred.</td>
 </tr>
 
 <tr>
@@ -1704,7 +1806,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-8">Examples</h3>
+<h3 id="examples-9">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;XMLExtract&quot;,

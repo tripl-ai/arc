@@ -13,6 +13,7 @@
 - changed `XMLExtract` to be able to support reading `.zip` files.
 - changed `*Extract` to allow input `glob` patterns not just simple `URI`.
 - changed `*Extract` to support the schema to be provided as `schemaView`.
+- added `BytesExtract` to allow `Array[Bytes]` to be read into a dataframe for things like calling external Machine Learning models.
 
 # 1.0.8
 
