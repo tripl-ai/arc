@@ -34,6 +34,14 @@ object XMLExtract {
       .map("stage", stageDetail)      
       .log()    
 
+    // try to get the schema
+    val optionSchema = try {
+      ExtractUtils.getSchema(extract.cols)(spark)
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }      
+    } 
 
     val df = try {
       extract.input match {
@@ -76,33 +84,32 @@ object XMLExtract {
     }
 
     // if incoming dataset has 0 columns then create empty dataset with correct schema
-    val emptyDataframeHandlerDF = if (df.schema.length == 0) {
-      val schema = extract.cols match {
-        case Nil => throw new Exception(s"XMLExtract has produced 0 columns and no schema has been provided to create an empty dataframe.") with DetailException {
-          override val detail = stageDetail          
-        }
-        case cols => Extract.toStructType(cols)
-      }
-      spark.createDataFrame(spark.sparkContext.emptyRDD[Row], schema)
-    } else {
-      // try to explode the rows returned by the XML reader
-      if (df.schema.length == 1) {
-        df.schema.fields(0).dataType.typeName match {
-          case "array" => df.select(explode(col(df.schema.fieldNames(0)))).select("col.*")
-          case _ => df.select(s"${df.schema.fieldNames(0)}.*")
-        }
-      } else {
-        df
-      }
+    val emptyDataframeHandlerDF = try {
+      ExtractUtils.emptyDataFrameHandler(df, optionSchema)(spark)
+    } catch {
+      case e: Exception => throw new Exception(e.getMessage) with DetailException {
+        override val detail = stageDetail          
+      }      
     }
 
-    // add source data including index
-    val sourceEnrichedDF = ExtractUtils.addSourceMetadata(emptyDataframeHandlerDF, contiguousIndex)
+    // try to explode the rows returned by the XML reader
+    val flattenedDF = if (emptyDataframeHandlerDF.schema.length == 1) {
+      emptyDataframeHandlerDF.schema.fields(0).dataType.typeName match {
+        case "array" => emptyDataframeHandlerDF.select(explode(col(emptyDataframeHandlerDF.schema.fieldNames(0)))).select("col.*")
+        case "struct" => emptyDataframeHandlerDF.select(s"${emptyDataframeHandlerDF.schema.fieldNames(0)}.*")
+        case _ => emptyDataframeHandlerDF
+      }
+    } else {
+      emptyDataframeHandlerDF
+    }    
+
+    // add internal columns data _filename, _index
+    val sourceEnrichedDF = ExtractUtils.addInternalColumns(flattenedDF, contiguousIndex)
 
     // set column metadata if exists
-    val enrichedDF = extract.cols match {
-      case Nil => sourceEnrichedDF
-      case cols => MetadataUtils.setMetadata(sourceEnrichedDF, Extract.toStructType(cols))
+    val enrichedDF = optionSchema match {
+        case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
+        case None => sourceEnrichedDF   
     }
          
     // repartition to distribute rows evenly

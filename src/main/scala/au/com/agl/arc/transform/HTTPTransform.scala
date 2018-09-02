@@ -65,7 +65,7 @@ object HTTPTransform {
     }
 
     val typedSchema = StructType(
-      df.schema.fields.toList ::: List(new StructField("statusCode", IntegerType, false), new StructField("reasonPhrase", StringType, false), new StructField("body", StringType, false))
+      df.schema.fields.toList ::: List(new StructField("statusCode", IntegerType, false), new StructField("reasonPhrase", StringType, false), new StructField("contentType", StringType, false), new StructField("body", StringType, false))
     )
 
     /** Create a dynamic RowEncoder from the provided schema. We use the phantom
@@ -115,12 +115,12 @@ object HTTPTransform {
             val response = httpClient.execute(post)
             
             // read and close response
-            val responseEntity = response.getEntity.getContent
-            val body = Source.fromInputStream(responseEntity).mkString.replace("\n", "")
+            val content = response.getEntity.getContent
+            val body = Source.fromInputStream(content).mkString.replace("\n", "")
             response.close 
 
             // cast to a TypedRow to fit the Dataset map method requirements
-            val result = row.toSeq ++ Seq(response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, body)
+            val result = row.toSeq ++ Seq(response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, response.getEntity.getContentType.toString, body)
             Row.fromSeq(result).asInstanceOf[TypedRow]
 
           } finally {

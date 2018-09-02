@@ -1,0 +1,1 @@
+Similaar to `schemaURI` but allows the schema to be passed in as another `DataFrame`. It takes precedence over `schemaURI` if provided.

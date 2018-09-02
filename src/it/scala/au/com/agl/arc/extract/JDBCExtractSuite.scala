@@ -102,7 +102,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.JDBCExtract.extract(
       JDBCExtract(
         name="dataset",
-        cols=Nil,
+        cols=Right(Nil),
         outputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -113,6 +113,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         customSchema=None, 
         persist=false,
         partitionColumn=None,
+        predicates=Nil,
         params=Map("user" -> user, "password" -> password)
       )
     ).get
@@ -154,7 +155,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.JDBCExtract.extract(
       JDBCExtract(
         name="dataset",
-        cols=Nil,
+        cols=Right(Nil),
         outputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -165,6 +166,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         customSchema=None, 
         persist=false,
         partitionColumn=Option("integerDatum"),
+        predicates=Nil,
         params=Map("user" -> user, "password" -> password)
       )
     ).get
@@ -205,7 +207,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.JDBCExtract.extract(
       JDBCExtract(
         name="dataset",
-        cols=Nil,
+        cols=Right(Nil),
         outputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -216,6 +218,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         customSchema=None, 
         persist=false,
         partitionColumn=Option("integerDatum"),
+        predicates=Nil,
         params=Map("user" -> user, "password" -> password)
       )
     ).get
@@ -223,4 +226,36 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     assert(actual.except(expected).count === 0)
     assert(expected.except(actual).count === 0)
   }     
+
+  test("JDBCExtract: get metadata") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val actual = extract.JDBCExtract.extract(
+      JDBCExtract(
+        name="meta",
+        cols=Right(Nil),
+        outputView="meta", 
+        jdbcURL=postgresurl, 
+        driver=DriverManager.getDriver(postgresurl),
+        tableName=s"(SELECT * FROM meta WHERE dataset = 'known_dataset' AND version = 0 ORDER BY index) meta", 
+        numPartitions=None, 
+        fetchsize=None,
+        partitionBy=Nil,
+        customSchema=None, 
+        persist=false,
+        partitionColumn=None,
+        predicates=Nil,
+        params=Map("user" -> user, "password" -> password)
+      )
+    ).get
+
+    // test metadata
+    val meta = au.com.agl.arc.util.MetadataSchema.parseDataFrameMetadata(actual).right.getOrElse(Nil)
+    val schema = Extract.toStructType(meta)
+    val timestampDatumMetadata = schema.fields(schema.fieldIndex("timestampDatum")).metadata    
+    assert(timestampDatumMetadata.getLong("securityLevel") == 7)    
+
+  }   
 }

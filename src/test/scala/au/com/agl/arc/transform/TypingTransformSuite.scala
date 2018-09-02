@@ -53,10 +53,6 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(targetFile))     
   }
 
-  {
-
-  }
-
   test("TypingTransform") {
     implicit val spark = session
     import spark.implicits._
@@ -72,7 +68,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = transform.TypingTransform.transform(
       TypingTransform(
         name="dataset",
-        cols=cols.right.getOrElse(Nil), 
+        cols=Right(cols.right.getOrElse(Nil)), 
         inputView="inputDS",
         outputView=outputView, 
         params=Map.empty,

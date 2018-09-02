@@ -28,7 +28,7 @@ object Typing {
     * We must use the DataFrame map and not RDD as RDD operations break the 
     * logical plan which is required for lineage.
     */
-  private def performTyping(df: DataFrame, extract: ColumnarExtract, typedSchema: StructType)( implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Dataset[TypedRow] = {
+  private def performTyping(df: DataFrame, cols: List[ExtractColumn], typedSchema: StructType)( implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Dataset[TypedRow] = {
     val incomingSchema = df.schema.zipWithIndex
 
     /** Create a dynamic RowEncoder from the provided schema. We use the phantom
@@ -45,7 +45,7 @@ object Typing {
           if (fieldMetadata.contains("internal") && fieldMetadata.getBoolean("internal") == true) {
               (row.get(fieldIdx) :: valuesAccum, errorsAccum)
           } else {
-            val col = extract.cols(fieldIdx)
+            val col = cols(fieldIdx)
             // Pass through when the incoming type matches the outgoing type
             if (col.sparkDataType == field.dataType) {
                 (row.get(fieldIdx) :: valuesAccum, errorsAccum)
@@ -78,8 +78,8 @@ object Typing {
     }
   }
 
-  def typeDataFrame(untypedDataframe: DataFrame, extract: ColumnarExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): DataFrame = {
-    val schema = Extract.toStructType(extract.cols)
+  def typeDataFrame(untypedDataframe: DataFrame, cols: List[ExtractColumn])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): DataFrame = {
+    val schema = Extract.toStructType(cols)
     val internalFields = untypedDataframe.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).toList
     
     val typedSchema = StructType(
@@ -87,7 +87,7 @@ object Typing {
     )
 
     // applies data types but not metadata
-    val typedDS = performTyping(untypedDataframe, extract, typedSchema)
+    val typedDS = performTyping(untypedDataframe, cols, typedSchema)
 
     // re-attach metadata to result
     var typedDF = typedDS.toDF

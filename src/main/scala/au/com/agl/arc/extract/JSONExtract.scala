@@ -43,6 +43,15 @@ object JSONExtract {
       .map("stage", stageDetail)      
       .log()    
 
+    // try to get the schema
+    val optionSchema = try {
+      ExtractUtils.getSchema(extract.cols)(spark)
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }      
+    }       
+
     val df = try {
       extract.input match {
         case Right(glob) =>
@@ -62,13 +71,10 @@ object JSONExtract {
               // read the file but do not cache. caching will break the input_file_name() function
               val textFile = spark.sparkContext.textFile(glob)
 
-              val json = extract.cols match {
-                case Nil => spark.read.options(options).json(textFile.toDS)
-                case cols => { 
-                  val schema = Extract.toStructType(cols)
-                  spark.read.options(options).schema(schema).json(textFile.toDS)
-                }                
-              }              
+              val json = optionSchema match {
+                case Some(schema) => spark.read.options(options).schema(schema).json(textFile.toDS)
+                case None => spark.read.options(options).json(textFile.toDS)
+              }             
 
               // reset delimiter
               if (oldDelimiter == null) {
@@ -82,12 +88,9 @@ object JSONExtract {
               // read the file but do not cache. caching will break the input_file_name() function              
               val textFile = spark.sparkContext.textFile(glob)
 
-              val json = extract.cols match {
-                case Nil => spark.read.options(options).json(textFile.toDS)
-                case cols => { 
-                  val schema = Extract.toStructType(cols)
-                  spark.read.options(options).schema(schema).json(textFile.toDS)
-                }                
+              val json = optionSchema match {
+                case Some(schema) => spark.read.options(options).schema(schema).json(textFile.toDS)
+                case None => spark.read.options(options).json(textFile.toDS)
               }
 
               json              
@@ -107,25 +110,21 @@ object JSONExtract {
     }
 
     // if incoming dataset has 0 columns then create empty dataset with correct schema
-    val emptyDataframeHandlerDF = if (df.schema.length == 0) {
-      val schema = extract.cols match {
-        case Nil => throw new Exception(s"JSONExtract has produced 0 columns and no schema has been provided to create an empty dataframe.") with DetailException {
-          override val detail = stageDetail          
-        }
-        case cols => Extract.toStructType(cols)
-      }
-      spark.createDataFrame(spark.sparkContext.emptyRDD[Row], schema)
-    } else {
-      df
+    val emptyDataframeHandlerDF = try {
+      ExtractUtils.emptyDataFrameHandler(df, optionSchema)(spark)
+    } catch {
+      case e: Exception => throw new Exception(e.getMessage) with DetailException {
+        override val detail = stageDetail          
+      }      
     }    
 
-    // add source data including index
-    val sourceEnrichedDF = ExtractUtils.addSourceMetadata(emptyDataframeHandlerDF, contiguousIndex)
+    // add internal columns data _filename, _index
+    val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
 
     // set column metadata if exists
-    val enrichedDF = extract.cols match {
-      case Nil => sourceEnrichedDF
-      case cols => MetadataUtils.setMetadata(sourceEnrichedDF, Extract.toStructType(cols))
+    val enrichedDF = optionSchema match {
+        case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
+        case None => sourceEnrichedDF   
     }
 
     // repartition to distribute rows evenly

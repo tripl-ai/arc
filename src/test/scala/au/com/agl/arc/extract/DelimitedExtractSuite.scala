@@ -65,7 +65,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
-        cols=cols.right.getOrElse(Nil),
+        cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=Right(targetFileGlob),
         settings=new Delimited(header=true, sep=Delimiter.Comma),
@@ -113,7 +113,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
-        cols=Nil,
+        cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         settings=new Delimited(),
@@ -131,7 +131,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
-        cols=Nil,
+        cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         settings=new Delimited(header=true, sep=Delimiter.Comma),
@@ -170,7 +170,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.DelimitedExtract.extract(
         DelimitedExtract(
           name=outputView,
-          cols=Nil,
+          cols=Right(Nil),
           outputView=outputView,
           input=Right(emptyWildcardDirectory),
           settings=new Delimited(),
@@ -183,14 +183,14 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown0.getMessage === "DelimitedExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown0.getMessage === "Extract has produced 0 columns and no schema has been provided to create an empty dataframe.")
     
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
       val extractDataset = extract.DelimitedExtract.extract(
         DelimitedExtract(
           name=outputView,
-          cols=Nil,
+          cols=Right(Nil),
           outputView=outputView,
           input=Right(emptyDirectory),
           settings=new Delimited(),
@@ -203,13 +203,13 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown1.getMessage === "DelimitedExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown1.getMessage === "Extract has produced 0 columns and no schema has been provided to create an empty dataframe.")
 
     // try with column
     val extractDataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
-        cols=cols,
+        cols=Right(cols),
         outputView=outputView,
         input=Right(emptyDirectory),
         settings=new Delimited(),
@@ -245,7 +245,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     var dataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
-        cols=Nil,
+        cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         settings=new Delimited(header=true, sep=Delimiter.Pipe, inferSchema=false),
@@ -274,7 +274,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     var dataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
-        cols=Nil,
+        cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         settings=new Delimited(header=false, sep=Delimiter.Comma, inferSchema=false),
@@ -302,7 +302,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     var dataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
-        cols=Nil,
+        cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         settings=new Delimited(header=true, sep=Delimiter.Comma, inferSchema=true),

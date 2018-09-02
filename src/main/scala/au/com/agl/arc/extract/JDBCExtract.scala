@@ -43,6 +43,10 @@ object JDBCExtract {
       stageDetail.put("fetchsize", Integer.valueOf(fetchsize))
     }     
 
+    extract.predicates match {
+      case Nil =>
+      case predicates => stageDetail.put("predicates", predicates.asJava)
+    }
 
     for (partitionColumn <- extract.partitionColumn) {
       connectionProperties.put("partitionColumn", partitionColumn)    
@@ -79,8 +83,20 @@ object JDBCExtract {
       .map("stage", stageDetail)      
       .log()  
 
+    // try to get the schema
+    val optionSchema = try {
+      ExtractUtils.getSchema(extract.cols)(spark)
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }      
+    }         
+
     val df = try {
-      spark.read.jdbc(extract.jdbcURL, extract.tableName, connectionProperties)
+      extract.predicates match {
+        case Nil => spark.read.jdbc(extract.jdbcURL, extract.tableName, connectionProperties)
+        case predicates => spark.read.jdbc(extract.jdbcURL, extract.tableName, predicates.toArray, connectionProperties)
+      }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          
@@ -88,10 +104,10 @@ object JDBCExtract {
     }
 
     // set column metadata if exists
-    val enrichedDF = extract.cols match {
-      case Nil => df
-      case cols => MetadataUtils.setMetadata(df, Extract.toStructType(cols))
-    }
+    val enrichedDF = optionSchema match {
+        case Some(schema) => MetadataUtils.setMetadata(df, schema)
+        case None => df   
+    }    
 
     // repartition to distribute rows evenly
     val repartitionedDF = extract.partitionBy match {

@@ -44,7 +44,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val stage = DelimitedExtract(
       name = "file extract",
-      cols = Nil,
+      cols = Right(Nil),
       outputView = "green_tripdata0_raw",
       input = Right("/data/green_tripdata/0/*.csv"),
       settings = Delimited(Delimiter.Comma, QuoteCharacter.DoubleQuote, true, false),
@@ -58,7 +58,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val subDelimitedExtractStage = DelimitedExtract(
       name = "extract data from green_tripdata/1",
-      cols = Nil,
+      cols = Right(Nil),
       outputView = "green_tripdata1_raw",
       input = Right("/data/green_tripdata/1/*.csv"),
       settings = Delimited(Delimiter.Comma, QuoteCharacter.DoubleQuote, true, false),
@@ -96,7 +96,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val subTypingTransformStage = TypingTransform(
       name = "apply green_tripdata/1 data types",
-      cols = schema,
+      cols = Right(schema),
       inputView = "green_tripdata1_raw",
       outputView = "green_tripdata1",
       params = Map.empty,
