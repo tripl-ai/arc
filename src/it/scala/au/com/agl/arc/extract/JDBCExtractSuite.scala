@@ -70,7 +70,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     session.stop
   }
 
-  test("JDBCLoad: sqlserver normal") {
+  test("JDBCExtract: sqlserver normal") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -123,7 +123,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
   }    
 
 
-  test("JDBCLoad: sqlserver partitionColumn") {
+  test("JDBCExtract: sqlserver partitionColumn") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -175,7 +175,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     assert(expected.except(actual).count === 0)
   }   
 
-  test("JDBCLoad: sqlserver partitionColumn with Subquery") {
+  test("JDBCExtract: sqlserver partitionColumn with Subquery") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -227,7 +227,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     assert(expected.except(actual).count === 0)
   }     
 
-  test("JDBCExtract: get metadata") {
+  test("JDBCExtract: get metadata from postgres") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)

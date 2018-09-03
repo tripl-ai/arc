@@ -40,9 +40,9 @@ Currently it is tightly coupled to [Apache Spark](https://spark.apache.org) due 
 
 ## Why SQL first?
 
-SQL first (copied from the Mobile First UX principle) is an approach where, if possible, transformations are done using Structured Query Language (SQL) as a preference. This is because SQL is a very good way of expressing standard data transformation intent in a [declarative](https://en.wikipedia.org/wiki/Declarative_programming) way. SQL is so widely known and taught that finding people who are able to understand the business context and able to write basic SQL is much easier than finding a Scala developer who also understands the business context (for example). 
+SQL first (based on the Mobile First UX principle) is an approach where, if possible, transformations are done using Structured Query Language (SQL) as a preference. This is because SQL is a very good way of expressing standard data transformation intent in a [declarative](https://en.wikipedia.org/wiki/Declarative_programming) way. SQL is so widely known and taught that finding people who are able to understand the business context and able to write basic SQL is much easier than finding a Scala developer who also understands the business context (for example). 
 
-Currently the [HIVE](https://cwiki.apache.org/confluence/display/Hive/LanguageManual) dialect of SQL is supported as [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) uses the same SQL dialect and has a lot of the same [functions](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.sql.functions$) that would be expected from other SQL dialects. This could change in the future.
+Currently the [HIVE](https://cwiki.apache.org/confluence/display/Hive/LanguageManual) dialect of SQL is supported as [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) uses the same SQL dialect and has a lot of the same [functions](https://spark.apache.org/docs/latest/api/sql/index.html) that would be expected from other SQL dialects. This could change in the future.
 
 ## Example pipeline
 

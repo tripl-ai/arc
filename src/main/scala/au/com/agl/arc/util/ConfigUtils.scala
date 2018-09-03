@@ -1106,19 +1106,17 @@ object ConfigUtils {
 
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
-    val inputFields = readMap("inputFields", c)
-    val outputFields = readMap("outputFields", c)
-    val hostname = getValue[String]("hostname")
-    val port = getValue[Int]("port")
-    val modelName = getValue[String]("modelName")
-    val signatureName = getValue[String]("signatureName")
+    val inputURI = getValue[String]("uri")
+    val parsedURI = inputURI.rightFlatMap(uri => parseURI("uri", uri))
+    val signatureName = getOptionalValue[String]("signatureName")
+    val batchSize = getOptionalValue[Int]("batchSize")
     val persist = getValue[Boolean]("persist")
 
-    (name, inputView, outputView, hostname, port, modelName, signatureName, persist) match {
-      case (Right(n), Right(iv), Right(ov), Right(hn), Right(pt), Right(mn), Right(sn), Right(p)) => 
-        Right(TensorFlowServingTransform(n, iv, ov, inputFields, outputFields, hn, pt, mn, sn, params, p))
+    (name, inputView, outputView, inputURI, parsedURI, signatureName, batchSize, persist) match {
+      case (Right(n), Right(iv), Right(ov), Right(uri), Right(puri), Right(sn), Right(bs), Right(p)) => 
+        Right(TensorFlowServingTransform(n, iv, ov, puri, sn, bs, params, p))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputView, hostname, port, modelName, signatureName, persist).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, outputView, inputURI, parsedURI, signatureName, batchSize, persist).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)

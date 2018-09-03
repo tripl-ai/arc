@@ -950,6 +950,8 @@ WHERE metadata.pii = (
 
 <p>The <code>SQLTransform</code> stage transforms the incoming dataset with a <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL</a> statement. This stage relies on previous stages to load and register the dataset views (<code>outputView</code>) and will execute arbitrary SQL statements against those datasets.</p>
 
+<p>All the inbuilt <a href="https://spark.apache.org/docs/latest/api/sql/index.html">Spark SQL functions</a> are available and have been extended with some <a href="https://aglenergy.github.io/arc/partials/#user-defined-functions">additional functions</a>.</p>
+
 <div class="admonition note">
 <p class="admonition-title">CAST vs TypingTransform</p>
 <p><p>It is strongly recommended to use the <code>TypingTransform</code> for reproducible, repeatable results.</p>
@@ -1120,45 +1122,24 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tr>
 
 <tr>
-<td>inputFields</td>
-<td>Map[String, String]</td>
-<td>true</td>
-<td>A map of the fields to be passed to the TensorFlow Serving service. This map describes the required input fields and their type and will be used to extract the correct field from the Spark <code>DataFrame</code> (by name). E.g. a to call a TensorFlow Serving instance which requires an input of <code>customer_usage</code> of type <code>DT_DOUBLE</code> this map will be used to take the field <code>customer_usage</code> from <code>inputView</code> and create the required request of data type <code>DT_DOUBLE</code>. For this stage to work the <code>customer_usage</code> type within Spark must be of <code>DoubleType</code>.</td>
-</tr>
-
-<tr>
-<td>outputFields</td>
-<td>Map[String, String]</td>
-<td>true</td>
-<td>A map of the fields to be retrieved from the TensorFlow Serving service. This map describes which fields are expected to be returned from the TensorFlow Serving call and will be appended to the <code>outputView</code>.</td>
-</tr>
-
-<tr>
-<td>hostname</td>
+<td>uri</td>
 <td>String</td>
 <td>true</td>
-<td>The hostname of the target service.</td>
-</tr>
-
-<tr>
-<td>port</td>
-<td>Integer</td>
-<td>true</td>
-<td>The port of the target service.</td>
-</tr>
-
-<tr>
-<td>modelName</td>
-<td>String</td>
-<td>true</td>
-<td>The name of the TensorFlow Serving model.</td>
+<td>The <code>URI</code> of the TensorFlow Serving REST end point.</td>
 </tr>
 
 <tr>
 <td>signatureName</td>
 <td>String</td>
-<td>true</td>
+<td>false</td>
 <td>The name of the TensorFlow Serving signature.</td>
+</tr>
+
+<tr>
+<td>batchSize</td>
+<td>Int</td>
+<td>false</td>
+<td>The number of records to sent to TensorFlow Serving in each call. A higher number will decrease the number of calls to TensorFlow Serving which may be more efficient</td>
 </tr>
 
 <tr>
@@ -1185,16 +1166,9 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
     &quot;name&quot;: &quot;call the customer segmentation model&quot;,
     &quot;inputView&quot;: &quot;customer&quot;,
     &quot;outputView&quot;: &quot;customer_segmented&quot;,            
-    &quot;inputFields&quot;: {
-        &quot;customer_usage&quot;: &quot;DT_DOUBLE&quot;
-    },
-    &quot;outputFields&quot;: {
-        &quot;customer_segment&quot;: &quot;DT_INT32&quot;
-    },
-    &quot;hostname&quot;: &quot;tf&quot;,
-    &quot;port&quot;: 9000,
-    &quot;modelName&quot;: &quot;simple&quot;, 
+    &quot;uri&quot;: &quot;http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict&quot;,
     &quot;signatureName&quot;: &quot;serving_default&quot;,
+    &quot;batchSize&quot;: 100,
     &quot;persist&quot;: true,
     &quot;params&quot;: {}
 }   

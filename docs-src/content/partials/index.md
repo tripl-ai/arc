@@ -103,3 +103,35 @@ A practical use case of this is to execute additional stages in testing which wo
     ...
 }
 ```
+
+
+## User Defined Functions
+
+To help with common data tasks several additional functions have been added to Arc in addition to the inbuilt [Spark SQL Functions](https://spark.apache.org/docs/latest/api/sql/index.html).
+
+### get_json_double_array
+##### Since: 1.0.9
+
+Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object) - but extracts a json `double` `array` from path.
+
+```sql
+SELECT get_json_double_array('[0.1, 1.1]', '$')
+```
+
+### get_json_integer_array
+##### Since: 1.0.9
+
+Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object) - but extracts a json `integer` `array` from path.
+
+```sql
+SELECT get_json_integer_array('[1, 2]', '$')
+```
+
+### get_json_long_array
+##### Since: 1.0.9
+
+Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object) - but extracts a json `long` `array` from path.
+
+```sql
+SELECT get_json_long_array('[2147483648, 2147483649]', '$')
+```

@@ -555,6 +555,37 @@
 }
 </code></pre>
 
+<h2 id="user-defined-functions">User Defined Functions</h2>
+
+<p>To help with common data tasks several additional functions have been added to Arc in addition to the inbuilt <a href="https://spark.apache.org/docs/latest/api/sql/index.html">Spark SQL Functions</a>.</p>
+
+<h3 id="get-json-double-array">get_json_double_array</h3>
+
+<h5 id="since-1-0-9">Since: 1.0.9</h5>
+
+<p>Similar to <a href="https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object">get_json_object</a> - but extracts a json <code>double</code> <code>array</code> from path.</p>
+
+<pre><code class="language-sql">SELECT get_json_double_array('[0.1, 1.1]', '$')
+</code></pre>
+
+<h3 id="get-json-integer-array">get_json_integer_array</h3>
+
+<h5 id="since-1-0-9-1">Since: 1.0.9</h5>
+
+<p>Similar to <a href="https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object">get_json_object</a> - but extracts a json <code>integer</code> <code>array</code> from path.</p>
+
+<pre><code class="language-sql">SELECT get_json_integer_array('[1, 2]', '$')
+</code></pre>
+
+<h3 id="get-json-long-array">get_json_long_array</h3>
+
+<h5 id="since-1-0-9-2">Since: 1.0.9</h5>
+
+<p>Similar to <a href="https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object">get_json_object</a> - but extracts a json <code>long</code> <code>array</code> from path.</p>
+
+<pre><code class="language-sql">SELECT get_json_long_array('[2147483648, 2147483649]', '$')
+</code></pre>
+
 
 			<aside class="copyright" role="note">
 				

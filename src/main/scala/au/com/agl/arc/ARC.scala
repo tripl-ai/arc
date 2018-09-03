@@ -299,8 +299,8 @@ object ARC {
           transform.MLTransform.transform(t)          
         case t : SQLTransform =>
           transform.SQLTransform.transform(t)      
-        // case t : TensorFlowServingTransform =>
-          // transform.TensorFlowServingTransform.transform(t)              
+        case t : TensorFlowServingTransform =>
+          transform.TensorFlowServingTransform.transform(t)              
         case t : TypingTransform =>
           transform.TypingTransform.transform(t)
 

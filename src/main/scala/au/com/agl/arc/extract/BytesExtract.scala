@@ -33,7 +33,7 @@ object BytesExtract {
     }
 
     // add source data including index
-    val enrichedDF = ExtractUtils.addSourceMetadata(df, extract.contiguousIndex.getOrElse(true))
+    val enrichedDF = ExtractUtils.addInternalColumns(df, extract.contiguousIndex.getOrElse(true))
 
     // repartition to distribute rows evenly
     val repartitionedDF = extract.numPartitions match {

@@ -82,7 +82,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         StructField("field", StringType, false) ::
         StructField("message", StringType, false) :: Nil
       )
-    val addErrors = udf(() => new Array(0), ArrayType(errorStructType) )
+    val addErrors = org.apache.spark.sql.functions.udf(() => new Array(0), ArrayType(errorStructType) )
 
     val expected = TestDataUtils.getKnownDataset
       .drop($"nullDatum")

@@ -57,14 +57,6 @@ object Dependencies {
   val scala_graph_dot = "org.scala-graph" %% "graph-dot" % "1.11.5"
   val scala_graph_json = "org.scala-graph" %% "graph-json" % "1.11.0"
 
-  // tensorflow serving dependencies - see shading in build.sbt
-  val grpc_netty = "io.grpc" % "grpc-netty" % "1.7.0" 
-  val tensorflow_client = "com.yesup.oss" % "tensorflow-client" % "1.4-2" 
-
-  // kafka
-  // val kafka = "org.apache.kafka" %% "kafka" % "1.1.0" % "provided"
-  // val kafkaClients = "org.apache.kafka" % "kafka-clients" % "1.1.0" % "provided"
-
   // Project
   val etlDeps = Seq(
     sparkCore,
@@ -104,13 +96,5 @@ object Dependencies {
     qpid
 
     // gcsConnector
-
-    // Kafka
-    // kafka,
-    // kafkaClients
-
-    // tensorflow serving
-    // grpc_netty,
-    // tensorflow_client
   )
 }

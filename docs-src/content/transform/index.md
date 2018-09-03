@@ -253,6 +253,8 @@ The `MLTransform` stage transforms the incoming dataset with a pretrained Spark 
 
 The `SQLTransform` stage transforms the incoming dataset with a [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) statement. This stage relies on previous stages to load and register the dataset views (`outputView`) and will execute arbitrary SQL statements against those datasets.
 
+All the inbuilt [Spark SQL functions](https://spark.apache.org/docs/latest/api/sql/index.html) are available and have been extended with some [additional functions](/partials/#user-defined-functions).
+
 {{< note title="CAST vs TypingTransform" >}}
 It is strongly recommended to use the `TypingTransform` for reproducible, repeatable results.
 
@@ -328,12 +330,9 @@ The `TensorFlowServingTransform` stage transforms the incoming dataset by callin
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|inputFields|Map[String, String]|true|{{< readfile file="/content/partials/fields/inputFields.md" markdown="true" >}}|
-|outputFields|Map[String, String]|true|{{< readfile file="/content/partials/fields/outputFields.md" markdown="true" >}}|
-|hostname|String|true|{{< readfile file="/content/partials/fields/hostname.md" markdown="true" >}}|
-|port|Integer|true|{{< readfile file="/content/partials/fields/port.md" markdown="true" >}}|
-|modelName|String|true|{{< readfile file="/content/partials/fields/modelName.md" markdown="true" >}}|
-|signatureName|String|true|{{< readfile file="/content/partials/fields/signatureName.md" markdown="true" >}}|
+|uri|String|true|The `URI` of the TensorFlow Serving REST end point.|
+|signatureName|String|false|{{< readfile file="/content/partials/fields/signatureName.md" markdown="true" >}}|
+|batchSize|Int|false|The number of records to sent to TensorFlow Serving in each call. A higher number will decrease the number of calls to TensorFlow Serving which may be more efficient|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
@@ -346,16 +345,9 @@ The `TensorFlowServingTransform` stage transforms the incoming dataset by callin
     "name": "call the customer segmentation model",
     "inputView": "customer",
     "outputView": "customer_segmented",            
-    "inputFields": {
-        "customer_usage": "DT_DOUBLE"
-    },
-    "outputFields": {
-        "customer_segment": "DT_INT32"
-    },
-    "hostname": "tf",
-    "port": 9000,
-    "modelName": "simple", 
+    "uri": "http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict",
     "signatureName": "serving_default",
+    "batchSize": 100,
     "persist": true,
     "params": {}
 }   

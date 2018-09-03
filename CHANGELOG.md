@@ -14,6 +14,8 @@
 - changed `*Extract` to allow input `glob` patterns not just simple `URI`.
 - changed `*Extract` to support the schema to be provided as `schemaView`.
 - added `BytesExtract` to allow `Array[Bytes]` to be read into a dataframe for things like calling external Machine Learning models.
+- refactored `TensorFlowServingTransform` to call the `REST` API (in batches) which is easier due to library conflicts creating `protobuf`.
+- create the `UDF` registration mechanism allowing logical extension point for common functions missing from Spark core.
 
 # 1.0.8
 
