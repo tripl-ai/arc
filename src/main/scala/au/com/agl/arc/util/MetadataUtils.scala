@@ -60,7 +60,7 @@ object MetadataUtils {
   }
 
   // a helper function to speed up the creation of a metadata formatted file
-  def makeMetataFromDataframe(input: DataFrame): String = {
+  def makeMetadataFromDataframe(input: DataFrame): String = {
     val fields = input.schema.map(field => {
       val objectMapper = new ObjectMapper()
       val jsonNodeFactory = new JsonNodeFactory(true)
