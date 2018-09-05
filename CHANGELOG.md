@@ -2,6 +2,8 @@
 
 # 1.1.0
 
+- fixed a bug in the `build.sbt` mergeStrategy which incorrectly excluded the `BinaryContentDataSource` registration when `assembly`.
+
 # 1.0.9
 
 - added the ability to add column level `metadata`.
