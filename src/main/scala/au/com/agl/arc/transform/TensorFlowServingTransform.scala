@@ -27,13 +27,13 @@ import au.com.agl.arc.util._
 
 object TensorFlowServingTransform {
 
-  type TypedRow = Row  
+  type TensorFlowResponseRow = Row  
 
   def transform(transform: TensorFlowServingTransform)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
 
-    val batchSize = transform.batchSize.getOrElse(10)
+    val batchSize = transform.batchSize.getOrElse(1)
 
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
@@ -50,13 +50,13 @@ object TensorFlowServingTransform {
 
     val df = spark.table(transform.inputView)
 
-    val typedSchema = StructType(
+    val tensorFlowResponseSchema = StructType(
       df.schema.fields.toList ::: List(new StructField("resultType", StringType, false), new StructField("integerResult", IntegerType, true), new StructField("doubleResult", DoubleType, true), new StructField("objectResult", StringType, true))
     )
 
-    implicit val typedEncoder: Encoder[TypedRow] = org.apache.spark.sql.catalyst.encoders.RowEncoder(typedSchema)
+    implicit val typedEncoder: Encoder[TensorFlowResponseRow] = org.apache.spark.sql.catalyst.encoders.RowEncoder(tensorFlowResponseSchema)
 
-    val transformedDF = df.mapPartitions[TypedRow] { partition: Iterator[Row] => 
+    val transformedDF = df.mapPartitions[TensorFlowResponseRow] { partition: Iterator[Row] => 
 
       val poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager()
       poolingHttpClientConnectionManager.setMaxTotal(50)
@@ -84,7 +84,7 @@ object TensorFlowServingTransform {
       // group so we can send multiple rows per request
       val groupedPartition = bufferedPartition.grouped(batchSize)
 
-      groupedPartition.flatMap[TypedRow] { groupedRow => 
+      groupedPartition.flatMap[TensorFlowResponseRow] { groupedRow => 
 
         val jsonNodeFactory = new JsonNodeFactory(true)
         val node = jsonNodeFactory.objectNode
@@ -147,7 +147,7 @@ object TensorFlowServingTransform {
             case _ => Seq("OBJECT", null, null, response(index).asText)
           }
 
-          Row.fromSeq(row.toSeq ++ result).asInstanceOf[TypedRow]
+          Row.fromSeq(row.toSeq ++ result).asInstanceOf[TensorFlowResponseRow]
         }}
       }
     }
