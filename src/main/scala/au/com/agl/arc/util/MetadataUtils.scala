@@ -2,6 +2,11 @@ package au.com.agl.arc.util
 
 import java.net.URI
 import java.time.Instant
+import java.util.UUID
+
+import com.fasterxml.jackson.databind._
+import com.fasterxml.jackson.databind.node._
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.expressions.Window
@@ -54,5 +59,67 @@ object MetadataUtils {
     output
   }
 
+  // a helper function to speed up the creation of a metadata formatted file
+  def makeMetataFromDataframe(input: DataFrame): String = {
+    val fields = input.schema.map(field => {
+      val objectMapper = new ObjectMapper()
+      val jsonNodeFactory = new JsonNodeFactory(true)
+      val node = jsonNodeFactory.objectNode
+
+      node.set("id", jsonNodeFactory.textNode(UUID.randomUUID().toString))
+      node.set("name", jsonNodeFactory.textNode(field.name))
+      node.set("description", jsonNodeFactory.textNode(""))
+      node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
+      node.set("trim", jsonNodeFactory.booleanNode(true))
+
+      val nullableValuesArray = node.putArray("nullableValues")
+      nullableValuesArray.add("")
+      nullableValuesArray.add("null")
+
+      node.set("metadata", jsonNodeFactory.objectNode())
+
+      field.dataType match {
+        case _: BooleanType => {
+          node.set("type", jsonNodeFactory.textNode("boolean"))
+
+          val trueValuesArray = node.putArray("trueValues")
+          trueValuesArray.add("true")
+
+          val falseValuesArray = node.putArray("falseValues")
+          falseValuesArray.add("false")            
+        }
+        case _: DateType => {
+          node.set("type", jsonNodeFactory.textNode("date"))
+          
+          val formattersArray = node.putArray("formatters")
+          formattersArray.add("yyyy-MM-dd")
+        }
+        case _: DecimalType => {
+          val decimalField = field.dataType.asInstanceOf[DecimalType]
+
+          node.set("type", jsonNodeFactory.textNode("decimal"))
+          node.set("precision", jsonNodeFactory.numberNode(decimalField.precision))
+          node.set("scale", jsonNodeFactory.numberNode(decimalField.scale))
+        }
+        case _: DoubleType => node.set("type", jsonNodeFactory.textNode("double"))
+        case _: IntegerType => node.set("type", jsonNodeFactory.textNode("integer"))
+        case _: LongType => node.set("type", jsonNodeFactory.textNode("long"))
+        case _: StringType => node.set("type", jsonNodeFactory.textNode("string"))
+        case _: TimestampType => {
+          node.set("type", jsonNodeFactory.textNode("timestamp"))
+
+          val formattersArray = node.putArray("formatters")
+          formattersArray.add("yyyy-MM-dd'T'HH:mm:ssZ")
+
+          node.set("timezoneId", jsonNodeFactory.textNode("UTC"))
+        }
+        case _: NullType => 
+      }
+
+      objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node)
+    })
+
+    s"""[${fields.mkString(",")}]"""
+  }
 }
 
