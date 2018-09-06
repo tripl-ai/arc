@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.node._
 
 import org.apache.spark.sql._
+import org.apache.spark.storage.StorageLevel
 
 import au.com.agl.arc.api.API._ 
 import au.com.agl.arc.util._
@@ -36,7 +37,7 @@ object SQLValidate {
         override val detail = stageDetail          
       } 
     }
-    val count = df.count
+    val count = df.persist(StorageLevel.MEMORY_AND_DISK_SER).count
 
     if (df.count != 1 || df.schema.length != 2) {
       throw new Exception(s"""${signature} Query returned ${count} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].""") with DetailException {
@@ -87,6 +88,8 @@ object SQLValidate {
         override val detail = stageDetail          
       } 
     }
+
+    df.unpersist
 
     logger.info()
       .field("event", "exit")
