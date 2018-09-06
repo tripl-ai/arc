@@ -1,0 +1,57 @@
+[{
+  "id" : "7856c728-16f3-4b20-9509-960094df6e94",
+  "name" : "address_mesh_block_2016_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "2fd5cc11-bcea-45bb-9828-11ab91f7da28",
+  "name" : "date_created",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "a26b3ab6-aede-40fa-acec-4c82d02686f4",
+  "name" : "date_retired",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "d2ab26ea-1c37-448f-85b0-d5d74ac435de",
+  "name" : "address_detail_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "60709a01-0515-482c-ae5d-ceb3e7597473",
+  "name" : "mb_match_code",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "ec8b023f-5b8f-4c18-b1d6-9e4a64cc7536",
+  "name" : "mb_2016_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+}]

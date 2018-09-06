@@ -145,6 +145,8 @@ This is an example of a fairly standard pipeline:
 }
 ```
 
+A full worked example job is available [here](https://github.com/AGLEnergy/arc/tree/master/tutorial/gnaf/job/0). It is for the Australian Geocoded National Address File [G-NAF](https://data.gov.au/dataset/geocoded-national-address-file-g-naf) and will load the pipe-separated data, apply data types, ensure there are no errors in data typing and write the output to Parquet. This could easily be modified to write to a JDBC target.
+
 ## Compiling
 
 ### Library

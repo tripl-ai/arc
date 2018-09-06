@@ -1,0 +1,48 @@
+[{
+  "id" : "e3aca0aa-2172-44a0-8c5e-6e6f99b1f066",
+  "name" : "state_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "d86e6dbd-c57f-4f06-ac5e-ffd3466d13bb",
+  "name" : "date_created",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "772d7440-52ce-4506-b6d7-4478ad591535",
+  "name" : "date_retired",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "19b0adcf-5763-4254-821c-ab4c4a9561f8",
+  "name" : "state_name",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "ba35881d-e60f-42c2-a73c-8ccd2f160e3a",
+  "name" : "state_abbreviation",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+}]

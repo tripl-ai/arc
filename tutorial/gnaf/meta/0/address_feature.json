@@ -1,0 +1,57 @@
+[{
+  "id" : "047567eb-18f9-4a6a-b9d1-030f3ec545bd",
+  "name" : "address_feature_id",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "467a4201-09fc-4a2b-9604-d4e8504d768d",
+  "name" : "address_feature_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "2c09e737-fd3a-454c-bd15-853d131d7190",
+  "name" : "address_detail_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "46c48e3a-2d97-46fe-a743-e6e9f5f173e8",
+  "name" : "date_address_detail_created",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "0920791b-9c6e-45d4-b651-2e5a51fe27aa",
+  "name" : "date_address_detail_retired",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "0b236f44-0cef-418f-920e-5c50d1b9f45c",
+  "name" : "address_change_type_code",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+}]

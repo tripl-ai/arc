@@ -1,0 +1,75 @@
+[{
+  "id" : "7daa7284-d7d4-4e7a-8506-94604848da1f",
+  "name" : "locality_alias_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "abfa58fa-6597-4b79-bb75-912392b34880",
+  "name" : "date_created",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "527741ae-2228-4f44-97db-b09dfe7ab3bb",
+  "name" : "date_retired",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "780bdd13-a083-44cf-bf12-a6ed21805c1c",
+  "name" : "locality_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "dc95d051-56d5-4a50-9845-f54fb9230ddf",
+  "name" : "name",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "032cc08e-fc7f-4d7f-9b16-5b5ce94b8e51",
+  "name" : "postcode",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "c6b5ef63-8695-4080-b39e-b7b8350b6c60",
+  "name" : "alias_type_code",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "0fc0b976-5696-4722-ae7a-f1e4e1dcde34",
+  "name" : "state_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+}]

@@ -1,0 +1,1577 @@
+{"stages":
+	[{
+    "type": "DelimitedExtract",
+    "name": "extract data from *primary_secondary",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_PRIMARY_SECONDARY_psv.psv",
+    "outputView": "primary_secondary_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to primary_secondary",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/primary_secondary.json",
+    "inputView": "primary_secondary_raw",            
+    "outputView": "primary_secondary",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in primary_secondary",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "primary_secondary"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "primary_secondary",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/primary_secondary.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *address_alias",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_ADDRESS_ALIAS_psv.psv",
+    "outputView": "address_alias_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to address_alias",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/address_alias.json",
+    "inputView": "address_alias_raw",            
+    "outputView": "address_alias",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in address_alias",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "address_alias"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "address_alias",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_alias.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *address_alias_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_ADDRESS_ALIAS_TYPE_AUT_psv.psv",
+    "outputView": "address_alias_type_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to address_alias_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/address_alias_type_aut.json",
+    "inputView": "address_alias_type_aut_raw",            
+    "outputView": "address_alias_type_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in address_alias_type_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "address_alias_type_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "address_alias_type_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_alias_type_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *address_change_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_ADDRESS_CHANGE_TYPE_AUT_psv.psv",
+    "outputView": "address_change_type_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to address_change_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/address_change_type_aut.json",
+    "inputView": "address_change_type_aut_raw",            
+    "outputView": "address_change_type_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in address_change_type_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "address_change_type_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "address_change_type_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_change_type_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *address_default_geocode",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_ADDRESS_DEFAULT_GEOCODE_psv.psv",
+    "outputView": "address_default_geocode_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to address_default_geocode",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/address_default_geocode.json",
+    "inputView": "address_default_geocode_raw",            
+    "outputView": "address_default_geocode",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in address_default_geocode",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "address_default_geocode"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "address_default_geocode",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_default_geocode.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *address_detail",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_ADDRESS_DETAIL_psv.psv",
+    "outputView": "address_detail_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to address_detail",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/address_detail.json",
+    "inputView": "address_detail_raw",            
+    "outputView": "address_detail",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in address_detail",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "address_detail"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "address_detail",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_detail.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *address_feature",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_ADDRESS_FEATURE_psv.psv",
+    "outputView": "address_feature_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to address_feature",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/address_feature.json",
+    "inputView": "address_feature_raw",            
+    "outputView": "address_feature",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in address_feature",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "address_feature"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "address_feature",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_feature.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *address_mesh_block_2011",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_ADDRESS_MESH_BLOCK_2011_psv.psv",
+    "outputView": "address_mesh_block_2011_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to address_mesh_block_2011",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/address_mesh_block_2011.json",
+    "inputView": "address_mesh_block_2011_raw",            
+    "outputView": "address_mesh_block_2011",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in address_mesh_block_2011",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "address_mesh_block_2011"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "address_mesh_block_2011",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_mesh_block_2011.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *address_mesh_block_2016",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_ADDRESS_MESH_BLOCK_2016_psv.psv",
+    "outputView": "address_mesh_block_2016_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to address_mesh_block_2016",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/address_mesh_block_2016.json",
+    "inputView": "address_mesh_block_2016_raw",            
+    "outputView": "address_mesh_block_2016",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in address_mesh_block_2016",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "address_mesh_block_2016"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "address_mesh_block_2016",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_mesh_block_2016.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *address_site",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_ADDRESS_SITE_psv.psv",
+    "outputView": "address_site_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to address_site",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/address_site.json",
+    "inputView": "address_site_raw",            
+    "outputView": "address_site",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in address_site",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "address_site"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "address_site",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_site.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *address_site_geocode",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_ADDRESS_SITE_GEOCODE_psv.psv",
+    "outputView": "address_site_geocode_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to address_site_geocode",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/address_site_geocode.json",
+    "inputView": "address_site_geocode_raw",            
+    "outputView": "address_site_geocode",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in address_site_geocode",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "address_site_geocode"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "address_site_geocode",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_site_geocode.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *address_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_ADDRESS_TYPE_AUT_psv.psv",
+    "outputView": "address_type_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to address_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/address_type_aut.json",
+    "inputView": "address_type_aut_raw",            
+    "outputView": "address_type_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in address_type_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "address_type_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "address_type_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_type_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *flat_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_FLAT_TYPE_AUT_psv.psv",
+    "outputView": "flat_type_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to flat_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/flat_type_aut.json",
+    "inputView": "flat_type_aut_raw",            
+    "outputView": "flat_type_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in flat_type_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "flat_type_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "flat_type_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/flat_type_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *geocoded_level_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_GEOCODED_LEVEL_TYPE_AUT_psv.psv",
+    "outputView": "geocoded_level_type_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to geocoded_level_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/geocoded_level_type_aut.json",
+    "inputView": "geocoded_level_type_aut_raw",            
+    "outputView": "geocoded_level_type_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in geocoded_level_type_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "geocoded_level_type_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "geocoded_level_type_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/geocoded_level_type_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *geocode_reliability_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_GEOCODE_RELIABILITY_AUT_psv.psv",
+    "outputView": "geocode_reliability_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to geocode_reliability_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/geocode_reliability_aut.json",
+    "inputView": "geocode_reliability_aut_raw",            
+    "outputView": "geocode_reliability_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in geocode_reliability_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "geocode_reliability_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "geocode_reliability_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/geocode_reliability_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *geocode_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_GEOCODE_TYPE_AUT_psv.psv",
+    "outputView": "geocode_type_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to geocode_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/geocode_type_aut.json",
+    "inputView": "geocode_type_aut_raw",            
+    "outputView": "geocode_type_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in geocode_type_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "geocode_type_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "geocode_type_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/geocode_type_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *level_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_LEVEL_TYPE_AUT_psv.psv",
+    "outputView": "level_type_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to level_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/level_type_aut.json",
+    "inputView": "level_type_aut_raw",            
+    "outputView": "level_type_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in level_type_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "level_type_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "level_type_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/level_type_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *locality",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_LOCALITY_psv.psv",
+    "outputView": "locality_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to locality",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/locality.json",
+    "inputView": "locality_raw",            
+    "outputView": "locality",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in locality",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "locality"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "locality",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/locality.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *locality_alias",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_LOCALITY_ALIAS_psv.psv",
+    "outputView": "locality_alias_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to locality_alias",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/locality_alias.json",
+    "inputView": "locality_alias_raw",            
+    "outputView": "locality_alias",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in locality_alias",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "locality_alias"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "locality_alias",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/locality_alias.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *locality_alias_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_LOCALITY_ALIAS_TYPE_AUT_psv.psv",
+    "outputView": "locality_alias_type_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to locality_alias_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/locality_alias_type_aut.json",
+    "inputView": "locality_alias_type_aut_raw",            
+    "outputView": "locality_alias_type_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in locality_alias_type_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "locality_alias_type_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "locality_alias_type_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/locality_alias_type_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *locality_class_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_LOCALITY_CLASS_AUT_psv.psv",
+    "outputView": "locality_class_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to locality_class_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/locality_class_aut.json",
+    "inputView": "locality_class_aut_raw",            
+    "outputView": "locality_class_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in locality_class_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "locality_class_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "locality_class_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/locality_class_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *locality_neighbour",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_LOCALITY_NEIGHBOUR_psv.psv",
+    "outputView": "locality_neighbour_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to locality_neighbour",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/locality_neighbour.json",
+    "inputView": "locality_neighbour_raw",            
+    "outputView": "locality_neighbour",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in locality_neighbour",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "locality_neighbour"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "locality_neighbour",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/locality_neighbour.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *locality_point",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_LOCALITY_POINT_psv.psv",
+    "outputView": "locality_point_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to locality_point",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/locality_point.json",
+    "inputView": "locality_point_raw",            
+    "outputView": "locality_point",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in locality_point",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "locality_point"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "locality_point",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/locality_point.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *mb_2011",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_MB_2011_psv.psv",
+    "outputView": "mb_2011_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to mb_2011",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/mb_2011.json",
+    "inputView": "mb_2011_raw",            
+    "outputView": "mb_2011",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in mb_2011",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "mb_2011"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "mb_2011",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/mb_2011.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *mb_2016",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_MB_2016_psv.psv",
+    "outputView": "mb_2016_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to mb_2016",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/mb_2016.json",
+    "inputView": "mb_2016_raw",            
+    "outputView": "mb_2016",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in mb_2016",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "mb_2016"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "mb_2016",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/mb_2016.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *mb_match_code_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_MB_MATCH_CODE_AUT_psv.psv",
+    "outputView": "mb_match_code_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to mb_match_code_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/mb_match_code_aut.json",
+    "inputView": "mb_match_code_aut_raw",            
+    "outputView": "mb_match_code_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in mb_match_code_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "mb_match_code_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "mb_match_code_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/mb_match_code_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *ps_join_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_PS_JOIN_TYPE_AUT_psv.psv",
+    "outputView": "ps_join_type_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to ps_join_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/ps_join_type_aut.json",
+    "inputView": "ps_join_type_aut_raw",            
+    "outputView": "ps_join_type_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in ps_join_type_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "ps_join_type_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "ps_join_type_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/ps_join_type_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *state",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_STATE_psv.psv",
+    "outputView": "state_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to state",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/state.json",
+    "inputView": "state_raw",            
+    "outputView": "state",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in state",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "state"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "state",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/state.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *street_class_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_STREET_CLASS_AUT_psv.psv",
+    "outputView": "street_class_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to street_class_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/street_class_aut.json",
+    "inputView": "street_class_aut_raw",            
+    "outputView": "street_class_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in street_class_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "street_class_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "street_class_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/street_class_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *street_locality",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_STREET_LOCALITY_psv.psv",
+    "outputView": "street_locality_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to street_locality",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/street_locality.json",
+    "inputView": "street_locality_raw",            
+    "outputView": "street_locality",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in street_locality",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "street_locality"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "street_locality",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/street_locality.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *street_locality_alias",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_STREET_LOCALITY_ALIAS_psv.psv",
+    "outputView": "street_locality_alias_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to street_locality_alias",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/street_locality_alias.json",
+    "inputView": "street_locality_alias_raw",            
+    "outputView": "street_locality_alias",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in street_locality_alias",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "street_locality_alias"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "street_locality_alias",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/street_locality_alias.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *street_locality_alias_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_STREET_LOCALITY_ALIAS_TYPE_AUT_psv.psv",
+    "outputView": "street_locality_alias_type_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to street_locality_alias_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/street_locality_alias_type_aut.json",
+    "inputView": "street_locality_alias_type_aut_raw",            
+    "outputView": "street_locality_alias_type_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in street_locality_alias_type_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "street_locality_alias_type_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "street_locality_alias_type_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/street_locality_alias_type_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *street_locality_point",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Standard/{ACT,NSW,NT,OT,QLD,SA,TAS,VIC,WA}_STREET_LOCALITY_POINT_psv.psv",
+    "outputView": "street_locality_point_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to street_locality_point",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/street_locality_point.json",
+    "inputView": "street_locality_point_raw",            
+    "outputView": "street_locality_point",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in street_locality_point",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "street_locality_point"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "street_locality_point",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/street_locality_point.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *street_suffix_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_STREET_SUFFIX_AUT_psv.psv",
+    "outputView": "street_suffix_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to street_suffix_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/street_suffix_aut.json",
+    "inputView": "street_suffix_aut_raw",            
+    "outputView": "street_suffix_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in street_suffix_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "street_suffix_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "street_suffix_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/street_suffix_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  },
+	{
+    "type": "DelimitedExtract",
+    "name": "extract data from *street_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_INPUT_PATH}"/Authority Code/Authority_Code_STREET_TYPE_AUT_psv.psv",
+    "outputView": "street_type_aut_raw",            
+    "persist": false,
+    "delimiter": "Pipe",
+    "quote": "DoubleQuote",
+    "header": true,
+    "numPartitions": 64,
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types to street_type_aut",
+    "environments": ["production", "test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/meta/street_type_aut.json",
+    "inputView": "street_type_aut_raw",            
+    "outputView": "street_type_aut",            
+    "persist": true,
+    "authentication": {},       
+    "params": {}
+  },
+  {
+    "type": "SQLValidate",
+    "name": "ensure no data typing errors exist in street_type_aut",
+    "environments": ["production","test"],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "street_type_aut"
+    },
+    "authentication": {},
+    "params": {}
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write table out as parquet",
+    "environments": ["production", "test"],
+    "inputView": "street_type_aut",
+    "outputURI": ${ETL_CONF_OUTPUT_PATH}"/street_type_aut.parquet",
+    "authentication": {},    
+    "params": {}
+  }]
+}

@@ -1,0 +1,70 @@
+[{
+  "id" : "c6f8f048-7d3a-4faa-8270-a22d9affe91e",
+  "name" : "address_default_geocode_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "978da0c8-2fb6-4f75-a359-179b3b8b39f1",
+  "name" : "date_created",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "000a2ec4-5ce7-44f9-9eed-0af9f4433ce8",
+  "name" : "date_retired",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "bd55eb85-6e8b-4597-8126-efd5cebc11cd",
+  "name" : "address_detail_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "c68d4d2f-2874-459d-8832-903ee52a22fd",
+  "name" : "geocode_type_code",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "e1cb660b-d5ad-4ae4-98ec-83836d66603b",
+  "name" : "longitude",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "decimal",
+  "precision" : 11,
+  "scale" : 8
+},{
+  "id" : "8aef8da0-6f82-4413-8ded-12fbd159bb2e",
+  "name" : "latitude",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "decimal",
+  "precision" : 10,
+  "scale" : 8
+}]

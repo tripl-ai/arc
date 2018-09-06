@@ -1,0 +1,28 @@
+[{
+  "id" : "02afa443-b688-4648-b813-7248e3536d9a",
+  "name" : "code",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "59ad5ece-60ab-43fa-a985-e91a877e4a10",
+  "name" : "name",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "ae81f2c6-8bcb-4763-bbcc-1206fadbd1bc",
+  "name" : "description",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+}]

@@ -1,0 +1,79 @@
+[{
+  "id" : "0cbfa468-c098-42db-9893-3b1b38854517",
+  "name" : "street_locality_point_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "b6c45d86-08e0-449b-a115-3f5a99c8fe0f",
+  "name" : "date_created",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "be925693-6a9e-4f4b-9e3b-5237e5fb28d2",
+  "name" : "date_retired",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "86387efd-fb9f-45c9-a5a3-5b5762414fce",
+  "name" : "street_locality_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "d8bd9acb-8f32-4592-9871-c4f01d385c68",
+  "name" : "boundary_extent",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "integer"
+},{
+  "id" : "bf1812f3-e368-4d8c-97a7-9c3d263cd82d",
+  "name" : "planimetric_accuracy",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "long"
+},{
+  "id" : "0903d218-f670-4d31-822c-fc7782f2d8d8",
+  "name" : "longitude",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "decimal",
+  "precision" : 11,
+  "scale" : 8
+},{
+  "id" : "77c5b866-58d6-4904-8ba2-56c58d68cd2a",
+  "name" : "latitude",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "decimal",
+  "precision" : 10,
+  "scale" : 8
+}]

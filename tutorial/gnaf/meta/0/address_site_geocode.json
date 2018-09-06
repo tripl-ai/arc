@@ -1,0 +1,124 @@
+[{
+  "id" : "777e1018-ea01-48b5-a563-ce089965d38f",
+  "name" : "address_site_geocode_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "7b5f9661-3364-4a3f-a813-d5d153843d97",
+  "name" : "date_created",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "be1d0dce-95e1-4771-b715-317386fbe713",
+  "name" : "date_retired",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "date",
+  "formatters" : [ "yyyy-MM-dd" ]
+},{
+  "id" : "c2b0c6f9-add0-43eb-a54b-95792ef7d694",
+  "name" : "address_site_pid",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "99c109ad-f5ca-4975-8138-795d18ff71ee",
+  "name" : "geocode_site_name",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "dce22110-cd9e-4c72-ba83-49c9de3fe382",
+  "name" : "geocode_site_description",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "7c305d11-598f-4a6f-87f9-f04cc3612f73",
+  "name" : "geocode_type_code",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "string"
+},{
+  "id" : "5bd2937b-032c-4fec-8cd0-c61ee2bfa5e9",
+  "name" : "reliability_code",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "integer"
+},{
+  "id" : "28db53b8-efe8-4c24-be81-6fd7da4f3867",
+  "name" : "boundary_extent",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "integer"
+},{
+  "id" : "bcebe1c3-d315-44c4-8757-08b3d51d62ba",
+  "name" : "planimetric_accuracy",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "long"
+},{
+  "id" : "c25664d4-3da8-48aa-94f2-3f548c989835",
+  "name" : "elevation",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "integer"
+},{
+  "id" : "9a9fbbd4-20cf-4d36-b34c-4dfb9d1a7638",
+  "name" : "longitude",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "decimal",
+  "precision" : 11,
+  "scale" : 8
+},{
+  "id" : "e97a022a-cfc1-4b55-89ba-565e2dac0aaa",
+  "name" : "latitude",
+  "description" : "",
+  "nullable" : true,
+  "trim" : true,
+  "nullableValues" : [ "", "null" ],
+  "metadata" : { },
+  "type" : "decimal",
+  "precision" : 10,
+  "scale" : 8
+}]
