@@ -16,6 +16,7 @@ object TypingTransform {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
+    stageDetail.put("inputView", transform.inputView)   
     stageDetail.put("outputView", transform.outputView)   
     stageDetail.put("persist", Boolean.valueOf(transform.persist))
 
