@@ -52,6 +52,7 @@ RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/sp
     wget -P ${SPARK_JARS} https://jdbc.postgresql.org/download/postgresql-42.2.2.jar && \  
     wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/datastax/spark/spark-cassandra-connector_2.11/2.0.5/spark-cassandra-connector_2.11-2.0.5.jar && \
     wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/mysql/mysql-connector-java/5.1.45/mysql-connector-java-5.1.45.jar && \ 
+    wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/facebook/presto/presto-jdbc/0.209/presto-jdbc-0.209.jar && \
     # BigQueryJDBC uses difficult distribution mechanism
     wget -P /tmp https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.1.6.1006.zip && \   
     unzip -d ${SPARK_JARS} /tmp/SimbaJDBCDriverforGoogleBigQuery42_1.1.6.1006.zip *.jar && \

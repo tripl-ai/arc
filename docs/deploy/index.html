@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Partials - Arc</title>
+    <title>Deploy - Arc</title>
     <meta name="generator" content="Hugo 0.41" />
 
     
     <meta name="description" content="Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.">
     
-    <link rel="canonical" href="https://aglenergy.github.io/arc/partials/">
+    <link rel="canonical" href="https://aglenergy.github.io/arc/deploy/">
     
     <meta name="author" content="au.com.agl.arc">
     
 
-    <meta property="og:url" content="https://aglenergy.github.io/arc/partials/">
+    <meta property="og:url" content="https://aglenergy.github.io/arc/deploy/">
     <meta property="og:title" content="Arc">
     <meta property="og:image" content="https://aglenergy.github.io/arc/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="Arc">
@@ -97,7 +97,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Partials
+        Deploy
       </div>
     </div>
 
@@ -290,14 +290,11 @@
 
 
 
-<a class="current" title="Partials" href="https://aglenergy.github.io/arc/partials/">
+<a  title="Partials" href="https://aglenergy.github.io/arc/partials/">
 	
 	Partials
 </a>
 
-
-<ul id="scrollspy">
-</ul>
 
 
   
@@ -329,11 +326,14 @@
 
 
 
-<a  title="Deploy" href="https://aglenergy.github.io/arc/deploy/">
+<a class="current" title="Deploy" href="https://aglenergy.github.io/arc/deploy/">
 	
 	Deploy
 </a>
 
+
+<ul id="scrollspy">
+</ul>
 
 
   
@@ -399,210 +399,177 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Partials </h1>
+			<h1>Deploy </h1>
 
 			
 
-<h2 id="authentication">Authentication</h2>
+<p>Arc has been packaged as a <a href="https://www.docker.com/">Docker</a> image to simplify deployment as a stateless process on cloud infrastructure.</p>
 
-<p>The <code>Authentication</code> map defines the authentication parameters for connecting to a remote service (e.g. HDFS, Blob Storage, etc.).</p>
+<h2 id="running-a-job">Running a Job</h2>
 
-<h3 id="parameters">Parameters</h3>
+<p>An example command to start a job is:</p>
+
+<pre><code class="language-json">docker run \
+-e &quot;ETL_CONF_ENV=production&quot; \
+-e &quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&quot; \
+-it -p 4040:4040 seddonm1/arc:1.1.0 \
+bin/spark-submit \
+--master local[*] \
+--class au.com.agl.arc.ARC \
+/opt/spark/jars/arc.jar \
+--etl.config.uri=file:///opt/tutorial/basic/job/0/basic.json
+</code></pre>
+
+<p>This job executes the following job file which is included in the docker image:</p>
+
+<pre><code class="language-json">{&quot;stages&quot;:
+	[{
+    &quot;type&quot;: &quot;SQLValidate&quot;,
+    &quot;name&quot;: &quot;a simple stage which prints a message&quot;,
+    &quot;environments&quot;: [
+      &quot;production&quot;,
+      &quot;test&quot;
+    ],
+    &quot;inputURI&quot;: ${ETL_CONF_JOB_PATH}&quot;/print_message.sql&quot;,
+    &quot;sqlParams&quot;: {
+      &quot;message0&quot;: &quot;Hello&quot;
+      &quot;message1&quot;: &quot;World!&quot;
+    },
+    &quot;authentication&quot;: {},
+    &quot;params&quot;: {}
+  }]
+}
+</code></pre>
+
+<p>This example is included to demonstrate:</p>
+
+<ul>
+<li><p><code>ETL_CONF_ENV</code> is a reserved environment variable which determines which stages to execute in the current mode. For each of the stages the job designer can specify an array of <code>stages</code> under which that stage will be executed (in the case above <code>production</code> and <code>test</code> are specified).<br><br>The purpose of this stage is so that it is possible to add or remove stages for execution modes like <code>test</code> or <code>integration</code> which are executed by a <a href="https://en.wikipedia.org/wiki/CI/CD">CI/CD</a> tool prior to deployment and that you do not want to run in <code>production</code> mode - so maybe a comparison against a known &lsquo;good&rsquo; test dataset could be executed in only <code>test</code> mode.</p></li>
+
+<li><p><code>ETL_CONF_JOB_PATH</code> is an environment variable that is parsed and included by string interpolation when the job file is executed. So when then job starts Arc will attempt to resolve all environment variables set in the <code>basic.json</code> job file. In this case <code>&quot;inputURI&quot;: ${ETL_CONF_JOB_PATH}&quot;/print_message.sql&quot;,</code> becomes <code>&quot;inputURI&quot;: &quot;/opt/tutorial/basic/job/0/print_message.sql&quot;,</code> after resolution. This is included so that potentially different paths would be set for running in <code>test</code> vs <code>production</code> mode.</p></li>
+
+<li><p>In this sample job the spark master is <code>local[*]</code> indicating that this is a single instance &lsquo;cluster&rsquo; where Arc relies on <a href="https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling">vertical</a> not <a href="https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling">horizonal</a> scaling. Depending on the constrains of the job (i.e. CPU vs disk IO) it is often better to execute with vertical scaling on cloud compute rather than pay the cost of network shuffling.</p></li>
+
+<li><p><code>etl.config.uri</code> is a reserved JVM property which describes to Arc which job to execute. See below for all the properties that can be passed to Arc.</p></li>
+</ul>
+
+<h2 id="configuration-parameters">Configuration Parameters</h2>
 
 <table>
 <thead>
 <tr>
-<th>Attribute</th>
-<th>Type</th>
-<th>Required</th>
+<th>Variable</th>
+<th>Property</th>
 <th>Description</th>
 </tr>
 </thead>
 
 <tbody>
 <tr>
-<td>method</td>
-<td>String</td>
-<td>true</td>
-<td>A value of <code>AzureSharedKey</code>, <code>AzureSharedAccessSignature</code>, <code>AzureDataLakeStorageToken</code>, <code>AmazonAccessKey</code>, <code>GoogleCloudStorageKeyFile</code> which defines which method should be used to authenticate with the remote service.</td>
+<td>ETL_CONF_JOB_ID</td>
+<td>etl.config.job.id</td>
+<td>A job identifier added to all the logging messages.</td>
 </tr>
 
 <tr>
-<td>accountName</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureSharedKey</code> and <code>AzureSharedAccessSignature</code>.</td>
+<td>ETL_CONF_JOB_NAME</td>
+<td>etl.config.job.name</td>
+<td>A job name added to all logging messages and Spark history server.</td>
 </tr>
 
 <tr>
-<td>signature</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureSharedKey</code>.</td>
+<td>ETL_CONF_ENV</td>
+<td>etl.config.environment</td>
+<td>The <code>environment</code> to run under.<br><br>E.g. if <code>ETL_CONF_ENV</code> is set to <code>production</code> then a stage with <code>&quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;]</code> would be executed and one with <code>&quot;environments&quot;: [&quot;test&quot;]</code> would not be executed.</td>
 </tr>
 
 <tr>
-<td>container</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureSharedAccessSignature</code>.</td>
+<td>ETL_CONF_ENV_ID</td>
+<td>etl.config.environment.id</td>
+<td>An environment identifier to be added to all logging messages. Could be something like a <a href="https://en.wikipedia.org/wiki/Universally_unique_identifier">UUID</a> which allows joining to logs produced by ephemeral compute started by something like <a href="https://www.terraform.io/">Terraform</a>.</td>
 </tr>
 
 <tr>
-<td>token</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureSharedAccessSignature</code>.</td>
-</tr>
-
-<tr>
-<td>clientID</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureDataLakeStorageToken</code>.</td>
-</tr>
-
-<tr>
-<td>refreshToken</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureDataLakeStorageToken</code>.</td>
-</tr>
-
-<tr>
-<td>accessKeyID</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AmazonAccessKey</code>.</td>
-</tr>
-
-<tr>
-<td>secretAccessKey</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AmazonAccessKey</code>.</td>
-</tr>
-
-<tr>
-<td>projectID</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>GoogleCloudStorageKeyFile</code>.</td>
-</tr>
-
-<tr>
-<td>keyFilePath</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>GoogleCloudStorageKeyFile</code>.</td>
+<td>ETL_CONF_URI</td>
+<td>etl.config.uri</td>
+<td>The URI of the job file to execute.</td>
 </tr>
 </tbody>
 </table>
 
-<h3 id="examples">Examples</h3>
+<p>Additionally there are permissions arguments that can be used to retrieve the job file from cloud storage:</p>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;DelimitedExtract&quot;,
-    ...
-    &quot;authentication&quot;: {
-        &quot;method&quot;: &quot;AzureSharedKey&quot;,
-        &quot;accountName&quot;: &quot;myaccount&quot;,
-        &quot;signature&quot;: &quot;ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=&quot;,
-    }
-    ...
-}
-</code></pre>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Property</th>
+<th>Description</th>
+</tr>
+</thead>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;DelimitedExtract&quot;,
-    ...
-    &quot;authentication&quot;: {
-        &quot;method&quot;: &quot;AzureSharedAccessSignature&quot;,
-        &quot;accountName&quot;: &quot;myaccount&quot;,
-        &quot;container&quot;: &quot;mycontainer&quot;,
-        &quot;token&quot;: &quot;sv=2015-04-05&amp;st=2015-04-29T22%3A18%3A26Z&amp;se=2015-04-30T02%3A23%3A26Z&amp;sr=b&amp;sp=rw&amp;sip=168.1.5.60-168.1.5.70&amp;spr=https&amp;sig=Z%2FRHIX5Xcg0Mq2rqI3OlWTjEg2tYkboXr1P9ZUXDtkk%3D&quot;,
-    }
-    ...
-}
-</code></pre>
+<tbody>
+<tr>
+<td>ETL_CONF_S3A_ENDPOINT</td>
+<td>etl.config.fs.s3a.endpoint</td>
+<td>The endpoint for connecting to Amazon S3.</td>
+</tr>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;DelimitedExtract&quot;,
-    ...
-    &quot;authentication&quot;: {
-        &quot;method&quot;: &quot;AmazonAccessKey&quot;,
-        &quot;accessKeyID&quot;: &quot;AKIAIOSFODNN7EXAMPLE&quot;,
-        &quot;secretAccessKey&quot;: &quot;wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY&quot;,
-    }
-    ...
-}
-</code></pre>
+<tr>
+<td>ETL_CONF_S3A_CONNECTION_SSL_ENABLED</td>
+<td>etl.config.fs.s3a.connection.ssl.enabled</td>
+<td>Whether to enable SSL connection to Amazon S3.</td>
+</tr>
 
-<h2 id="environments">Environments</h2>
+<tr>
+<td>ETL_CONF_S3A_ACCESS_KEY</td>
+<td>etl.config.fs.s3a.access.key</td>
+<td>The access key for connecting to Amazon S3.</td>
+</tr>
 
-<p>The <code>Environments</code> list specifies a list of environments under which the stage will be executed. The environments list must contain the value in the <code>ETL_CONF_ENV</code> environment variable for the stage to be executed.</p>
+<tr>
+<td>ETL_CONF_S3A_SECRET_KEY</td>
+<td>etl.config.fs.s3a.secret.key</td>
+<td>The secret for connecting to Amazon S3.</td>
+</tr>
 
-<h3 id="examples-1">Examples</h3>
+<tr>
+<td>ETL_CONF_AZURE_ACCOUNT_NAME</td>
+<td>etl.config.fs.azure.account.name</td>
+<td>The account name for connecting to Azure Blob Storage.</td>
+</tr>
 
-<p>If a stage is to be executed in both production and testing and the <code>ETL_CONF_ENV</code> environment variable is set to <code>production</code> or <code>test</code> then the <code>DelimitedExtract</code> stage defined here will be executed. If the <code>ETL_CONF_ENV</code> environment variable was set to something else like <code>user_acceptance_testing</code> then this stage will not be executed and a warning message will be logged.</p>
+<tr>
+<td>ETL_CONF_AZURE_ACCOUNT_KEY</td>
+<td>etl.config.fs.azure.account.key</td>
+<td>The account key for connecting to Azure Blob Storage.</td>
+</tr>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;DelimitedExtract&quot;,
-    ...
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    ...
-}
-</code></pre>
+<tr>
+<td>ETL_CONF_ADL_OAUTH2_CLIENT_ID</td>
+<td>etl.config.fs.adl.oauth2.client.id</td>
+<td>The OAuth client identifier for connecting to Azure Data Lake.</td>
+</tr>
 
-<p>A practical use case of this is to execute additional stages in testing which would prevent the job from being automatically deployed to production via <a href="https://en.wikipedia.org/wiki/Continuous_delivery">Continuous Delivery</a> if it fails:</p>
+<tr>
+<td>ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN</td>
+<td>etl.config.fs.adl.oauth2.refresh.token</td>
+<td>The OAuth refresh token for connecting to Azure Data Lake.</td>
+</tr>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;ParquetExtract&quot;,
-    &quot;name&quot;: &quot;load the manually verified known good set of data from testing&quot;, 
-    &quot;environments&quot;: [&quot;test&quot;],
-    &quot;outputView&quot;: &quot;known_correct_dataset&quot;,
-    ...
-},
-{
-    &quot;type&quot;: &quot;EqualityValidate&quot;,
-    &quot;name&quot;: &quot;ensure the business logic produces the same result as the known good set of data from testing&quot;, 
-    &quot;environments&quot;: [&quot;test&quot;],
-    &quot;leftView&quot;: &quot;newly_caluclated_dataset&quot;,
-    &quot;rightView&quot;: &quot;known_correct_dataset&quot;,
-    ...
-}
-</code></pre>
+<tr>
+<td>ETL_CONF_GOOGLE_CLOUD_PROJECT_ID</td>
+<td>etl.config.fs.gs.project.id</td>
+<td>The project identifier for connecting to Google Cloud Storage.</td>
+</tr>
 
-<h2 id="user-defined-functions">User Defined Functions</h2>
-
-<p>To help with common data tasks several additional functions have been added to Arc in addition to the inbuilt <a href="https://spark.apache.org/docs/latest/api/sql/index.html">Spark SQL Functions</a>.</p>
-
-<h3 id="get-json-double-array">get_json_double_array</h3>
-
-<h5 id="since-1-0-9">Since: 1.0.9</h5>
-
-<p>Similar to <a href="https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object">get_json_object</a> - but extracts a json <code>double</code> <code>array</code> from path.</p>
-
-<pre><code class="language-sql">SELECT get_json_double_array('[0.1, 1.1]', '$')
-</code></pre>
-
-<h3 id="get-json-integer-array">get_json_integer_array</h3>
-
-<h5 id="since-1-0-9-1">Since: 1.0.9</h5>
-
-<p>Similar to <a href="https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object">get_json_object</a> - but extracts a json <code>integer</code> <code>array</code> from path.</p>
-
-<pre><code class="language-sql">SELECT get_json_integer_array('[1, 2]', '$')
-</code></pre>
-
-<h3 id="get-json-long-array">get_json_long_array</h3>
-
-<h5 id="since-1-0-9-2">Since: 1.0.9</h5>
-
-<p>Similar to <a href="https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object">get_json_object</a> - but extracts a json <code>long</code> <code>array</code> from path.</p>
-
-<pre><code class="language-sql">SELECT get_json_long_array('[2147483648, 2147483649]', '$')
-</code></pre>
+<tr>
+<td>ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE</td>
+<td>etl.config.fs.google.cloud.auth.service.account.json.keyfile</td>
+<td>The service account json keyfile path for connecting to Google Cloud Storage.</td>
+</tr>
+</tbody>
+</table>
 
 
 			<aside class="copyright" role="note">
@@ -617,7 +584,7 @@
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
   
-      <a href="https://aglenergy.github.io/arc/metadata/" title="Metadata">
+      <a href="https://aglenergy.github.io/arc/patterns/" title="Patterns">
         <span class="direction">
           Previous
         </span>
@@ -627,7 +594,7 @@
           </div>
           <div class="stretch">
             <div class="title">
-              Metadata
+              Patterns
             </div>
           </div>
         </div>
@@ -637,14 +604,14 @@
 
   <div class="next">
   
-      <a href="https://aglenergy.github.io/arc/patterns/" title="Patterns">
+      <a href="https://aglenergy.github.io/arc/contributing/" title="Contributing">
         <span class="direction">
           Next
         </span>
         <div class="page">
           <div class="stretch">
             <div class="title">
-              Patterns
+              Contributing
             </div>
           </div>
           <div class="button button-next" role="button" aria-label="Next">

@@ -1,0 +1,81 @@
+---
+title: Deploy
+weight: 95
+type: blog
+---
+
+Arc has been packaged as a [Docker](https://www.docker.com/) image to simplify deployment as a stateless process on cloud infrastructure.
+
+## Running a Job
+
+An example command to start a job is:
+
+```json
+docker run \
+-e "ETL_CONF_ENV=production" \
+-e "ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0" \
+-it -p 4040:4040 seddonm1/arc:1.1.0 \
+bin/spark-submit \
+--master local[*] \
+--class au.com.agl.arc.ARC \
+/opt/spark/jars/arc.jar \
+--etl.config.uri=file:///opt/tutorial/basic/job/0/basic.json
+```
+
+This job executes the following job file which is included in the docker image:
+
+```json
+{"stages":
+	[{
+    "type": "SQLValidate",
+    "name": "a simple stage which prints a message",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_JOB_PATH}"/print_message.sql",
+    "sqlParams": {
+      "message0": "Hello"
+      "message1": "World!"
+    },
+    "authentication": {},
+    "params": {}
+  }]
+}
+```
+
+This example is included to demonstrate:
+
+- `ETL_CONF_ENV` is a reserved environment variable which determines which stages to execute in the current mode. For each of the stages the job designer can specify an array of `stages` under which that stage will be executed (in the case above `production` and `test` are specified).<br><br>The purpose of this stage is so that it is possible to add or remove stages for execution modes like `test` or `integration` which are executed by a [CI/CD](https://en.wikipedia.org/wiki/CI/CD) tool prior to deployment and that you do not want to run in `production` mode - so maybe a comparison against a known 'good' test dataset could be executed in only `test` mode.
+
+- `ETL_CONF_JOB_PATH` is an environment variable that is parsed and included by string interpolation when the job file is executed. So when then job starts Arc will attempt to resolve all environment variables set in the `basic.json` job file. In this case `"inputURI": ${ETL_CONF_JOB_PATH}"/print_message.sql",` becomes `"inputURI": "/opt/tutorial/basic/job/0/print_message.sql",` after resolution. This is included so that potentially different paths would be set for running in `test` vs `production` mode.
+
+- In this sample job the spark master is `local[*]` indicating that this is a single instance 'cluster' where Arc relies on [vertical](https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling) not [horizonal](https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling) scaling. Depending on the constrains of the job (i.e. CPU vs disk IO) it is often better to execute with vertical scaling on cloud compute rather than pay the cost of network shuffling.
+
+- `etl.config.uri` is a reserved JVM property which describes to Arc which job to execute. See below for all the properties that can be passed to Arc.
+
+## Configuration Parameters
+
+| Variable | Property | Description |
+|----------|----------|-------------|
+|ETL_CONF_JOB_ID|etl.config.job.id|A job identifier added to all the logging messages.|
+|ETL_CONF_JOB_NAME|etl.config.job.name|A job name added to all logging messages and Spark history server.|
+|ETL_CONF_ENV|etl.config.environment|The `environment` to run under.<br><br>E.g. if `ETL_CONF_ENV` is set to `production` then a stage with `"environments": ["production", "test"]` would be executed and one with `"environments": ["test"]` would not be executed.|
+|ETL_CONF_ENV_ID|etl.config.environment.id|An environment identifier to be added to all logging messages. Could be something like a [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) which allows joining to logs produced by ephemeral compute started by something like [Terraform](https://www.terraform.io/).|
+|ETL_CONF_URI|etl.config.uri|The URI of the job file to execute.|
+
+Additionally there are permissions arguments that can be used to retrieve the job file from cloud storage:
+
+| Variable | Property | Description |
+|----------|----------|-------------|
+|ETL_CONF_S3A_ENDPOINT|etl.config.fs.s3a.endpoint|The endpoint for connecting to Amazon S3.|
+|ETL_CONF_S3A_CONNECTION_SSL_ENABLED|etl.config.fs.s3a.connection.ssl.enabled|Whether to enable SSL connection to Amazon S3.|
+|ETL_CONF_S3A_ACCESS_KEY|etl.config.fs.s3a.access.key|The access key for connecting to Amazon S3.|
+|ETL_CONF_S3A_SECRET_KEY|etl.config.fs.s3a.secret.key|The secret for connecting to Amazon S3.|
+|ETL_CONF_AZURE_ACCOUNT_NAME|etl.config.fs.azure.account.name|The account name for connecting to Azure Blob Storage.|
+|ETL_CONF_AZURE_ACCOUNT_KEY|etl.config.fs.azure.account.key|The account key for connecting to Azure Blob Storage.|
+|ETL_CONF_ADL_OAUTH2_CLIENT_ID|etl.config.fs.adl.oauth2.client.id|The OAuth client identifier for connecting to Azure Data Lake.|
+|ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN|etl.config.fs.adl.oauth2.refresh.token|The OAuth refresh token for connecting to Azure Data Lake.|
+|ETL_CONF_GOOGLE_CLOUD_PROJECT_ID|etl.config.fs.gs.project.id|The project identifier for connecting to Google Cloud Storage.|
+|ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE|etl.config.fs.google.cloud.auth.service.account.json.keyfile|The service account json keyfile path for connecting to Google Cloud Storage.|
+        
