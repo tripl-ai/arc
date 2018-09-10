@@ -146,12 +146,27 @@ object JDBCLoad {
 
         val writtenDF =
           try {
-            val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)
+            val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)            
 
             // switch to custom jdbc actions based on driver
             val resultDF = load.driver match {
               // switch to custom sqlserver bulkloader
-              case _: com.microsoft.sqlserver.jdbc.SQLServerDriver if (load.bulkload.getOrElse(false)) => {
+              case _: com.microsoft.sqlserver.jdbc.SQLServerDriver if (load.bulkload.getOrElse(false)) => {              
+
+                // ensure schemas align after dropping invalid columns
+                using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>
+                  JdbcUtils.getSchemaOption(connection, jdbcOptions) match {
+                    case Some(targetSchema) => {
+                      if (!(nonNullDF.schema.map(_.name).toSet.equals(targetSchema.map(_.name).toSet))) {
+                        throw new Exception(s"""Input dataset has columns [${nonNullDF.schema.map(_.name).mkString(", ")}] which does not match target table '${tableName}' which has columns [${targetSchema.map(_.name).mkString(", ")}].""")
+                      }
+                      if (!(nonNullDF.schema.map(_.dataType.simpleString).toSet.equals(targetSchema.map(_.dataType.simpleString).toSet))) {
+                        throw new Exception(s"""Input dataset has columns of types [${nonNullDF.schema.map(_.dataType.simpleString).mkString(", ")}] which does not match target table '${tableName}' which has columns of types [${targetSchema.map(_.dataType.simpleString).mkString(", ")}].""")
+                      }                      
+                    }
+                    case None => throw new Exception(s"Table '${tableName}' does not exist in database '${databaseName}' and 'bulkload' equals 'true' so cannot continue.")
+                  }
+                }  
 
                 // remove the "jdbc:" prefix
                 val uri = new URI(load.jdbcURL.substring(5))

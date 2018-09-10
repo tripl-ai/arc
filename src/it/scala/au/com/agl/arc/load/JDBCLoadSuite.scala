@@ -286,6 +286,121 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     assert(thrown.getMessage.contains(s"""java.lang.Exception: Table 'dbo.[hyphen-table]' does not exist in database 'hyphen-database' and 'bulkLoad' equals 'true' so cannot continue."""))      
   }     
 
+  test("JDBCLoad: sqlserver bulk wrong schema column names") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    try {
+      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
+      connection.createStatement.execute(s"""
+      DROP TABLE IF EXISTS [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]
+      """)
+      connection.createStatement.execute(s"""
+      CREATE TABLE [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}] (
+        [booleanDatum] [bit] NOT NULL,
+        [dateDatum] [date] NULL,
+        [decimalDatum] [decimal](38, 18) NULL,
+        [doubleDatum] [float] NOT NULL,
+        [integerDatum] [int] NULL,
+        [longDatum] [bigint] NOT NULL,
+        [stringDatum] [nvarchar](max) NULL,
+        [timeDatum] [nvarchar](max) NULL,
+        [timestampDatum] [datetime] NULL
+      )
+      """)
+    } catch {
+      case e: Exception =>
+    } finally {
+      connection.close
+    }    
+
+    val dataset = TestDataUtils.getKnownDataset.withColumnRenamed("booleanDatum", "renamedBooleanDatum")
+    dataset.createOrReplaceTempView(dbtable)
+
+    val thrown = intercept[Exception with DetailException] {
+      load.JDBCLoad.load(
+        JDBCLoad(
+          name="dataset",
+          inputView=dbtable, 
+          jdbcURL=sqlserverurl, 
+          driver=DriverManager.getDriver(sqlserverurl),
+          tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
+          partitionBy=Nil, 
+          numPartitions=None, 
+          isolationLevel=None,
+          batchsize=None, 
+          truncate=None,
+          createTableOptions=None,
+          createTableColumnTypes=None,        
+          saveMode=None, 
+          bulkload=Option(true),
+          tablock=None,
+          params=Map("user" -> user, "password" -> password)
+        )
+      )
+    }
+
+    assert(thrown.getMessage.contains(s"""Input dataset has columns [renamedBooleanDatum, dateDatum, decimalDatum, doubleDatum, integerDatum, longDatum, stringDatum, timeDatum, timestampDatum] which does not match target table 'dbo.[hyphen-table]' which has columns [booleanDatum, dateDatum, decimalDatum, doubleDatum, integerDatum, longDatum, stringDatum, timeDatum, timestampDatum]."""))          
+  }     
+
+  test("JDBCLoad: sqlserver bulk wrong schema column types") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    try {
+      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
+      connection.createStatement.execute(s"""
+      DROP TABLE IF EXISTS [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]
+      """)
+      connection.createStatement.execute(s"""
+      CREATE TABLE [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}] (
+        [booleanDatum] [int] NOT NULL,
+        [dateDatum] [date] NULL,
+        [decimalDatum] [decimal](38, 18) NULL,
+        [doubleDatum] [float] NOT NULL,
+        [integerDatum] [int] NULL,
+        [longDatum] [bigint] NOT NULL,
+        [stringDatum] [nvarchar](max) NULL,
+        [timeDatum] [nvarchar](max) NULL,
+        [timestampDatum] [datetime] NULL
+      )
+      """)
+    } catch {
+      case e: Exception =>
+    } finally {
+      connection.close
+    }    
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(dbtable)
+
+    val thrown = intercept[Exception with DetailException] {
+      load.JDBCLoad.load(
+        JDBCLoad(
+          name="dataset",
+          inputView=dbtable, 
+          jdbcURL=sqlserverurl, 
+          driver=DriverManager.getDriver(sqlserverurl),
+          tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
+          partitionBy=Nil, 
+          numPartitions=None, 
+          isolationLevel=None,
+          batchsize=None, 
+          truncate=None,
+          createTableOptions=None,
+          createTableColumnTypes=None,        
+          saveMode=None, 
+          bulkload=Option(true),
+          tablock=None,
+          params=Map("user" -> user, "password" -> password)
+        )
+      )
+    }
+
+    assert(thrown.getMessage.contains(s"""Input dataset has columns of types [boolean, date, decimal(38,18), double, int, bigint, string, string, timestamp] which does not match target table 'dbo.[hyphen-table]' which has columns of types [int, date, decimal(38,18), double, int, bigint, string, string, timestamp]."""))          
+  }  
 
   test("JDBCLoad: sqlserver bulk SaveMode.Append") {
     implicit val spark = session
