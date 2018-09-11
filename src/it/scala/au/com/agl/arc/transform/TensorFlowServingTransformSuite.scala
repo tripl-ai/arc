@@ -75,7 +75,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         signatureName=None,
-        responseType=Option("integer"),
+        responseType=Option(IntegerResponse),
         batchSize=Option(10),
         params=Map.empty,
         persist=false
@@ -108,7 +108,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         signatureName=None,
-        responseType=Option("double"),
+        responseType=Option(DoubleResponse),
         batchSize=Option(10),
         params=Map.empty,
         persist=false
@@ -141,7 +141,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         signatureName=None,
-        responseType=Option("string"),
+        responseType=Option(StringResponse),
         batchSize=Option(10),
         params=Map.empty,
         persist=false

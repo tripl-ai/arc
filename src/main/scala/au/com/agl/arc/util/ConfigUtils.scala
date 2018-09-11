@@ -287,6 +287,32 @@ object ConfigUtils {
     }
   }
 
+  def readResponseType(path: String)(implicit c: Config): Either[Errors, Option[ReponseType]] = {
+  
+    def err(msg: String): Either[Errors, Option[ReponseType]] = Left(ConfigError(path, msg) :: Nil)
+
+    try {
+      if (c.hasPath(path)) {
+        c.getString(path) match {
+          case "integer" => {
+            Right(Option(IntegerResponse))
+          } 
+          case "double" => {
+            Right(Option(DoubleResponse))
+          } 
+          case "object" => {
+            Right(Option(StringResponse))
+          }           
+          case _ =>  throw new Exception(s"""Unable to parse responseType: '${c.getString(path)}'. Must be one of ['integer', 'double', 'object'].""")
+        }
+      } else {
+        Right(None)
+      }
+    } catch {
+      case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
+    }
+  }  
+
   def readHttpMethod(path: String)(implicit c: Config): Either[Errors, Option[String]] = {
   
     def err(msg: String): Either[Errors, Option[String]] = Left(ConfigError(path, msg) :: Nil)
@@ -1109,7 +1135,7 @@ object ConfigUtils {
     val inputURI = getValue[String]("uri")
     val parsedURI = inputURI.rightFlatMap(uri => parseURI("uri", uri))
     val signatureName = getOptionalValue[String]("signatureName")
-    val responseType = getOptionalValue[String]("responseType")
+    val responseType = readResponseType("responseType")
     val batchSize = getOptionalValue[Int]("batchSize")
     val persist = getValue[Boolean]("persist")
 

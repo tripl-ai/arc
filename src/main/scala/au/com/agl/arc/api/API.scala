@@ -191,7 +191,7 @@ object API {
 
   case class SQLTransform(name: String, inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean) extends Transform { val getType = "SQLTransform" }
 
-  case class TensorFlowServingTransform(name: String, inputView: String, outputView: String, uri: URI, signatureName: Option[String], responseType: Option[String], batchSize: Option[Int], params: Map[String, String], persist: Boolean) extends Transform { val getType = "TensorFlowServingTransform" }
+  case class TensorFlowServingTransform(name: String, inputView: String, outputView: String, uri: URI, signatureName: Option[String], responseType: Option[ReponseType], batchSize: Option[Int], params: Map[String, String], persist: Boolean) extends Transform { val getType = "TensorFlowServingTransform" }
 
   case class TypingTransform(name: String, cols: Either[String, List[ExtractColumn]], inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform with ColumnarExtract { val getType = "TypingTransform" }
 
@@ -239,6 +239,11 @@ object API {
 
   case class SQLValidate(name: String, inputURI: URI, sql: String, sqlParams: Map[String, String], params: Map[String, String]) extends Validate { val getType = "SQLValidate" }
 
+
+  sealed trait ReponseType
+  case object IntegerResponse extends ReponseType
+  case object DoubleResponse extends ReponseType
+  case object StringResponse extends ReponseType
 
   sealed trait Authentication
   object Authentication {

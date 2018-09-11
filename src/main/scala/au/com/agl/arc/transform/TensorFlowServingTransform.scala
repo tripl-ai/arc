@@ -34,7 +34,6 @@ object TensorFlowServingTransform {
     val stageDetail = new java.util.HashMap[String, Object]()
 
     val batchSize = transform.batchSize.getOrElse(1)
-    val responseType = transform.responseType.getOrElse("string")
 
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
@@ -42,7 +41,6 @@ object TensorFlowServingTransform {
     stageDetail.put("outputView", transform.outputView)  
     stageDetail.put("uri", transform.uri.toString)
     stageDetail.put("batchSize", Integer.valueOf(batchSize))
-    stageDetail.put("responseType", responseType)
 
     logger.info()
       .field("event", "enter")
@@ -52,9 +50,9 @@ object TensorFlowServingTransform {
 
     val df = spark.table(transform.inputView)
 
-    val tensorFlowResponseSchema = responseType match {
-      case "integer" => StructType(df.schema.fields.toList ::: List(new StructField("result", IntegerType, true)))
-      case "double" => StructType(df.schema.fields.toList ::: List(new StructField("result", DoubleType, true)))
+    val tensorFlowResponseSchema = transform.responseType match {
+      case Some(IntegerResponse) => StructType(df.schema.fields.toList ::: List(new StructField("result", IntegerType, true)))
+      case Some(DoubleResponse) => StructType(df.schema.fields.toList ::: List(new StructField("result", DoubleType, true)))
       case _ => StructType(df.schema.fields.toList ::: List(new StructField("result", StringType, true)))
     }
 
@@ -140,9 +138,9 @@ object TensorFlowServingTransform {
 
         // try to unpack result 
         groupedRow.zipWithIndex.map { case (row, index) => {
-          val result = responseType match {
-            case "integer" => Seq(response(index).asInt)
-            case "double" => Seq(response(index).asDouble)
+          val result = transform.responseType match {
+            case Some(IntegerResponse) => Seq(response(index).asInt)
+            case Some(DoubleResponse) => Seq(response(index).asDouble)
             case _ => Seq(response(index).asText)
           }
 
