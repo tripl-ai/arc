@@ -52,11 +52,10 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     session.stop
   }    
 
-  test("HTTPTransform: Can call TensorflowServing via REST" ) {
+  test("HTTPTransform: Can call TensorflowServing via REST: integer" ) {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -76,6 +75,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         signatureName=None,
+        responseType=Option("integer"),
         batchSize=Option(10),
         params=Map.empty,
         persist=false
@@ -84,5 +84,71 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
 
     assert(transformDataset.first.getInt(2) == 11)
   }  
+
+  test("HTTPTransform: Can call TensorflowServing via REST: double" ) {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val df = spark.range(1, 10).toDF
+    df.createOrReplaceTempView(inputView)
+
+    var payloadDataset = spark.sql(s"""
+    SELECT 
+      id
+      ,id AS value 
+    FROM ${inputView}
+    """).repartition(1)
+    payloadDataset.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.TensorFlowServingTransform.transform(
+      TensorFlowServingTransform(
+        name=outputView,
+        uri=new URI(uri),
+        inputView=inputView,
+        outputView=outputView,
+        signatureName=None,
+        responseType=Option("double"),
+        batchSize=Option(10),
+        params=Map.empty,
+        persist=false
+      )
+    ).get
+
+    assert(transformDataset.first.getDouble(2) == 11.0)
+  }   
+
+  test("HTTPTransform: Can call TensorflowServing via REST: string" ) {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val df = spark.range(1, 10).toDF
+    df.createOrReplaceTempView(inputView)
+
+    var payloadDataset = spark.sql(s"""
+    SELECT 
+      id
+      ,id AS value 
+    FROM ${inputView}
+    """).repartition(1)
+    payloadDataset.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.TensorFlowServingTransform.transform(
+      TensorFlowServingTransform(
+        name=outputView,
+        uri=new URI(uri),
+        inputView=inputView,
+        outputView=outputView,
+        signatureName=None,
+        responseType=Option("string"),
+        batchSize=Option(10),
+        params=Map.empty,
+        persist=false
+      )
+    ).get
+
+    assert(transformDataset.first.getString(2) == "11")
+  } 
 
 }

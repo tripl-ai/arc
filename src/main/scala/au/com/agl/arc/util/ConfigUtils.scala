@@ -1109,14 +1109,15 @@ object ConfigUtils {
     val inputURI = getValue[String]("uri")
     val parsedURI = inputURI.rightFlatMap(uri => parseURI("uri", uri))
     val signatureName = getOptionalValue[String]("signatureName")
+    val responseType = getOptionalValue[String]("responseType")
     val batchSize = getOptionalValue[Int]("batchSize")
     val persist = getValue[Boolean]("persist")
 
-    (name, inputView, outputView, inputURI, parsedURI, signatureName, batchSize, persist) match {
-      case (Right(n), Right(iv), Right(ov), Right(uri), Right(puri), Right(sn), Right(bs), Right(p)) => 
-        Right(TensorFlowServingTransform(n, iv, ov, puri, sn, bs, params, p))
+    (name, inputView, outputView, inputURI, parsedURI, signatureName, responseType, batchSize, persist) match {
+      case (Right(n), Right(iv), Right(ov), Right(uri), Right(puri), Right(sn), Right(rt), Right(bs), Right(p)) => 
+        Right(TensorFlowServingTransform(n, iv, ov, puri, sn, rt, bs, params, p))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputView, inputURI, parsedURI, signatureName, batchSize, persist).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, outputView, inputURI, parsedURI, signatureName, responseType, batchSize, persist).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)

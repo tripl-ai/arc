@@ -34,6 +34,7 @@ object TensorFlowServingTransform {
     val stageDetail = new java.util.HashMap[String, Object]()
 
     val batchSize = transform.batchSize.getOrElse(1)
+    val responseType = transform.responseType.getOrElse("string")
 
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
@@ -41,6 +42,7 @@ object TensorFlowServingTransform {
     stageDetail.put("outputView", transform.outputView)  
     stageDetail.put("uri", transform.uri.toString)
     stageDetail.put("batchSize", Integer.valueOf(batchSize))
+    stageDetail.put("responseType", responseType)
 
     logger.info()
       .field("event", "enter")
@@ -50,9 +52,11 @@ object TensorFlowServingTransform {
 
     val df = spark.table(transform.inputView)
 
-    val tensorFlowResponseSchema = StructType(
-      df.schema.fields.toList ::: List(new StructField("resultType", StringType, false), new StructField("integerResult", IntegerType, true), new StructField("doubleResult", DoubleType, true), new StructField("objectResult", StringType, true))
-    )
+    val tensorFlowResponseSchema = responseType match {
+      case "integer" => StructType(df.schema.fields.toList ::: List(new StructField("result", IntegerType, true)))
+      case "double" => StructType(df.schema.fields.toList ::: List(new StructField("result", DoubleType, true)))
+      case _ => StructType(df.schema.fields.toList ::: List(new StructField("result", StringType, true)))
+    }
 
     implicit val typedEncoder: Encoder[TensorFlowResponseRow] = org.apache.spark.sql.catalyst.encoders.RowEncoder(tensorFlowResponseSchema)
 
@@ -134,17 +138,12 @@ object TensorFlowServingTransform {
           post.releaseConnection
         }
 
-        // get node based on first return value and assume it applies to all results
-        val nodeType = response(0).getNodeType.toString
-        val nodeTypeIsDouble = response(0).isDouble
-        val nodeTypeIsInt = response(0).isInt
-
         // try to unpack result 
         groupedRow.zipWithIndex.map { case (row, index) => {
-          val result = nodeType match {
-            case "NUMBER" if (nodeTypeIsInt) => Seq("INTEGER", response(index).asInt, null, null)
-            case "NUMBER" if (nodeTypeIsDouble) => Seq("DOUBLE", null, response(index).asDouble, null)
-            case _ => Seq("OBJECT", null, null, response(index).asText)
+          val result = responseType match {
+            case "integer" => Seq(response(index).asInt)
+            case "double" => Seq(response(index).asDouble)
+            case _ => Seq(response(index).asText)
           }
 
           Row.fromSeq(row.toSeq ++ result).asInstanceOf[TensorFlowResponseRow]
@@ -154,21 +153,9 @@ object TensorFlowServingTransform {
 
     transformedDF.createOrReplaceTempView(transform.outputView)
 
-    // execute the requests and return a new dataset of responses
-    transformedDF.cache.count
-
-    // use the first row to work out what type was returned and select just that column
-    val simplifiedDF = transformedDF.first.getString(transformedDF.schema.fieldIndex("resultType")) match {
-      case "INTEGER" => transformedDF.withColumn("result", col("integerResult"))
-      case "DOUBLE" => transformedDF.withColumn("result", col("doubleResult"))
-      case "OBJECT" => transformedDF.withColumn("result", col("objectResult"))
-    }
-
-    val outputDF = simplifiedDF.drop("integerResult").drop("doubleResult").drop("objectResult").drop("resultType")
-
     if (transform.persist) {
-      outputDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", Long.valueOf(outputDF.count)) 
+      transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+      stageDetail.put("records", Long.valueOf(transformedDF.count)) 
     }
 
     logger.info()
@@ -177,6 +164,6 @@ object TensorFlowServingTransform {
       .map("stage", stageDetail)      
       .log()  
 
-    Option(outputDF)
+    Option(transformedDF)
   }
 }
