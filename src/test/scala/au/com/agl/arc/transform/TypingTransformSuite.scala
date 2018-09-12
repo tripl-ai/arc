@@ -300,7 +300,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     assert(thrown.getMessage.contains("Metadata in field 'booleanDatum' cannot contain `null` values."))
   }   
 
-  test("TypingTransform: Execute with Strucutred Streaming" ) {
+  test("TypingTransform: Execute with Structured Streaming" ) {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)

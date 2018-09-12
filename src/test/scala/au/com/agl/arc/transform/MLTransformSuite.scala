@@ -152,4 +152,54 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
 
     assert(TestDataUtils.datasetEquality(expected, actual))
   }    
+
+  test("MLTransform: Structured Streaming") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val readStream = spark
+      .readStream
+      .format("rate")
+      .option("rowsPerSecond", "1")
+      .load
+
+    readStream.createOrReplaceTempView("readstream")
+
+    val input = spark.sql(s"""
+    SELECT 
+      readStream.value AS id
+      ,"spark hadoop spark" AS text
+    FROM readstream 
+    """)
+
+    input.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.MLTransform.transform(
+      MLTransform(
+        name="MLTransform", 
+        inputURI=new URI(crossValidatorModelTargetFile),
+        model=Right(CrossValidatorModel.load(crossValidatorModelTargetFile)),
+        inputView=inputView,
+        outputView=outputView,
+        persist=false,
+        params=Map.empty
+      )
+    ).get
+
+    val writeStream = transformDataset
+      .writeStream
+      .queryName("transformed") 
+      .format("memory")
+      .start
+
+    val df = spark.table("transformed")
+
+    try {
+      Thread.sleep(2000)
+      assert(df.first.getDouble(2) == 1.0)
+    } finally {
+      writeStream.stop
+    }    
+  }   
 }
