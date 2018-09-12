@@ -18,6 +18,35 @@ import au.com.agl.arc.util._
   */
 object API {
 
+  /** ARCContext is used to define immutable global run parameters. 
+  */
+  case class ARCContext(
+    /** the job identifier
+      */        
+    jobId: Option[String],
+
+    /** the name of the job
+      */    
+    jobName: Option[String],
+
+    /** the running environment
+      */    
+    environment: String,
+
+    /** the running environment identifier
+      */    
+    environmentId: Option[String],    
+
+    /** the job configuration path
+      */    
+    configUri: Option[String],
+
+    /** whether the job is in structured streaming or batch mode
+      */    
+    isStreaming: Boolean
+
+  )
+
   /** ExtractColumns are used to define schemas for typing transforms
     * as well as when extracting from sources that lack a schema such
     * as CSV.

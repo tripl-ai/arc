@@ -25,7 +25,7 @@ object HTTPTransform {
     */
   type TypedRow = Row  
 
-  def transform(transform: HTTPTransform)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def transform(transform: HTTPTransform)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     
     val startTime = System.currentTimeMillis() 
@@ -119,6 +119,19 @@ object HTTPTransform {
             val body = Source.fromInputStream(content).mkString.replace("\n", "")
             response.close 
 
+            // throw early exception if in streaming mode and bad response code
+            if (arcContext.isStreaming) {
+              // verify status code is correct
+              val validStatusCodes = transform.validStatusCodes match {
+                case Some(value) => value
+                case None => 200 :: 201 :: 202 :: Nil
+              }
+
+              if (!validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+                throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${validStatusCodes.mkString(", ")}] but server responded with [${response.getStatusLine.getStatusCode}].""")
+              }
+            }
+
             // cast to a TypedRow to fit the Dataset map method requirements
             val result = row.toSeq ++ Seq(response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, response.getEntity.getContentType.toString, body)
             Row.fromSeq(result).asInstanceOf[TypedRow]
@@ -134,47 +147,53 @@ object HTTPTransform {
       }
     } 
 
-    val distinctReponses = responses
-      .groupBy(col("statusCode"), col("reasonPhrase"))
-      .agg(collect_list(col("body")).as("body"), count("*").as("count"))
+    // if not streaming get 
+    var transformedDF = if (!responses.isStreaming) {
+      val distinctReponses = responses
+        .groupBy(col("statusCode"), col("reasonPhrase"))
+        .agg(collect_list(col("body")).as("body"), count("*").as("count"))
 
-    // execute the requests and return a new dataset of distinct response codes
-    distinctReponses.cache.count
+      // execute the requests and return a new dataset of distinct response codes
+      distinctReponses.cache.count
 
-    // response logging 
-    // limited to 50 top response codes (by count descending) to protect against log flooding
-    val responseMap = new java.util.HashMap[String, Object]()      
-    distinctReponses.sort(col("count").desc).limit(50).collect.foreach( response => {
-      val colMap = new java.util.HashMap[String, Object]()
-      colMap.put("body", response.getList(2).toArray.slice(0, 10).distinct)
-      colMap.put("reasonPhrase", response.getString(1))
-      colMap.put("count", Long.valueOf(response.getLong(3)))
-      responseMap.put(response.getInt(0).toString, colMap)
-    })
-    stageDetail.put("responses", responseMap)    
+      // response logging 
+      // limited to 50 top response codes (by count descending) to protect against log flooding
+      val responseMap = new java.util.HashMap[String, Object]()      
+      distinctReponses.sort(col("count").desc).limit(50).collect.foreach( response => {
+        val colMap = new java.util.HashMap[String, Object]()
+        colMap.put("body", response.getList(2).toArray.slice(0, 10).distinct)
+        colMap.put("reasonPhrase", response.getString(1))
+        colMap.put("count", Long.valueOf(response.getLong(3)))
+        responseMap.put(response.getInt(0).toString, colMap)
+      })
+      stageDetail.put("responses", responseMap)    
 
-    // verify status code is correct
-    val validStatusCodes = transform.validStatusCodes match {
-      case Some(value) => value
-      case None => 200 :: 201 :: 202 :: Nil
-    }
-    if (!(distinctReponses.map(d => d.getInt(0)).collect forall (validStatusCodes contains _))) {
-      val responseMessages = distinctReponses.map(response => s"${response.getLong(3)} reponses ${response.getInt(0)} (${response.getString(1)})").collect.mkString(", ")
-
-      throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${validStatusCodes.mkString(", ")}] but server responded with [${responseMessages}].""") with DetailException {
-        override val detail = stageDetail          
+      // verify status code is correct
+      val validStatusCodes = transform.validStatusCodes match {
+        case Some(value) => value
+        case None => 200 :: 201 :: 202 :: Nil
       }
-    }     
+      if (!(distinctReponses.map(d => d.getInt(0)).collect forall (validStatusCodes contains _))) {
+        val responseMessages = distinctReponses.map(response => s"${response.getLong(3)} reponses ${response.getInt(0)} (${response.getString(1)})").collect.mkString(", ")
+
+        throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${validStatusCodes.mkString(", ")}] but server responded with [${responseMessages}].""") with DetailException {
+          override val detail = stageDetail          
+        }
+      }     
+
+      responses.drop(col("statusCode")).drop(col("reasonPhrase"))
+    } else {
+      responses.drop(col("statusCode")).drop(col("reasonPhrase"))
+    }
 
     // re-attach metadata to result
-    var transformedDF = responses.drop(col("statusCode")).drop(col("reasonPhrase"))
     df.schema.fields.foreach(field => {
       transformedDF = transformedDF.withColumn(field.name, col(field.name).as(field.name, field.metadata))
     })
 
     transformedDF.createOrReplaceTempView(transform.outputView)
 
-    if (transform.persist) {
+    if (transform.persist && !transformedDF.isStreaming) {
       transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
       stageDetail.put("records", Long.valueOf(transformedDF.count)) 
     }    

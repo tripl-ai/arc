@@ -48,7 +48,7 @@ object JSONTransform {
 
     transformedDF.createOrReplaceTempView(transform.outputView)
 
-    if (transform.persist) {
+    if (transform.persist && !transformedDF.isStreaming) {
       transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
       stageDetail.put("records", Long.valueOf(transformedDF.count)) 
     }    
