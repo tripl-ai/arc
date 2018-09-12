@@ -3,6 +3,7 @@
 # 1.1.0
 
 - fixed a bug in the `build.sbt` mergeStrategy which incorrectly excluded the `BinaryContentDataSource` registration when `assembly`.
+- changed `TensorFlowServingTransform` to require a `responseType` argument.
 
 # 1.0.9
 

@@ -52,11 +52,10 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     session.stop
   }    
 
-  test("HTTPTransform: Can call TensorflowServing via REST" ) {
+  test("HTTPTransform: Can call TensorFlowServing via REST: integer" ) {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -76,6 +75,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         signatureName=None,
+        responseType=Option(IntegerResponse),
         batchSize=Option(10),
         params=Map.empty,
         persist=false
@@ -84,5 +84,114 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
 
     assert(transformDataset.first.getInt(2) == 11)
   }  
+
+  test("HTTPTransform: Can call TensorFlowServing via REST: double" ) {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val df = spark.range(1, 10).toDF
+    df.createOrReplaceTempView(inputView)
+
+    var payloadDataset = spark.sql(s"""
+    SELECT 
+      id
+      ,id AS value 
+    FROM ${inputView}
+    """).repartition(1)
+    payloadDataset.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.TensorFlowServingTransform.transform(
+      TensorFlowServingTransform(
+        name=outputView,
+        uri=new URI(uri),
+        inputView=inputView,
+        outputView=outputView,
+        signatureName=None,
+        responseType=Option(DoubleResponse),
+        batchSize=Option(10),
+        params=Map.empty,
+        persist=false
+      )
+    ).get
+
+    assert(transformDataset.first.getDouble(2) == 11.0)
+  }   
+
+  test("HTTPTransform: Can call TensorFlowServing via REST: string" ) {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val df = spark.range(1, 10).toDF
+    df.createOrReplaceTempView(inputView)
+
+    var payloadDataset = spark.sql(s"""
+    SELECT 
+      id
+      ,id AS value 
+    FROM ${inputView}
+    """).repartition(1)
+    payloadDataset.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.TensorFlowServingTransform.transform(
+      TensorFlowServingTransform(
+        name=outputView,
+        uri=new URI(uri),
+        inputView=inputView,
+        outputView=outputView,
+        signatureName=None,
+        responseType=Option(StringResponse),
+        batchSize=Option(10),
+        params=Map.empty,
+        persist=false
+      )
+    ).get
+
+    assert(transformDataset.first.getString(2) == "11")
+  } 
+
+  test("HTTPTransform: Can call TensorFlowServing via Strucutred Streaming" ) {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val readStream = spark
+      .readStream
+      .format("rate")
+      .option("rowsPerSecond", "1")
+      .load
+
+    readStream.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.TensorFlowServingTransform.transform(
+      TensorFlowServingTransform(
+        name=outputView,
+        uri=new URI(uri),
+        inputView=inputView,
+        outputView=outputView,
+        signatureName=None,
+        responseType=Option(IntegerResponse),
+        batchSize=Option(10),
+        params=Map.empty,
+        persist=false
+      )
+    ).get
+
+    val writeStream = transformDataset
+      .writeStream
+      .queryName("transformed") 
+      .format("memory")
+      .start
+
+    val df = spark.table("transformed")
+
+    try {
+      Thread.sleep(2000)
+      assert(df.first.getInt(2) == df.first.getLong(1).toInt+10)
+    } finally {
+      writeStream.stop
+    }
+  } 
 
 }
