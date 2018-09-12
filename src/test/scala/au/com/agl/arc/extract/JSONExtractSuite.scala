@@ -26,9 +26,10 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.json.gz" 
   val outputView = "dataset"
 
-  val multiLineFile0 = FileUtils.getTempDirectoryPath() + "multiLine0.json" 
-  val multiLineFile1 = FileUtils.getTempDirectoryPath() + "multiLine1.json" 
-  val multiLineMatcher = FileUtils.getTempDirectoryPath() + "multiLine*.json"
+  val multiLineBase = FileUtils.getTempDirectoryPath() + "multiline/"
+  val multiLineFile0 = multiLineBase + "multiLine0.json" 
+  val multiLineFile1 = multiLineBase + "multiLine1.json" 
+  val multiLineMatcher = multiLineBase + "multiLine*.json"
 
   before {
     implicit val spark = SparkSession
@@ -51,6 +52,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     TestDataUtils.getKnownDataset.write.json(targetFile)
 
     // write some multiline JSON files
+    FileUtils.forceMkdir(new java.io.File(multiLineBase))
     Some(new PrintWriter(multiLineFile0)).foreach{f => f.write(TestDataUtils.knownDatasetPrettyJSON(0)); f.close}
     Some(new PrintWriter(multiLineFile1)).foreach{f => f.write(TestDataUtils.knownDatasetPrettyJSON(1)); f.close}
   }
@@ -63,12 +65,14 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(multiLineFile0)) 
     FileUtils.deleteQuietly(new java.io.File(multiLineFile1))       
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory))     
+    FileUtils.deleteQuietly(new java.io.File(multiLineBase))     
   }
 
   test("JSONExtract") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
@@ -116,6 +120,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     // no cache
     extract.JSONExtract.extract(
@@ -158,6 +163,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val cols = 
       BooleanColumn(
@@ -244,6 +250,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     spark.sparkContext.textFile(targetFile).take(10)
 
@@ -293,6 +300,7 @@ test("JSONExtract: Input Schema") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val cols = 
       BooleanColumn(
@@ -340,4 +348,46 @@ test("JSONExtract: Input Schema") {
 
     assert(TestDataUtils.datasetEquality(expected, actual))
   }
+
+  test("JSONExtract: Structured Streaming") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true)
+
+    // parse json schema to List[ExtractColumn]
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
+
+    val extractDataset = extract.JSONExtract.extract(
+      JSONExtract(
+        name=outputView,
+        cols=Right(cols.right.getOrElse(Nil)),
+        outputView=outputView,
+        input=Right(multiLineBase),
+        settings=new JSON(multiLine=true),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=None
+      )
+    ).get
+
+    val writeStream = extractDataset
+      .writeStream
+      .queryName("extract") 
+      .format("memory")
+      .start
+
+    val df = spark.table("extract")
+
+    try {
+      Thread.sleep(2000)
+      // will fail if parsing does not work
+      df.first.getBoolean(0)
+    } finally {
+      writeStream.stop
+    }  
+  }    
 }

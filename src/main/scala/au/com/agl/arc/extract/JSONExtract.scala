@@ -16,7 +16,7 @@ import au.com.agl.arc.util._
 
 object JSONExtract {
 
-  def extract(extract: JSONExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def extract(extract: JSONExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
@@ -53,55 +53,69 @@ object JSONExtract {
     }       
 
     val df = try {
-      extract.input match {
-        case Right(glob) =>
-          CloudUtils.setHadoopConfiguration(extract.authentication)
-          // spark does not cope well reading many small files into json directly from hadoop file systems
-          // by reading first as text time drops by ~75%
-          // this will not throw an error for empty directory (but will for missing directory)
-          try {
-            if (extract.settings.multiLine ) {
+      if (arcContext.isStreaming) {
+        extract.input match {
+          case Right(glob) => {
+            CloudUtils.setHadoopConfiguration(extract.authentication)
 
-              // if multiLine then remove the crlf delimiter so it is read as a full object per file
-              val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
-              val newDelimiter = s"${0x0 : Char}"
-              // temporarily remove the delimiter so all the data is loaded as a single line
-              spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)              
-
-              // read the file but do not cache. caching will break the input_file_name() function
-              val textFile = spark.sparkContext.textFile(glob)
-
-              val json = optionSchema match {
-                case Some(schema) => spark.read.options(options).schema(schema).json(textFile.toDS)
-                case None => spark.read.options(options).json(textFile.toDS)
-              }             
-
-              // reset delimiter
-              if (oldDelimiter == null) {
-                spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")              
-              } else {
-                spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)        
-              }
-
-              json
-            } else {
-              // read the file but do not cache. caching will break the input_file_name() function              
-              val textFile = spark.sparkContext.textFile(glob)
-
-              val json = optionSchema match {
-                case Some(schema) => spark.read.options(options).schema(schema).json(textFile.toDS)
-                case None => spark.read.options(options).json(textFile.toDS)
-              }
-
-              json              
-            }
-          } catch {
-            case e: org.apache.hadoop.mapred.InvalidInputException => {
-              spark.emptyDataFrame
-            }
-            case e: Exception => throw e
+            optionSchema match {
+              case Some(schema) => spark.readStream.options(options).schema(schema).json(glob)
+              case None => throw new Exception("JSONExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
+            }       
           }
-        case Left(view) => spark.read.options(options).json(spark.table(view).as[String])
+          case Left(view) => throw new Exception("JSONExtract does not support the use of 'inputView' if Arc is running in streaming mode.")
+        }
+      } else {
+        extract.input match {
+          case Right(glob) =>
+            CloudUtils.setHadoopConfiguration(extract.authentication)
+            // spark does not cope well reading many small files into json directly from hadoop file systems
+            // by reading first as text time drops by ~75%
+            // this will not throw an error for empty directory (but will for missing directory)
+            try {
+              if (extract.settings.multiLine ) {
+
+                // if multiLine then remove the crlf delimiter so it is read as a full object per file
+                val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
+                val newDelimiter = s"${0x0 : Char}"
+                // temporarily remove the delimiter so all the data is loaded as a single line
+                spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)              
+
+                // read the file but do not cache. caching will break the input_file_name() function
+                val textFile = spark.sparkContext.textFile(glob)
+
+                val json = optionSchema match {
+                  case Some(schema) => spark.read.options(options).schema(schema).json(textFile.toDS)
+                  case None => spark.read.options(options).json(textFile.toDS)
+                }             
+
+                // reset delimiter
+                if (oldDelimiter == null) {
+                  spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")              
+                } else {
+                  spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)        
+                }
+
+                json
+              } else {
+                // read the file but do not cache. caching will break the input_file_name() function              
+                val textFile = spark.sparkContext.textFile(glob)
+
+                val json = optionSchema match {
+                  case Some(schema) => spark.read.options(options).schema(schema).json(textFile.toDS)
+                  case None => spark.read.options(options).json(textFile.toDS)
+                }
+
+                json              
+              }
+            } catch {
+              case e: org.apache.hadoop.mapred.InvalidInputException => {
+                spark.emptyDataFrame
+              }
+              case e: Exception => throw e
+            }
+          case Left(view) => spark.read.options(options).json(spark.table(view).as[String])
+        }
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
@@ -118,10 +132,14 @@ object JSONExtract {
       }      
     }    
 
-    // add internal columns data _filename, _index
-    val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
+    // // add internal columns data _filename, _index
+    val sourceEnrichedDF = if (!emptyDataframeHandlerDF.isStreaming) {
+      ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
+    } else {
+      emptyDataframeHandlerDF
+    }
 
-    // set column metadata if exists
+    // // set column metadata if exists
     val enrichedDF = optionSchema match {
         case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
         case None => sourceEnrichedDF   
@@ -146,11 +164,13 @@ object JSONExtract {
     } 
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 
-    stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
-    stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-    stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+    if (!repartitionedDF.isStreaming) {
+      stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
+      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+    }
 
-    if (extract.persist) {
+    if (extract.persist && !repartitionedDF.isStreaming) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
       stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
     }    
