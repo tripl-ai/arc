@@ -332,6 +332,7 @@ The `TensorFlowServingTransform` stage transforms the incoming dataset by callin
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |uri|String|true|The `URI` of the TensorFlow Serving REST end point.|
 |signatureName|String|false|{{< readfile file="/content/partials/fields/signatureName.md" markdown="true" >}}|
+|responseType|String|false|The type returned by the TensorFlow Serving API. Expected to be `integer`, `double` or `object`.|
 |batchSize|Int|false|The number of records to sent to TensorFlow Serving in each call. A higher number will decrease the number of calls to TensorFlow Serving which may be more efficient|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
