@@ -11,7 +11,7 @@ import au.com.agl.arc.util._
 
 object JSONLoad {
 
-  def load(load: JSONLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def load(load: JSONLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
@@ -25,10 +25,10 @@ object JSONLoad {
 
     val df = spark.table(load.inputView)      
 
-    load.numPartitions match {
-      case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-      case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
-    }
+    // load.numPartitions match {
+    //   case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
+    //   case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+    // }
 
     logger.info()
       .field("event", "enter")
@@ -49,19 +49,29 @@ object JSONLoad {
     stageDetail.put("drop", dropMap) 
     
     try {
-      load.partitionBy match {
-        case Nil => {
-          load.numPartitions match {
-            case Some(n) => df.repartition(n).write.mode(saveMode).json(load.outputURI.toString)
-            case None => df.write.mode(saveMode).json(load.outputURI.toString)
+      if (df.isStreaming) {
+        load.partitionBy match {
+          case Nil => df.writeStream.format("json").option("path", load.outputURI.toString).start
+          case partitionBy => {
+            val partitionCols = partitionBy.map(col => df(col))
+            df.writeStream.partitionBy(partitionBy:_*).format("json").option("path", load.outputURI.toString).start
           }
         }
-        case partitionBy => {
-          // create a column array for repartitioning
-          val partitionCols = partitionBy.map(col => df(col))
-          load.numPartitions match {
-            case Some(n) => df.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).json(load.outputURI.toString)
-            case None => df.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).json(load.outputURI.toString)
+      } else {
+        load.partitionBy match {
+          case Nil => {
+            load.numPartitions match {
+              case Some(n) => df.repartition(n).write.mode(saveMode).json(load.outputURI.toString)
+              case None => df.write.mode(saveMode).json(load.outputURI.toString)
+            }
+          }
+          case partitionBy => {
+            // create a column array for repartitioning
+            val partitionCols = partitionBy.map(col => df(col))
+            load.numPartitions match {
+              case Some(n) => df.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).json(load.outputURI.toString)
+              case None => df.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).json(load.outputURI.toString)
+            }
           }
         }
       }
