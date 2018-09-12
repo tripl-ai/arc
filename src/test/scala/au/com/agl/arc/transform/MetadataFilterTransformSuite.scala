@@ -134,5 +134,73 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val expected = TestDataUtils.getKnownDataset.select($"booleanDatum", $"dateDatum", $"decimalDatum", $"longDatum", $"stringDatum")
 
     assert(TestDataUtils.datasetEquality(expected, actual))
-  }    
+  }   
+
+  test("MetadataFilterTransform: Structured Streaming") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val dataset = TestDataUtils.getKnownStringDataset.drop("nullDatum")
+    dataset.createOrReplaceTempView("knownData")
+
+    val readStream = spark
+      .readStream
+      .format("rate")
+      .option("rowsPerSecond", "1")
+      .load
+
+    readStream.createOrReplaceTempView("readstream")
+
+    // cross join to the rate stream purely to register this dataset as a 'streaming' dataset.
+    val input = spark.sql(s"""
+    SELECT knownData.*
+    FROM knownData
+    CROSS JOIN readstream ON true
+    """)
+
+    input.createOrReplaceTempView(inputView)
+
+    // parse json schema to List[ExtractColumn]
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    val transformDataset = transform.TypingTransform.transform(
+      TypingTransform(
+        name="dataset",
+        cols=Right(cols.right.getOrElse(Nil)), 
+        inputView=inputView,
+        outputView=outputView, 
+        params=Map.empty,
+        persist=false
+      )
+    ).get
+
+    val transformed = transform.MetadataFilterTransform.transform(
+      MetadataFilterTransform(
+        name="MetadataFilterTransform", 
+        inputView=outputView,
+        inputURI=new URI(targetFile),
+        sql=s"SELECT * FROM metadata WHERE metadata.securityLevel <= 4",
+        outputView=outputView,
+        persist=false,
+        sqlParams=Map.empty,
+        params=Map.empty
+      )
+    ).get
+
+    val writeStream = transformed
+      .writeStream
+      .queryName("transformed") 
+      .format("memory")
+      .start
+
+    val df = spark.table("transformed")
+
+    try {
+      Thread.sleep(2000)
+      assert(df.schema.map(_.name).toSet.equals(Array("booleanDatum", "dateDatum", "decimalDatum", "longDatum", "stringDatum").toSet))
+    } finally {
+      writeStream.stop
+    }
+  }      
 }
