@@ -52,7 +52,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     session.stop
   }    
 
-  test("HTTPTransform: Can call TensorflowServing via REST: integer" ) {
+  test("HTTPTransform: Can call TensorFlowServing via REST: integer" ) {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -85,7 +85,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     assert(transformDataset.first.getInt(2) == 11)
   }  
 
-  test("HTTPTransform: Can call TensorflowServing via REST: double" ) {
+  test("HTTPTransform: Can call TensorFlowServing via REST: double" ) {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -118,7 +118,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     assert(transformDataset.first.getDouble(2) == 11.0)
   }   
 
-  test("HTTPTransform: Can call TensorflowServing via REST: string" ) {
+  test("HTTPTransform: Can call TensorFlowServing via REST: string" ) {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
