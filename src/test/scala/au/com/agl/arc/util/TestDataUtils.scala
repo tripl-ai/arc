@@ -85,6 +85,11 @@ object TestDataUtils {
         dataset.toDF
     }    
 
+    def getKnownStringDataset()(implicit spark: SparkSession): DataFrame = {
+        val df = getKnownDataset()
+        df.select(df.columns.map(c => col(c).cast(StringType)) : _*)
+    }    
+
     def knownDatasetPrettyJSON(row: Int)(implicit spark: SparkSession): String = {
         val json = getKnownDataset().toJSON.collect.toList(row)
         val objectMapper = new ObjectMapper()

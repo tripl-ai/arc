@@ -23,6 +23,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   var session: SparkSession = _  
   val targetFile = FileUtils.getTempDirectoryPath() + "extract.csv" 
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.csv" 
+  val inputView = "intputView"
   val outputView = "outputView"
 
   before {
@@ -60,7 +61,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
 
     // load csv
     val extractDataset = spark.read.csv(targetFile)
-    extractDataset.createOrReplaceTempView("inputDS")
+    extractDataset.createOrReplaceTempView(inputView)
 
     // parse json schema to List[ExtractColumn]
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
@@ -69,7 +70,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
       TypingTransform(
         name="dataset",
         cols=Right(cols.right.getOrElse(Nil)), 
-        inputView="inputDS",
+        inputView=inputView,
         outputView=outputView, 
         params=Map.empty,
         persist=false
@@ -297,5 +298,61 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     }
     assert(thrown.getMessage.contains("Metadata in field 'booleanDatum' cannot contain `number` arrays of different types (all must be integers or all doubles)."))
     assert(thrown.getMessage.contains("Metadata in field 'booleanDatum' cannot contain `null` values."))
+  }   
+
+  test("TypingTransform: Execute with Strucutred Streaming" ) {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val dataset = TestDataUtils.getKnownStringDataset.drop("nullDatum")
+    dataset.createOrReplaceTempView("knownData")
+
+    val readStream = spark
+      .readStream
+      .format("rate")
+      .option("rowsPerSecond", "1")
+      .load
+
+    readStream.createOrReplaceTempView("readstream")
+
+    // cross join to the rate stream purely to register this dataset as a 'streaming' dataset.
+    val input = spark.sql(s"""
+    SELECT knownData.*
+    FROM knownData
+    CROSS JOIN readstream ON true
+    """)
+
+    input.createOrReplaceTempView(inputView)
+
+    // parse json schema to List[ExtractColumn]
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    val transformDataset = transform.TypingTransform.transform(
+      TypingTransform(
+        name="dataset",
+        cols=Right(cols.right.getOrElse(Nil)), 
+        inputView=inputView,
+        outputView=outputView, 
+        params=Map.empty,
+        persist=false
+      )
+    ).get
+
+    val writeStream = transformDataset
+      .writeStream
+      .queryName("transformed") 
+      .format("memory")
+      .start
+
+    val df = spark.table("transformed")
+
+    try {
+      Thread.sleep(2000)
+      // will fail if typing does not work
+      df.first.getBoolean(0)
+    } finally {
+      writeStream.stop
+    }
   }   
 }
