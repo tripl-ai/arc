@@ -15,7 +15,7 @@ import au.com.agl.arc.util._
 
 object ParquetExtract {
 
-  def extract(extract: ParquetExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def extract(extract: ParquetExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
@@ -45,13 +45,20 @@ object ParquetExtract {
 
     // if incoming dataset is empty create empty dataset with a known schema
     val df = try {
-        spark.read.option("mergeSchema", "true").parquet(extract.input)
+      if (arcContext.isStreaming) {
+        optionSchema match {
+          case Some(schema) => spark.readStream.option("mergeSchema", "true").schema(schema).parquet(extract.input)
+          case None => throw new Exception("ORCExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
+        }       
+      } else {      
+        spark.read.option("mergeSchema", "true").parquet(extract.input)   
+      }
     } catch {
-        case e: AnalysisException if (e.getMessage == "Unable to infer schema for Parquet. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) => 
-          spark.emptyDataFrame
-        case e: Exception => throw new Exception(e) with DetailException {
-          override val detail = stageDetail          
-        }
+      case e: AnalysisException if (e.getMessage == "Unable to infer schema for Parquet. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) => 
+        spark.emptyDataFrame
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }
     }    
 
     // if incoming dataset has 0 columns then create empty dataset with correct schema
@@ -91,9 +98,11 @@ object ParquetExtract {
     } 
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 
-    stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
-    stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-    stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+    if (!repartitionedDF.isStreaming) {
+      stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
+      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+    }
 
     if (extract.persist) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)

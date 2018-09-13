@@ -58,6 +58,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
@@ -95,6 +96,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
   test("ParquetExtract Caching") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     // no cache
     extract.ParquetExtract.extract(
@@ -135,6 +137,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val cols = 
       BooleanColumn(
@@ -211,4 +214,45 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
 
     assert(TestDataUtils.datasetEquality(expected, actual))
   }  
+
+  test("ParquetExtract: Structured Streaming") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true)
+
+    // parse json schema to List[ExtractColumn]
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
+
+    val extractDataset = extract.ParquetExtract.extract(
+      ParquetExtract(
+        name=outputView,
+        cols=Right(cols.right.getOrElse(Nil)),
+        outputView=outputView,
+        input=targetFileGlob,
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=None
+      )
+    ).get
+
+    val writeStream = extractDataset
+      .writeStream
+      .queryName("extract") 
+      .format("memory")
+      .start
+
+    val df = spark.table("extract")
+
+    try {
+      Thread.sleep(2000)
+      // will fail if parsing does not work
+      df.first.getBoolean(0)
+    } finally {
+      writeStream.stop
+    }  
+  }    
 }
