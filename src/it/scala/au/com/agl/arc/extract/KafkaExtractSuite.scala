@@ -24,28 +24,34 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
   val outputView = "outputView"
   val bootstrapServers = "localhost:29092"
   val timeout = Option(3000L)
+  val checkPointPath = "/tmp/checkpoint"
 
   before {
     implicit val spark = SparkSession
                   .builder()
                   .master("local[*]")
                   .config("spark.ui.port", "9999")
+                  .config("spark.sql.streaming.checkpointLocation", checkPointPath)
                   .appName("Spark ETL Test")
                   .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
     session = spark
     import spark.implicits._  
+
+    FileUtils.deleteQuietly(new java.io.File(checkPointPath)) 
   }
 
   after {
     session.stop()
+    FileUtils.deleteQuietly(new java.io.File(checkPointPath)) 
   }
 
   test("KafkaExtract") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val topic = UUID.randomUUID.toString
     val groupId = UUID.randomUUID.toString
@@ -108,6 +114,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val topic = UUID.randomUUID.toString
     val groupId = UUID.randomUUID.toString
@@ -189,6 +196,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val topic = UUID.randomUUID.toString
     val groupId = UUID.randomUUID.toString
@@ -257,4 +265,62 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
     assert(expected.count === dataset.count)
     assert(actual.count === 0)
   }    
+
+  test("KafkaExtract: Structured Streaming") {
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true)
+
+    val topic = UUID.randomUUID.toString
+    val groupId = UUID.randomUUID.toString
+
+    val extractDataset = extract.KafkaExtract.extract(
+      KafkaExtract(
+        name="df", 
+        outputView=outputView, 
+        topic=topic,
+        bootstrapServers=bootstrapServers,
+        groupID=groupId,
+        maxPollRecords=None, 
+        timeout=timeout, 
+        autoCommit=Option(false), 
+        persist=true, 
+        numPartitions=None, 
+        partitionBy=Nil,
+        params=Map.empty
+      )
+    ).get
+
+    val writeStream0 = extractDataset
+      .writeStream
+      .queryName("extract") 
+      .format("memory")
+      .start
+
+    val readStream = spark
+      .readStream
+      .format("rate")
+      .option("rowsPerSecond", "1")
+      .load
+
+    val writeStream1 = readStream
+      .selectExpr("CAST(timestamp AS STRING)", "CAST(value AS STRING)")
+      .writeStream
+      .format("kafka")
+      .option("kafka.bootstrap.servers", bootstrapServers)
+      .option("topic", topic)
+      .start()
+
+
+    val df = spark.table("extract")
+
+    try {
+      // enough time for both producer and consumer to begin
+      Thread.sleep(5000)
+      assert(df.count > 0)
+    } finally {
+      writeStream0.stop
+      writeStream1.stop
+    }    
+  }   
 }
