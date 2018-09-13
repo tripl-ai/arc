@@ -15,7 +15,7 @@ import au.com.agl.arc.util._
 
 object DelimitedExtract {
 
-  def extract(extract: DelimitedExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def extract(extract: DelimitedExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
@@ -51,19 +51,33 @@ object DelimitedExtract {
     }        
 
     val df = try {
-      extract.input match {
-        case Right(glob) =>
-          CloudUtils.setHadoopConfiguration(extract.authentication)
+      if (arcContext.isStreaming) {
+        extract.input match {
+          case Right(glob) => {
+            CloudUtils.setHadoopConfiguration(extract.authentication)
 
-          try {
-            spark.read.options(options).csv(glob)
-          } catch {
-            case e: AnalysisException if (e.getMessage == "Unable to infer schema for CSV. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) => 
-              spark.emptyDataFrame
-            case e: Exception => throw e
+            optionSchema match {
+              case Some(schema) => spark.readStream.options(options).schema(schema).csv(glob)
+              case None => throw new Exception("CSVExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
+            }       
           }
-        case Left(view) => spark.read.options(options).csv(spark.table(view).as[String])
-      }         
+          case Left(view) => throw new Exception("CSVExtract does not support the use of 'inputView' if Arc is running in streaming mode.")
+        }
+      } else {      
+        extract.input match {
+          case Right(glob) =>
+            CloudUtils.setHadoopConfiguration(extract.authentication)
+
+            try {
+              spark.read.options(options).csv(glob)
+            } catch {
+              case e: AnalysisException if (e.getMessage == "Unable to infer schema for CSV. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) => 
+                spark.emptyDataFrame
+              case e: Exception => throw e
+            }
+          case Left(view) => spark.read.options(options).csv(spark.table(view).as[String])
+        }   
+      }      
     } catch { 
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          
@@ -80,7 +94,11 @@ object DelimitedExtract {
     }      
 
     // add internal columns data _filename, _index
-    val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
+    val sourceEnrichedDF = if (!emptyDataframeHandlerDF.isStreaming) {
+      ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
+    } else {
+      emptyDataframeHandlerDF
+    }
 
     // set column metadata if exists
     val enrichedDF = optionSchema match {
@@ -107,9 +125,11 @@ object DelimitedExtract {
     } 
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 
-    stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
-    stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-    stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+    if (!repartitionedDF.isStreaming) {
+      stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
+      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+    }
 
     if (extract.persist) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
