@@ -133,11 +133,7 @@ object JSONExtract {
     }    
 
     // add internal columns data _filename, _index
-    val sourceEnrichedDF = if (!emptyDataframeHandlerDF.isStreaming) {
-      ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
-    } else {
-      emptyDataframeHandlerDF
-    }
+    val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
 
     // // set column metadata if exists
     val enrichedDF = optionSchema match {

@@ -44,20 +44,24 @@ object ExtractUtils {
   }  
 
   def addInternalColumns(input: DataFrame, contiguousIndex: Boolean): DataFrame = {
-    // add meta columns including sequential index
-    // if schema already has metadata any columns ignore
-    if (!input.schema.map(_.name).intersect(List("_index","_monotonically_increasing_id")).nonEmpty) {
-      val window = Window.partitionBy("_filename").orderBy("_monotonically_increasing_id")
-      if (contiguousIndex) {
-        input
-          .withColumn("_monotonically_increasing_id", monotonically_increasing_id())
-          .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))
-          .withColumn("_index", row_number().over(window).as("_index", new MetadataBuilder().putBoolean("internal", true).build()))
-          .drop("_monotonically_increasing_id")
+    if (!input.isStreaming) {
+      // add meta columns including sequential index
+      // if schema already has metadata any columns ignore
+      if (!input.schema.map(_.name).intersect(List("_index","_monotonically_increasing_id")).nonEmpty) {
+        val window = Window.partitionBy("_filename").orderBy("_monotonically_increasing_id")
+        if (contiguousIndex) {
+          input
+            .withColumn("_monotonically_increasing_id", monotonically_increasing_id())
+            .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))
+            .withColumn("_index", row_number().over(window).as("_index", new MetadataBuilder().putBoolean("internal", true).build()))
+            .drop("_monotonically_increasing_id")
+        } else {
+          input
+            .withColumn("_monotonically_increasing_id", monotonically_increasing_id().as("_monotonically_increasing_id", new MetadataBuilder().putBoolean("internal", true).build()))
+            .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))
+        }
       } else {
         input
-          .withColumn("_monotonically_increasing_id", monotonically_increasing_id().as("_monotonically_increasing_id", new MetadataBuilder().putBoolean("internal", true).build()))
-          .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))
       }
     } else {
       input

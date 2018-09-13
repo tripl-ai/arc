@@ -62,6 +62,7 @@ object ARC {
         .builder()
         .appName(jobId.getOrElse(s"arc:${BuildInfo.version}-${UUID.randomUUID.toString}"))
         .config("spark.debug.maxToStringFields", "8192")
+        .config("spark.sql.orc.impl", "native") // needed to overcome structured streaming write issue
         .config("spark.kryo.registrator", classOf[GeoSparkKryoRegistrator].getName)
         .getOrCreate()  
     } catch {

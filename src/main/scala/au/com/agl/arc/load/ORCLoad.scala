@@ -24,9 +24,11 @@ object ORCLoad {
 
     val df = spark.table(load.inputView)      
 
-    load.numPartitions match {
-      case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-      case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+    if (!df.isStreaming) {
+      load.numPartitions match {
+        case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
+        case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+      }
     }
 
     logger.info()
@@ -50,27 +52,37 @@ object ORCLoad {
     val nonNullDF = df.drop(nulls:_*)
 
     try {
-      load.partitionBy match {
-        case Nil => { 
-          load.numPartitions match {
-            case Some(n) => nonNullDF.repartition(n).write.mode(saveMode).orc(load.outputURI.toString)
-            case None => nonNullDF.write.mode(saveMode).orc(load.outputURI.toString)
-          }   
+      if (nonNullDF.isStreaming) {
+        load.partitionBy match {
+          case Nil => nonNullDF.writeStream.format("orc").option("path", load.outputURI.toString).start
+          case partitionBy => {
+            val partitionCols = partitionBy.map(col => nonNullDF(col))
+            nonNullDF.writeStream.partitionBy(partitionBy:_*).format("orc").option("path", load.outputURI.toString).start
+          }
         }
-        case partitionBy => {
-          // create a column array for repartitioning
-          val partitionCols = partitionBy.map(col => df(col))
-          load.numPartitions match {
-            case Some(n) => nonNullDF.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).orc(load.outputURI.toString)
-            case None => nonNullDF.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).orc(load.outputURI.toString)
-          }   
+      } else {
+        load.partitionBy match {
+          case Nil => {
+            load.numPartitions match {
+              case Some(n) => nonNullDF.repartition(n).write.mode(saveMode).orc(load.outputURI.toString)
+              case None => nonNullDF.write.mode(saveMode).orc(load.outputURI.toString)
+            }
+          }
+          case partitionBy => {
+            // create a column array for repartitioning
+            val partitionCols = partitionBy.map(col => nonNullDF(col))
+            load.numPartitions match {
+              case Some(n) => nonNullDF.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).orc(load.outputURI.toString)
+              case None => nonNullDF.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).orc(load.outputURI.toString)
+            }
+          }
         }
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
-      }      
-    }          
+        override val detail = stageDetail
+      }
+    }    
 
     logger.info()
       .field("event", "exit")
