@@ -99,6 +99,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
 
@@ -137,6 +138,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val dataset = TestDataUtils.getKnownDataset.toJSON.toDF
     dataset.createOrReplaceTempView(inputView)
@@ -161,6 +163,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Throws exception with 404") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val dataset = TestDataUtils.getKnownDataset.toJSON.toDF
     dataset.createOrReplaceTempView(inputView)
@@ -186,6 +189,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: validStatusCodes") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val dataset = TestDataUtils.getKnownDataset.toJSON.toDF
     dataset.createOrReplaceTempView(inputView)
@@ -212,6 +216,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
 
@@ -246,6 +251,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
 
@@ -278,6 +284,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
 
@@ -304,5 +311,112 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       ).get
     }
     assert(thrown0.getMessage === "HTTPTransform requires a field named 'value' of type 'string' or 'binary'. 'value' is of type: 'date'.")
-  }      
+  }    
+
+  test("HTTPTransform: Structured Streaming") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true)
+
+    val readStream = spark
+      .readStream
+      .format("rate")
+      .option("rowsPerSecond", "1")
+      .load
+
+    readStream.createOrReplaceTempView("readstream")
+
+    val input = spark.sql(s"""
+    SELECT TO_JSON(NAMED_STRUCT('value', value)) AS value 
+    FROM readstream
+    """)
+
+    input.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.HTTPTransform.transform(
+      HTTPTransform(
+        name=outputView,
+        uri=new URI(s"${uri}/${echo}/"),
+        headers=Map.empty,
+        validStatusCodes=None,
+        inputView=inputView,
+        outputView=outputView,
+        params=Map.empty,
+        persist=false
+      )
+    ).get
+
+    val writeStream = transformDataset
+      .writeStream
+      .queryName("transformed") 
+      .format("memory")
+      .start
+
+    val df = spark.table("transformed")
+
+    try {
+      Thread.sleep(2000)
+      assert(df.first.getString(2).contains("""{"value":0}"""))
+    } finally {
+      writeStream.stop
+    }
+  }     
+
+  // cannot catch exception yet?
+  //
+  // test("HTTPTransform: Structured Streaming Fail") {
+  //   val thrown0 = intercept[Exception] {
+  //     implicit val spark = session
+  //     import spark.implicits._
+  //     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+  //     implicit val arcContext = ARCContext(isStreaming=true)      
+
+  //     val readStream = spark
+  //       .readStream
+  //       .format("rate")
+  //       .option("rowsPerSecond", "1")
+  //       .load
+
+  //     readStream.createOrReplaceTempView("readstream")
+
+  //     val input = spark.sql(s"""
+  //     SELECT TO_JSON(NAMED_STRUCT('value', value)) AS value 
+  //     FROM readstream
+  //     """)
+
+  //     input.createOrReplaceTempView(inputView)
+
+  //     val transformDataset = transform.HTTPTransform.transform(
+  //       HTTPTransform(
+  //         name=outputView,
+  //         uri=new URI(s"${uri}/${echo}/"),
+  //         headers=Map.empty,
+  //         validStatusCodes=Option(List(201)),
+  //         inputView=inputView,
+  //         outputView=outputView,
+  //         params=Map.empty,
+  //         persist=false
+  //       )
+  //     ).get
+
+  //     val writeStream = transformDataset
+  //       .writeStream
+  //       .queryName("transformed") 
+  //       .format("memory")
+  //       .start
+
+  //     val df = spark.table("transformed")
+
+  //     try {
+  //       Thread.sleep(2000)
+  //     } catch {
+  //       case e: Exception => println("Here")
+  //     } finally {
+  //       writeStream.stop
+  //     }
+  //   }
+  //   assert(thrown0.getMessage === "HTTPTransform requires a field named 'value' of type 'string' or 'binary'. 'value' is of type: 'date'.")
+
+  // }    
 }

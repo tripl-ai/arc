@@ -26,9 +26,11 @@ object DelimitedLoad {
 
     val df = spark.table(load.inputView)      
 
-    load.numPartitions match {
-      case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-      case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+    if (!df.isStreaming) {
+      load.numPartitions match {
+        case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
+        case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+      }
     }
 
     val options: Map[String, String] = Delimited.toSparkOptions(load.settings)
@@ -58,34 +60,39 @@ object DelimitedLoad {
 
     stageDetail.put("drop", dropMap) 
 
-    val outputDF =
-      try {
-        val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)
-      load.partitionBy match {
-        case Nil => {
-          val dfToWrite = load.numPartitions.map(nonNullDF.repartition(_)).getOrElse(nonNullDF)
-          dfToWrite.write.mode(saveMode).options(options).format("csv").save(load.outputURI.toString)
-          dfToWrite
+    val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)
+
+    try {
+      if (nonNullDF.isStreaming) {
+        load.partitionBy match {
+          case Nil => nonNullDF.writeStream.format("csv").options(options).option("path", load.outputURI.toString).start
+          case partitionBy => {
+            val partitionCols = partitionBy.map(col => nonNullDF(col))
+            nonNullDF.writeStream.partitionBy(partitionBy:_*).format("csv").options(options).option("path", load.outputURI.toString).start
+          }
         }
-        case partitionBy => {
-          // create a column array for repartitioning
-          val partitionCols = partitionBy.map(col => df(col))
-          load.numPartitions match {
-            case Some(n) =>
-              val dfToWrite = nonNullDF.repartition(n, partitionCols:_*)
-              dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).options(options).format("csv").save(load.outputURI.toString)
-              dfToWrite
-            case None =>
-              val dfToWrite = nonNullDF.repartition(partitionCols:_*)
-              dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).options(options).format("csv").save(load.outputURI.toString)
-              dfToWrite
-          }   
+      } else {
+        load.partitionBy match {
+          case Nil => {
+            load.numPartitions match {
+              case Some(n) => nonNullDF.repartition(n).write.mode(saveMode).format("csv").options(options).save(load.outputURI.toString)
+              case None => nonNullDF.write.mode(saveMode).format("csv").options(options).save(load.outputURI.toString)
+            }
+          }
+          case partitionBy => {
+            // create a column array for repartitioning
+            val partitionCols = partitionBy.map(col => nonNullDF(col))
+            load.numPartitions match {
+              case Some(n) => nonNullDF.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).format("csv").options(options).save(load.outputURI.toString)
+              case None => nonNullDF.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).format("csv").options(options).save(load.outputURI.toString)
+            }
+          }
         }
-      }    
+      }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
-      }      
+        override val detail = stageDetail
+      }
     }
 
     logger.info()
@@ -94,7 +101,7 @@ object DelimitedLoad {
       .map("stage", stageDetail)      
       .log()
 
-    Option(outputDF)
+    Option(nonNullDF)
   }
 }
 

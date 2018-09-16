@@ -29,27 +29,32 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
   val outputView = "outputView"
   val bootstrapServers = "localhost:29092"
   val timeout = Option(3000L)
+  val checkPointPath = "/tmp/checkpoint"
 
   before {
     implicit val spark = SparkSession
                   .builder()
                   .master("local[*]")
                   .config("spark.ui.port", "9999")
+                  .config("spark.sql.streaming.checkpointLocation", checkPointPath)
                   .appName("Spark ETL Test")
                   .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
     session = spark
+    FileUtils.deleteQuietly(new java.io.File(checkPointPath)) 
   }
 
   after {
     session.stop()
+    FileUtils.deleteQuietly(new java.io.File(checkPointPath)) 
   }
 
   test("KafkaLoad: (value)") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val topic = UUID.randomUUID.toString
     val groupId = UUID.randomUUID.toString
@@ -115,6 +120,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val topic = UUID.randomUUID.toString
     val groupId = UUID.randomUUID.toString
@@ -178,4 +184,69 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
     // note the default number of partitions is set in the KAFKA_NUM_PARTITIONS environment variable in the docker-compose file
     assert(extractDataset.agg(countDistinct("partition")).take(1)(0).getLong(0) === 10)    
   }     
+
+  test("KafkaLoad: Structured Streaming") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true)
+
+    val topic = UUID.randomUUID.toString
+    val groupId = UUID.randomUUID.toString
+
+    val readStream = spark
+      .readStream
+      .format("rate")
+      .option("rowsPerSecond", "1")
+      .load
+
+    readStream.createOrReplaceTempView(inputView)
+
+    val output = spark.sql(s"""
+    SELECT 
+      CAST(timestamp AS STRING) AS key
+      ,CAST(value AS STRING) as value
+    FROM ${inputView}
+    """)
+
+    output.createOrReplaceTempView(inputView)
+
+    load.KafkaLoad.load(
+      KafkaLoad(
+        name="df", 
+        inputView=inputView, 
+        topic=topic,
+        bootstrapServers=bootstrapServers,
+        acks= -1,
+        numPartitions=None, 
+        batchSize=None, 
+        retries=None, 
+        params=Map.empty
+      )
+    ) 
+
+    Thread.sleep(2000)
+    spark.streams.active.foreach(streamingQuery => streamingQuery.stop)
+
+    // use batch mode to check whether data was loaded
+    arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
+    val actual = extract.KafkaExtract.extract(
+      KafkaExtract(
+        name="df", 
+        outputView=outputView, 
+        topic=topic,
+        bootstrapServers=bootstrapServers,
+        groupID=groupId,
+        maxPollRecords=None, 
+        timeout=timeout, 
+        autoCommit=Option(false), 
+        persist=true, 
+        numPartitions=None, 
+        partitionBy=Nil,
+        params=Map.empty
+      )
+    ).get
+
+    assert(actual.count > 0)
+  }    
 }

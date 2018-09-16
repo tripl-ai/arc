@@ -41,7 +41,7 @@ It is a great dataset as it has a lot of the attributes of real-world data we wa
       <guid>https://aglenergy.github.io/arc/transform/</guid>
       <description>*Transform stages apply a single transformation to one or more incoming datasets.
 Transformers should meet this criteria:
- Be pure. Perform only a single function. Utilise Spark internal functionality where possible.  DiffTransform Since: 1.0.8 The DiffTransform stage calculates the difference between two input datasets and produces three datasets:
+ Be pure. Perform only a single function. Utilise Spark internal functionality where possible.  DiffTransform Since: 1.0.8 - Supports Streaming: False The DiffTransform stage calculates the difference between two input datasets and produces three datasets:
  A dataset of the intersection of the two datasets - or rows that exist and are the same in both datasets.</description>
     </item>
     
@@ -53,7 +53,7 @@ Transformers should meet this criteria:
       <guid>https://aglenergy.github.io/arc/load/</guid>
       <description>*Load stages write out Spark datasets to a database or file system.
 *Load stages should meet this criteria:
- Take in a single dataset. Perform target specific validation that the dataset has been written correctly.  AvroLoad Since: 1.0.0 The AvroLoad writes an input DataFrame to a target Apache Avro file.
+ Take in a single dataset. Perform target specific validation that the dataset has been written correctly.  AvroLoad Since: 1.0.0 - Supports Streaming: False The AvroLoad writes an input DataFrame to a target Apache Avro file.
 Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
     </item>
     
@@ -64,7 +64,7 @@ Parameters    Attribute Type Required Description     name String true Name of t
       
       <guid>https://aglenergy.github.io/arc/execute/</guid>
       <description>*Execute stages are used to execute arbitrary commands against external systems such as Databases and APIs.
-HTTPExecute Since: 1.0.0 The HTTPExecute takes an input Map[String, String] from the configuration and executes a POST request against a remote HTTP service. This could be used to initialise another process that depends on the output of data pipeline.
+HTTPExecute Since: 1.0.0 - Supports Streaming: False The HTTPExecute takes an input Map[String, String] from the configuration and executes a POST request against a remote HTTP service. This could be used to initialise another process that depends on the output of data pipeline.
 Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
     </item>
     
@@ -75,9 +75,9 @@ Parameters    Attribute Type Required Description     name String true Name of t
       
       <guid>https://aglenergy.github.io/arc/validate/</guid>
       <description>*Validate stages are used to perform validation and basic workflow controls..
-EqualityValidate Since: 1.0.0 The EqualityValidate takes two input DataFrame and will succeed if they are identical or fail if not. This stage is useful to use in automated testing as it can be used to validate a derived dataset equals a known &amp;lsquo;good&amp;rsquo; dataset.
+EqualityValidate Since: 1.0.0 - Supports Streaming: False The EqualityValidate takes two input DataFrame and will succeed if they are identical or fail if not. This stage is useful to use in automated testing as it can be used to validate a derived dataset equals a known &amp;lsquo;good&amp;rsquo; dataset.
 This stage will validate:
- Same number of columns. Same data type of columns. Same number of rows.</description>
+ Same number of columns. Same data type of columns.</description>
     </item>
     
     <item>

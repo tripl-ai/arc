@@ -27,6 +27,8 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
                   .builder()
                   .master("local[*]")
                   .config("spark.ui.port", "9999")
+                  .config("spark.sql.streaming.checkpointLocation", "/tmp/checkpoint")
+                  .config("spark.sql.orc.impl", "native")
                   .appName("Spark ETL Test")
                   .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
@@ -96,4 +98,38 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     val actual = spark.read.orc(targetFile)
     assert(actual.select(spark_partition_id()).distinct.count === 2)
   }  
+
+  test("ORCLoad: Structured Streaming") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true)
+
+    val readStream = spark
+      .readStream
+      .format("rate")
+      .option("rowsPerSecond", "1")
+      .load
+
+    readStream.createOrReplaceTempView(outputView)
+
+    load.ORCLoad.load(
+      ORCLoad(
+          name=outputView, 
+          inputView=outputView, 
+          outputURI=new URI(targetFile), 
+          partitionBy=Nil, 
+          numPartitions=None, 
+          authentication=None, 
+          saveMode=Some(SaveMode.Overwrite), 
+          params=Map.empty
+      )
+    )
+
+    Thread.sleep(2000)
+    spark.streams.active.foreach(streamingQuery => streamingQuery.stop)
+
+    val actual = spark.read.orc(targetFile)
+    assert(actual.schema.map(_.name).toSet.equals(Array("timestamp", "value").toSet))
+  }    
 }

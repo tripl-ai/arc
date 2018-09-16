@@ -58,6 +58,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
@@ -108,6 +109,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
   
     // no cache
     extract.DelimitedExtract.extract(
@@ -150,6 +152,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val cols = 
       BooleanColumn(
@@ -240,6 +243,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedExtract Settings: Delimiter") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     // incorrect delimiter
     var dataset = extract.DelimitedExtract.extract(
@@ -269,6 +273,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     // incorrect header
     var dataset = extract.DelimitedExtract.extract(
@@ -297,6 +302,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedExtract Settings: inferSchema") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     // incorrect header
     var dataset = extract.DelimitedExtract.extract(
@@ -321,4 +327,45 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     // try to read boolean which will fail if not inferSchema
     actual.first.getBoolean(0)
   }    
+
+  test("DelimitedExtract: Structured Streaming") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true)
+
+    // parse json schema to List[ExtractColumn]
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
+
+    val extractDataset = extract.DelimitedExtract.extract(
+      DelimitedExtract(
+        name=outputView,
+        cols=Right(cols.right.getOrElse(Nil)),
+        outputView=outputView,
+        input=Right(targetFileGlob),
+        settings=new Delimited(header=true, sep=Delimiter.Comma),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=None
+      )
+    ).get
+
+    val writeStream = extractDataset
+      .writeStream
+      .queryName("extract") 
+      .format("memory")
+      .start
+
+    val df = spark.table("extract")
+
+    try {
+      Thread.sleep(2000)
+      df.first.getBoolean(0)
+    } finally {
+      writeStream.stop
+    }  
+  }     
 }

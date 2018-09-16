@@ -46,8 +46,10 @@ object SQLTransform {
     }    
 
     // add partition and predicate pushdown detail to logs
-    stageDetail.put("partitionFilters", QueryExecutionUtils.getPartitionFilters(transformedDF.queryExecution.executedPlan).toArray)
-    stageDetail.put("dataFilters", QueryExecutionUtils.getDataFilters(transformedDF.queryExecution.executedPlan).toArray)
+    if (transform.persist && !transformedDF.isStreaming) {
+      stageDetail.put("partitionFilters", QueryExecutionUtils.getPartitionFilters(transformedDF.queryExecution.executedPlan).toArray)
+      stageDetail.put("dataFilters", QueryExecutionUtils.getDataFilters(transformedDF.queryExecution.executedPlan).toArray)
+    }
 
     logger.info()
       .field("event", "exit")

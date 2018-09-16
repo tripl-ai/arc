@@ -38,9 +38,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val env = "test"
 
     val argsMap = collection.mutable.HashMap[String, String]()
-    argsMap += "etl.config.uri" -> "classpath://conf/simple.conf"
 
-    val pipeline = ConfigUtils.parsePipeline(argsMap, env)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/simple.conf"), argsMap, env)
 
     val stage = DelimitedExtract(
       name = "file extract",

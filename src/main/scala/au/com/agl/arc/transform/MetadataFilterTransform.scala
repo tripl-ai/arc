@@ -56,7 +56,7 @@ object MetadataFilterTransform {
     val transformedDF = df.drop(excldueColumns.toList:_*)
     transformedDF.createOrReplaceTempView(transform.outputView)
 
-    if (transform.persist) {
+    if (transform.persist && !transformedDF.isStreaming) {
       transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
       stageDetail.put("records", Long.valueOf(transformedDF.count)) 
     }    

@@ -38,7 +38,7 @@ object DiffTransform {
     val rightHashDF = inputRightDF.withColumn("_hash", sha2(to_json(struct(inputRightDF.columns.map(col):_*)),512))
     val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF("_hash") === rightHashDF("_hash"), "full")
 
-    if (transform.persist) {
+    if (transform.persist && !transformedDF.isStreaming) {
       transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
     }   
 

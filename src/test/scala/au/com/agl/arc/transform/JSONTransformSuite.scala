@@ -59,4 +59,42 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
     // check data
     assert(transformed.first.getString(0) == """{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-20T21:46:54.000Z"}""")
   }  
+
+  test("JSONTransform: Structured Streaming") {
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val readStream = spark
+      .readStream
+      .format("rate")
+      .option("rowsPerSecond", "1")
+      .load
+
+    readStream.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.JSONTransform.transform(
+      JSONTransform(
+        name="JSONTransform", 
+        inputView=inputView,
+        outputView=outputView,
+        persist=false,
+        params=Map.empty
+      )
+    ).get
+
+    val writeStream = transformDataset
+      .writeStream
+      .queryName("transformed") 
+      .format("memory")
+      .start
+
+    val df = spark.table("transformed")
+
+    try {
+      Thread.sleep(2000)
+      assert(df.first.getString(0).contains(""""value":0"""))
+    } finally {
+      writeStream.stop
+    }    
+  }    
 }

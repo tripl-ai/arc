@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.2.0
+
+- added support for Spark [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html)
+
 # 1.1.0
 
 - fixed a bug in the `build.sbt` mergeStrategy which incorrectly excluded the `BinaryContentDataSource` registration when `assembly`.

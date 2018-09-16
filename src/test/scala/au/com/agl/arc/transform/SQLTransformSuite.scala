@@ -207,4 +207,46 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     assert(dataFilters.contains("),(booleanDatum"))
     assert(dataFilters.contains(" = false)"))
   }    
+
+
+  test("SQLTransform: Execute with Structured Streaming" ) {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val readStream = spark
+      .readStream
+      .format("rate")
+      .option("rowsPerSecond", "1")
+      .load
+
+    readStream.createOrReplaceTempView("readstream")
+
+    val transformDataset = transform.SQLTransform.transform(
+      SQLTransform(
+        name="SQLTransform", 
+        inputURI=new URI(targetFile),
+        sql=s"SELECT * FROM readstream",
+        outputView=outputView,
+        persist=false,
+        sqlParams=Map.empty,
+        params=Map.empty
+      )
+    ).get
+
+    val writeStream = transformDataset
+      .writeStream
+      .queryName("transformed") 
+      .format("memory")
+      .start
+
+    val df = spark.table("transformed")
+
+    try {
+      Thread.sleep(2000)
+      assert(df.count > 0)
+    } finally {
+      writeStream.stop
+    }
+  }     
 }

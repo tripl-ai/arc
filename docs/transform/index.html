@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.1.0</span></strong>
+          <span class="version">1.2.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -415,7 +415,7 @@
 
 <h2 id="difftransform">DiffTransform</h2>
 
-<h5 id="since-1-0-8">Since: 1.0.8</h5>
+<h5 id="since-1-0-8-supports-streaming-false">Since: 1.0.8 - Supports Streaming: False</h5>
 
 <p>The <code>DiffTransform</code> stage calculates the difference between two input datasets and produces three datasets:</p>
 
@@ -520,7 +520,7 @@
 
 <h2 id="httptransform">HTTPTransform</h2>
 
-<h5 id="since-1-0-9">Since: 1.0.9</h5>
+<h5 id="since-1-0-9-supports-streaming-true">Since: 1.0.9 - Supports Streaming: True</h5>
 
 <p>The <code>HTTPTransform</code> stage transforms the incoming dataset by <code>POST</code>ing the value in the incoming dataset with column name <code>value</code> (must be of type <code>string</code> or <code>bytes</code>) and appending the response body from an external API as <code>body</code>.</p>
 
@@ -624,7 +624,7 @@
 
 <h2 id="jsontransform">JSONTransform</h2>
 
-<h5 id="since-1-0-0">Since: 1.0.0</h5>
+<h5 id="since-1-0-0-supports-streaming-true">Since: 1.0.0 - Supports Streaming: True</h5>
 
 <p>The <code>JSONTransform</code> stage transforms the incoming dataset to rows of <code>json</code> strings with the column name <code>value</code>. It is intended to be used before stages like <a href="https://aglenergy.github.io/arc/load/#httpload">HTTPLoad</a> or <a href="https://aglenergy.github.io/arc/transform/#httptransform">HTTPTransform</a> to prepare the data for sending externally.</p>
 
@@ -701,7 +701,7 @@
 
 <h2 id="metadatafiltertransform">MetadataFilterTransform</h2>
 
-<h5 id="since-1-0-9-1">Since: 1.0.9</h5>
+<h5 id="since-1-0-9-supports-streaming-true-1">Since: 1.0.9 - Supports Streaming: True</h5>
 
 <div class="admonition note">
 <p class="admonition-title">Experimental</p>
@@ -869,7 +869,7 @@ WHERE metadata.pii = (
 
 <h2 id="mltransform">MLTransform</h2>
 
-<h5 id="since-1-0-0-1">Since: 1.0.0</h5>
+<h5 id="since-1-0-0-supports-streaming-true-1">Since: 1.0.0 - Supports Streaming: True</h5>
 
 <p>The <code>MLTransform</code> stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a <code>PipelineModel</code> or <code>CrossValidatorModel</code> produced using Spark&rsquo;s Scala, Java, PySpark or SparkR API.</p>
 
@@ -964,7 +964,7 @@ WHERE metadata.pii = (
 
 <h2 id="sqltransform">SQLTransform</h2>
 
-<h5 id="since-1-0-0-2">Since: 1.0.0</h5>
+<h5 id="since-1-0-0-supports-streaming-true-2">Since: 1.0.0 - Supports Streaming: True</h5>
 
 <p>The <code>SQLTransform</code> stage transforms the incoming dataset with a <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL</a> statement. This stage relies on previous stages to load and register the dataset views (<code>outputView</code>) and will execute arbitrary SQL statements against those datasets.</p>
 
@@ -1086,7 +1086,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <h2 id="tensorflowservingtransform">TensorFlowServingTransform</h2>
 
-<h5 id="since-1-0-0-3">Since: 1.0.0</h5>
+<h5 id="since-1-0-0-supports-streaming-true-3">Since: 1.0.0 - Supports Streaming: True</h5>
 
 <div class="admonition note">
 <p class="admonition-title">Experimental</p>
@@ -1201,7 +1201,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <h2 id="typingtransform">TypingTransform</h2>
 
-<h5 id="since-1-0-0-4">Since: 1.0.0</h5>
+<h5 id="since-1-0-0-supports-streaming-true-4">Since: 1.0.0 - Supports Streaming: True</h5>
 
 <p>The <code>TypingTransform</code> stage transforms the incoming dataset with based on metadata defined in the <a href="../metadata/">metadata</a> format.</p>
 

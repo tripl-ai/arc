@@ -49,11 +49,20 @@ object ARC {
         MDC.put("jobId", j) 
     }    
 
+    val streaming: Option[String] = argsMap.get("etl.config.streaming").orElse(envOrNone("ETL_CONF_STREAMING"))
+    val isStreaming = streaming match {
+      case Some(v) if v.toLowerCase == "true" => true
+      case Some(v) if v.toLowerCase == "false" => false
+      case _ => false
+    }
+    MDC.put("streaming", isStreaming.toString) 
+
     val spark: SparkSession = try {
       SparkSession
         .builder()
         .appName(jobId.getOrElse(s"arc:${BuildInfo.version}-${UUID.randomUUID.toString}"))
         .config("spark.debug.maxToStringFields", "8192")
+        .config("spark.sql.orc.impl", "native") // needed to overcome structured streaming write issue
         .config("spark.kryo.registrator", classOf[GeoSparkKryoRegistrator].getName)
         .getOrCreate()  
     } catch {
@@ -159,9 +168,11 @@ object ARC {
         sys.exit(1)    
     }
 
+    val configUri: Option[String] = argsMap.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))    
+
     // try to parse config
     val pipelineConfig = try {
-      ConfigUtils.parsePipeline(argsMap, env)(spark, logger)
+      ConfigUtils.parsePipeline(configUri, argsMap, env)(spark, logger)
     } catch {
       case e: Exception => 
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
@@ -192,11 +203,13 @@ object ARC {
         sys.exit(1)
     }
 
+    val arcContext = ARCContext(jobId, jobName, env, envId, configUri, isStreaming)
+
     val error: Boolean = pipelineConfig match {
       case Right(pipeline) =>
         try {
           UDF.registerUDFs(spark.sqlContext)
-          ARC.run(pipeline)(spark, logger)
+          ARC.run(pipeline)(spark, logger, arcContext)
           false
         } catch {
           case e: Exception with DetailException => 
@@ -262,7 +275,7 @@ object ARC {
     * engines as the submitted stages are not specific to Spark.
     */
   def run(pipeline: ETLPipeline)
-  (implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger) = {
+  (implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
 
     def processStage(stage: PipelineStage): Option[DataFrame] = {
       stage match {

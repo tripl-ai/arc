@@ -151,7 +151,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     assert(transformDataset.first.getString(2) == "11")
   } 
 
-  test("HTTPTransform: Can call TensorFlowServing via Strucutred Streaming" ) {
+  test("HTTPTransform: Can call TensorFlowServing via Structured Streaming" ) {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
