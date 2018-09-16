@@ -249,7 +249,7 @@ The `MLTransform` stage transforms the incoming dataset with a pretrained Spark 
 ```
 
 ## SQLTransform
-##### Since: 1.0.0
+##### Since: 1.0.0 - Supports Streaming: True
 
 The `SQLTransform` stage transforms the incoming dataset with a [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) statement. This stage relies on previous stages to load and register the dataset views (`outputView`) and will execute arbitrary SQL statements against those datasets.
 

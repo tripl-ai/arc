@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.1.0</span></strong>
+          <span class="version">1.2.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -407,7 +407,7 @@
 
 <h2 id="httpexecute">HTTPExecute</h2>
 
-<h5 id="since-1-0-0">Since: 1.0.0</h5>
+<h5 id="since-1-0-0-supports-streaming-false">Since: 1.0.0 - Supports Streaming: False</h5>
 
 <p>The <code>HTTPExecute</code> takes an input <code>Map[String, String]</code> from the configuration and executes a <code>POST</code> request against a remote HTTP service. This could be used to initialise another process that depends on the output of data pipeline.</p>
 
@@ -506,7 +506,7 @@
 
 <h2 id="jdbcexecute">JDBCExecute</h2>
 
-<h5 id="since-1-0-0-1">Since: 1.0.0</h5>
+<h5 id="since-1-0-0-supports-streaming-false-1">Since: 1.0.0 - Supports Streaming: False</h5>
 
 <p>The <code>JDBCExecute</code> executes a SQL statement against an external JDBC connection.</p>
 
@@ -611,7 +611,7 @@
 
 <h2 id="kafkacommitexecute">KafkaCommitExecute</h2>
 
-<h5 id="since-1-0-8">Since: 1.0.8</h5>
+<h5 id="since-1-0-8-supports-streaming-false">Since: 1.0.8 - Supports Streaming: False</h5>
 
 <p>The <code>KafkaCommitExecute</code> takes the resulting <code>DataFrame</code> from a <a href="../extract/#kafkaextract">KafkaExtract</a> stage and commits the offsets back to Kafka. This is used so that a user is able to perform a quasi-transaction by specifing a series of stages that must be succesfully executed prior to <code>committing</code> the offset back to Kafka. To use this stage ensure that the <code>autoCommit</code> option on the <a href="../extract/#kafkaextract">KafkaExtract</a> stage is set to <code>false</code>.</p>
 
@@ -689,7 +689,7 @@
 
 <h2 id="pipelineexecute">PipelineExecute</h2>
 
-<h5 id="since-1-0-9">Since: 1.0.9</h5>
+<h5 id="since-1-0-9-supports-streaming-true">Since: 1.0.9 - Supports Streaming: True</h5>
 
 <p>The <code>PipelineExecute</code> stage allows the embedding of another Arc pipeline within the current pipeline. This means it is possible to compose pipelines together without having to <a href="../load">serialise</a> and <a href="../extract">deserialise</a> the results.</p>
 
