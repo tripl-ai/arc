@@ -11,6 +11,7 @@ object BytesExtract {
   def extract(extract: BytesExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
 
     import spark.implicits._
+    val signature = "BytesExtract requires pathView to be dataset with [value: string] signature."
 
     val startTime = System.currentTimeMillis()
     val stageDetail = new java.util.HashMap[String, Object]()
@@ -32,14 +33,12 @@ object BytesExtract {
       extract.pathView match {
         case Some(pv) =>
           val pathView = spark.table(pv)
-
-          val msg = "BytesTransform requires a field named 'value' of type 'string' when using pathView"
           val schema = pathView.schema
 
           val fieldIndex = try {
             schema.fieldIndex("value")
           } catch {
-            case e: Exception => throw new Exception(s"""${msg} inputView has: [${pathView.schema.map(_.name).mkString(", ")}].""") with DetailException {
+            case e: Exception => throw new Exception(s"""${signature} inputView has: [${pathView.schema.map(_.name).mkString(", ")}].""") with DetailException {
               override val detail = stageDetail
             }
           }
@@ -47,7 +46,7 @@ object BytesExtract {
           schema.fields(fieldIndex).dataType match {
             case _: StringType =>
             case _: BinaryType =>
-            case _ => throw new Exception(s"""${msg} 'value' is of type: '${schema.fields(fieldIndex).dataType.simpleString}'.""") with DetailException {
+            case _ => throw new Exception(s"""${signature} 'value' is of type: '${schema.fields(fieldIndex).dataType.simpleString}'.""") with DetailException {
               override val detail = stageDetail
             }
           }

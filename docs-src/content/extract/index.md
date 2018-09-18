@@ -78,7 +78,8 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|input|URI|true|URI/Glob of the input binary files.|
+|input|URI|false|URI/Glob of the input binary files.|
+|pathView|String|false|A `DataFrame` containing a list of URI/Globs to extract from.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|

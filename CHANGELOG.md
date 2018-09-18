@@ -2,7 +2,8 @@
 
 # 1.2.0
 
-- added support for Spark [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html)
+- added support for Spark [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html).
+- added `pathView` property for `BytesExtract` allowing a dataframe of file paths to be provided to dynamically load files.
 
 # 1.1.0
 

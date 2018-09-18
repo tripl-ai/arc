@@ -23,9 +23,9 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _  
 
+  val pathView = "pathView"
   val outputView = "outputView"
-  val dogImage = getClass.getResource("/flask_serving/dog.jpg").toString
-  val uri = s"http://localhost:5000/predict"
+  val targetFile = getClass.getResource("/notes.xml.zip").toString
 
   before {
     implicit val spark = SparkSession
@@ -44,17 +44,17 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     session.stop
   }
 
-  test("BytesExtract: Test calling flask_serving") {
+  test("BytesExtract: input") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
-    extract.BytesExtract.extract(
+    val extractDataset = extract.BytesExtract.extract(
       BytesExtract(
         name="dataset",
         outputView=outputView, 
-        input=Option(dogImage),
+        input=Option(targetFile),
         pathView=None,
         authentication=None,
         persist=false,
@@ -62,32 +62,36 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         contiguousIndex=None,
         params=Map.empty
       )
-    )
+    ).get
 
-    // rename raw_content to comply with HTTPTransform requirement
-    spark.sql(s"""
-    SELECT 
-      path
-      ,raw_content AS value
-      ,_filename
-      ,_index 
-    FROM ${outputView}
-    """).createOrReplaceTempView(outputView)
+    assert(extractDataset.filter($"path".contains(targetFile)).count != 0)
+    assert(extractDataset.count == 1)
+  }    
 
-    val actual = transform.HTTPTransform.transform(
-      HTTPTransform(
-        name="transform",
-        uri=new URI(uri),
-        headers=Map.empty,
-        validStatusCodes=None,
-        inputView=outputView,
-        outputView=outputView,
-        params=Map.empty,
-        persist=false
+  test("BytesExtract: pathView") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
+
+    val input = Seq(targetFile, targetFile).toDF("value")
+    input.createOrReplaceTempView(pathView)
+
+    val extractDataset = extract.BytesExtract.extract(
+      BytesExtract(
+        name="dataset",
+        outputView=outputView, 
+        input=None,
+        pathView=Option(pathView),
+        authentication=None,
+        persist=false,
+        numPartitions=None,
+        contiguousIndex=None,
+        params=Map.empty
       )
-    ).get    
+    ).get
 
-    assert(spark.sql(s"""SELECT * FROM ${outputView} WHERE body LIKE '%predictions%'""").count != 0)
+    assert(extractDataset.count == 2)
   }    
 
 }
