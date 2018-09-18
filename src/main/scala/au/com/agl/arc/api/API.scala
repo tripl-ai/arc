@@ -187,7 +187,7 @@ object API {
 
   case class AvroExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Option[Boolean]) extends ColumnarExtract { val getType = "AvroExtract" }  
 
-  case class BytesExtract(name: String, outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Option[Boolean]) extends Extract { val getType = "BytesExtract" }
+  case class BytesExtract(name: String, outputView: String, input: Option[String], pathView: Option[String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Option[Boolean]) extends Extract { val getType = "BytesExtract" }
 
   case class DelimitedExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], settings: Delimited, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Option[Boolean]) extends ColumnarExtract { val getType = "DelimitedExtract" }
 
