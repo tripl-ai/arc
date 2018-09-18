@@ -601,19 +601,41 @@ object ConfigUtils {
   def readBytesExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val inputURI = getValue[String]("inputURI")
-    val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
+    val inputURI = getOptionalValue[String]("inputURI")
+    val parsedGlob: Either[Errors, Option[String]] = inputURI.rightFlatMap {
+      case Some(glob) =>
+        val parsedGlob: Either[Errors, String] = parseGlob("inputURI", glob)
+        parsedGlob.rightFlatMap(g => Right(Option(g)))
+      case None =>
+        val noValue: Either[Errors, Option[String]] = Right(None)
+        noValue
+    }
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
+    val pathView = getOptionalValue[String]("pathView")
 
-    (name, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
-      case (Right(n), Right(in), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) =>
-        Right(BytesExtract(n, ov, in, auth, params, p, np, ci))
+    (name, parsedGlob, pathView, outputView, persist, numPartitions, authentication, contiguousIndex) match {
+      case (Right(n), Right(in), Right(pv), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) =>
+
+        val validInput = (in, pv) match {
+          case (Some(_), None) => true
+          case (None, Some(_)) => true
+          case _ => false
+        }
+
+        if (validInput) {
+          Right(BytesExtract(n, ov, in, pv, auth, params, p, np, ci))
+        } else {
+          val inputError = ConfigError("inputURI:pathView", "Either inputURI and pathView must be defined but only one can be defined at the same time") :: Nil
+          val stageName = stringOrDefault(name, "unnamed stage")
+          val err = StageError(stageName, inputError)
+          Left(err :: Nil)
+        }
       case _ =>
-        val allErrors: Errors = List(name, inputURI, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, pathView, outputView, persist, numPartitions, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
@@ -641,7 +663,7 @@ object ConfigUtils {
     val uriKey = "schemaURI"
     val stringURI = getOptionalValue[String](uriKey)
     val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
-      optURI match { 
+      optURI match {
         case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
         case None => Right(None)
       }
