@@ -244,24 +244,28 @@ object ARC {
       }
     }
 
-    if (!error) {
-      logger.info()
-        .field("event", "exit")
-        .field("status", "success")
-        .field("duration", System.currentTimeMillis() - startTime)
-        .log()   
-    }
+    if (!arcContext.isStreaming) {
+      if (!error) {
+        logger.info()
+          .field("event", "exit")
+          .field("status", "success")
+          .field("duration", System.currentTimeMillis() - startTime)
+          .log()   
+      }
 
-    // silently try to shut down log so that all messages are sent before stopping the spark session
-    try {
-      org.apache.log4j.LogManager.shutdown
-    } catch {
-      case e: Exception => 
-    }
+      // silently try to shut down log so that all messages are sent before stopping the spark session
+      try {
+        org.apache.log4j.LogManager.shutdown
+      } catch {
+        case e: Exception => 
+      }
 
-    // stop spark session and return error code to indicate sucess/failure
-    spark.stop()
-    sys.exit(if (error) 1 else 0)
+      // stop spark session and return error code to indicate sucess/failure
+      spark.stop()
+      sys.exit(if (error) 1 else 0)
+    } else {
+      spark.streams.active(0).awaitTermination
+    }
   }  
 
   /** An ETL Pipeline submits each of its stages in order to Spark.

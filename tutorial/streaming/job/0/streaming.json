@@ -1,0 +1,44 @@
+{
+  "stages": [
+    {
+      "type": "DelimitedExtract",
+      "name": "extract data from *address_alias_type_aut",
+      "environments": [
+        "production",
+        "test"
+      ],
+      "inputURI": ${ETL_CONF_INPUT_PATH}"/*.psv",
+      "schemaURI": ${ETL_CONF_META_PATH}"/meta/0/address_alias_type_aut.json",
+      "outputView": "address_alias_type_aut_raw",
+      "persist": false,
+      "delimiter": "Pipe",
+      "quote": "DoubleQuote",
+      "header": true,
+      "authentication": {},
+      "params": {}
+    },
+    {
+      "type": "TypingTransform",
+      "name": "apply data types to address_alias_type_aut",
+      "environments": [
+        "production",
+        "test"
+      ],
+      "inputURI": ${ETL_CONF_META_PATH}"/meta/0/address_alias_type_aut.json",
+      "inputView": "address_alias_type_aut_raw",
+      "outputView": "address_alias_type_aut",
+      "persist": true,
+      "authentication": {},
+      "params": {}
+    },
+    {
+      "type": "ParquetLoad",
+      "name": "write table out as parquet",
+      "environments": ["production", "test"],
+      "inputView": "address_alias_type_aut",
+      "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_alias_type_aut.parquet",
+      "authentication": {},    
+      "params": {}
+    }
+  ]
+}
