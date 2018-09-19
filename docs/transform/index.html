@@ -970,6 +970,8 @@ WHERE metadata.pii = (
 
 <p>All the inbuilt <a href="https://spark.apache.org/docs/latest/api/sql/index.html">Spark SQL functions</a> are available and have been extended with some <a href="https://aglenergy.github.io/arc/partials/#user-defined-functions">additional functions</a>.</p>
 
+<p>Please be aware that in streaming mode not all join operations are available. See: <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#support-matrix-for-joins-in-streaming-queries">Support matrix for joins in streaming queries</a>.</p>
+
 <div class="admonition note">
 <p class="admonition-title">CAST vs TypingTransform</p>
 <p><p>It is strongly recommended to use the <code>TypingTransform</code> for reproducible, repeatable results.</p>

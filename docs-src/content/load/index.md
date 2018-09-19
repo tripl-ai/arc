@@ -230,7 +230,7 @@ Whilst it is possible to use `JDBCLoad` to create tables directly in the target 
 ```
 
 ## JSONLoad
-##### Since: 1.0.0
+##### Since: 1.0.0 - Supports Streaming: True
 
 The `JSONLoad` writes an input `DataFrame` to a target JSON file. 
 

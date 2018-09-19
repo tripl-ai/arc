@@ -70,7 +70,7 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 ## BytesExtract
 ##### Since: 1.0.9 - Supports Streaming: False
 
-The `BytesExtract` stage reads one or more binary files and returns a `DataFrame` containing the file path (named `path`) and a `Array[Byte]` of the file contents (named `raw_content`). 
+The `BytesExtract` stage reads one or more binary files and returns a `DataFrame` containing a `Array[Byte]` of the file content (named `value`) and the file path (named `_filename`). 
 
 ### Parameters
 

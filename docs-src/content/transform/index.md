@@ -255,6 +255,8 @@ The `SQLTransform` stage transforms the incoming dataset with a [Spark SQL](http
 
 All the inbuilt [Spark SQL functions](https://spark.apache.org/docs/latest/api/sql/index.html) are available and have been extended with some [additional functions](/partials/#user-defined-functions).
 
+Please be aware that in streaming mode not all join operations are available. See: [Support matrix for joins in streaming queries](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#support-matrix-for-joins-in-streaming-queries).
+
 {{< note title="CAST vs TypingTransform" >}}
 It is strongly recommended to use the `TypingTransform` for reproducible, repeatable results.
 
