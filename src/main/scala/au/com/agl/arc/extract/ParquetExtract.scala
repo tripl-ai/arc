@@ -97,17 +97,17 @@ object ParquetExtract {
       }
     } 
     repartitionedDF.createOrReplaceTempView(extract.outputView)
-
+    
     if (!repartitionedDF.isStreaming) {
       stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
       stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
       stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
-    }
 
-    if (extract.persist) {
-      repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
-    }    
+      if (extract.persist) {
+        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+      }      
+    }
 
     logger.info()
       .field("event", "exit")

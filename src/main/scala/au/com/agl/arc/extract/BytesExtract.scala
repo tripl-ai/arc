@@ -74,7 +74,7 @@ object BytesExtract {
     stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
     stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
 
-    if (extract.persist) {
+    if (extract.persist && !repartitionedDF.isStreaming) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
       stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
     }

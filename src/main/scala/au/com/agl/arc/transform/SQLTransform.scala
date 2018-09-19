@@ -40,15 +40,15 @@ object SQLTransform {
 
     transformedDF.createOrReplaceTempView(transform.outputView)
 
-    if (transform.persist) {
-      transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", Long.valueOf(transformedDF.count)) 
-    }    
-
     // add partition and predicate pushdown detail to logs
-    if (transform.persist && !transformedDF.isStreaming) {
+    if (!transformedDF.isStreaming) {
       stageDetail.put("partitionFilters", QueryExecutionUtils.getPartitionFilters(transformedDF.queryExecution.executedPlan).toArray)
       stageDetail.put("dataFilters", QueryExecutionUtils.getDataFilters(transformedDF.queryExecution.executedPlan).toArray)
+
+      if (transform.persist) {
+        transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        stageDetail.put("records", Long.valueOf(transformedDF.count)) 
+      }
     }
 
     logger.info()
