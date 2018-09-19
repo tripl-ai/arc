@@ -47,7 +47,7 @@ ENV GLIBC_VERSION         2.26-r0
 # install spark
 RUN set -ex && \
     apk upgrade --update && \
-    apk add --update libstdc++ ca-certificates bash openblas findutils && \
+    apk add --update libstdc++ ca-certificates bash openblas findutils coreutils && \
     for pkg in glibc-${GLIBC_VERSION} glibc-bin-${GLIBC_VERSION} glibc-i18n-${GLIBC_VERSION}; do wget https://github.com/andyshinn/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/${pkg}.apk -O /tmp/${pkg}.apk; done && \
     apk add --allow-untrusted /tmp/*.apk && \
     rm -v /tmp/*.apk && \
