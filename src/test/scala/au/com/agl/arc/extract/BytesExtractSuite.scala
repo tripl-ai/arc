@@ -64,7 +64,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    assert(extractDataset.filter($"path".contains(targetFile)).count != 0)
+    assert(extractDataset.filter($"_filename".contains(targetFile)).count != 0)
     assert(extractDataset.count == 1)
   }    
 

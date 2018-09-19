@@ -65,15 +65,6 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     )
 
     // rename raw_content to comply with HTTPTransform requirement
-    spark.sql(s"""
-    SELECT 
-      path
-      ,raw_content AS value
-      ,_filename
-      ,_index 
-    FROM ${outputView}
-    """).createOrReplaceTempView(outputView)
-
     val actual = transform.HTTPTransform.transform(
       HTTPTransform(
         name="transform",

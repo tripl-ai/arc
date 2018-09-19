@@ -62,13 +62,12 @@ object BytesExtract {
       }
     }
 
-    // add source data including index
-    val enrichedDF = ExtractUtils.addInternalColumns(df, extract.contiguousIndex.getOrElse(true))
+    // datasource already has a _filename column so no need to add internal columns
 
     // repartition to distribute rows evenly
     val repartitionedDF = extract.numPartitions match {
-      case Some(numPartitions) => enrichedDF.repartition(numPartitions)
-      case None => enrichedDF
+      case Some(numPartitions) => df.repartition(numPartitions)
+      case None => df
     }
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 
