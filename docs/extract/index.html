@@ -1712,13 +1712,136 @@
 }
 </code></pre>
 
+<h2 id="textextract">TextExtract</h2>
+
+<h5 id="since-1-2-0-supports-streaming-true">Since: 1.2.0 - Supports Streaming: True</h5>
+
+<p>The <code>TextExtract</code> stage reads either one or more text files and returns a <code>DataFrame</code>.</p>
+
+<h3 id="parameters-9">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
+<td>false*</td>
+<td>URI/Glob of the input <code>text</code> files. If not present <code>inputView</code> is requred.</td>
+</tr>
+
+<tr>
+<td>schemaURI</td>
+<td>URI</td>
+<td>false</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>DataFrame</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>DataFrame</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>multiLine</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether the to load the file as a single record or as individual records split by newline.<br><br>Default: false.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-9">Examples</h3>
+
+<pre><code class="language-json">{
+    &quot;type&quot;: &quot;TextExtract&quot;,
+    &quot;name&quot;: &quot;load customer text extract&quot;,
+    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+    &quot;inputURI&quot;: &quot;hdfs://input_data/customer/*.txt&quot;,
+    &quot;outputView&quot;: &quot;customer&quot;,            
+    &quot;persist&quot;: false,
+    &quot;multiLine&quot;: false,
+    &quot;authentication&quot;: {
+        ...
+    },
+    &quot;params&quot;: {
+    }
+}
+</code></pre>
+
 <h2 id="xmlextract">XMLExtract</h2>
 
 <h5 id="since-1-0-0-supports-streaming-false-3">Since: 1.0.0 - Supports Streaming: False</h5>
 
 <p>The <code>XMLExtract</code> stage reads one or more XML files or an input <code>Dataset[String]</code> and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-9">Parameters</h3>
+<h3 id="parameters-10">Parameters</h3>
 
 <table>
 <thead>
@@ -1831,7 +1954,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-9">Examples</h3>
+<h3 id="examples-10">Examples</h3>
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;XMLExtract&quot;,

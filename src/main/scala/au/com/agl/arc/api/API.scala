@@ -203,6 +203,8 @@ object API {
 
   case class ParquetExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Option[Boolean]) extends ColumnarExtract { val getType = "ParquetExtract" }
 
+  case class TextExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Option[Boolean], multiLine: Option[Boolean]) extends ColumnarExtract { val getType = "TextExtract" }
+
   case class XMLExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Option[Boolean]) extends Extract { val getType = "XMLExtract" }
 
 

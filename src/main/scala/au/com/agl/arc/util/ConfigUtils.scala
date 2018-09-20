@@ -923,6 +923,41 @@ object ConfigUtils {
     }
   }
 
+  def readTextExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
+    import ConfigReader._
+
+    val input = getValue[String]("inputURI")
+    val parsedGlob = input.rightFlatMap(glob => parseGlob("inputURI", glob))
+
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val multiLine = getOptionalValue[Boolean]("multiLine")
+    val authentication = readAuthentication("authentication")
+    val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
+
+    val uriKey = "schemaURI"
+    val stringURI = getOptionalValue[String](uriKey)
+    val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
+      optURI match { 
+        case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
+        case None => Right(None)
+      }
+    )
+
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+
+    (name, extractColumns, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex) match {
+      case (Right(n), Right(cols), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci)) => 
+        Right(TextExtract(n, Right(cols), ov, in, auth, params, p, np, ci, ml))
+      case _ =>
+        val allErrors: Errors = List(name, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err :: Nil)
+    }
+  }
+
   def readXMLExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
@@ -1678,6 +1713,7 @@ object ConfigUtils {
             case Right("KafkaExtract") => Option(readKafkaExtract(name, params))
             case Right("ORCExtract") => Option(readORCExtract(name, params))
             case Right("ParquetExtract") => Option(readParquetExtract(name, params))
+            case Right("TextExtract") => Option(readTextExtract(name, params))
             case Right("XMLExtract") => Option(readXMLExtract(name, params))
 
             case Right("DiffTransform") => Option(readDiffTransform(name, params))
