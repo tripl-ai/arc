@@ -79,3 +79,28 @@ Additionally there are permissions arguments that can be used to retrieve the jo
 |ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN|etl.config.fs.adl.oauth2.refresh.token|The OAuth refresh token for connecting to Azure Data Lake.|
 |ETL_CONF_GOOGLE_CLOUD_PROJECT_ID|etl.config.fs.gs.project.id|The project identifier for connecting to Google Cloud Storage.|
 |ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE|etl.config.fs.google.cloud.auth.service.account.json.keyfile|The service account json keyfile path for connecting to Google Cloud Storage.|
+
+## Examples
+
+This is an example of a streaming job [source](https://github.com/AGLEnergy/arc/blob/master/tutorial/streaming/job/0/streaming.json). This job is intended to be executed after the integration test envornment has been started:
+
+Start integration test environments:
+
+```
+docker-compose -f src/it/resources/docker-compose.yml up --build -d
+```
+
+Start the streaming job:
+
+```
+docker run \
+--net "arc-integration" \
+-e "ETL_CONF_ENV=test" \
+-e "ETL_CONF_STREAMING=true" \
+-it -p 4040:4040 seddonm1/arc:1.2.0 \
+bin/spark-submit \
+--master local[*] \
+--class au.com.agl.arc.ARC \
+/opt/spark/jars/arc.jar \
+--etl.config.uri=file:///opt/tutorial/streaming/job/0/streaming.json
+```
