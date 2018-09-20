@@ -436,6 +436,40 @@ The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.ap
 }
 ```
 
+## RateExtract
+##### Since: 1.2.0 - Supports Streaming: True
+
+The `RateExtract` stage creates a streaming datasource which creates rows into a streaming `DataFrame` with the signature `[timestamp: timestamp, value: long]`. 
+
+This stage has been included for testing Structured Streaming jobs as it can be very difficult to generate test data. Generally this stage would only be included when Arc is run in a test mode (i.e. the `environment` is set to `test`).
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|rowsPerSecond|Integer|false|How many rows should be generated per second.<br><br>Default: 1.|
+|rampUpTime|Integer|false|How long to ramp up before the generating speed becomes rowsPerSecond. Using finer granularities than seconds will be truncated to integer seconds.<br><br>Default: 0.|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "RateExtract",
+    "name": "create a streaming source",
+    "environments": ["test"],
+    "outputView": "stream",
+    "rowsPerSecond": 2,
+    "rampUpTime": 0,
+    "numPartitions": 10,
+    "params": {
+    }
+}
+```
+
 ## TextExtract
 ##### Since: 1.2.0 - Supports Streaming: True
 

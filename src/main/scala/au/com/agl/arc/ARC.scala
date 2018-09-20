@@ -301,6 +301,8 @@ object ARC {
           extract.ORCExtract.extract(e)              
         case e : ParquetExtract =>
           extract.ParquetExtract.extract(e)
+        case e : RateExtract =>
+          extract.RateExtract.extract(e)             
         case e : TextExtract =>
           extract.TextExtract.extract(e)          
         case e : XMLExtract =>
