@@ -1,0 +1,56 @@
+[
+  {
+    "id": "1cdf4091-d5a5-4abf-b48a-1ad8fe2be4de",
+    "name": "customer_id",
+    "description": "The customer identifier.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "97d8f4e1-b87f-468a-a99c-40b8af36eebf",
+    "name": "account_id",
+    "description": "The account identifier.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "f457e562-5c7a-4215-a754-ab749509f3fb",
+    "name": "balance",
+    "description": "The account balance.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "8d3c9cb7-7179-4a8f-824d-7d2f41fd3d07",
+    "name": "credit_score",
+    "description": "The customer credit score.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  }
+]

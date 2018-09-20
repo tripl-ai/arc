@@ -18,10 +18,28 @@
       "persist": false
     },
     {
+      "type": "TypingTransform",
+      "name": "apply data types to fake data",
+      "environments": ["test"],
+      "inputURI": "/opt/tutorial/streaming/job/0/fake_data_meta.json",
+      "inputView": "random_customer",            
+      "outputView": "random_customer_typed",            
+      "persist": false,      
+      "persist": false
+    },   
+    {
+      "type": "SQLTransform",
+      "name": "prepare data for model",
+      "environments": ["test"],
+      "inputURI": "/opt/tutorial/streaming/job/0/prepare_data.sql",
+      "outputView": "random_customer_model_ready",            
+      "persist": false
+    },     
+    {
       "type": "TensorFlowServingTransform",
       "name": "call model to create new credit_score on fake data",
       "environments": ["test"],
-      "inputView": "random_customer",
+      "inputView": "random_customer_model_ready",
       "outputView": "random_customer_augmented",            
       "uri": "http://resources_tensorflow_serving_1:9001/v1/models/simple/versions/1:predict",
       "batchSize": 100,
