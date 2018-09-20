@@ -285,6 +285,32 @@ object ConfigUtils {
     }
   }
 
+  def readOutputMode(path: String)(implicit c: Config): Either[Errors, Option[OutputModeType]] = {
+
+    def err(msg: String): Either[Errors, Option[OutputModeType]] = Left(ConfigError(path, msg) :: Nil)
+
+    try {
+      if (c.hasPath(path)) {
+        c.getString(path) match {
+          case "Append" => {
+            Right(Option(OutputModeTypeAppend))
+          } 
+          case "Complete" => {
+            Right(Option(OutputModeTypeComplete))
+          }   
+          case "Update" => {
+            Right(Option(OutputModeTypeUpdate))
+          }                    
+          case _ =>  throw new Exception(s"""Unable to parse outputMode: '${c.getString(path)}'. Must be one of ['Append', 'Complete', 'Update'].""")
+        }
+      } else {
+        Right(None)
+      }
+    } catch {
+      case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
+    }
+  }
+
   def readResponseType(path: String)(implicit c: Config): Either[Errors, Option[ReponseType]] = {
   
     def err(msg: String): Either[Errors, Option[ReponseType]] = Left(ConfigError(path, msg) :: Nil)
@@ -1300,6 +1326,23 @@ object ConfigUtils {
     }
   }    
 
+  def readConsoleLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
+    import ConfigReader._
+
+    val inputView = getValue[String]("inputView")
+    val outputMode = readOutputMode("outputMode")
+
+    (name, inputView, outputMode) match {
+      case (Right(n), Right(iv), Right(om)) => 
+        Right(ConsoleLoad(n, iv, om, params))
+      case _ =>
+        val allErrors: Errors = List(name, inputView, outputMode).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err :: Nil)
+    }
+  }    
+
   def readDelimitedLoad(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
@@ -1747,6 +1790,7 @@ object ConfigUtils {
 
             case Right("AvroLoad") => Option(readAvroLoad(name, params))
             case Right("AzureEventHubsLoad") => Option(readAzureEventHubsLoad(name, params))
+            case Right("ConsoleLoad") => Option(readConsoleLoad(name, params))
             case Right("DelimitedLoad") => Option(readDelimitedLoad(name, params))
             case Right("HTTPLoad") => Option(readHTTPLoad(name, params))
             case Right("JDBCLoad") => Option(readJDBCLoad(name, params))

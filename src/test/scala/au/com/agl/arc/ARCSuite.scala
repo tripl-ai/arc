@@ -75,3 +75,5 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
     assert(thrown.getMessage.contains("cannot resolve '`fasdf`' given input columns"))
   }    
 }
+
+

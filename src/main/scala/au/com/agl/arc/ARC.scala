@@ -264,7 +264,11 @@ object ARC {
       spark.stop()
       sys.exit(if (error) 1 else 0)
     } else {
-      spark.streams.active(0).awaitTermination
+      try {
+        spark.streams.active(0).awaitTermination
+      } catch {
+        case e: Exception => 
+      }
     }
   }  
 
@@ -329,6 +333,8 @@ object ARC {
           load.AvroLoad.load(l)
         case l : AzureEventHubsLoad =>
           load.AzureEventHubsLoad.load(l)          
+        case l : ConsoleLoad =>
+          load.ConsoleLoad.load(l)          
         case l : DelimitedLoad =>
           load.DelimitedLoad.load(l)
         case l : HTTPLoad =>

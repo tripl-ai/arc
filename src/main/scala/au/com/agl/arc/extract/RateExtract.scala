@@ -38,7 +38,7 @@ object RateExtract {
       .log()    
 
     if (!arcContext.isStreaming) {
-      throw new Exception("RateExtract cannot be executed in non-streaming mode.") with DetailException {
+      throw new Exception("RateExtract can only be executed in streaming mode.") with DetailException {
         override val detail = stageDetail          
       }
     }

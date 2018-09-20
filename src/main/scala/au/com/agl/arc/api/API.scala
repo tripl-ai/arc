@@ -10,6 +10,7 @@ import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.types.MetadataBuilder
 import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.streaming.OutputMode
 
 import au.com.agl.arc.util._
 
@@ -235,6 +236,8 @@ object API {
 
   case class AzureEventHubsLoad(name: String, inputView: String, namespaceName: String, eventHubName: String, sharedAccessSignatureKeyName: String, sharedAccessSignatureKey: String, numPartitions: Option[Int], retryMinBackoff: Option[Long], retryMaxBackoff: Option[Long], retryCount: Option[Int], params: Map[String, String]) extends Load { val getType = "AzureEventHubsLoad" }
 
+  case class ConsoleLoad(name: String, inputView: String, outputMode: Option[OutputModeType], params: Map[String, String]) extends Load { val getType = "ConsoleLoad" }
+
   case class DelimitedLoad(name: String, inputView: String, outputURI: URI, settings: Delimited, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "DelimitedLoad" }
 
   case class HTTPLoad(name: String, inputView: String, outputURI: URI, headers: Map[String, String], validStatusCodes: Option[List[Int]], params: Map[String, String]) extends Load { val getType = "HTTPLoad" }
@@ -252,6 +255,10 @@ object API {
   case class XMLLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "XMLLoad" }
 
 
+  sealed trait OutputModeType
+  case object OutputModeTypeAppend extends OutputModeType { override val toString = "append" }
+  case object OutputModeTypeComplete extends OutputModeType { override val toString = "complete" }
+  case object OutputModeTypeUpdate extends OutputModeType { override val toString = "update" }
 
   sealed trait Execute extends PipelineStage
 
