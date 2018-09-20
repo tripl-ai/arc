@@ -94,7 +94,7 @@ docker-compose -f src/it/resources/docker-compose.yml up --build -d
 
 Start the streaming job:
 
-```
+```bash
 docker run \
 --net "arc-integration" \
 -e "ETL_CONF_ENV=test" \
