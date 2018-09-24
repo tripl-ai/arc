@@ -3,7 +3,9 @@
     {
       "type": "RateExtract",
       "name": "create a streaming source",
-      "environments": ["test"],
+      "environments": [
+        "test"
+      ],
       "outputView": "stream",
       "rowsPerSecond": 1,
       "rampUpTime": 0,
@@ -12,35 +14,42 @@
     {
       "type": "SQLTransform",
       "name": "generate fake data",
-      "environments": ["test"],
+      "environments": [
+        "test"
+      ],
       "inputURI": "/opt/tutorial/streaming/job/0/create_random_data.sql",
-      "outputView": "random_customer",            
+      "outputView": "random_customer",
       "persist": false
     },
     {
       "type": "TypingTransform",
       "name": "apply data types to fake data",
-      "environments": ["test"],
+      "environments": [
+        "test"
+      ],
       "inputURI": "/opt/tutorial/streaming/job/0/fake_data_meta.json",
-      "inputView": "random_customer",            
-      "outputView": "random_customer_typed",            
-      "persist": false,      
+      "inputView": "random_customer",
+      "outputView": "random_customer_typed",
       "persist": false
-    },   
+    },
     {
       "type": "SQLTransform",
       "name": "prepare data for model",
-      "environments": ["test"],
+      "environments": [
+        "test"
+      ],
       "inputURI": "/opt/tutorial/streaming/job/0/prepare_data.sql",
-      "outputView": "random_customer_model_ready",            
+      "outputView": "random_customer_model_ready",
       "persist": false
-    },     
+    },
     {
       "type": "TensorFlowServingTransform",
       "name": "call model to create new credit_score on fake data",
-      "environments": ["test"],
+      "environments": [
+        "test"
+      ],
       "inputView": "random_customer_model_ready",
-      "outputView": "random_customer_augmented",            
+      "outputView": "random_customer_augmented",
       "uri": "http://resources_tensorflow_serving_1:9001/v1/models/simple/versions/1:predict",
       "batchSize": 100,
       "persist": false
@@ -48,9 +57,11 @@
     {
       "type": "ConsoleLoad",
       "name": "print the results to the console",
-      "environments": ["test"],
+      "environments": [
+        "test"
+      ],
       "inputView": "random_customer_augmented",
       "outputMode": "Append",
-    }     
+    }
   ]
 }
