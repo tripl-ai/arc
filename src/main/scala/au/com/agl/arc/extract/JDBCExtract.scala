@@ -17,7 +17,7 @@ import au.com.agl.arc.util.ControlUtils._
 
 object JDBCExtract {
 
-  def extract(extract: JDBCExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def extract(extract: JDBCExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()

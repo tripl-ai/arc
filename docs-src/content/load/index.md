@@ -209,7 +209,7 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 ```
 
 ## JDBCLoad
-##### Since: 1.0.0 - Supports Streaming: False
+##### Since: 1.0.0 - Supports Streaming: True
 
 The `JDBCLoad` writes an input `DataFrame` to a target JDBC Database. See [Spark JDBC documentation](https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases).
 

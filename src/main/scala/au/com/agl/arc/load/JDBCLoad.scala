@@ -23,7 +23,7 @@ object JDBCLoad {
 
   val SaveModeIgnore = -1
 
-  def load(load: JDBCLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def load(load: JDBCLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     val startTime = System.currentTimeMillis 
     val stageDetail = new java.util.HashMap[String, Object]()
     val saveMode = load.saveMode.getOrElse(SaveMode.Overwrite)
@@ -41,11 +41,12 @@ object JDBCLoad {
 
     val df = spark.table(load.inputView)
 
-    val numPartitions = load.numPartitions match {
-      case Some(numPartitions) => numPartitions
-      case None => df.rdd.getNumPartitions
+    if (!df.isStreaming) {
+      load.numPartitions match {
+        case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
+        case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+      }
     }
-    stageDetail.put("numPartitions", Integer.valueOf(numPartitions))
 
     logger.info()
       .field("event", "enter")
@@ -62,12 +63,9 @@ object JDBCLoad {
     val tableName = s"${tablePath(1)}.${tablePath(2)}"
 
     // force cache the table so that when write verification is performed any upstream calculations are not executed twice
-    if (!spark.catalog.isCached(load.inputView)) {
+    if (!df.isStreaming && !spark.catalog.isCached(load.inputView)) {
       df.cache
     }
-
-    val sourceCount = df.count
-    stageDetail.put("count", Long.valueOf(sourceCount))
 
     // override defaults https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases
     // Properties is a Hashtable<Object,Object> but gets mapped to <String,String> so ensure all values are strings
@@ -75,9 +73,10 @@ object JDBCLoad {
     connectionProperties.put("user", load.params.get("user").getOrElse(""))
     connectionProperties.put("password", load.params.get("password").getOrElse(""))    
     connectionProperties.put("databaseName", databaseName)    
+    connectionProperties.put("dbtable", tableName)    
 
     // build spark JDBCOptions object so we can utilise their inbuilt dialect support
-    val jdbcOptions = new JDBCOptions(Map("url"-> load.jdbcURL, "dbtable" -> tableName))
+    val jdbcOptions = new JDBCOptions(Map("url"-> load.jdbcURL, "dbtable" -> tableName, "user" -> load.params.get("user").getOrElse(""), "password" -> load.params.get("password").getOrElse(""), "databaseName" -> databaseName))
 
     // execute a count query on target db to get intial count
     val targetPreCount = try {
@@ -123,31 +122,43 @@ object JDBCLoad {
       }
     }
 
+    val dropMap = new java.util.HashMap[String, Object]()
+
+    // many jdbc targets cannot handle a column of ArrayType
+    // drop these columns before write
+    val arrays = df.schema.filter( _.dataType.typeName == "array").map(_.name)
+    if (!arrays.isEmpty) {
+      dropMap.put("ArrayType", arrays.asJava)
+    }
+
+    // JDBC cannot handle a column of NullType
+    val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
+    if (!nulls.isEmpty) {
+      dropMap.put("NullType", nulls.asJava)
+    }
+
+    stageDetail.put("drop", dropMap)    
+    
+    val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)            
+
     // if not table exists and SaveMode.Ignore
-    val outputDF =
+    val outputDF = if (nonNullDF.isStreaming) {
+      val jdbcSink = new JDBCSink(load.jdbcURL, connectionProperties)
+      load.partitionBy match {
+        case Nil => nonNullDF.writeStream.foreach(jdbcSink).start
+        case partitionBy => {
+          val partitionCols = partitionBy.map(col => nonNullDF(col))
+          nonNullDF.writeStream.partitionBy(partitionBy:_*).foreach(jdbcSink).start
+        }
+      }
+      None
+    } else {
       if (targetPreCount != SaveModeIgnore) {
-
-        val dropMap = new java.util.HashMap[String, Object]()
-
-        // many jdbc targets cannot handle a column of ArrayType
-        // drop these columns before write
-        val arrays = df.schema.filter( _.dataType.typeName == "array").map(_.name)
-        if (!arrays.isEmpty) {
-          dropMap.put("ArrayType", arrays.asJava)
-        }
-
-        // JDBC cannot handle a column of NullType
-        val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
-        if (!nulls.isEmpty) {
-          dropMap.put("NullType", nulls.asJava)
-        }
-
-        stageDetail.put("drop", dropMap)
+        val sourceCount = df.count
+        stageDetail.put("count", Long.valueOf(sourceCount))
 
         val writtenDF =
           try {
-            val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)            
-
             // switch to custom jdbc actions based on driver
             val resultDF = load.driver match {
               // switch to custom sqlserver bulkloader
@@ -251,10 +262,11 @@ object JDBCLoad {
               override val detail = stageDetail
             }
           }
-        writtenDF
+        Option(writtenDF)
       } else {
-        df
+        Option(df)
       }
+    }
 
     logger.info()
       .field("event", "exit")
@@ -262,6 +274,6 @@ object JDBCLoad {
       .map("stage", stageDetail)
       .log()
 
-    Option(outputDF)
+    outputDF
   }
 }
