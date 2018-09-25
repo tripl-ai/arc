@@ -341,7 +341,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       )
     }
 
-    assert(thrown.getMessage.contains(s"""Input dataset has columns [renamedBooleanDatum, dateDatum, decimalDatum, doubleDatum, integerDatum, longDatum, stringDatum, timeDatum, timestampDatum] which does not match target table 'dbo.[hyphen-table]' which has columns [booleanDatum, dateDatum, decimalDatum, doubleDatum, integerDatum, longDatum, stringDatum, timeDatum, timestampDatum]."""))          
+    assert(thrown.getMessage.contains(s"""java.lang.Exception: Input dataset 'output' has schema [renamedBooleanDatum: boolean, dateDatum: date, decimalDatum: decimal(38,18), doubleDatum: double, integerDatum: int, longDatum: bigint, stringDatum: string, timeDatum: string, timestampDatum: timestamp] which does not match target table 'dbo.[hyphen-table]' which has schema [booleanDatum: boolean, dateDatum: date, decimalDatum: decimal(38,18), doubleDatum: double, integerDatum: int, longDatum: bigint, stringDatum: string, timeDatum: string, timestampDatum: timestamp]. Ensure names, types and field orders align."""))          
   }     
 
   test("JDBCLoad: sqlserver bulk wrong schema column types") {
@@ -399,7 +399,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       )
     }
 
-    assert(thrown.getMessage.contains(s"""Input dataset has columns of types [boolean, date, decimal(38,18), double, int, bigint, string, string, timestamp] which does not match target table 'dbo.[hyphen-table]' which has columns of types [int, date, decimal(38,18), double, int, bigint, string, string, timestamp]."""))          
+    assert(thrown.getMessage.contains(s"""java.lang.Exception: Input dataset 'output' has schema [booleanDatum: boolean, dateDatum: date, decimalDatum: decimal(38,18), doubleDatum: double, integerDatum: int, longDatum: bigint, stringDatum: string, timeDatum: string, timestampDatum: timestamp] which does not match target table 'dbo.[hyphen-table]' which has schema [booleanDatum: int, dateDatum: date, decimalDatum: decimal(38,18), doubleDatum: double, integerDatum: int, longDatum: bigint, stringDatum: string, timeDatum: string, timestampDatum: timestamp]. Ensure names, types and field orders align."""))          
   }  
 
   test("JDBCLoad: sqlserver bulk SaveMode.Append") {

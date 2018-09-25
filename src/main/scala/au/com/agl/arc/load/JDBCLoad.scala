@@ -155,14 +155,13 @@ object JDBCLoad {
 
                 // ensure schemas align after dropping invalid columns
                 using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>
+                  val inputSchema = nonNullDF.schema
                   JdbcUtils.getSchemaOption(connection, jdbcOptions) match {
                     case Some(targetSchema) => {
-                      if (!(nonNullDF.schema.map(_.name).toSet.equals(targetSchema.map(_.name).toSet))) {
-                        throw new Exception(s"""Input dataset has columns [${nonNullDF.schema.map(_.name).mkString(", ")}] which does not match target table '${tableName}' which has columns [${targetSchema.map(_.name).mkString(", ")}].""")
-                      }
-                      if (!(nonNullDF.schema.map(_.dataType.simpleString).toSet.equals(targetSchema.map(_.dataType.simpleString).toSet))) {
-                        throw new Exception(s"""Input dataset has columns of types [${nonNullDF.schema.map(_.dataType.simpleString).mkString(", ")}] which does not match target table '${tableName}' which has columns of types [${targetSchema.map(_.dataType.simpleString).mkString(", ")}].""")
-                      }                      
+                      // ensure column names, types and order on input and target align
+                      if (!inputSchema.zip(targetSchema).forall({ case (input, target) => input.name== target.name && input.dataType == target.dataType })) {
+                        throw new Exception(s"""Input dataset '${load.inputView}' has schema [${inputSchema.map(field => s"${field.name}: ${field.dataType.simpleString}").mkString(", ")}] which does not match target table '${tableName}' which has schema [${targetSchema.map(field => s"${field.name}: ${field.dataType.simpleString}").mkString(", ")}]. Ensure names, types and field orders align.""")
+                      }                  
                     }
                     case None => throw new Exception(s"Table '${tableName}' does not exist in database '${databaseName}' and 'bulkload' equals 'true' so cannot continue.")
                   }
@@ -231,16 +230,10 @@ object JDBCLoad {
             }
 
             // execute a count query on target db to ensure correct number of rows
-            val targetPostCount = try {
-              using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>
-                val resultSet = connection.createStatement.executeQuery(s"SELECT COUNT(*) AS count FROM ${tableName}")
-                resultSet.next
-                resultSet.getInt("count")
-              }
-            } catch {
-              case e: Exception => throw new Exception(e) with DetailException {
-                override val detail = stageDetail
-              }
+            val targetPostCount = using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>
+              val resultSet = connection.createStatement.executeQuery(s"SELECT COUNT(*) AS count FROM ${tableName}")
+              resultSet.next
+              resultSet.getInt("count")
             }
 
             // log counts
