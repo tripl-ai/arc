@@ -1,10 +1,12 @@
 package au.com.agl.arc.udf
 
+import java.util.ServiceLoader
+
+import au.com.agl.arc.plugins.UDFPlugin
+import au.com.agl.arc.util.Utils
+
 import scala.collection.JavaConverters._
-
 import com.fasterxml.jackson.databind._
-import com.fasterxml.jackson.databind.node._
-
 import org.apache.spark.sql.SQLContext
 
 object UDF {
@@ -43,11 +45,19 @@ object UDF {
     node.map(_.asLong).toArray
   }
 
-  def registerUDFs(sqlContext: SQLContext): Unit = {
+  def registerUDFs(sqlContext: SQLContext)(implicit logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
     // register custom UDFs via sqlContext.udf.register("funcName", func )
     sqlContext.udf.register("get_json_double_array", getJSONDoubleArray _ )
     sqlContext.udf.register("get_json_integer_array", getJSONIntArray _ )
     sqlContext.udf.register("get_json_long_array", getJSONLongArray _ )
+
+    val loader = Utils.getContextOrSparkClassLoader
+    val serviceLoader = ServiceLoader.load(classOf[UDFPlugin], loader)
+
+    for (p <- serviceLoader.iterator().asScala) {
+      p.register(sqlContext)
+    }
+
   }
 
 }

@@ -2,22 +2,19 @@ package au.com.agl.arc.util
 
 import java.net.URI
 import java.sql.DriverManager
+import java.util.ServiceLoader
 
 import scala.collection.JavaConverters._
 import scala.util.Properties._
-
 import com.typesafe.config._
-
-import org.apache.spark.sql._
+import org.apache.hadoop.fs.GlobPattern
+import org.apache.spark.SparkFiles
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.tuning.CrossValidatorModel
-import org.apache.spark.ml.Model
-import org.apache.spark.SparkFiles
-
-import org.apache.hadoop.fs.GlobPattern
-
+import org.apache.spark.sql._
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
+import au.com.agl.arc.plugins.{ConfigPlugin, PipelineStagePlugin}
 import au.com.agl.arc.util.ControlUtils._
 import au.com.agl.arc.util.EitherUtils._
 
@@ -34,29 +31,23 @@ object ConfigUtils {
      }
   }
 
-  def parseConfig(uri: URI, argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
-    val base = ConfigFactory.load()    
-
+  def getConfigString(uri: URI, argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], String] = {
     uri.getScheme match {
       case "local" => {
         val filePath = SparkFiles.get(uri.getPath)
         val etlConfString = CloudUtils.getTextBlob(filePath)
-        val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-        val c = etlConf.withFallback(base).resolve()
-        readPipeline(c, uri, argsMap, env)
-      }      
+        Right(etlConfString)
+      }
       case "file" => {
         val etlConfString = CloudUtils.getTextBlob(uri.toString)
-        val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-        val c = etlConf.withFallback(base).resolve()
-        readPipeline(c, uri, argsMap, env)
+        Right(etlConfString)
       }
       // amazon s3
       case "s3a" => {
-        val s3aEndpoint: Option[String] = argsMap.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT")) 
-        val s3aConnectionSSLEnabled: Option[String] = argsMap.get("etl.config.fs.s3a.connection.ssl.enabled").orElse(envOrNone("ETL_CONF_S3A_CONNECTION_SSL_ENABLED")) 
-        val s3aAccessKey: Option[String] = argsMap.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY")) 
-        val s3aSecretKey: Option[String] = argsMap.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY")) 
+        val s3aEndpoint: Option[String] = argsMap.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
+        val s3aConnectionSSLEnabled: Option[String] = argsMap.get("etl.config.fs.s3a.connection.ssl.enabled").orElse(envOrNone("ETL_CONF_S3A_CONNECTION_SSL_ENABLED"))
+        val s3aAccessKey: Option[String] = argsMap.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY"))
+        val s3aSecretKey: Option[String] = argsMap.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY"))
 
         val endpoint = s3aEndpoint match {
           case Some(value) => value
@@ -65,7 +56,7 @@ object ConfigUtils {
         val connectionSSLEnabled = s3aConnectionSSLEnabled match {
           case Some(value) => value
           case None => throw new IllegalArgumentException(s"AWS Connection SSL Enabled not provided for: ${uri}. Set etl.config.fs.s3a.connection.ssl.enabled property or ETL_CONF_S3A_CONNECTION_SSL_ENABLED environment variable.")
-        }        
+        }
         val accessKey = s3aAccessKey match {
           case Some(value) => value
           case None => throw new IllegalArgumentException(s"AWS Access Key not provided for: ${uri}. Set etl.config.fs.s3a.access.key property or ETL_CONF_S3A_ACCESS_KEY environment variable.")
@@ -73,21 +64,19 @@ object ConfigUtils {
         val secretKey = s3aSecretKey match {
           case Some(value) => value
           case None => throw new IllegalArgumentException(s"AWS Secret Key not provided for: ${uri}. Set etl.config.fs.s3a.secret.key property or ETL_CONF_S3A_SECRET_KEY environment variable.")
-        }    
+        }
 
         val config = Map("fs_s3a_endpoint" -> endpoint, "fs_s3a_connection_ssl_enabled" -> connectionSSLEnabled, "fs_s3a_access_key" -> accessKey, "fs_s3a_secret_key" -> secretKey)
 
         CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(accessKey, secretKey)))
         val etlConfString = CloudUtils.getTextBlob(uri.toString)
-        val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-        val c = etlConf.withFallback(base).resolve()
-        readPipeline(c, uri, argsMap, env)
+        Right(etlConfString)
       }
       // azure blob
-      case "wasbs" => {       
-        val azureAccountName: Option[String] = argsMap.get("etl.config.fs.azure.account.name").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_NAME")) 
-        val azureAccountKey: Option[String] = argsMap.get("etl.config.fs.azure.account.key").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_KEY")) 
-        
+      case "wasbs" => {
+        val azureAccountName: Option[String] = argsMap.get("etl.config.fs.azure.account.name").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_NAME"))
+        val azureAccountKey: Option[String] = argsMap.get("etl.config.fs.azure.account.key").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_KEY"))
+
         val accountName = azureAccountName match {
           case Some(value) => value
           case None => throw new IllegalArgumentException(s"Azure Account Name not provided for: ${uri}. Set etl.config.fs.azure.account.nameproperty or ETL_CONF_AZURE_ACCOUNT_NAME environment variable.")
@@ -95,19 +84,17 @@ object ConfigUtils {
         val accountKey = azureAccountKey match {
           case Some(value) => value
           case None => throw new IllegalArgumentException(s"Azure Account Key not provided for: ${uri}. Set etl.config.fs.azure.account.key property or ETL_CONF_AZURE_ACCOUNT_KEY environment variable.")
-        }        
+        }
 
         CloudUtils.setHadoopConfiguration(Some(Authentication.AzureSharedKey(accountName, accountKey)))
         val etlConfString = CloudUtils.getTextBlob(uri.toString)
-        val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-        val c = etlConf.withFallback(base).resolve()
-        readPipeline(c, uri, argsMap, env)
+        Right(etlConfString)
       }
       // azure data lake storage
-      case "adl" => {       
-        val adlClientID: Option[String] = argsMap.get("etl.config.fs.adl.oauth2.client.id").orElse(envOrNone("ETL_CONF_ADL_OAUTH2_CLIENT_ID")) 
-        val adlRefreshToken: Option[String] = argsMap.get("etl.config.fs.adl.oauth2.refresh.token").orElse(envOrNone("ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN")) 
-        
+      case "adl" => {
+        val adlClientID: Option[String] = argsMap.get("etl.config.fs.adl.oauth2.client.id").orElse(envOrNone("ETL_CONF_ADL_OAUTH2_CLIENT_ID"))
+        val adlRefreshToken: Option[String] = argsMap.get("etl.config.fs.adl.oauth2.refresh.token").orElse(envOrNone("ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN"))
+
         val clientID = adlClientID match {
           case Some(value) => value
           case None => throw new IllegalArgumentException(s"Azure Data Lake Storage Client ID not provided for: ${uri}. Set etl.config.fs.adl.oauth2.client.id or ETL_CONF_ADL_OAUTH2_CLIENT_ID environment variable.")
@@ -115,19 +102,17 @@ object ConfigUtils {
         val refreshToken = adlRefreshToken match {
           case Some(value) => value
           case None => throw new IllegalArgumentException(s"Azure Data Lake Storage Refresh Token not provided for: ${uri}. Set etl.config.fs.adl.oauth2.refresh.token property or ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN environment variable.")
-        }        
+        }
 
         CloudUtils.setHadoopConfiguration(Some(Authentication.AzureDataLakeStorageToken(clientID, refreshToken)))
         val etlConfString = CloudUtils.getTextBlob(uri.toString)
-        val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-        val c = etlConf.withFallback(base).resolve()
-        readPipeline(c, uri, argsMap, env)
+        Right(etlConfString)
       }
       // google cloud
-      case "gs" => {       
-        val gsProjectID: Option[String] = argsMap.get("etl.config.fs.gs.project.id").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_PROJECT_ID")) 
-        val gsKeyfilePath: Option[String] = argsMap.get("etl.config.fs.google.cloud.auth.service.account.json.keyfile").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE")) 
-        
+      case "gs" => {
+        val gsProjectID: Option[String] = argsMap.get("etl.config.fs.gs.project.id").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_PROJECT_ID"))
+        val gsKeyfilePath: Option[String] = argsMap.get("etl.config.fs.google.cloud.auth.service.account.json.keyfile").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE"))
+
         val projectID = gsProjectID match {
           case Some(value) => value
           case None => throw new IllegalArgumentException(s"Google Cloud Project ID not provided for: ${uri}. Set etl.config.fs.gs.project.id or ETL_CONF_GOOGLE_CLOUD_PROJECT_ID environment variable.")
@@ -135,26 +120,53 @@ object ConfigUtils {
         val keyFilePath = gsKeyfilePath match {
           case Some(value) => value
           case None => throw new IllegalArgumentException(s"Google Cloud KeyFile Path not provided for: ${uri}. Set etl.config.fs.google.cloud.auth.service.account.json.keyfile property or ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE environment variable.")
-        }        
+        }
 
         CloudUtils.setHadoopConfiguration(Some(Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)))
         val etlConfString = CloudUtils.getTextBlob(uri.toString)
-        val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-        val c = etlConf.withFallback(base).resolve()
-        readPipeline(c, uri, argsMap, env)
-      }      
+        Right(etlConfString)
+      }
       case "classpath" => {
         val path = s"/${uri.getHost}${uri.getPath}"
-        using(getClass.getResourceAsStream(path)) { is =>
-          val etlConfString = scala.io.Source.fromInputStream(is).mkString
-          val etlConf = ConfigFactory.parseString(etlConfString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-          val c = etlConf.withFallback(base).resolve()
-          readPipeline(c, uri, argsMap, env)
+        val etlConfString = using(getClass.getResourceAsStream(path)) { is =>
+          scala.io.Source.fromInputStream(is).mkString
         }
-      }      
+        Right(etlConfString)
+      }
       case _ => {
         Left(ConfigError("file", "make sure url scheme is defined e.g. file://${pwd}") :: Nil)
       }
+    }
+  }
+
+  def parseConfig(uri: URI, argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
+    val base = ConfigFactory.load()
+
+    val etlConfString = getConfigString(uri, argsMap, env)
+
+    etlConfString.rightFlatMap { str =>
+      val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+      val config = etlConf
+
+      val pluginConfs: List[Config] = configPlugins(config).map( c => ConfigFactory.parseMap(c.values()) )
+
+      val pluginConf = pluginConfs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
+
+      val c = config.withFallback(base).resolveWith(pluginConf).resolve()
+
+      readPipeline(c, uri, argsMap, env)
+    }
+  }
+
+  def configPlugins(c: Config): List[ConfigPlugin] = {
+    if (c.hasPath("plugins.config")) {
+      val plugins =
+        (for (p <- c.getStringList("plugins.config").asScala) yield {
+          ConfigPlugin.pluginForName(p).map(_ :: Nil)
+        }).toList
+      plugins.flatMap( p => p.getOrElse(Nil))
+    } else {
+      Nil
     }
   }
 
@@ -1608,7 +1620,28 @@ object ConfigUtils {
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
     }
-  }    
+  }
+
+  def readCustomStage(stageType: String, name: StringConfigValue, params: Map[String, String]): Either[List[StageError], PipelineStage] = {
+    val loader = Utils.getContextOrSparkClassLoader
+    val serviceLoader = ServiceLoader.load(classOf[PipelineStagePlugin], loader)
+
+    val customStage = serviceLoader.iterator().asScala.find( _.getClass.getName == stageType)
+
+    customStage match {
+      case Some(cs) =>
+        // validate stage
+        name match {
+          case Right(n) =>
+            Right(CustomStage(n, params, cs))
+          case Left(e) =>
+            val err = StageError(s"unnamed stage: $stageType", e)
+            Left(err :: Nil)
+        }
+      case None =>
+        Left(StageError("unknown", ConfigError("stages", s"Unknown stage type: '${stageType}'") :: Nil) :: Nil)
+    }
+  }
 
   def readPipeline(c: Config, uri: URI, argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
     import ConfigReader._
@@ -1708,7 +1741,7 @@ object ConfigUtils {
             case Right("EqualityValidate") => Option(readEqualityValidate(name, params))
             case Right("SQLValidate") => Option(readSQLValidate(name, params))
 
-            
+            case Right(stageType) => Option(readCustomStage(stageType, name, params))
             case _ => Option(Left(StageError("unknown", ConfigError("stages", s"Unknown stage type: '${_type}'") :: Nil) :: Nil))
           }
         }
