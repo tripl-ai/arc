@@ -563,7 +563,8 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     val readStream = spark
       .readStream
       .format("rate")
-      .option("rowsPerSecond", "1")
+      .option("rowsPerSecond", "2")
+      .option("numPartitions", "3")
       .load
 
     readStream.createOrReplaceTempView(dbtable)    

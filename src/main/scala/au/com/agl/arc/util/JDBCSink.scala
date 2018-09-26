@@ -5,6 +5,7 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.PreparedStatement
 import java.sql.Statement
+import java.sql.SQLException
 import java.util.Locale
 import java.util.Properties
 
@@ -17,25 +18,39 @@ import org.apache.spark.sql.jdbc.{JdbcDialect, JdbcDialects, JdbcType}
 import org.apache.spark.sql.types._
 
 class JDBCSink(url: String, connectionProperties: Properties) extends ForeachWriter[Row] {
-  var connection: Connection = _
-  var statement: Statement = _
+  var conn: Connection = _
   var dialect: JdbcDialect = _
-  
+  var stmt: PreparedStatement = _
+  var supportsTransactions = false
+  var rowCount = 0
+
   def open(partitionId: Long, version: Long): Boolean = {
     dialect = JdbcDialects.get(url)
-    connection = DriverManager.getConnection(url, connectionProperties)
-    statement = connection.createStatement
+    conn = DriverManager.getConnection(url, connectionProperties)
+
+    val metadata = conn.getMetaData
+    supportsTransactions = metadata.supportsTransactions()
+    if (supportsTransactions) {
+      conn.setAutoCommit(false) // Everything in the same db transaction.
+    }
+
     true
   }
 
   def process(row: Row): Unit = {
     val schema = row.schema
     val dbtable = connectionProperties.asScala.getOrElse("dbtable", "")
-    val columns = schema.map(x => dialect.quoteIdentifier(x.name)).mkString(",")
-    val placeholders = schema.map(_ => "?").mkString(",")
-    val insertStatement = s"""INSERT INTO ${dbtable} (${columns}) VALUES ($placeholders)"""
-    val stmt = connection.prepareStatement(insertStatement)
-    val setters = schema.fields.map(f => makeSetter(connection, dialect, f.dataType))
+
+    if (stmt == null) {
+      val columns = schema.map(x => dialect.quoteIdentifier(x.name)).mkString(",")
+      val placeholders = schema.map(_ => "?").mkString(",")
+      val insertStatement = s"""INSERT INTO ${dbtable} (${columns}) VALUES ($placeholders)"""
+      stmt = conn.prepareStatement(insertStatement)
+      rowCount = 0
+    }
+    
+    
+    val setters = schema.fields.map(f => makeSetter(conn, dialect, f.dataType))
     val nullTypes = schema.fields.map(f => getJdbcType(f.dataType, dialect).jdbcNullType)
     val numFields = schema.fields.length
 
@@ -48,11 +63,59 @@ class JDBCSink(url: String, connectionProperties: Properties) extends ForeachWri
       }
       i = i + 1
     }
-    stmt.executeUpdate()
+    stmt.addBatch
+    rowCount += 1
   }
 
   def close(errorOrNull: Throwable): Unit = {
-    connection.close
+    var committed = false
+    try {
+      if (rowCount > 0) {
+        stmt.executeBatch
+
+        if (supportsTransactions) {
+          conn.commit
+        }
+        committed = true
+      }
+    } catch {
+      case e: SQLException =>
+        val cause = e.getNextException
+        if (cause != null && e.getCause != cause) {
+          // If there is no cause already, set 'next exception' as cause. If cause is null,
+          // it *may* be because no cause was set yet
+          if (e.getCause == null) {
+            try {
+              e.initCause(cause)
+            } catch {
+              // Or it may be null because the cause *was* explicitly initialized, to *null*,
+              // in which case this fails. There is no other way to detect it.
+              // addSuppressed in this case as well.
+              case _: IllegalStateException => e.addSuppressed(cause)
+            }
+          } else {
+            e.addSuppressed(cause)
+          }
+        }
+        throw e
+    } finally {
+      if (!committed) {
+        // The stage must fail.  We got here through an exception path, so
+        // let the exception through unless rollback() or close() want to
+        // tell the user about another problem.
+        if (supportsTransactions) {
+          conn.rollback
+        }
+        conn.close
+      } else {
+        // The stage must succeed.  We cannot propagate any exception close() might throw.
+        try {
+          conn.close
+        } catch {
+          case e: Exception => throw new Exception("Transaction succeeded, but closing failed", e)
+        }
+      }
+    }     
   }
 
   // this code is taken from the org.apache.spark.sql.execution.datasources.jdbc.JdbcUtils package:
