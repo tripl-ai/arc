@@ -1039,7 +1039,7 @@ WHERE metadata.pii = (
 <td>sqlParams</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.<br><br>For example if the sqlParams contains parameter <code>current_timestamp</code> of value <code>2018-11-24 14:48:56</code> then this statement would execute in a deterministic way: <code>SELECT * FROM customer WHERE expiry &gt; FROM_UNIXTIME(UNIX_TIMESTAMP('${current_timestamp}', 'yyyy-MM-dd HH:mm:ss'))</code> (so would be testable).</td>
+<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.<br><br>For example if the sqlParams contains parameter <code>current_timestamp</code> of value <code>2018-11-24 14:48:56</code> then this statement would execute in a deterministic way: <code>SELECT * FROM customer WHERE expiry &gt; FROM_UNIXTIME(UNIX_TIMESTAMP('${current_timestamp}', 'uuuu-MM-dd HH:mm:ss'))</code> (so would be testable).</td>
 </tr>
 
 <tr>
@@ -1297,6 +1297,76 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
     }
 }
 </code></pre>
+
+<p>A demonstration of how the <code>TypingTransform</code> behaves. Assuming you have read an input like a <a href="../extract/#DelimitedExtract">DelimitedExtract</a> which will read a dataset where all the columns are read as strings:</p>
+
+<pre><code class="language-bash">+-------------------------+---------------------+
+|startTime                |endTime              |
++-------------------------+---------------------+
+|2018-09-26 07:17:43      |2018-09-27 07:17:43  |
+|2018-09-25 08:25:51      |2018-09-26 08:25:51  |
+|2018-02-30 01:16:40      |2018-03-01 01:16:40  |
+|30 February 2018 01:16:40|2018-03-2018 01:16:40|
++-------------------------+---------------------+
+</code></pre>
+
+<p>In this case the goal is  to safely convert the values from strings like <code>&quot;2018-09-26 07:17:43&quot;</code> to a proper <code>timestamp</code> object so that we can ensure the timestamp is valid (e.g. not on a date that does not exist e.g. the 30 day of February) and can easily perform date operations such as subtracting 1 week. To do so a <a href="../metadata/">metadata</a> file could be constructed to look like:</p>
+
+<pre><code class="language-json">[
+  {
+    &quot;id&quot;: &quot;8e42c8f0-22a8-40db-9798-6dd533c1de36&quot;,
+    &quot;name&quot;: &quot;startTime&quot;,
+    &quot;description&quot;: &quot;The startTime field.&quot;,
+    &quot;type&quot;: &quot;timestamp&quot;,
+    &quot;trim&quot;: true,
+    &quot;nullable&quot;: true,
+    &quot;nullableValues&quot;: [
+        &quot;&quot;,
+        &quot;null&quot;
+    ],
+    &quot;formatters&quot;: [
+        &quot;uuuu-MM-dd HH:mm:ss&quot;
+    ],
+    &quot;timezoneId&quot;: &quot;UTC&quot;
+  },
+  {
+    &quot;id&quot;: &quot;2e7553cf-2748-49cd-a291-8918823e706a&quot;,
+    &quot;name&quot;: &quot;endTime&quot;,
+    &quot;description&quot;: &quot;The endTime field.&quot;,
+    &quot;type&quot;: &quot;timestamp&quot;,
+    &quot;trim&quot;: true,
+    &quot;nullable&quot;: true,
+    &quot;nullableValues&quot;: [
+        &quot;&quot;,
+        &quot;null&quot;
+    ],
+    &quot;formatters&quot;: [
+        &quot;uuuu-MM-dd HH:mm:ss&quot;
+    ],
+    &quot;timezoneId&quot;: &quot;UTC&quot;
+  }   
+]
+</code></pre>
+
+<p>Here is the output of the <code>TypingTransformation</code> when applied to the input dataset.</p>
+
+<pre><code class="language-bash">+-------------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|startTime          |endTime            |_errors                                                                                                                                                                                                                                                             |
++-------------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|2018-09-26 17:17:43|2018-09-27 17:17:43|[]                                                                                                                                                                                                                                                                  |
+|2018-09-25 18:25:51|2018-09-26 18:25:51|[]                                                                                                                                                                                                                                                                  |
+|null               |2018-03-01 12:16:40|[[startTime, Unable to convert '2018-02-30 01:16:40' to timestamp using formatters ['uuuu-MM-dd HH:mm:ss'] and timezone 'UTC']]                                                                                                                                     |
+|null               |null               |[[endTime, Unable to convert '2018-03-2018 01:16:40' to timestamp using formatters ['uuuu-MM-dd HH:mm:ss'] and timezone 'UTC'], [startTime, Unable to convert '28 February 2018 01:16:40' to timestamp using formatters ['uuuu-MM-dd HH:mm:ss'] and timezone 'UTC']]|
++-------------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+</code></pre>
+
+<ul>
+<li>Because the conversion happened successfully for both values on the first two rows there are no errors for those rows.</li>
+<li>On the third row the value <code>'2018-02-30 01:16:40'</code> cannot be converted as the 30th day of February is not a valid date and the value is set to <code>null</code>. If the <code>nullable</code> in the <a href="../metadata/">metadata</a> for field <code>startTime</code> was set to <code>false</code> the job would fail as it would be unable to continue.</li>
+<li>On the forth row both rows are invalid as the <code>formatter</code> and <code>date</code> values are both wrong.</li>
+</ul>
+
+<p>The <a href="../validate/#sqlvalidate">SQLValidate</a> stage is a good way to use this data to enforce data quality constraints.</p>
 
 <h3 id="logical-flow">Logical Flow</h3>
 

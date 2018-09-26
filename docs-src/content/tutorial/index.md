@@ -227,7 +227,7 @@ Here is the full text which should already exist in `tutorial/nyctaxi/meta/green
     "primaryKey": false,
     "type": "timestamp",
     "formatters": [
-      "yyyy-MM-dd HH:mm:ss"
+      "uuuu-MM-dd HH:mm:ss"
     ],
     "timezoneId": "America/New_York",
     "nullableValues": [
@@ -244,7 +244,7 @@ Here is the full text which should already exist in `tutorial/nyctaxi/meta/green
     "primaryKey": false,
     "type": "timestamp",
     "formatters": [
-      "yyyy-MM-dd HH:mm:ss"
+      "uuuu-MM-dd HH:mm:ss"
     ],
     "timezoneId": "America/New_York",
     "nullableValues": [
@@ -520,7 +520,7 @@ Picking one of the more interesting fields, a [timestamp](/metadata/#timestamp) 
     "primaryKey": false,
     "type": "timestamp",
     "formatters": [
-      "yyyy-MM-dd HH:mm:ss"
+      "uuuu-MM-dd HH:mm:ss"
     ],
     "timezoneId": "America/New_York",
     "nullableValues": [
