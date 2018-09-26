@@ -65,7 +65,7 @@ object Typing {
         val allErrors: List[Row] = errors match {
           case Nil => Nil
           case _ =>
-            errors.map { err =>
+            errors.reverse.map { err =>
               Row(err.field, err.message)
             }
         }
