@@ -90,7 +90,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         timezoneId = "America/New_York",
         formatters = "yyyy-MM-dd HH:mm:ss" :: Nil,
         time = None,
-        metadata = None) :: Nil
+        metadata = None,
+        strict = false) :: Nil
 
 
     val subTypingTransformStage = TypingTransform(

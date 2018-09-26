@@ -100,11 +100,11 @@ This means that if users will be executing SQL statements which have conditional
   "trim" : true,
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
-  "formatters" : [ "yyyyMMdd", "yyyy-MM-dd" ],
+  "formatters" : [ "uuuuMMdd", "uuuu-MM-dd" ],
   "metadata": {
     "primaryKey" : true,
     "position": 1
-  }  
+  }
 }
 ```
 
@@ -299,20 +299,20 @@ Spark does not have an internal `TimeType` representation of time. This type can
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
   "formatters": [
-    "dd/MM/yyyy HH:mm:ss",
-    "dd/MM/yyyy H:mm:ss",
-    "dd/MM/yyyy HH:mm",
-    "dd/MM/yyyy H:mm",
-    "d/MM/yyyy HH:mm:ss",
-    "d/MM/yyyy H:mm:ss",
-    "d/MM/yyyy HH:mm",
-    "d/MM/yyyy H:mm"
+    "dd/MM/uuuu HH:mm:ss",
+    "dd/MM/uuuu H:mm:ss",
+    "dd/MM/uuuu HH:mm",
+    "dd/MM/uuuu H:mm",
+    "d/MM/uuuu HH:mm:ss",
+    "d/MM/uuuu H:mm:ss",
+    "d/MM/uuuu HH:mm",
+    "d/MM/uuuu H:mm"
   ],
   "timezoneId": "+1000",    
    "metadata": {
     "primaryKey" : true,
     "position": 1
-  } 
+  }
 }
 ```
 
@@ -328,7 +328,7 @@ For converting a `Date` label into a `Timestamp` supply the `time` key:
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
   "formatters": [
-    "dd/MM/yyyy",
+    "dd/MM/uuuu",
   ],
   "timezoneId": "Australia/Sydney",    
   "time": {
