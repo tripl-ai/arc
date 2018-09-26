@@ -223,7 +223,7 @@ object MetadataSchema {
     if (formatter.contains("(YearOfEra,") && !formatter.contains("(Era,")) {
       logger.warn()
         .field("event", "deprecation")
-        .field("message", s"'YearOfEra' ('yyyy') set without 'Era' ('GG') in field '${name}' with formatter '${formatter}'. Either add 'Era' ('GG') or change to 'Year' ('uuuu'). This formatter will not work in future versions.")        
+        .field("message", s"'YearOfEra' ('yyyy') set without 'Era' ('GG') in field '${name}' with pattern '${pattern}'. Either add 'Era' ('GG') or change to 'Year' ('uuuu'). This formatter will not work in future versions.")        
         .log()        
       false
     } else {
