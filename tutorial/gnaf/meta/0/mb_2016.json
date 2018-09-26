@@ -16,7 +16,7 @@
   "nullableValues" : [ "", "null" ],
   "metadata" : { },
   "type" : "date",
-  "formatters" : [ "yyyy-MM-dd" ]
+  "formatters" : [ "uuuu-MM-dd" ]
 },{
   "id" : "d52df66e-4e88-46ef-b1ae-446c97676cfd",
   "name" : "date_retired",
@@ -26,7 +26,7 @@
   "nullableValues" : [ "", "null" ],
   "metadata" : { },
   "type" : "date",
-  "formatters" : [ "yyyy-MM-dd" ]
+  "formatters" : [ "uuuu-MM-dd" ]
 },{
   "id" : "6aa8f7a4-1bc4-438e-91b2-91ec383fb764",
   "name" : "mb_2016_code",

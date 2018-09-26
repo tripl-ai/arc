@@ -16,7 +16,7 @@
   "nullableValues" : [ "", "null" ],
   "metadata" : { },
   "type" : "date",
-  "formatters" : [ "yyyy-MM-dd" ]
+  "formatters" : [ "uuuu-MM-dd" ]
 },{
   "id" : "6049a113-d28f-49fd-826b-6d3adcc663e7",
   "name" : "date_retired",
@@ -26,7 +26,7 @@
   "nullableValues" : [ "", "null" ],
   "metadata" : { },
   "type" : "date",
-  "formatters" : [ "yyyy-MM-dd" ]
+  "formatters" : [ "uuuu-MM-dd" ]
 },{
   "id" : "1425bba7-e271-4548-90f4-8c51fddd60ed",
   "name" : "locality_pid",

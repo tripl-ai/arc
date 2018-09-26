@@ -16,7 +16,7 @@
   "nullableValues" : [ "", "null" ],
   "metadata" : { },
   "type" : "date",
-  "formatters" : [ "yyyy-MM-dd" ]
+  "formatters" : [ "uuuu-MM-dd" ]
 },{
   "id" : "be1d0dce-95e1-4771-b715-317386fbe713",
   "name" : "date_retired",
@@ -26,7 +26,7 @@
   "nullableValues" : [ "", "null" ],
   "metadata" : { },
   "type" : "date",
-  "formatters" : [ "yyyy-MM-dd" ]
+  "formatters" : [ "uuuu-MM-dd" ]
 },{
   "id" : "c2b0c6f9-add0-43eb-a54b-95792ef7d694",
   "name" : "address_site_pid",

@@ -16,7 +16,7 @@
   "nullableValues" : [ "", "null" ],
   "metadata" : { },
   "type" : "date",
-  "formatters" : [ "yyyy-MM-dd" ]
+  "formatters" : [ "uuuu-MM-dd" ]
 },{
   "id" : "772d7440-52ce-4506-b6d7-4478ad591535",
   "name" : "date_retired",
@@ -26,7 +26,7 @@
   "nullableValues" : [ "", "null" ],
   "metadata" : { },
   "type" : "date",
-  "formatters" : [ "yyyy-MM-dd" ]
+  "formatters" : [ "uuuu-MM-dd" ]
 },{
   "id" : "19b0adcf-5763-4254-821c-ab4c4a9561f8",
   "name" : "state_name",

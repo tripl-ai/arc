@@ -21,7 +21,7 @@
     "primaryKey": false,
     "type": "timestamp",
     "formatters": [
-      "yyyy-MM-dd HH:mm:ss"
+      "uuuu-MM-dd HH:mm:ss"
     ],
     "timezoneId": "America/New_York",
     "nullableValues": [
@@ -38,7 +38,7 @@
     "primaryKey": false,
     "type": "timestamp",
     "formatters": [
-      "yyyy-MM-dd HH:mm:ss"
+      "uuuu-MM-dd HH:mm:ss"
     ],
     "timezoneId": "America/New_York",
     "nullableValues": [

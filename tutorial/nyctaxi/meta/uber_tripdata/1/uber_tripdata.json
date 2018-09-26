@@ -8,8 +8,8 @@
     "primaryKey": false,
     "type": "timestamp",
     "formatters": [
-      "MM/dd/yyyy HH:mm:ss",
-      "M/d/yyyy H:mm:ss"
+      "MM/dd/uuuu HH:mm:ss",
+      "M/d/uuuu H:mm:ss"
     ],
     "timezoneId": "America/New_York",
     "nullableValues": [
