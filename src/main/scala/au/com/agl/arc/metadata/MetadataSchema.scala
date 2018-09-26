@@ -1,6 +1,7 @@
 package au.com.agl.arc.util
 
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 import scala.collection.JavaConverters._
 
@@ -15,11 +16,11 @@ object MetadataSchema {
 
   type ParseResult = Either[List[String], List[ExtractColumn]]
 
-  def parseDataFrameMetadata(source: DataFrame): ParseResult = {  
+  def parseDataFrameMetadata(source: DataFrame)(implicit logger: au.com.agl.arc.util.log.logger.Logger): ParseResult = {  
     parseJsonMetadata(s"""[${source.toJSON.collect.mkString(",")}]""")
   }
 
-  def parseJsonMetadata(source: String): ParseResult = {
+  def parseJsonMetadata(source: String)(implicit logger: au.com.agl.arc.util.log.logger.Logger): ParseResult = {
 
     val objectMapper = new ObjectMapper()
     val rootNode = objectMapper.readTree(source)
@@ -42,7 +43,7 @@ object MetadataSchema {
           val nullableValues = {
             if (n.has("nullableValues")) {
               val nullableValueElements = n.get("nullableValues")
-              assert(nullableValueElements.isArray, s"Expected Json String Array for nullableValues for column $name")
+              assert(nullableValueElements.isArray, s"Expected Json String Array for nullableValues for column '$name'")
 
               nullableValueElements.elements.asScala.filter( _.isTextual ).map(_.textValue).toList
             } else {
@@ -93,26 +94,41 @@ object MetadataSchema {
                 }
                 case "timestamp" => {
                   val formatters = asStringArray(n.get("formatters"))
-                  val tz = n.get("timezoneId").textValue
-                  val time = n.has("time") match {
-                    case true => {
-                      val timeConfig = n.get("time")
-                      // deal with embedded strings from sources like JDBC
-                      val parsedTimeConfig = timeConfig.getNodeType.toString match {
-                        case "STRING" => objectMapper.readTree(timeConfig.asText)
-                        case _ => timeConfig
-                      }
 
-                      Option(LocalTime.of(parsedTimeConfig.get("hour").asInt, parsedTimeConfig.get("minute").asInt, parsedTimeConfig.get("second").asInt, parsedTimeConfig.get("nano").asInt))
+                  val invalidFormatters = formatters.filter(!validateDateTimeFormatter(_))
+                  if (invalidFormatters.nonEmpty) {
+                    Left(s"""column '$name' contains invalid formatters [${invalidFormatters.map(f => s"'${f}'").mkString(", ")}]""")
+                  } else {
+                    // test if strict mode possible and throw warning
+                    val strict = formatters.forall(formatter => strictDateTimeFormatter(name, formatter))
+                    val tz = n.get("timezoneId").textValue
+                    val time = n.has("time") match {
+                      case true => {
+                        val timeConfig = n.get("time")
+                        // deal with embedded strings from sources like JDBC
+                        val parsedTimeConfig = timeConfig.getNodeType.toString match {
+                          case "STRING" => objectMapper.readTree(timeConfig.asText)
+                          case _ => timeConfig
+                        }
+
+                        Option(LocalTime.of(parsedTimeConfig.get("hour").asInt, parsedTimeConfig.get("minute").asInt, parsedTimeConfig.get("second").asInt, parsedTimeConfig.get("nano").asInt))
+                      }
+                      case false => None
                     }
-                    case false => None
+                    
+                    Right(TimestampColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, tz, formatters, time, metadata, strict))
                   }
-                  
-                  Right(TimestampColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, tz, formatters, time, metadata))
                 }
                 case "date" => {
                   val formatters = asStringArray(n.get("formatters"))
-                  Right(DateColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, formatters, metadata))
+                  val invalidFormatters = formatters.filter(!validateDateTimeFormatter(_))
+                  if (invalidFormatters.nonEmpty) {
+                    Left(s"""column '$name' contains invalid formatters [${invalidFormatters.map(f => s"'${f}'").mkString(", ")}]""")
+                  } else {
+                    // test if strict mode possible and throw warning
+                    val strict = formatters.forall(formatter => strictDateTimeFormatter(name, formatter))                    
+                    Right(DateColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, formatters, metadata, strict))
+                  }
                 }
                 case "time" => {
                   val formatters = asStringArray(n.get("formatters"))
@@ -191,4 +207,27 @@ object MetadataSchema {
       }
     })
   }
+
+
+  def validateDateTimeFormatter(pattern: String)(implicit logger: au.com.agl.arc.util.log.logger.Logger): Boolean = {
+    try {
+      DateTimeFormatter.ofPattern(pattern)
+      true
+    } catch {
+      case e: Exception => false
+    }
+  }    
+
+  def strictDateTimeFormatter(name: String, pattern: String)(implicit logger: au.com.agl.arc.util.log.logger.Logger): Boolean = {
+    val formatter = DateTimeFormatter.ofPattern(pattern).toString
+    if (formatter.contains("(YearOfEra,") && !formatter.contains("(Era,")) {
+      logger.warn()
+        .field("event", "deprecation")
+        .field("message", s"'YearOfEra' ('yyyy') set without 'Era' ('GG') in field '${name}' with formatter '${formatter}'. Either add 'Era' ('GG') or change to 'Year' ('uuuu'). This formatter will not work in future versions.")        
+        .log()        
+      false
+    } else {
+      true
+    }
+  }   
 }

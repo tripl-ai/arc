@@ -6,6 +6,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.{ZoneId, ZonedDateTime}
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
+import java.time.format.ResolverStyle
 import java.time.format.SignStyle
 import java.time.temporal.ChronoField
 
@@ -286,60 +287,67 @@ object Typing {
           .toFormatter()
           .withZone(ZoneId.of("UTC"))          
 
-        dtf.put("ssssssssss:UTC", epochFormatter)
-        dtf.put("sssssssssssss:UTC", epochMillisFormatter)
+        dtf.put("ssssssssss:UTC:false", epochFormatter)
+        dtf.put("sssssssssssss:UTC:false", epochMillisFormatter)
         dtf
       }
 
-      private def zonedDateTimeFormatter(pattern: String, tz: ZoneId): DateTimeFormatter = {
-        val key = s"${pattern}:${tz.getId}"
+      private def zonedDateTimeFormatter(pattern: String, tz: ZoneId, strict: Boolean): DateTimeFormatter = {
+        val key = s"${pattern}:${tz.getId}:${strict}"
         // get the existing formatter or add it to memory
         memoizedFormatters.get(key).getOrElse {
-          val formatter = DateTimeFormatter.ofPattern(pattern).withZone(tz)
+          val formatter = strict match {
+            case true => DateTimeFormatter.ofPattern(pattern).withZone(tz).withResolverStyle(ResolverStyle.STRICT)
+            case false => DateTimeFormatter.ofPattern(pattern).withZone(tz).withResolverStyle(ResolverStyle.SMART) // smart is default
+          }
           memoizedFormatters.put(key, formatter)
           formatter
         }
       }
 
-      private def dateTimeFormatter(pattern: String): DateTimeFormatter = {
+      private def dateTimeFormatter(pattern: String, strict: Boolean): DateTimeFormatter = {
+        val key = s"${pattern}:${strict}"
         // get the existing formatter or add it to memory
-        memoizedFormatters.get(pattern).getOrElse {
-          val formatter = DateTimeFormatter.ofPattern(pattern)
-          memoizedFormatters.put(pattern, formatter)
+        memoizedFormatters.get(key).getOrElse {
+          val formatter = strict match {
+            case true => DateTimeFormatter.ofPattern(pattern).withResolverStyle(ResolverStyle.STRICT)
+            case false => DateTimeFormatter.ofPattern(pattern).withResolverStyle(ResolverStyle.SMART) // smart is default
+          }
+          memoizedFormatters.put(key, formatter)
           formatter
         }
       }          
 
       @scala.annotation.tailrec
-      def parseDateTime(formatters: List[String], tz: ZoneId, value: String): Option[ZonedDateTime] = {
+      def parseDateTime(formatters: List[String], tz: ZoneId, strict: Boolean, value: String): Option[ZonedDateTime] = {
         formatters match {
           case Nil => None
           case head :: tail =>
             try {
               // get the formatter from memory if available
-              val fmt = zonedDateTimeFormatter(head, tz) 
+              val fmt = zonedDateTimeFormatter(head, tz, strict) 
               Option(ZonedDateTime.parse(value, fmt))
             } catch {
               case e: Exception =>
                 // Log Error and occurances?
-                parseDateTime(tail, tz, value)
+                parseDateTime(tail, tz, strict, value)
             }
         }
       }
 
       @scala.annotation.tailrec
-      def parseDate(formatters: List[String], value: String): Option[LocalDate] = {
+      def parseDate(formatters: List[String], strict: Boolean, value: String): Option[LocalDate] = {
         formatters match {
           case Nil => None
           case head :: tail =>
             try {
               // get the formatter from memory if available
-              val fmt = dateTimeFormatter(head)               
+              val fmt = dateTimeFormatter(head, strict)               
               Option(LocalDate.parse(value, fmt))
             } catch {
               case e: Exception =>
                 // Log Error and occurances?
-                parseDate(tail, value)
+                parseDate(tail, strict, value)
             }
         }
       }
@@ -351,7 +359,7 @@ object Typing {
           case head :: tail =>
             try {
               // get the formatter from memory if available
-              val fmt = dateTimeFormatter(head)               
+              val fmt = dateTimeFormatter(head, false)
               Option(LocalTime.parse(value, fmt))
             } catch {
               case e: Exception =>
@@ -369,10 +377,10 @@ object Typing {
         val tz = ZoneId.of(col.timezoneId)
         val dt = col.time match {
           case Some(time) => { 
-            val date = parseDate(col.formatters, value)
+            val date = parseDate(col.formatters, col.strict, value)
             date.map( _dt => _dt.atStartOfDay(tz).withHour(time.getHour).withMinute(time.getMinute).withSecond(time.getSecond).withNano(time.getNano))
           }
-          case None => parseDateTime(col.formatters, tz, value)
+          case None => parseDateTime(col.formatters, tz, col.strict, value)
         }
        
         val v = dt.map( _dt => Timestamp.from(_dt.toInstant()))
@@ -395,7 +403,7 @@ object Typing {
       import DateTimeUtils._
 
       def dateOrError(col: DateColumn, value: String): TypingResult[Date] = {
-        val dt = parseDate(col.formatters, value)        
+        val dt = parseDate(col.formatters, col.strict, value)        
         val v = dt.map( _dt => java.sql.Date.valueOf(_dt))
         if(v == None)        
           throw new Exception()        
