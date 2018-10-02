@@ -1,27 +1,18 @@
 package au.com.agl.arc
 
-import java.net.URI
-
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.IOUtils
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
 
-import au.com.agl.arc.api._
-import au.com.agl.arc.api.API._
-import au.com.agl.arc.util.log.LoggerFactory 
-
-import au.com.agl.arc.util._
+import au.com.agl.arc.util.log.LoggerFactory
 
 import au.com.agl.arc.udf.UDF
 
 class UDFSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
+  var logger: au.com.agl.arc.util.log.logger.Logger = _
 
   before {
     implicit val spark = SparkSession
@@ -33,13 +24,14 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("ERROR")
 
     session = spark
-    import spark.implicits._
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
+
+    logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     // register udf
-    UDF.registerUDFs(spark.sqlContext)
+    UDF.registerUDFs(spark.sqlContext)(logger)
   }
 
   after {
@@ -48,8 +40,6 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
   test("jsonPath") {
     implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val df = spark.sql("""
     SELECT get_json_long_array('{"nested": {"object": [2147483648, 2147483649]}}', '$.nested.object') AS test
@@ -61,8 +51,6 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
   test("get_json_double_array") {
     implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val df = spark.sql("""
     SELECT get_json_double_array('[0.1, 1.1]', '$') AS test
@@ -74,8 +62,6 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
   test("get_json_integer_array") {
     implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val df = spark.sql("""
     SELECT get_json_integer_array('[1, 2]', '$') AS test
@@ -87,8 +73,6 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
   test("get_json_long_array") {
     implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val df = spark.sql("""
     SELECT get_json_long_array('[2147483648, 2147483649]', '$') AS test

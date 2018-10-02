@@ -2,17 +2,13 @@ package au.com.agl.arc.api
 
 import java.net.URI
 import java.time.LocalTime
-import java.sql.Driver
 
-import org.apache.spark.sql._
+import au.com.agl.arc.plugins.PipelineStagePlugin
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.types.MetadataBuilder
 import org.apache.spark.sql.SaveMode
-import org.apache.spark.sql.streaming.OutputMode
-
-import au.com.agl.arc.util._
 
 /** The API defines the model for a pipline. It is made up of stages,
   * extract, transform and load with their respective settings.
@@ -165,7 +161,11 @@ object API {
   sealed trait PipelineStage {
     def name: String
 
-    def getType(): String
+    def getType: String
+  }
+
+  case class CustomStage(name: String, params: Map[String, String], stage: PipelineStagePlugin) extends PipelineStage {
+    val getType = stage.getClass().getName()
   }
 
   /** An extract that provides its own schema e.g. parquet

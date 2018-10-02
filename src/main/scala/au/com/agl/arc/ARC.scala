@@ -1,5 +1,6 @@
 package au.com.agl.arc
 
+import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.udf.UDF
 
 object ARC {
@@ -285,6 +286,22 @@ object ARC {
   def run(pipeline: ETLPipeline)
   (implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
 
+    val lifecyclePlugins = LifecyclePlugin.plugins()
+
+    def before(stage: PipelineStage): Unit = {
+      for (p <- lifecyclePlugins) {
+        logger.info().message(s"Executing before() on LifecyclePlugin: ${p.getClass.getName}")
+        p.before(stage)
+      }
+    }
+
+    def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean): Unit = {
+      for (p <- lifecyclePlugins) {
+        logger.info().message(s"Executing after(last = $isLast) on LifecyclePlugin: ${p.getClass.getName}")
+        p.after(stage, result, isLast)
+      }
+    }
+
     def processStage(stage: PipelineStage): Option[DataFrame] = {
       stage match {
         case e : AvroExtract =>
@@ -364,15 +381,24 @@ object ARC {
           validate.EqualityValidate.validate(v)           
         case v : SQLValidate =>
           validate.SQLValidate.validate(v)
+
+        case c : CustomStage =>
+          c.stage.execute(c.name, c.params)
       }
     }
 
     @tailrec
     def runStages(stages: List[PipelineStage]) {
       stages match {
-        case Nil => // finished
+        case Nil => // end
+        case head :: Nil =>
+          before(head)
+          val result = processStage(head)
+          after(head, result, true)
         case head :: tail =>
-          processStage(head)
+          before(head)
+          val result = processStage(head)
+          after(head, result, false)
           runStages(tail)
       }
     }

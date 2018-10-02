@@ -1,10 +1,12 @@
 package au.com.agl.arc.udf
 
+import java.util.ServiceLoader
+
+import au.com.agl.arc.plugins.UDFPlugin
+import au.com.agl.arc.util.Utils
+
 import scala.collection.JavaConverters._
-
 import com.fasterxml.jackson.databind._
-import com.fasterxml.jackson.databind.node._
-
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.functions
 
@@ -48,12 +50,27 @@ object UDF {
     scala.util.Random.nextDouble
   }
 
-  def registerUDFs(sqlContext: SQLContext): Unit = {
+  def registerUDFs(sqlContext: SQLContext)(implicit logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
     // register custom UDFs via sqlContext.udf.register("funcName", func )
     sqlContext.udf.register("get_json_double_array", getJSONDoubleArray _ )
     sqlContext.udf.register("get_json_integer_array", getJSONIntArray _ )
     sqlContext.udf.register("get_json_long_array", getJSONLongArray _ )
     sqlContext.udf.register("random", getRandom _ )
+
+    val loader = Utils.getContextOrSparkClassLoader
+    val serviceLoader = ServiceLoader.load(classOf[UDFPlugin], loader)
+
+    for (p <- serviceLoader.iterator().asScala) {
+      val pluginUDFs = p.register(sqlContext)
+
+      val name = p.getClass.getName
+
+      val logData = new java.util.HashMap[String, Object]()
+      logData.put("name", name)
+      logData.put("udfs", pluginUDFs.asJava)
+
+      logger.info().message(s"Registered UDF Plugin $name").field("udfPlugin", logData).log()
+    }
   }
 
 }
