@@ -323,7 +323,8 @@ test("JSONExtract: Input Schema") {
         nullReplacementValue=None,
         trim=false,
         nullableValues=Nil,
-        metadata=None
+        metadata=None,
+        formatters=None
       ) :: Nil
 
     val extractDataset = extract.JSONExtract.extract(

@@ -54,6 +54,9 @@ object Dependencies {
   val scala_graph_dot = "org.scala-graph" %% "graph-dot" % "1.11.5"
   val scala_graph_json = "org.scala-graph" %% "graph-json" % "1.11.0"
 
+  // hikari connection pool
+  val hikaricp = "com.zaxxer" % "HikariCP" % "3.2.0"
+
   // Project
   val etlDeps = Seq(
     sparkCore,
@@ -90,7 +93,10 @@ object Dependencies {
 
     // Azure EventHubs
     azureEventHub,
-    qpid
+    qpid,
+
+    // hikari connection pool
+    hikaricp
 
     // gcsConnector
   )

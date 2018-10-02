@@ -19,7 +19,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test trimming
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42.22"), trim = true, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None, metadata=None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42.22"), trim = true, nullableValues = "" :: Nil, precision = 4, scale = 2, metadata=None, formatters = None)
       val decimalValue = Decimal(42.22);
       // value is null -> nullReplacementValue
       {
@@ -83,7 +83,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(4, 2)"))
+            assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(4, 2) using formatters ['#,##0.###;-#,##0.###']"))
           }
           case (_, _) => assert(false)
         }
@@ -92,7 +92,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test not trimming
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42.22"), trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None, metadata=None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42.22"), trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, metadata=None, formatters = None)
 
       {
         val value = "   42.22"
@@ -100,7 +100,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
           case (res, Some(err)) => {
 
             assert(res === None)
-            assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(4, 2)"))
+            assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(4, 2) using formatters ['#,##0.###;-#,##0.###']"))
           }
           case (_, _) => assert(false)
         }
@@ -110,7 +110,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITH nullReplacementValue
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42.22"), trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None, metadata=None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42.22"), trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, metadata=None, formatters = None)
       val decimalValue = Decimal(42.22);
       // value is null -> nullReplacementValue
       {
@@ -148,7 +148,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITHOUT nullReplacementValue
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None, metadata=None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, metadata=None, formatters = None)
 
       // value.isNull
       {
@@ -188,7 +188,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
     // Test other miscellaneous input types
 
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 10, scale = 0, formatter = None, metadata=None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 10, scale = 0, metadata=None, formatters = None)
 
       // value contains non numbers or characters
       {
@@ -196,7 +196,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(10, 0)"))
+            assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(10, 0) using formatters ['#,##0.###;-#,##0.###']"))
           }
           case (_, _) => assert(false)
         }
@@ -205,7 +205,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     // test valid precision value for Long range
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 10, scale = 0, formatter = None, metadata=None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 10, scale = 0, metadata=None, formatters = None)
 
       // precision '10' is valid for integer value that is converted to Long
       {
@@ -225,7 +225,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     // test invalid precision value
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 9, scale = 0, formatter = None, metadata=None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 9, scale = 0, metadata=None, formatters = None)
 
       // invalid precision(<10) for the value that is converted to Long
       {
@@ -237,7 +237,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(9, 0)"))
+            assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(9, 0) using formatters ['#,##0.###;-#,##0.###']"))
           }
 
           case (_, _) => assert(false)
@@ -247,12 +247,13 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
 
     //test negative decimal
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None, metadata=None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, metadata=None, formatters = None)
 
       // value contains negative number
       {
         val decimalValue = Decimal(-42.22);
-        Typing.typeValue("-42.22", col) match {
+        val value = "-42.22"
+        Typing.typeValue(value, col) match {
           case (Some(res), err) => {
             assert(res === decimalValue)
             assert(err === None)
@@ -263,7 +264,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
     }
 
     {
-      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, formatter = None, metadata=None)
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, metadata=None, formatters = None)
 
       // value contains complex characters
       {
@@ -271,11 +272,65 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(4, 2)"))
+            assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(4, 2) using formatters ['#,##0.###;-#,##0.###']"))
           }
           case (_, _) => assert(false)
         }
       }
     }
+
+    //test formatter change negative suffix
+    {
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, metadata=None, formatters = Option(List("#,##0.###;#,##0.###-")))
+
+      // value contains negative number
+      {
+        val decimalValue = Decimal(-42.22);
+        val value = "42.22-"
+        Typing.typeValue(value, col) match {
+          case (Some(res), err) => {
+            assert(res === decimalValue)
+            assert(err === None)
+          }
+          case (_, _) => assert(false)
+        }
+      }
+    }  
+
+    //test multiple formatter
+    {
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, metadata=None, formatters = Option(List("#,##0.###;#,##0.###-", "#,##0.###;(#,##0.###)")))
+
+      // value contains negative number
+      {
+        val decimalValue = Decimal(-42.22);
+        val value = "(42.22)"
+        Typing.typeValue(value, col) match {
+          case (Some(res), err) => {
+            assert(res === decimalValue)
+            assert(err === None)
+          }
+          case (_, _) => assert(false)
+        }
+      }
+    }      
+
+    //test formatter in error message
+    {
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 4, scale = 2, metadata=None, formatters = Option(List("#,##0.###;#,##0.###-")))
+
+      // value contains negative number
+      {
+        val decimalValue = Decimal(-42.22);
+        val value = "-42.22"
+        Typing.typeValue(value, col) match {
+          case (res, Some(err)) => {
+            assert(res === None)
+            assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(4, 2) using formatters ['#,##0.###;#,##0.###-']"))
+          }
+          case (_, _) => assert(false)
+        }
+      }
+    }      
   }
 }
