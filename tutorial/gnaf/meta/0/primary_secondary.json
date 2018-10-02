@@ -34,7 +34,7 @@
   "nullableValues" : [ "", "null" ],
   "metadata" : { },
   "type" : "date",
-  "formatters" : [ "yyyy-MM-dd" ]
+  "formatters" : [ "uuuu-MM-dd" ]
 },{
   "id" : "6efe0c38-da05-46c1-bae8-dd28006c7dad",
   "name" : "date_retired",
@@ -44,7 +44,7 @@
   "nullableValues" : [ "", "null" ],
   "metadata" : { },
   "type" : "date",
-  "formatters" : [ "yyyy-MM-dd" ]
+  "formatters" : [ "uuuu-MM-dd" ]
 },{
   "id" : "6cb19e74-0de8-459a-b233-afa68b66444f",
   "name" : "ps_join_type_code",

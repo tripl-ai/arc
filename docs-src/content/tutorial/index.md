@@ -25,7 +25,7 @@ docker run \
 -v "$(pwd):${ETL_CONF_BASE_URL}" \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}" \
--it -p 4040:4040 seddonm1/arc:1.1.0 \
+-it -p 4040:4040 seddonm1/arc:1.2.1 \
 /bin/sh -c '/opt/tutorial/nyctaxi/download_raw_data_small.sh'
 ```
 
@@ -68,7 +68,7 @@ docker run \
 -v "$(pwd):${ETL_CONF_BASE_URL}" \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}" \
--it -p 4040:4040 seddonm1/arc:1.1.0 \
+-it -p 4040:4040 seddonm1/arc:1.2.1 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=12G \
@@ -227,7 +227,7 @@ Here is the full text which should already exist in `tutorial/nyctaxi/meta/green
     "primaryKey": false,
     "type": "timestamp",
     "formatters": [
-      "yyyy-MM-dd HH:mm:ss"
+      "uuuu-MM-dd HH:mm:ss"
     ],
     "timezoneId": "America/New_York",
     "nullableValues": [
@@ -244,7 +244,7 @@ Here is the full text which should already exist in `tutorial/nyctaxi/meta/green
     "primaryKey": false,
     "type": "timestamp",
     "formatters": [
-      "yyyy-MM-dd HH:mm:ss"
+      "uuuu-MM-dd HH:mm:ss"
     ],
     "timezoneId": "America/New_York",
     "nullableValues": [
@@ -520,7 +520,7 @@ Picking one of the more interesting fields, a [timestamp](/metadata/#timestamp) 
     "primaryKey": false,
     "type": "timestamp",
     "formatters": [
-      "yyyy-MM-dd HH:mm:ss"
+      "uuuu-MM-dd HH:mm:ss"
     ],
     "timezoneId": "America/New_York",
     "nullableValues": [
@@ -637,7 +637,7 @@ docker run \
 -v "$(pwd):${ETL_CONF_BASE_URL}" \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}" \
--it -p 4040:4040 seddonm1/arc:1.1.0 \
+-it -p 4040:4040 seddonm1/arc:1.2.1 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=12G \

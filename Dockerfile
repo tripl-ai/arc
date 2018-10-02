@@ -36,7 +36,7 @@ RUN set -x \
 
 
 # Spark Verison
-ENV SPARK_VERSION         2.3.1
+ENV SPARK_VERSION         2.3.2
 ENV HADOOP_VERSION        2.7
 ENV SPARK_HOME            /opt/spark
 ENV SPARK_JARS            /opt/spark/jars/

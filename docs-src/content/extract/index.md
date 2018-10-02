@@ -436,6 +436,80 @@ The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.ap
 }
 ```
 
+## RateExtract
+##### Since: 1.2.0 - Supports Streaming: True
+
+The `RateExtract` stage creates a streaming datasource which creates rows into a streaming `DataFrame` with the signature `[timestamp: timestamp, value: long]`. 
+
+This stage has been included for testing Structured Streaming jobs as it can be very difficult to generate test data. Generally this stage would only be included when Arc is run in a test mode (i.e. the `environment` is set to `test`).
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|rowsPerSecond|Integer|false|How many rows should be generated per second.<br><br>Default: 1.|
+|rampUpTime|Integer|false|How long to ramp up before the generating speed becomes rowsPerSecond. Using finer granularities than seconds will be truncated to integer seconds.<br><br>Default: 0.|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "RateExtract",
+    "name": "create a streaming source",
+    "environments": ["test"],
+    "outputView": "stream",
+    "rowsPerSecond": 2,
+    "rampUpTime": 0,
+    "numPartitions": 10,
+    "params": {
+    }
+}
+```
+
+## TextExtract
+##### Since: 1.2.0 - Supports Streaming: True
+
+The `TextExtract` stage reads either one or more text files and returns a `DataFrame`. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|false*|URI/Glob of the input `text` files. If not present `inputView` is requred.|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|multiLine|Boolean|false|Whether the to load the file as a single record or as individual records split by newline.<br><br>Default: false.|
+|contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "TextExtract",
+    "name": "load customer text extract",
+    "environments": ["production", "test"],
+    "inputURI": "hdfs://input_data/customer/*.txt",
+    "outputView": "customer",            
+    "persist": false,
+    "multiLine": false,
+    "authentication": {
+        ...
+    },
+    "params": {
+    }
+}
+```
+
 ## XMLExtract
 ##### Since: 1.0.0 - Supports Streaming: False
 

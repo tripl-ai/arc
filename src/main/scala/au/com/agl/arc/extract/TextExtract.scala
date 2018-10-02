@@ -2,6 +2,7 @@ package au.com.agl.arc.extract
 
 import java.lang._
 import java.net.URI
+import java.util.Properties
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
@@ -13,24 +14,26 @@ import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util._
 
-object ORCExtract {
+object TextExtract {
 
-  def extract(extract: ORCExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+  def extract(extract: TextExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
     val contiguousIndex = extract.contiguousIndex.getOrElse(true)
+    val multiLine = extract.multiLine.getOrElse(false)
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
     stageDetail.put("input", extract.input)  
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
     stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
+    stageDetail.put("multiLine", Boolean.valueOf(multiLine))
 
     logger.info()
       .field("event", "enter")
       .map("stage", stageDetail)      
-      .log()
+      .log()    
 
     // try to get the schema
     val optionSchema = try {
@@ -39,27 +42,39 @@ object ORCExtract {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          
       }      
-    }       
+    }        
 
-    CloudUtils.setHadoopConfiguration(extract.authentication)
-
-    // if incoming dataset is empty create empty dataset with a known schema
     val df = try {
       if (arcContext.isStreaming) {
+        CloudUtils.setHadoopConfiguration(extract.authentication)
+
         optionSchema match {
-          case Some(schema) => spark.readStream.option("mergeSchema", "true").schema(schema).orc(extract.input)
-          case None => throw new Exception("ORCExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
-        }       
-      } else {      
-        spark.read.option("mergeSchema", "true").orc(extract.input)   
+          case Some(schema) => spark.readStream.schema(schema).text(extract.input)
+          case None => throw new Exception("JSONExtract requires 'schemaURI' to be set if Arc is running in streaming mode.")
+        }             
+      } else {
+        CloudUtils.setHadoopConfiguration(extract.authentication)
+        // spark does not cope well reading many small files into json directly from hadoop file systems
+        // by reading first as text time drops by ~75%
+        // this will not throw an error for empty directory (but will for missing directory)
+        try {
+          if (multiLine) {
+            spark.read.option("wholetext", "true").textFile(extract.input).toDF
+          } else {
+            spark.read.option("wholetext", "false").textFile(extract.input).toDF
+          }
+        } catch {
+          case e: org.apache.hadoop.mapred.InvalidInputException => {
+            spark.emptyDataFrame
+          }
+          case e: Exception => throw e
+        }
       }
     } catch {
-        case e: AnalysisException if (e.getMessage == "Unable to infer schema for ORC. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) => 
-          spark.emptyDataFrame
-        case e: Exception => throw new Exception(e) with DetailException {
-          override val detail = stageDetail          
-        }
-    } 
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }
+    }
 
     // if incoming dataset has 0 columns then create empty dataset with correct schema
     val emptyDataframeHandlerDF = try {
@@ -73,28 +88,18 @@ object ORCExtract {
     // add internal columns data _filename, _index
     val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
 
-    // set column metadata if exists
+    // // set column metadata if exists
     val enrichedDF = optionSchema match {
         case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
         case None => sourceEnrichedDF   
     }
+
     // repartition to distribute rows evenly
-    val repartitionedDF = extract.partitionBy match {
-      case Nil => { 
-        extract.numPartitions match {
-          case Some(numPartitions) => enrichedDF.repartition(numPartitions)
-          case None => enrichedDF
-        }   
-      }
-      case partitionBy => {
-        // create a column array for repartitioning
-        val partitionCols = partitionBy.map(col => df(col))
-        extract.numPartitions match {
-          case Some(numPartitions) => enrichedDF.repartition(numPartitions, partitionCols:_*)
-          case None => enrichedDF.repartition(partitionCols:_*)
-        }
-      }
-    } 
+    val repartitionedDF = extract.numPartitions match {
+      case Some(numPartitions) => enrichedDF.repartition(numPartitions)
+      case None => enrichedDF
+    }   
+
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 
     if (!repartitionedDF.isStreaming) {
@@ -112,9 +117,10 @@ object ORCExtract {
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)      
-      .log() 
+      .log()   
 
     Option(repartitionedDF)
   }
 
 }
+

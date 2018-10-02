@@ -1,9 +1,17 @@
 ## Change Log
 
+# 1.2.1
+
+- bumped Spark version to [2.3.2](https://spark.apache.org/news/spark-2-3-2-released.html).
+
 # 1.2.0
 
 - added support for Spark [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html).
 - added `pathView` property for `BytesExtract` allowing a dataframe of file paths to be provided to dynamically load files.
+- added `TextExtract` to read basic text files.
+- added `RateExtract` which wraps the Spark [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#creating-streaming-dataframes-and-streaming-datasets) rate source for testing streaming jobs.
+- added `ConsoleLoad` which wraps the Spark [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#output-sinks) console sink for testing streaming jobs.
+- added ability for `JDBCLoad` to execute in Spark [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#output-sinks) mode.
 
 # 1.1.0
 

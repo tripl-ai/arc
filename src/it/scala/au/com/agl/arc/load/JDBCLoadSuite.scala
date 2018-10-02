@@ -74,6 +74,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val dataset = TestDataUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
@@ -115,6 +116,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val dataset = TestDataUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
@@ -180,6 +182,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val dataset = TestDataUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
@@ -245,6 +248,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val dataset = TestDataUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
@@ -290,6 +294,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     try {
       connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
@@ -341,13 +346,14 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       )
     }
 
-    assert(thrown.getMessage.contains(s"""Input dataset has columns [renamedBooleanDatum, dateDatum, decimalDatum, doubleDatum, integerDatum, longDatum, stringDatum, timeDatum, timestampDatum] which does not match target table 'dbo.[hyphen-table]' which has columns [booleanDatum, dateDatum, decimalDatum, doubleDatum, integerDatum, longDatum, stringDatum, timeDatum, timestampDatum]."""))          
+    assert(thrown.getMessage.contains(s"""java.lang.Exception: Input dataset 'output' has schema [renamedBooleanDatum: boolean, dateDatum: date, decimalDatum: decimal(38,18), doubleDatum: double, integerDatum: int, longDatum: bigint, stringDatum: string, timeDatum: string, timestampDatum: timestamp] which does not match target table 'dbo.[hyphen-table]' which has schema [booleanDatum: boolean, dateDatum: date, decimalDatum: decimal(38,18), doubleDatum: double, integerDatum: int, longDatum: bigint, stringDatum: string, timeDatum: string, timestampDatum: timestamp]. Ensure names, types and field orders align."""))          
   }     
 
   test("JDBCLoad: sqlserver bulk wrong schema column types") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     try {
       connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
@@ -399,13 +405,14 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       )
     }
 
-    assert(thrown.getMessage.contains(s"""Input dataset has columns of types [boolean, date, decimal(38,18), double, int, bigint, string, string, timestamp] which does not match target table 'dbo.[hyphen-table]' which has columns of types [int, date, decimal(38,18), double, int, bigint, string, string, timestamp]."""))          
+    assert(thrown.getMessage.contains(s"""java.lang.Exception: Input dataset 'output' has schema [booleanDatum: boolean, dateDatum: date, decimalDatum: decimal(38,18), doubleDatum: double, integerDatum: int, longDatum: bigint, stringDatum: string, timeDatum: string, timestampDatum: timestamp] which does not match target table 'dbo.[hyphen-table]' which has schema [booleanDatum: int, dateDatum: date, decimalDatum: decimal(38,18), doubleDatum: double, integerDatum: int, longDatum: bigint, stringDatum: string, timeDatum: string, timestampDatum: timestamp]. Ensure names, types and field orders align."""))          
   }  
 
   test("JDBCLoad: sqlserver bulk SaveMode.Append") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val dataset = TestDataUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
@@ -492,6 +499,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     val dataset = TestDataUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
@@ -528,5 +536,73 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
 
     assert(actual.first.getLong(0) == 2)
   } 
+
+  test("JDBCLoad: Structured Streaming") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true)
+
+    val uuid = s"""a${UUID.randomUUID.toString.replace("-","")}"""
+
+    try {
+      connection = DriverManager.getConnection(postgresurl, connectionProperties)    
+      connection.createStatement.execute(s"""
+      DROP TABLE IF EXISTS sa.public.${uuid}
+      """)
+      connection.createStatement.execute(s"""
+      CREATE TABLE sa.public.${uuid} (
+        timestamp timestamp NULL,
+        value bigint NOT NULL
+      )
+      """)
+    } finally {
+      connection.close
+    }  
+
+    val readStream = spark
+      .readStream
+      .format("rate")
+      .option("rowsPerSecond", "2")
+      .option("numPartitions", "3")
+      .load
+
+    readStream.createOrReplaceTempView(dbtable)    
+
+    load.JDBCLoad.load(
+      JDBCLoad(
+        name="dataset",
+        inputView=dbtable, 
+        jdbcURL=postgresurl, 
+        driver=DriverManager.getDriver(postgresurl),
+        tableName=s"sa.public.${uuid}", 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        isolationLevel=None,
+        batchsize=None, 
+        truncate=None,
+        createTableOptions=None,
+        createTableColumnTypes=None,        
+        saveMode=Option(SaveMode.Overwrite), 
+        bulkload=Option(false),
+        tablock=None,
+        params=Map("user" -> user, "password" -> password)
+      )
+    )
+
+    Thread.sleep(2000)
+    spark.streams.active.foreach(streamingQuery => streamingQuery.stop)
+
+    val actual = { spark.read
+      .format("jdbc")
+      .option("url", postgresurl)
+      .option("user", user)
+      .option("password", password)      
+      .option("dbtable", s"(SELECT * FROM sa.public.${uuid}) result")
+      .load()
+    }
+
+    assert(actual.count > 0)
+  }  
 
 }

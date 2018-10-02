@@ -96,6 +96,35 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 }
 ```
 
+## ConsoleLoad
+##### Since: 1.2.0 - Supports Streaming: True
+
+The `ConsoleLoad` prints an input streaming `DataFrame` the console. 
+
+This stage has been included for testing Structured Streaming jobs as it can be very difficult to debug. Generally this stage would only be included when Arc is run in a test mode (i.e. the `environment` is set to `test`).
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|outputMode|String|false|The output mode of the console writer. Allowed values `Append`, `Complete`, `Update`. See [Output Modes](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#output-modes) for full details.<br><br>Default: Append|
+
+### Examples
+
+```json
+{
+    "type": "ConsoleLoad",
+    "name": "write a streaming dataset to console",
+    "environments": ["test"],
+    "inputView": "customer",
+    "outputMode": "Append",
+    "params": {}
+}
+```
+
 ## DelimitedLoad
 ##### Since: 1.0.0 - Supports Streaming: True
 
@@ -180,7 +209,7 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 ```
 
 ## JDBCLoad
-##### Since: 1.0.0 - Supports Streaming: False
+##### Since: 1.0.0 - Supports Streaming: True
 
 The `JDBCLoad` writes an input `DataFrame` to a target JDBC Database. See [Spark JDBC documentation](https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases).
 

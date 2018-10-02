@@ -34,7 +34,7 @@
   "nullableValues" : [ "", "null" ],
   "metadata" : { },
   "type" : "date",
-  "formatters" : [ "yyyy-MM-dd" ]
+  "formatters" : [ "uuuu-MM-dd" ]
 },{
   "id" : "0920791b-9c6e-45d4-b651-2e5a51fe27aa",
   "name" : "date_address_detail_retired",
@@ -44,7 +44,7 @@
   "nullableValues" : [ "", "null" ],
   "metadata" : { },
   "type" : "date",
-  "formatters" : [ "yyyy-MM-dd" ]
+  "formatters" : [ "uuuu-MM-dd" ]
 },{
   "id" : "0b236f44-0cef-418f-920e-5c50d1b9f45c",
   "name" : "address_change_type_code",

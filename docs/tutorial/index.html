@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.2.0</span></strong>
+          <span class="version">1.2.1</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -425,7 +425,7 @@ docker run \
 -v &quot;$(pwd):${ETL_CONF_BASE_URL}&quot; \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
--it -p 4040:4040 seddonm1/arc:1.1.0 \
+-it -p 4040:4040 seddonm1/arc:1.2.1 \
 /bin/sh -c '/opt/tutorial/nyctaxi/download_raw_data_small.sh'
 </code></pre>
 
@@ -466,7 +466,7 @@ docker run \
 -v &quot;$(pwd):${ETL_CONF_BASE_URL}&quot; \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
--it -p 4040:4040 seddonm1/arc:1.1.0 \
+-it -p 4040:4040 seddonm1/arc:1.2.1 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=12G \
@@ -694,7 +694,7 @@ job/0/nyctaxi.json
     &quot;primaryKey&quot;: false,
     &quot;type&quot;: &quot;timestamp&quot;,
     &quot;formatters&quot;: [
-      &quot;yyyy-MM-dd HH:mm:ss&quot;
+      &quot;uuuu-MM-dd HH:mm:ss&quot;
     ],
     &quot;timezoneId&quot;: &quot;America/New_York&quot;,
     &quot;nullableValues&quot;: [
@@ -711,7 +711,7 @@ job/0/nyctaxi.json
     &quot;primaryKey&quot;: false,
     &quot;type&quot;: &quot;timestamp&quot;,
     &quot;formatters&quot;: [
-      &quot;yyyy-MM-dd HH:mm:ss&quot;
+      &quot;uuuu-MM-dd HH:mm:ss&quot;
     ],
     &quot;timezoneId&quot;: &quot;America/New_York&quot;,
     &quot;nullableValues&quot;: [
@@ -988,7 +988,7 @@ job/0/nyctaxi.json
     &quot;primaryKey&quot;: false,
     &quot;type&quot;: &quot;timestamp&quot;,
     &quot;formatters&quot;: [
-      &quot;yyyy-MM-dd HH:mm:ss&quot;
+      &quot;uuuu-MM-dd HH:mm:ss&quot;
     ],
     &quot;timezoneId&quot;: &quot;America/New_York&quot;,
     &quot;nullableValues&quot;: [
@@ -1105,7 +1105,7 @@ FROM (
 -v &quot;$(pwd):${ETL_CONF_BASE_URL}&quot; \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_BASE_URL=${ETL_CONF_BASE_URL}&quot; \
--it -p 4040:4040 seddonm1/arc:1.1.0 \
+-it -p 4040:4040 seddonm1/arc:1.2.1 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=12G \

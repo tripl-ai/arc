@@ -13,7 +13,7 @@ import au.com.agl.arc.api.API._
 
 object ExtractUtils {
 
-  def getSchema(schema: Either[String, List[ExtractColumn]])(spark: SparkSession): Option[StructType] = {
+  def getSchema(schema: Either[String, List[ExtractColumn]])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[StructType] = {
     schema match {
       case Right(cols) => {
         cols match {
@@ -22,7 +22,7 @@ object ExtractUtils {
         }
       }
       case Left(view) => {
-        val parseResult: au.com.agl.arc.util.MetadataSchema.ParseResult = au.com.agl.arc.util.MetadataSchema.parseDataFrameMetadata(spark.table(view))
+        val parseResult: au.com.agl.arc.util.MetadataSchema.ParseResult = au.com.agl.arc.util.MetadataSchema.parseDataFrameMetadata(spark.table(view))(logger)
         parseResult match {
           case Right(cols) => Option(Extract.toStructType(cols))
           case Left(errors) => throw new Exception(s"""Schema view '${view}' to cannot be parsed as it has errors: ${errors.mkString(", ")}.""")
@@ -31,7 +31,7 @@ object ExtractUtils {
     }
   }   
 
-  def emptyDataFrameHandler(df: DataFrame, schema: Option[StructType])(spark: SparkSession): DataFrame = {
+  def emptyDataFrameHandler(df: DataFrame, schema: Option[StructType])(implicit spark: SparkSession): DataFrame = {
     // if incoming dataset has 0 columns then create empty dataset with correct schema
    if (df.schema.length == 0) {
      schema match {

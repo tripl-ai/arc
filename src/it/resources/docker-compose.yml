@@ -1,8 +1,16 @@
 ---
-version: '2'
+version: '3.5'
+
+networks:
+  arc-integration:
+    name: arc-integration
+    driver: bridge
+
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
+    networks:
+      - arc-integration
     ports: 
         - 32181:32181
     environment:
@@ -11,6 +19,8 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:latest
+    networks:
+      - arc-integration
     ports:
         - 29092:29092
     depends_on:
@@ -27,6 +37,8 @@ services:
   
   kafka-rest:
     image: confluentinc/cp-kafka-rest:latest
+    networks:
+      - arc-integration
     ports:
       - 8082:8082
     depends_on:
@@ -40,6 +52,8 @@ services:
 
   tensorflow_serving:
     image: tensorflow_serving/simple:latest
+    networks:
+      - arc-integration    
     build: tensorflow_serving/.
     ports:
       - 9000:9000
@@ -47,6 +61,8 @@ services:
 
   sqlserver:
     image: microsoft/mssql-server-linux:2017-CU9
+    networks:
+      - arc-integration    
     ports:
       - 1433:1433
     environment:
@@ -56,6 +72,8 @@ services:
 
   postgres:
     image: postgres:10.4-alpine-init
+    networks:
+      - arc-integration    
     build: postgres/.
     ports:
       - 5432:5432
@@ -65,6 +83,8 @@ services:
 
   flask_serving:
     image: flask_serving/simple:latest
+    networks:
+      - arc-integration    
     build: flask_serving/.
     ports:
       - 5000:5000

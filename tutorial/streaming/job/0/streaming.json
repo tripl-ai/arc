@@ -1,44 +1,67 @@
 {
   "stages": [
     {
-      "type": "DelimitedExtract",
-      "name": "extract data from *address_alias_type_aut",
+      "type": "RateExtract",
+      "name": "create a streaming source",
       "environments": [
-        "production",
         "test"
       ],
-      "inputURI": ${ETL_CONF_INPUT_PATH}"/*.psv",
-      "schemaURI": ${ETL_CONF_META_PATH}"/meta/0/address_alias_type_aut.json",
-      "outputView": "address_alias_type_aut_raw",
-      "persist": false,
-      "delimiter": "Pipe",
-      "quote": "DoubleQuote",
-      "header": true,
-      "authentication": {},
-      "params": {}
+      "outputView": "stream",
+      "rowsPerSecond": 1,
+      "rampUpTime": 0,
+      "numPartitions": 1
+    },
+    {
+      "type": "SQLTransform",
+      "name": "generate fake data",
+      "environments": [
+        "test"
+      ],
+      "inputURI": "/opt/tutorial/streaming/job/0/create_random_data.sql",
+      "outputView": "random_customer",
+      "persist": false
     },
     {
       "type": "TypingTransform",
-      "name": "apply data types to address_alias_type_aut",
+      "name": "apply data types to fake data",
       "environments": [
-        "production",
         "test"
       ],
-      "inputURI": ${ETL_CONF_META_PATH}"/meta/0/address_alias_type_aut.json",
-      "inputView": "address_alias_type_aut_raw",
-      "outputView": "address_alias_type_aut",
-      "persist": true,
-      "authentication": {},
-      "params": {}
+      "inputURI": "/opt/tutorial/streaming/job/0/fake_data_meta.json",
+      "inputView": "random_customer",
+      "outputView": "random_customer_typed",
+      "persist": false
     },
     {
-      "type": "ParquetLoad",
-      "name": "write table out as parquet",
-      "environments": ["production", "test"],
-      "inputView": "address_alias_type_aut",
-      "outputURI": ${ETL_CONF_OUTPUT_PATH}"/address_alias_type_aut.parquet",
-      "authentication": {},    
-      "params": {}
+      "type": "SQLTransform",
+      "name": "prepare data for model",
+      "environments": [
+        "test"
+      ],
+      "inputURI": "/opt/tutorial/streaming/job/0/prepare_data.sql",
+      "outputView": "random_customer_model_ready",
+      "persist": false
+    },
+    {
+      "type": "TensorFlowServingTransform",
+      "name": "call model to create new credit_score on fake data",
+      "environments": [
+        "test"
+      ],
+      "inputView": "random_customer_model_ready",
+      "outputView": "random_customer_augmented",
+      "uri": "http://resources_tensorflow_serving_1:9001/v1/models/simple/versions/1:predict",
+      "batchSize": 100,
+      "persist": false
+    },
+    {
+      "type": "ConsoleLoad",
+      "name": "print the results to the console",
+      "environments": [
+        "test"
+      ],
+      "inputView": "random_customer_augmented",
+      "outputMode": "Append",
     }
   ]
 }

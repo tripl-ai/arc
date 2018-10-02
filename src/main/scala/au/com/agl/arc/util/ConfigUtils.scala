@@ -304,6 +304,32 @@ object ConfigUtils {
     }
   }
 
+  def readOutputMode(path: String)(implicit c: Config): Either[Errors, Option[OutputModeType]] = {
+
+    def err(msg: String): Either[Errors, Option[OutputModeType]] = Left(ConfigError(path, msg) :: Nil)
+
+    try {
+      if (c.hasPath(path)) {
+        c.getString(path) match {
+          case "Append" => {
+            Right(Option(OutputModeTypeAppend))
+          } 
+          case "Complete" => {
+            Right(Option(OutputModeTypeComplete))
+          }   
+          case "Update" => {
+            Right(Option(OutputModeTypeUpdate))
+          }                    
+          case _ =>  throw new Exception(s"""Unable to parse outputMode: '${c.getString(path)}'. Must be one of ['Append', 'Complete', 'Update'].""")
+        }
+      } else {
+        Right(None)
+      }
+    } catch {
+      case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
+    }
+  }
+
   def readResponseType(path: String)(implicit c: Config): Either[Errors, Option[ReponseType]] = {
   
     def err(msg: String): Either[Errors, Option[ReponseType]] = Left(ConfigError(path, msg) :: Nil)
@@ -942,6 +968,60 @@ object ConfigUtils {
     }
   }
 
+  def readRateExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
+    import ConfigReader._
+
+    val outputView = getValue[String]("outputView")
+    val rowsPerSecond = getOptionalValue[Int]("rowsPerSecond")
+    val rampUpTime = getOptionalValue[Int]("rampUpTime")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+
+    (name, outputView, rowsPerSecond, rampUpTime, numPartitions) match {
+      case (Right(n), Right(ov), Right(rps), Right(rut), Right(np)) => 
+        Right(RateExtract(n, ov, params, rps, rut, np))
+      case _ =>
+        val allErrors: Errors = List(name, outputView, rowsPerSecond, rampUpTime, numPartitions).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err :: Nil)
+    }
+  }  
+
+  def readTextExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
+    import ConfigReader._
+
+    val input = getValue[String]("inputURI")
+    val parsedGlob = input.rightFlatMap(glob => parseGlob("inputURI", glob))
+
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val multiLine = getOptionalValue[Boolean]("multiLine")
+    val authentication = readAuthentication("authentication")
+    val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
+
+    val uriKey = "schemaURI"
+    val stringURI = getOptionalValue[String](uriKey)
+    val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
+      optURI match { 
+        case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
+        case None => Right(None)
+      }
+    )
+
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+
+    (name, extractColumns, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex) match {
+      case (Right(n), Right(cols), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci)) => 
+        Right(TextExtract(n, Right(cols), ov, in, auth, params, p, np, ci, ml))
+      case _ =>
+        val allErrors: Errors = List(name, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err :: Nil)
+    }
+  }
+
   def readXMLExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
@@ -1259,6 +1339,23 @@ object ConfigUtils {
         Right(AzureEventHubsLoad(n, iv, nn, ehn, saskn, sask, np, rmin, rmax, rcount, params))
       case _ =>
         val allErrors: Errors = List(name, inputView, namespaceName, eventHubName, sharedAccessSignatureKeyName, sharedAccessSignatureKey, numPartitions, retryMinBackoff, retryMaxBackoff, retryCount).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err :: Nil)
+    }
+  }    
+
+  def readConsoleLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
+    import ConfigReader._
+
+    val inputView = getValue[String]("inputView")
+    val outputMode = readOutputMode("outputMode")
+
+    (name, inputView, outputMode) match {
+      case (Right(n), Right(iv), Right(om)) => 
+        Right(ConsoleLoad(n, iv, om, params))
+      case _ =>
+        val allErrors: Errors = List(name, inputView, outputMode).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
@@ -1718,6 +1815,8 @@ object ConfigUtils {
             case Right("KafkaExtract") => Option(readKafkaExtract(name, params))
             case Right("ORCExtract") => Option(readORCExtract(name, params))
             case Right("ParquetExtract") => Option(readParquetExtract(name, params))
+            case Right("RateExtract") => Option(readRateExtract(name, params))
+            case Right("TextExtract") => Option(readTextExtract(name, params))
             case Right("XMLExtract") => Option(readXMLExtract(name, params))
 
             case Right("DiffTransform") => Option(readDiffTransform(name, params))
@@ -1731,6 +1830,7 @@ object ConfigUtils {
 
             case Right("AvroLoad") => Option(readAvroLoad(name, params))
             case Right("AzureEventHubsLoad") => Option(readAzureEventHubsLoad(name, params))
+            case Right("ConsoleLoad") => Option(readConsoleLoad(name, params))
             case Right("DelimitedLoad") => Option(readDelimitedLoad(name, params))
             case Right("HTTPLoad") => Option(readHTTPLoad(name, params))
             case Right("JDBCLoad") => Option(readJDBCLoad(name, params))

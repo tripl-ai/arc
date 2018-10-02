@@ -8,6 +8,7 @@ import au.com.agl.arc.util.Utils
 import scala.collection.JavaConverters._
 import com.fasterxml.jackson.databind._
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.functions
 
 object UDF {
 
@@ -45,11 +46,16 @@ object UDF {
     node.map(_.asLong).toArray
   }
 
+  def getRandom(): Double = {
+    scala.util.Random.nextDouble
+  }
+
   def registerUDFs(sqlContext: SQLContext)(implicit logger: au.com.agl.arc.util.log.logger.Logger): Unit = {
     // register custom UDFs via sqlContext.udf.register("funcName", func )
     sqlContext.udf.register("get_json_double_array", getJSONDoubleArray _ )
     sqlContext.udf.register("get_json_integer_array", getJSONIntArray _ )
     sqlContext.udf.register("get_json_long_array", getJSONLongArray _ )
+    sqlContext.udf.register("random", getRandom _ )
 
     val loader = Utils.getContextOrSparkClassLoader
     val serviceLoader = ServiceLoader.load(classOf[UDFPlugin], loader)
@@ -65,7 +71,6 @@ object UDF {
 
       logger.info().message(s"Registered UDF Plugin $name").field("udfPlugin", logData).log()
     }
-
   }
 
 }

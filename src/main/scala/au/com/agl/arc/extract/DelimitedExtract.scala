@@ -43,7 +43,7 @@ object DelimitedExtract {
     
     // try to get the schema
     val optionSchema = try {
-      ExtractUtils.getSchema(extract.cols)(spark)
+      ExtractUtils.getSchema(extract.cols)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          

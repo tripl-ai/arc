@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.2.0</span></strong>
+          <span class="version">1.2.1</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -412,7 +412,7 @@
 <pre><code class="language-json">docker run \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&quot; \
--it -p 4040:4040 seddonm1/arc:1.1.0 \
+-it -p 4040:4040 seddonm1/arc:1.2.1 \
 bin/spark-submit \
 --master local[*] \
 --class au.com.agl.arc.ARC \
@@ -576,6 +576,31 @@ bin/spark-submit \
 </tr>
 </tbody>
 </table>
+
+<h2 id="examples">Examples</h2>
+
+<h3 id="streaming">Streaming</h3>
+
+<p>This is an example of a streaming job <a href="https://github.com/AGLEnergy/arc/blob/master/tutorial/streaming/job/0/streaming.json">source</a>. This job is intended to be executed after the integration test envornment has been started:</p>
+
+<p>Start integration test environments:</p>
+
+<pre><code>docker-compose -f src/it/resources/docker-compose.yml up --build -d
+</code></pre>
+
+<p>Start the streaming job:</p>
+
+<pre><code class="language-bash">docker run \
+--net &quot;arc-integration&quot; \
+-e &quot;ETL_CONF_ENV=test&quot; \
+-e &quot;ETL_CONF_STREAMING=true&quot; \
+-it -p 4040:4040 seddonm1/arc:1.2.1 \
+bin/spark-submit \
+--master local[*] \
+--class au.com.agl.arc.ARC \
+/opt/spark/jars/arc.jar \
+--etl.config.uri=file:///opt/tutorial/streaming/job/0/streaming.json
+</code></pre>
 
 
 			<aside class="copyright" role="note">

@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   // Versions
-  lazy val sparkVersion = "2.3.1"
+  lazy val sparkVersion = "2.3.2"
   lazy val scalaTestVersion = "3.0.1"
 
   // Testing

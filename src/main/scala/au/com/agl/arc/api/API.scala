@@ -11,6 +11,9 @@ import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.types.MetadataBuilder
 import org.apache.spark.sql.SaveMode
+
+import org.apache.spark.sql.streaming.OutputMode
+
 import au.com.agl.arc.util._
 
 /** The API defines the model for a pipline. It is made up of stages,
@@ -111,7 +114,7 @@ object API {
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class DateColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String]) extends ExtractColumn {
+  case class DateColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String], strict: Boolean) extends ExtractColumn {
     val sparkDataType: DataType = DateType
   }
 
@@ -125,7 +128,7 @@ object API {
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class TimestampColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], timezoneId: String, formatters: List[String], time: Option[LocalTime], metadata: Option[String]) extends ExtractColumn {
+  case class TimestampColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], timezoneId: String, formatters: List[String], time: Option[LocalTime], metadata: Option[String], strict: Boolean) extends ExtractColumn {
     val sparkDataType: DataType = TimestampType
   }
 
@@ -207,6 +210,10 @@ object API {
 
   case class ParquetExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Option[Boolean]) extends ColumnarExtract { val getType = "ParquetExtract" }
 
+  case class RateExtract(name: String,  outputView: String, params: Map[String, String], rowsPerSecond: Option[Int], rampUpTime: Option[Int], numPartitions: Option[Int]) extends Extract { val getType = "RateExtract" }
+
+  case class TextExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Option[Boolean], multiLine: Option[Boolean]) extends ColumnarExtract { val getType = "TextExtract" }
+
   case class XMLExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Option[Boolean]) extends Extract { val getType = "XMLExtract" }
 
 
@@ -235,6 +242,8 @@ object API {
 
   case class AzureEventHubsLoad(name: String, inputView: String, namespaceName: String, eventHubName: String, sharedAccessSignatureKeyName: String, sharedAccessSignatureKey: String, numPartitions: Option[Int], retryMinBackoff: Option[Long], retryMaxBackoff: Option[Long], retryCount: Option[Int], params: Map[String, String]) extends Load { val getType = "AzureEventHubsLoad" }
 
+  case class ConsoleLoad(name: String, inputView: String, outputMode: Option[OutputModeType], params: Map[String, String]) extends Load { val getType = "ConsoleLoad" }
+
   case class DelimitedLoad(name: String, inputView: String, outputURI: URI, settings: Delimited, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "DelimitedLoad" }
 
   case class HTTPLoad(name: String, inputView: String, outputURI: URI, headers: Map[String, String], validStatusCodes: Option[List[Int]], params: Map[String, String]) extends Load { val getType = "HTTPLoad" }
@@ -252,6 +261,10 @@ object API {
   case class XMLLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "XMLLoad" }
 
 
+  sealed trait OutputModeType
+  case object OutputModeTypeAppend extends OutputModeType { override val toString = "append" }
+  case object OutputModeTypeComplete extends OutputModeType { override val toString = "complete" }
+  case object OutputModeTypeUpdate extends OutputModeType { override val toString = "update" }
 
   sealed trait Execute extends PipelineStage
 

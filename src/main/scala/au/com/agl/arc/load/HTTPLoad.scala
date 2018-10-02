@@ -50,7 +50,7 @@ object HTTPLoad {
 
     if (df.schema.length != 1 || df.schema(0).dataType != StringType) {
         throw new Exception(s"${signature} inputView '${load.inputView}' has ${df.schema.length} columns of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
-        override val detail = stageDetail          
+          override val detail = stageDetail          
       }      
     }    
 

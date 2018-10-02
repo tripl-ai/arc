@@ -265,7 +265,11 @@ object ARC {
       spark.stop()
       sys.exit(if (error) 1 else 0)
     } else {
-      spark.streams.active(0).awaitTermination
+      try {
+        spark.streams.active(0).awaitTermination
+      } catch {
+        case e: Exception => 
+      }
     }
   }  
 
@@ -301,7 +305,9 @@ object ARC {
     def processStage(stage: PipelineStage): Option[DataFrame] = {
       stage match {
         case e : AvroExtract =>
-          extract.AvroExtract.extract(e)          
+          extract.AvroExtract.extract(e)  
+        case e : BytesExtract =>
+          extract.BytesExtract.extract(e)                  
         case e : DelimitedExtract =>
           extract.DelimitedExtract.extract(e)
         case e : HTTPExtract =>
@@ -316,11 +322,13 @@ object ARC {
           extract.ORCExtract.extract(e)              
         case e : ParquetExtract =>
           extract.ParquetExtract.extract(e)
+        case e : RateExtract =>
+          extract.RateExtract.extract(e)             
+        case e : TextExtract =>
+          extract.TextExtract.extract(e)          
         case e : XMLExtract =>
           extract.XMLExtract.extract(e)
-        case e : BytesExtract =>
-          extract.BytesExtract.extract(e)
-          
+
         case t : DiffTransform =>
           transform.DiffTransform.transform(t)
         case t : HTTPTransform =>
@@ -342,6 +350,8 @@ object ARC {
           load.AvroLoad.load(l)
         case l : AzureEventHubsLoad =>
           load.AzureEventHubsLoad.load(l)          
+        case l : ConsoleLoad =>
+          load.ConsoleLoad.load(l)          
         case l : DelimitedLoad =>
           load.DelimitedLoad.load(l)
         case l : HTTPLoad =>

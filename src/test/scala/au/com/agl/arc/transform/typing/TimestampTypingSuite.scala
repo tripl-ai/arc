@@ -2,6 +2,7 @@ package au.com.agl.arc
 
 import java.sql.Timestamp
 import java.time.{LocalTime, ZoneId, ZonedDateTime, Instant}
+import java.time.format.DateTimeFormatter
 
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
@@ -21,11 +22,9 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 21, 46, 54, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=true, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
-
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=true, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     Typing.typeValue(null, col) match {
-
       case (Some(res), err) => {
         assert(res === timestampValue)
         assert(err === None)
@@ -38,8 +37,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 21, 46, 54, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=true, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
-
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=true, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     Typing.typeValue("    20-12-2017 21:46:54", col) match {
       case (Some(res), err) => {
@@ -54,8 +52,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 21, 46, 54, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=true, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
-
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=true, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     Typing.typeValue("20-12-2017 21:46:54    ", col) match {
       case (Some(res), err) => {
@@ -70,8 +67,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 21, 46, 54, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=true, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
-
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=true, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     Typing.typeValue("   20-12-2017 21:46:54    ", col) match {
       case (Some(res), err) => {
@@ -86,7 +82,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 21, 46, 54, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=true, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=true, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     Typing.typeValue(" ", col) match {
       case (Some(res), err) => {
@@ -101,7 +97,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     val value = "   20-12-2017 19:16:55"
     Typing.typeValue(value, col) match {
@@ -117,7 +113,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     val value = "20-12-2017 19:16:55     "
     Typing.typeValue(value, col) match {
@@ -133,7 +129,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     val value = "   20-12-2017 19:16:55     "
     Typing.typeValue(value, col) match {
@@ -149,7 +145,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=Some("20-12-2017 21:46:54"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     val value = " "
     Typing.typeValue(value, col) match {
@@ -166,7 +162,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=true, nullReplacementValue=Some("20-12-2017 19:16:55"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=true, nullReplacementValue=Some("20-12-2017 19:16:55"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     Typing.typeValue(null, col) match {
       case (Some(res), err) => {
@@ -181,7 +177,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=true, nullReplacementValue=Some("20-12-2017 19:16:55"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=true, nullReplacementValue=Some("20-12-2017 19:16:55"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     Typing.typeValue("", col) match {
       case (Some(res), err) => {
@@ -196,7 +192,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=true, nullReplacementValue=Some("20-12-2017 19:16:55"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=true, nullReplacementValue=Some("20-12-2017 19:16:55"), trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     Typing.typeValue("20-12-2017 19:16:55", col) match {
       case (Some(res), err) => {
@@ -211,7 +207,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     Typing.typeValue(null, col) match {
       case (res, Some(err)) => {
@@ -226,7 +222,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     Typing.typeValue("", col) match {
       case (res, Some(err)) => {
@@ -241,7 +237,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     Typing.typeValue("20-12-2017 19:16:55", col) match {
       case (Some(res), err) => {
@@ -256,7 +252,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2016, 12, 18, 17, 55, 21, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     {
       val value = "18-12-2016 17:55:21"
@@ -285,7 +281,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2016, 12, 18, 17, 55, 21, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss", "yyyy-MM-dd HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="GMT", formatters=fmt, None, metadata=None, strict=false)
 
     {
       val value = "18 December 16 17:55:21"
@@ -325,7 +321,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 21, 46, 54, 0, ZoneId.of("+1000"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="+1000", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="+1000", formatters=fmt, None, metadata=None, strict=false)
 
     val value = "20-12-2017 21:46:54"
     Typing.typeValue(value, col) match {
@@ -343,7 +339,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 10, 46, 54, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=None, nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="Australia/Sydney", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=None, nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="Australia/Sydney", formatters=fmt, None, metadata=None, strict=false)
 
     val value = "20-12-2017 21:46:54"
     Typing.typeValue(value, col) match {
@@ -361,7 +357,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("dd-MM-yyyy")
     val time = LocalTime.of(10, 45, 59, 0)
-    val col = TimestampColumn(id="1", name="timestamp", description=None, nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="Australia/Sydney", formatters=fmt, time=Option(time), metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=None, nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="Australia/Sydney", formatters=fmt, time=Option(time), metadata=None, strict=false)
 
     val value = "20-12-2017"
     Typing.typeValue(value, col) match {
@@ -378,7 +374,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       val datetimeValue = ZonedDateTime.of(2016, 12, 18, 17, 55, 21, 0, ZoneId.of("UTC"))
       val timestampValue = Timestamp.from(datetimeValue.toInstant())
       val fmt = List("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-      val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="Australia/Sydney", formatters=fmt, None, metadata=None)
+      val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="Australia/Sydney", formatters=fmt, None, metadata=None, strict=false)
 
       val value = "2016-12-19T04:55:21.000+11:00"
       Typing.typeValue(value, col) match {
@@ -394,7 +390,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
   test("Type Timestamp Column: Timestamp from Epoch") {
       val timestampValue = Timestamp.from(Instant.ofEpochSecond(1527726973))
       val fmt = List("ssssssssss")
-      val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None)
+      val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None, strict=false)
 
       val value = "1527726973"
       Typing.typeValue(value, col) match {
@@ -409,7 +405,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
   test("Type Timestamp Column: Timestamp from Invalid Epoch") {
       val timestampValue = Timestamp.from(Instant.ofEpochSecond(1527726973))
       val fmt = List("ssssssssss")
-      val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None)
+      val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None, strict=false)
 
       val value = "-1"
       Typing.typeValue(value, col) match {
@@ -423,7 +419,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
   test("Type Timestamp Column: Timestamp from EpochMillis") {
       val timestampValue = Timestamp.from(Instant.ofEpochMilli(1527726973423L))
       val fmt = List("sssssssssssss")
-      val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None)
+      val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None, strict=false)
 
       val value = "1527726973423"
       Typing.typeValue(value, col) match {
@@ -438,7 +434,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
   test("Type Timestamp Column: Timestamp from Invalid EpochMillis") {
       val timestampValue = Timestamp.from(Instant.ofEpochSecond(1527726973423L))
       val fmt = List("ssssssssss")
-      val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None)
+      val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None, strict=false)
 
       val value = "-1"
       Typing.typeValue(value, col) match {
@@ -453,7 +449,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     val datetimeValue = ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("yyyy-MM-dd'T'HH:mm:ss")
-    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None)
+    val col = TimestampColumn(id="1", name="timestamp", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None, strict=false)
 
     val value = "2017-10-01T22:30:00"
     Typing.typeValue(value, col) match {
@@ -463,5 +459,54 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }      
+  }
+
+  test("Type Timestamp Column: impossible date: strict") {
+    val fmt = List("uuuu-MM-dd HH:mm:ss")
+    val col = TimestampColumn(id="1", name="timestamp", description=None, nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None, strict=true)
+
+    // 30 February is impossible
+    val value = "2000-02-30 00:00:00"
+      Typing.typeValue(value, col) match {
+        case (None, Some(err)) => {
+          assert(err === TypingError.forCol(col, s"""Unable to convert '$value' to timestamp using formatters [${col.formatters.map(c => s"'${c}'").mkString(", ")}] and timezone '${col.timezoneId}'"""))
+        }
+        case (_,_) => assert(false)
+      }
+  }         
+
+  test("Type Timestamp Column: impossible date: not strict") {
+    val datetimeValue = ZonedDateTime.of(2000, 2, 29, 0, 0, 0, 0, ZoneId.of("UTC"))
+    val timestampValue = Timestamp.from(datetimeValue.toInstant())    
+    val fmt = List("uuuu-MM-dd HH:mm:ss")
+    val col = TimestampColumn(id="1", name="timestamp", description=None, nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None, strict=false)
+
+    // 30 February is impossible
+    val value = "2000-02-30 00:00:00"
+    Typing.typeValue(value, col) match {
+      case (Some(res), err) => {
+        assert(res === timestampValue)
+        assert(err === None)
+      }
+      case (_,_) => assert(false)
+    }
+  }   
+
+  test("Type Timestamp Column: Formatter contains YearOfEra") {
+    val pattern = "yyyy-MM-dd HH:mm:ss GG"
+    val formatter = DateTimeFormatter.ofPattern(pattern).toString
+
+    assert(formatter.contains("(YearOfEra,"))
+    assert(formatter.contains("(Era,"))
+    assert(!formatter.contains("(Year,"))
+  }    
+
+  test("Type Timestamp Column: Formatter contains Year") {
+    val pattern = "uuuu-MM-dd HH:mm:ss"
+    val formatter = DateTimeFormatter.ofPattern(pattern).toString
+
+    assert(!formatter.contains("(YearOfEra,"))
+    assert(!formatter.contains("(Era,"))
+    assert(formatter.contains("(Year,"))
+  }        
 }
