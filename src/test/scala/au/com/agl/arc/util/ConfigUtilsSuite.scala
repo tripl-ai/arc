@@ -78,7 +78,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         nullReplacementValue = None,
         trim = true,
         nullableValues = "" :: "null" :: Nil,
-        metadata = None) ::
+        metadata = None,
+        formatters = None) ::
       TimestampColumn(
         id = "d61934ed-e32e-406b-bd18-8d6b7296a8c0",
         name = "lpep_pickup_datetime",

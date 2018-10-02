@@ -78,14 +78,23 @@ object MetadataSchema {
                   val length = if (n.has("length")) Option(n.get("length").asInt) else None
                   Right(StringColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata))
                 }
-                case "integer" => Right(IntegerColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata))
-                case "long" => Right(LongColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata))
-                case "double" => Right(DoubleColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata))
+                case "integer" => {
+                  val formatters = if (n.has("formatters")) Option(asStringArray(n.get("formatters"))) else None
+                  Right(IntegerColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters))
+                }
+                case "long" => {
+                  val formatters = if (n.has("formatters")) Option(asStringArray(n.get("formatters"))) else None
+                  Right(LongColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters))
+                }
+                case "double" => {
+                  val formatters = if (n.has("formatters")) Option(asStringArray(n.get("formatters"))) else None
+                  Right(DoubleColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters))
+                }
                 case "decimal" => {
                   val precision = n.get("precision").asInt
                   val scale = n.get("scale").asInt
-                  val formatter = if (n.has("formatter")) Option(n.get("formatter").textValue) else None
-                  Right(DecimalColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, precision, scale, formatter, metadata))
+                  val formatters = if (n.has("formatters")) Option(asStringArray(n.get("formatters"))) else None
+                  Right(DecimalColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, precision, scale, metadata, formatters))
                 }
                 case "boolean" => {
                   val trueValues = asStringArray(n.get("trueValues"))
