@@ -195,27 +195,27 @@ object Typing {
 
     object NumberUtils {
 
-      private val memoizedFormatters: collection.mutable.Map[String, DecimalFormat] = {
-        val formatters = new collection.mutable.HashMap[String, DecimalFormat]()
-        formatters
-      }
+      // private val memoizedFormatters: collection.mutable.Map[String, DecimalFormat] = {
+      //   val formatters = new collection.mutable.HashMap[String, DecimalFormat]()
+      //   formatters
+      // }
 
-      private def decimalFormatter(pattern: String, bigDecimal: Boolean): DecimalFormat = {
-        val key = s"${pattern}:${bigDecimal}"
-        // get the existing formatter or add it to memory
-        memoizedFormatters.get(key).getOrElse {
-          val formatter = bigDecimal match {
-            case true => { 
-              val decimalFormat = new DecimalFormat(pattern)
-              decimalFormat.setParseBigDecimal(true)
-              decimalFormat
-            }
-            case false => new DecimalFormat(pattern)
-          }
-          memoizedFormatters.put(key, formatter)
-          formatter
-        }
-      }          
+      // private def decimalFormatter(pattern: String, bigDecimal: Boolean): DecimalFormat = {
+      //   val key = s"${pattern}:${bigDecimal}"
+      //   // get the existing formatter or add it to memory
+      //   memoizedFormatters.get(key).getOrElse {
+      //     val formatter = bigDecimal match {
+      //       case true => { 
+      //         val decimalFormat = new DecimalFormat(pattern)
+      //         decimalFormat.setParseBigDecimal(true)
+      //         decimalFormat
+      //       }
+      //       case false => new DecimalFormat(pattern)
+      //     }
+      //     memoizedFormatters.put(key, formatter)
+      //     formatter
+      //   }
+      // }          
 
       @scala.annotation.tailrec
       def parseNumber(formatters: List[String], value: String): Option[Number] = {
@@ -223,15 +223,14 @@ object Typing {
           case Nil => None
           case head :: tail =>
             try {
-              // get the formatter from memory if available
-              val formatter = decimalFormatter(head, false)       
+              val formatter = new DecimalFormat(head)
               val pos = new ParsePosition(0)
               val number = formatter.parse(value, pos)
 
               // ensure all characters from input string have been processed  
               // and no errors exist
               if (pos.getIndex != value.length || pos.getErrorIndex != -1) {
-                throw new Exception
+                throw new Exception()
               }
 
               Option(number)
@@ -250,9 +249,10 @@ object Typing {
           case head :: tail =>
             try {
               // get the formatter from memory if available
-              val formatter = decimalFormatter(head, true)
+              val formatter = new DecimalFormat(head)
+              formatter.setParseBigDecimal(true)
               val pos = new ParsePosition(0)
-              val bigDecimal = formatter.parse(value, pos).asInstanceOf[java.math.BigDecimal]
+              val number = formatter.parse(value, pos).asInstanceOf[java.math.BigDecimal]
 
               // ensure all characters from input string have been processed  
               // and no errors exist
@@ -260,7 +260,7 @@ object Typing {
                 throw new Exception
               }
 
-              Option(scala.math.BigDecimal(bigDecimal))
+              Option(scala.math.BigDecimal(number))
             } catch {
               case e: Exception =>
                 // Log Error and occurances?

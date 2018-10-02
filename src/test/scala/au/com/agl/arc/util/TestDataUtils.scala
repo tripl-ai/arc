@@ -32,7 +32,7 @@ object TestDataUtils {
         // if both are empty ignore
         if (expected.count != 0 || actual.count != 0) {
 
-            val expectedHashDF = expected.withColumn("_hashLeft", sha2(to_json(struct(actual.columns.sorted.map(col):_*)),512))
+            val expectedHashDF = expected.withColumn("_hashLeft", sha2(to_json(struct(expected.columns.sorted.map(col):_*)),512))
             val actualHashDF = actual.withColumn("_hashRight", sha2(to_json(struct(actual.columns.sorted.map(col):_*)),512))
 
             val transformedDF = expectedHashDF
@@ -48,9 +48,6 @@ object TestDataUtils {
             val actualExceptExpectedCount = actualExceptExpected.count     
 
             if (expectedExceptActualCount != 0 || actualExceptExpectedCount != 0) {
-                transformedDF.show(false)
-                expectedExceptActual.show(false)
-                actualExceptExpected.show(false)
                 println("EXPECTED")
                 println(expected.schema)
                 expected.show(false)
