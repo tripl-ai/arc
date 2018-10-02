@@ -28,6 +28,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
   val inputView = "inputView"
   val outputView = "outputView"
   val uri = s"http://localhost:9001/v1/models/simple/versions/1:predict"
+  var logger: au.com.agl.arc.util.log.logger.Logger = _
 
   before {
     implicit val spark = SparkSession
@@ -39,13 +40,14 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("ERROR")
 
     session = spark
-    import spark.implicits._
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
+
+    logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     // register udf
-    UDF.registerUDFs(spark.sqlContext)    
+    UDF.registerUDFs(spark.sqlContext)(logger)
   }
 
   after {
@@ -54,8 +56,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPTransform: Can call TensorFlowServing via REST: integer" ) {
     implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val l = logger
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
