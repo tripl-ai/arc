@@ -2,19 +2,13 @@ package au.com.agl.arc.api
 
 import java.net.URI
 import java.time.LocalTime
-import java.sql.Driver
 
 import au.com.agl.arc.plugins.PipelineStagePlugin
-import org.apache.spark.sql._
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.types.MetadataBuilder
 import org.apache.spark.sql.SaveMode
-
-import org.apache.spark.sql.streaming.OutputMode
-
-import au.com.agl.arc.util._
 
 /** The API defines the model for a pipline. It is made up of stages,
   * extract, transform and load with their respective settings.
