@@ -170,7 +170,7 @@ object JDBCLoad {
                   JdbcUtils.getSchemaOption(connection, jdbcOptions) match {
                     case Some(targetSchema) => {
                       // ensure column names, types and order on input and target align
-                      if (!inputSchema.zip(targetSchema).forall({ case (input, target) => input.name== target.name && input.dataType == target.dataType })) {
+                      if (!inputSchema.zip(targetSchema).forall({ case (input, target) => input.name == target.name && input.dataType == target.dataType })) {
                         throw new Exception(s"""Input dataset '${load.inputView}' has schema [${inputSchema.map(field => s"${field.name}: ${field.dataType.simpleString}").mkString(", ")}] which does not match target table '${tableName}' which has schema [${targetSchema.map(field => s"${field.name}: ${field.dataType.simpleString}").mkString(", ")}]. Ensure names, types and field orders align.""")
                       }                  
                     }
