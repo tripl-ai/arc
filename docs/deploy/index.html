@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.2.0</span></strong>
+          <span class="version">1.2.1</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -412,7 +412,7 @@
 <pre><code class="language-json">docker run \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&quot; \
--it -p 4040:4040 seddonm1/arc:1.1.0 \
+-it -p 4040:4040 seddonm1/arc:1.2.1 \
 bin/spark-submit \
 --master local[*] \
 --class au.com.agl.arc.ARC \
@@ -594,7 +594,7 @@ bin/spark-submit \
 --net &quot;arc-integration&quot; \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_STREAMING=true&quot; \
--it -p 4040:4040 seddonm1/arc:1.2.0 \
+-it -p 4040:4040 seddonm1/arc:1.2.1 \
 bin/spark-submit \
 --master local[*] \
 --class au.com.agl.arc.ARC \

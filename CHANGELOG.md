@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.2.1
+
+- bumped Spark version to [2.3.2](https://spark.apache.org/news/spark-2-3-2-released.html).
+
 # 1.2.0
 
 - added support for Spark [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html).
