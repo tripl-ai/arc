@@ -146,13 +146,20 @@ object ConfigUtils {
 
     etlConfString.rightFlatMap { str =>
       val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-      val config = etlConf
 
-      val pluginConfs: List[Config] = configPlugins(config).map( c => ConfigFactory.parseMap(c.values()) )
+      val pluginConfs: List[Config] = configPlugins(etlConf).map( c => ConfigFactory.parseMap(c.values()) )
 
-      val pluginConf = pluginConfs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
+      val config = etlConf.withFallback(base)
 
-      val c = config.withFallback(base).resolveWith(pluginConf).resolve()
+      val c = pluginConfs match {
+        case Nil =>
+          config.resolve()
+        case _ =>
+          val pluginConf = pluginConfs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
+          val pluginValues = pluginConf.root().unwrapped()
+          logger.info().message("Found additional config values from plugins").field("pluginConf", pluginValues).log()
+          config.resolveWith(pluginConf).resolve()
+      }
 
       readPipeline(c, uri, argsMap, env)
     }

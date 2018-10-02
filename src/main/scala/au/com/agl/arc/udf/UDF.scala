@@ -55,7 +55,15 @@ object UDF {
     val serviceLoader = ServiceLoader.load(classOf[UDFPlugin], loader)
 
     for (p <- serviceLoader.iterator().asScala) {
-      p.register(sqlContext)
+      val pluginUDFs = p.register(sqlContext)
+
+      val name = p.getClass.getName
+
+      val logData = new java.util.HashMap[String, Object]()
+      logData.put("name", name)
+      logData.put("udfs", pluginUDFs.asJava)
+
+      logger.info().message(s"Registered UDF Plugin $name").field("udfPlugin", logData).log()
     }
 
   }

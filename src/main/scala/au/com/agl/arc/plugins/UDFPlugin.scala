@@ -4,7 +4,7 @@ import org.apache.spark.sql.SQLContext
 
 trait UDFPlugin {
 
-  def register(sqlContext: SQLContext)(implicit logger: au.com.agl.arc.util.log.logger.Logger): Unit
+  def register(sqlContext: SQLContext)(implicit logger: au.com.agl.arc.util.log.logger.Logger): Seq[String]
 
 }
 
