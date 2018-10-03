@@ -20,6 +20,5 @@ object UDFPluginTest {
     StringUtils.reverse(str)
   }
 
-
 }
 
