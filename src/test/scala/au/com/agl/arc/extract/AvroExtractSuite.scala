@@ -171,7 +171,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown0.getMessage === "Extract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown0.getMessage === "AvroExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
     
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
@@ -190,7 +190,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown1.getMessage === "Extract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown1.getMessage === "AvroExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
     
     // try with column
     val extractDataset = extract.AvroExtract.extract(
