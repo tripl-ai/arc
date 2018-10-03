@@ -230,7 +230,6 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
       // invalid precision(<10) for the value that is converted to Long
       {
         val nextVal = Int.MaxValue.toLong + 1
-
         val decimalValue = Decimal(nextVal);
         val value = nextVal.toString()
 
@@ -239,11 +238,29 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === None)
             assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(9, 0) using formatters ['#,##0.###;-#,##0.###']"))
           }
-
           case (_, _) => assert(false)
         }
       }
     }
+
+    // test invalid precision value with formatter
+    {
+      val formatter = "#,##0.###;#,##0.###-"
+      val col = DecimalColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, precision = 9, scale = 0, metadata=None, formatters = Option(List(formatter)))
+
+      // invalid precision(<10) for the value that is converted to Long
+      {
+        val value = s"${Int.MaxValue.toLong + 1}-"
+
+        Typing.typeValue(value, col) match {
+          case (res, Some(err)) => {
+            assert(res === None)
+            assert(err === TypingError("name", s"Unable to convert '${value}' to decimal(9, 0) using formatters ['${formatter}']"))
+          }
+          case (_, _) => assert(false)
+        }
+      }
+    }    
 
     //test negative decimal
     {

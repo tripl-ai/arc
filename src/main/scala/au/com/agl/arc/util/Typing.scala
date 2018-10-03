@@ -278,9 +278,14 @@ object Typing {
         val formatters = col.formatters.getOrElse(List("#,##0;-#,##0"))
         
         try {
-          val number = parseNumber(formatters, value)
-          // number.intValue does not throw exception when < Int.MinValue || > Int.MaxValue
-          val v = number.map( num => num.toString.toInt )
+          val v = col.formatters match {
+            case Some(fmt) => {
+              // number.intValue does not throw exception when < Int.MinValue || > Int.MaxValue
+              val number = parseNumber(fmt, value)
+              number.map( num => num.toString.toInt )
+            } 
+            case None => Option(value.toInt)
+          }
           if(v == None)        
             throw new Exception()        
           v -> None                   
@@ -299,9 +304,14 @@ object Typing {
         val formatters = col.formatters.getOrElse(List("#,##0;-#,##0"))
 
         try {
-          val number = parseNumber(formatters, value)
-          // number.longValue does not throw exception when < Long.MinValue || >  Long.MaxValue
-          val v = number.map( num => num.toString.toLong )
+          val v = col.formatters match {
+            case Some(fmt) => {
+              // number.longValue does not throw exception when < Long.MinValue || >  Long.MaxValue
+              val number = parseNumber(fmt, value)
+              number.map( num => num.toString.toLong )
+            } 
+            case None => Option(value.toLong)
+          }
           if(v == None)        
             throw new Exception()        
           v -> None                   
@@ -320,9 +330,14 @@ object Typing {
         val formatters = col.formatters.getOrElse(List("#,##0.###;-#,##0.###"))
 
         try {
-          val number = parseNumber(formatters, value)
-          // number.doubleValue does not throw exception when < Double.MinValue || >  Double.MaxValue
-          val v = number.map( num => num.toString.toDouble )
+          val v = col.formatters match {
+            case Some(fmt) => {
+              // number.doubleValue does not throw exception when < Double.MinValue || >  Double.MaxValue
+              val number = parseNumber(fmt, value)
+              number.map( num => num.toString.toDouble )
+            } 
+            case None => Option(value.toDouble)
+          }
           if(v == None)        
             throw new Exception()        
           if (v.get.isInfinite)
@@ -340,18 +355,29 @@ object Typing {
       import NumberUtils._
 
       def typeValue(col: DecimalColumn, value: String): (Option[Decimal], Option[TypingError]) = {
-          val formatters = col.formatters.getOrElse(List("#,##0.###;-#,##0.###"))
-          
-          try {
-            val bigDecimal = parseBigDecimal(formatters, value)
-            val v = bigDecimal.map( bd => Decimal(bd, col.precision, col.scale) )
-            if(v == None)     
-              throw new Exception()        
-            v -> None                   
-          } catch {
-            case e: Exception =>
-              None -> Some(TypingError.forCol(col, s"""Unable to convert '${value}' to decimal(${col.precision}, ${col.scale}) using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
-          }
+        val formatters = col.formatters.getOrElse(List("#,##0.###;-#,##0.###"))
+        
+        try {
+          val v = col.formatters match {
+            case Some(fmt) => {
+              val number = parseBigDecimal(fmt, value)
+              number.map( num => Decimal(num, col.precision, col.scale) )
+            } 
+            case None => {
+              val number = Decimal(value)
+              if (!number.changePrecision(col.precision, col.scale)) {
+                throw new Exception()
+              }
+              Option(number)
+            }
+          }            
+          if(v == None)     
+            throw new Exception()        
+          v -> None                   
+        } catch {
+          case e: Exception =>
+            None -> Some(TypingError.forCol(col, s"""Unable to convert '${value}' to decimal(${col.precision}, ${col.scale}) using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
+        }
       }
       
     }
