@@ -25,7 +25,7 @@ SELECT
   ,NULL AS dropoff_location_id
 FROM green_tripdata0
 
-UNION
+UNION ALL
 
 -- second schema 2015-01 to 2016-06
 SELECT 
@@ -54,7 +54,7 @@ SELECT
   ,NULL AS dropoff_location_id
 FROM green_tripdata1
 
-UNION
+UNION ALL
 
 -- third schema 2016-07 +
 SELECT 

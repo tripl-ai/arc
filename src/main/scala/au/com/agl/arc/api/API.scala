@@ -255,10 +255,12 @@ object API {
   case class XMLLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "XMLLoad" }
 
 
-  sealed trait OutputModeType
-  case object OutputModeTypeAppend extends OutputModeType { override val toString = "append" }
-  case object OutputModeTypeComplete extends OutputModeType { override val toString = "complete" }
-  case object OutputModeTypeUpdate extends OutputModeType { override val toString = "update" }
+  sealed trait OutputModeType {
+    def sparkString(): String
+  }
+  case object OutputModeTypeAppend extends OutputModeType { val sparkString = "append" }
+  case object OutputModeTypeComplete extends OutputModeType { val sparkString = "complete" }
+  case object OutputModeTypeUpdate extends OutputModeType { val sparkString = "update" }
 
   sealed trait Execute extends PipelineStage
 

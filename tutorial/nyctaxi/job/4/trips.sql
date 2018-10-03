@@ -26,7 +26,7 @@ SELECT
 FROM green_tripdata0
 CROSS JOIN cab_type_id ON cab_type_id.cab_type = 'green'
 
-UNION
+UNION ALL
 
 SELECT 
   cab_type_id
@@ -56,7 +56,7 @@ SELECT
 FROM green_tripdata1
 CROSS JOIN cab_type_id ON cab_type_id.cab_type = 'green'
 
-UNION
+UNION ALL
 
 SELECT 
   cab_type_id
@@ -86,7 +86,7 @@ SELECT
 FROM green_tripdata2
 CROSS JOIN cab_type_id ON cab_type_id.cab_type = 'green'
 
-UNION
+UNION ALL
 
 SELECT 
   cab_type_id
@@ -116,7 +116,7 @@ SELECT
 FROM yellow_tripdata0_enriched
 CROSS JOIN cab_type_id ON cab_type_id.cab_type = 'yellow'
 
-UNION
+UNION ALL
 
 SELECT 
   cab_type_id
@@ -146,7 +146,7 @@ SELECT
 FROM yellow_tripdata1
 CROSS JOIN cab_type_id ON cab_type_id.cab_type = 'yellow'
 
-UNION
+UNION ALL
 
 SELECT 
   cab_type_id
@@ -176,7 +176,7 @@ SELECT
 FROM yellow_tripdata2
 CROSS JOIN cab_type_id ON cab_type_id.cab_type = 'yellow'
 
-UNION
+UNION ALL
 
 SELECT
   cab_type_id
@@ -206,7 +206,7 @@ SELECT
 FROM uber_tripdata0
 CROSS JOIN cab_type_id ON cab_type_id.cab_type = 'uber'
 
-UNION
+UNION ALL
 
 SELECT
   cab_type_id

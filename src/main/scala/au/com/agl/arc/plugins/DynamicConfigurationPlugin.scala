@@ -6,18 +6,18 @@ import scala.collection.JavaConverters._
 
 import au.com.agl.arc.util.Utils
 
-trait ConfigPlugin {
+trait DynamicConfigurationPlugin {
 
   def values()(implicit logger: au.com.agl.arc.util.log.logger.Logger): JMap[String, Object]
 
 }
 
-object ConfigPlugin {
+object DynamicConfigurationPlugin {
 
-  def pluginForName(name: String): Option[ConfigPlugin] = {
+  def pluginForName(name: String): Option[DynamicConfigurationPlugin] = {
 
     val loader = Utils.getContextOrSparkClassLoader
-    val serviceLoader = ServiceLoader.load(classOf[ConfigPlugin], loader)
+    val serviceLoader = ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader)
 
     val plugins = for (p <- serviceLoader.iterator().asScala.toList if p.getClass.getName == name) yield p
 

@@ -125,6 +125,7 @@ object JSONExtract {
 
     // if incoming dataset has 0 columns then create empty dataset with correct schema
     val emptyDataframeHandlerDF = try {
+      stageDetail.put("records", Integer.valueOf(0))
       ExtractUtils.emptyDataFrameHandler(df, optionSchema)(spark)
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {

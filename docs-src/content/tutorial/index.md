@@ -803,7 +803,7 @@ Now we have three typed and validated datasets in memory. How are they merged?
 
 ## Merging Data
 
-The real complexity with schema evolution comes with how to deal with fields which are added and removed. In the case of `green_tripdata` the main change over time is the change from giving specific pickup and dropoff co-ordinates (`pickup_longitude`, `pickup_latitude`, `dropoff_longitude`, `dropoff_latitude`) in the early datasets to only providing more generalised (and much more anonymous) `pickup_location_id` and `dropoff_location_id` geographic regions. The easiest way to deal with this is to use a `SQLTransform` and manually define the rules for each dataset before `UNION` the data together. Create a file called `tutorial/job/1/trips.sql`:
+The real complexity with schema evolution comes with how to deal with fields which are added and removed. In the case of `green_tripdata` the main change over time is the change from giving specific pickup and dropoff co-ordinates (`pickup_longitude`, `pickup_latitude`, `dropoff_longitude`, `dropoff_latitude`) in the early datasets to only providing more generalised (and much more anonymous) `pickup_location_id` and `dropoff_location_id` geographic regions. The easiest way to deal with this is to use a `SQLTransform` and manually define the rules for each dataset before `UNION ALL` the data together. Create a file called `tutorial/job/1/trips.sql`:
 
 ```sql
 -- first schema 2013-08 to 2014-12
@@ -833,7 +833,7 @@ SELECT
   ,NULL AS dropoff_location_id
 FROM green_tripdata0
 
-UNION
+UNION ALL
 
 -- second schema 2015-01 to 2016-06
 SELECT 
@@ -862,7 +862,7 @@ SELECT
   ,NULL AS dropoff_location_id
 FROM green_tripdata1
 
-UNION
+UNION ALL
 
 -- third schema 2016-07 +
 SELECT 

@@ -14,7 +14,7 @@ import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql._
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
-import au.com.agl.arc.plugins.{ConfigPlugin, PipelineStagePlugin}
+import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, PipelineStagePlugin}
 import au.com.agl.arc.util.ControlUtils._
 import au.com.agl.arc.util.EitherUtils._
 
@@ -165,11 +165,11 @@ object ConfigUtils {
     }
   }
 
-  def configPlugins(c: Config): List[ConfigPlugin] = {
+  def configPlugins(c: Config): List[DynamicConfigurationPlugin] = {
     if (c.hasPath("plugins.config")) {
       val plugins =
         (for (p <- c.getStringList("plugins.config").asScala) yield {
-          ConfigPlugin.pluginForName(p).map(_ :: Nil)
+          DynamicConfigurationPlugin.pluginForName(p).map(_ :: Nil)
         }).toList
       plugins.flatMap( p => p.getOrElse(Nil))
     } else {

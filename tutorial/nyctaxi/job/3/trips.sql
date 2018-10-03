@@ -24,7 +24,7 @@ SELECT
   ,NULL AS dropoff_location_id
 FROM green_tripdata0
 
-UNION
+UNION ALL
 
 SELECT 
   vendor_id
@@ -52,7 +52,7 @@ SELECT
   ,NULL AS dropoff_location_id
 FROM green_tripdata1
 
-UNION
+UNION ALL
 
 SELECT 
   vendor_id
@@ -80,7 +80,7 @@ SELECT
   ,dropoff_location_id
 FROM green_tripdata2
 
-UNION
+UNION ALL
 
 SELECT 
   vendor_name AS vendor_id
@@ -108,7 +108,7 @@ SELECT
   ,NULL AS dropoff_location_id
 FROM yellow_tripdata0
 
-UNION
+UNION ALL
 
 SELECT 
   vendor_id
@@ -136,7 +136,7 @@ SELECT
   ,NULL AS dropoff_location_id
 FROM yellow_tripdata1
 
-UNION
+UNION ALL
 
 SELECT 
   vendor_id
@@ -164,7 +164,7 @@ SELECT
   ,dropoff_location_id
 FROM yellow_tripdata2
 
-UNION
+UNION ALL
 
 SELECT
   base_code AS vendor_id
@@ -192,7 +192,7 @@ SELECT
   ,NULL AS dropoff_location_id  
 FROM uber_tripdata0
 
-UNION
+UNION ALL
 
 SELECT
   base_code AS vendor_id

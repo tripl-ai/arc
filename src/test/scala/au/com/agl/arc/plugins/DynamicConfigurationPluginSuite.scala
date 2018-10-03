@@ -6,7 +6,7 @@ import au.com.agl.arc.util.log.LoggerFactory
 import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
-class ConfigPluginSuite extends FunSuite with BeforeAndAfter {
+class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _
 
@@ -25,7 +25,7 @@ class ConfigPluginSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  test("Read config with custom plugin") {
+  test("Read config with dynamic configuration plugin") {
     implicit val spark = session
 
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -34,7 +34,7 @@ class ConfigPluginSuite extends FunSuite with BeforeAndAfter {
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/config_plugin.conf"), argsMap, env)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), argsMap, env)
 
     pipeline match {
       case Right(ETLPipeline(CustomStage(name, params, stage) :: Nil)) =>

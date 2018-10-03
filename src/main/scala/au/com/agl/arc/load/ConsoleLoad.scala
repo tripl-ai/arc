@@ -20,7 +20,7 @@ object ConsoleLoad {
     stageDetail.put("type", load.getType)
     stageDetail.put("name", load.name)
     stageDetail.put("inputView", load.inputView)  
-    stageDetail.put("outputMode", outputMode.toString)  
+    stageDetail.put("outputMode", outputMode.sparkString)  
 
     logger.info()
       .field("event", "enter")
@@ -37,7 +37,7 @@ object ConsoleLoad {
 
     df.writeStream
         .format("console")
-        .outputMode(outputMode.toString)
+        .outputMode(outputMode.sparkString)
         .start
 
     logger.info()

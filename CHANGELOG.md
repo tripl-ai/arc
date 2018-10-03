@@ -1,8 +1,14 @@
 ## Change Log
 
+# 1.3.0
+
+- added support for dynamic runtime configuration via `Dynamic Configuration Plugins`.
+- added support for custom stages via `Pipeline Stage Plugins`.
+- added support for Spark SQL extensions via custom `User Defined Functions` registration.
+
 # 1.2.1
 
-- bumped Spark version to [2.3.2](https://spark.apache.org/news/spark-2-3-2-released.html).
+- bump to Spark [2.3.2](https://spark.apache.org/news/spark-2-3-2-released.html).
 
 # 1.2.0
 
@@ -77,7 +83,7 @@
 
 # 1.0.1
 
-- bump to Spark 2.3.1.
+- bump to Spark [2.3.1](https://spark.apache.org/news/spark-2-3-1-released.html).
 
 # 1.0.0
 
