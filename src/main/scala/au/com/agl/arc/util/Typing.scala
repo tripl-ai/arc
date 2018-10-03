@@ -195,27 +195,8 @@ object Typing {
 
     object NumberUtils {
 
-      // private val memoizedFormatters: collection.mutable.Map[String, DecimalFormat] = {
-      //   val formatters = new collection.mutable.HashMap[String, DecimalFormat]()
-      //   formatters
-      // }
-
-      // private def decimalFormatter(pattern: String, bigDecimal: Boolean): DecimalFormat = {
-      //   val key = s"${pattern}:${bigDecimal}"
-      //   // get the existing formatter or add it to memory
-      //   memoizedFormatters.get(key).getOrElse {
-      //     val formatter = bigDecimal match {
-      //       case true => { 
-      //         val decimalFormat = new DecimalFormat(pattern)
-      //         decimalFormat.setParseBigDecimal(true)
-      //         decimalFormat
-      //       }
-      //       case false => new DecimalFormat(pattern)
-      //     }
-      //     memoizedFormatters.put(key, formatter)
-      //     formatter
-      //   }
-      // }          
+      // memoizedFormatters not used as DecimalFormat objects are not thread safe and performance
+      // cost of using them is not significant enough. Could be opportunity for optimisation if care is taken.
 
       @scala.annotation.tailrec
       def parseNumber(formatters: List[String], value: String): Option[Number] = {
