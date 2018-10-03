@@ -36,7 +36,7 @@ object JDBCLoad {
     stageDetail.put("driver", load.driver.getClass.toString)  
     stageDetail.put("tableName", load.tableName)  
     stageDetail.put("bulkload", Boolean.valueOf(load.bulkload.getOrElse(false)))
-    stageDetail.put("saveMode", saveMode.toString)
+    stageDetail.put("saveMode", saveMode.toString.toLowerCase)
     stageDetail.put("truncate", Boolean.valueOf(truncate))
 
     val df = spark.table(load.inputView)

@@ -73,7 +73,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView, 
         params=Map.empty,
-        persist=false
+        persist=true
       )
     ).get
 

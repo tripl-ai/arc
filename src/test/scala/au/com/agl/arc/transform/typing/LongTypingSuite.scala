@@ -18,7 +18,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test trimming
     {
-      val col = LongColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("9223372036854775806"), trim=true, nullableValues="" :: Nil, metadata=None)
+      val col = LongColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("9223372036854775806"), trim=true, nullableValues="" :: Nil, metadata=None, formatters = None)
 
       // value is null -> nullReplacementValue
       {
@@ -78,14 +78,14 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test not trimming
     {
-      val col = LongColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("9223372036854775806"), trim=false, nullableValues="" :: Nil, metadata=None)
+      val col = LongColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("9223372036854775806"), trim=false, nullableValues="" :: Nil, metadata=None, formatters = None)
 
       {
         val value = "   9223372036854775806"
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"Unable to convert '${value}' to long"))
+            assert(err === TypingError("name", s"Unable to convert '${value}' to long using formatters ['#,##0;-#,##0']"))
           }
           case (_,_) => assert(false)
         }
@@ -95,7 +95,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITH nullReplacementValue
     {
-      val col = LongColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("9223372036854775806"), trim=false, nullableValues="" :: Nil, metadata=None)
+      val col = LongColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("9223372036854775806"), trim=false, nullableValues="" :: Nil, metadata=None, formatters = None)
 
       // value.isNull
       {
@@ -133,7 +133,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITHOUT nullReplacementValue
     {
-      val col = LongColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, metadata=None)
+      val col = LongColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, metadata=None, formatters = None)
 
       // value.isNull
       {
@@ -172,7 +172,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test other miscellaneous input types
     {
-      val col = LongColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None)
+      val col = LongColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = None)
 
       // value contains non number/s or characters
       {
@@ -180,7 +180,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"Unable to convert '${value}' to long"))
+            assert(err === TypingError("name", s"Unable to convert '${value}' to long using formatters ['#,##0;-#,##0']"))
           }
           case (_, _) => assert(false)
         }
@@ -193,7 +193,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"Unable to convert '${value}' to long"))
+            assert(err === TypingError("name", s"Unable to convert '${value}' to long using formatters ['#,##0;-#,##0']"))
           }
           case (_, _) => assert(false)
         }
@@ -201,12 +201,12 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
 
       // value contains number beyond minimum long boundary
       {
-        val nextVal = Int.MinValue.toDouble - 1
+        val nextVal = Long.MinValue.toDouble - 1
         val value = nextVal.toString()
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"Unable to convert '${value}' to long"))
+            assert(err === TypingError("name", s"Unable to convert '${value}' to long using formatters ['#,##0;-#,##0']"))
           }
           case (_, _) => assert(false)
         }
@@ -230,11 +230,62 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"Unable to convert '${value}' to long"))
+            assert(err === TypingError("name", s"Unable to convert '${value}' to long using formatters ['#,##0;-#,##0']"))
           }
           case (_, _) => assert(false)
         }
       }
     }
+
+    //test formatter change negative suffix
+    {
+      val col = LongColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0;#,##0-")))
+
+      // value contains negative number
+      {
+        val value = "9223372036854775808-"
+        Typing.typeValue(value, col) match {
+          case (Some(res), err) => {
+            assert(res === -9223372036854775808L)
+            assert(err === None)
+          }
+          case (_, _) => assert(false)
+        }
+      }
+    }  
+
+    //test multiple formatter
+    {
+      val col = LongColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0;#,##0-", "#,##0;(#,##0)")))
+
+      // value contains negative number
+      {
+        val value = "9223372036854775808-"
+        Typing.typeValue(value, col) match {
+          case (Some(res), err) => {
+            assert(res === -9223372036854775808L)
+            assert(err === None)
+          }
+          case (_, _) => assert(false)
+        }
+      }
+    }      
+
+    //test formatter in error message
+    {
+      val col = LongColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0;#,##0-")))
+
+      // value contains negative number
+      {
+        val value = "-9223372036854775808"
+        Typing.typeValue(value, col) match {
+          case (res, Some(err)) => {
+            assert(res === None)
+            assert(err === TypingError("name", s"Unable to convert '${value}' to long using formatters ['#,##0;#,##0-']"))
+          }
+          case (_, _) => assert(false)
+        }
+      }
+    }     
   }
 }

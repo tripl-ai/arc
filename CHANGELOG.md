@@ -5,6 +5,7 @@
 - added support for dynamic runtime configuration via `Dynamic Configuration Plugins`.
 - added support for custom stages via `Pipeline Stage Plugins`.
 - added support for Spark SQL extensions via custom `User Defined Functions` registration.
+- added support for specifying custom `formatters` for `TypingTransformation` of integer, long, double and decimal types.
 
 # 1.2.1
 

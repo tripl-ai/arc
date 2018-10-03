@@ -87,7 +87,7 @@ This means that if users will be executing SQL statements which have conditional
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
-|formatters|Array[String]|true|{{< readfile file="/content/partials/fields/formatters.md" markdown="true" >}}|
+|formatters|Array[String]|true|{{< readfile file="/content/partials/fields/dateFormatters.md" markdown="true" >}}|
 
 ### Examples
 
@@ -116,6 +116,7 @@ This means that if users will be executing SQL statements which have conditional
 |-----------|------|----------|-------------|
 |precision|Integer|true|The total number of digits. e.g. 1234.567 has a precision of 7.|
 |scale|Integer|true|The number of digits in the fraction part. e.g. 1234.567 has a scale of 3.|
+|formatters|Array[String]|false|{{< readfile file="/content/partials/fields/numberFormatters.md" markdown="true" >}}<br><br>Default: `#,##0.###;-#,##0.###`|
 
 ### Examples
 
@@ -147,7 +148,9 @@ A Decimal should be used whenever precision is required or for numbers which mus
 
 ### Additional Attributes
 
-No additional attributes.
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|formatters|Array[String]|false|{{< readfile file="/content/partials/fields/numberFormatters.md" markdown="true" >}}<br><br>Default: `#,##0.###;-#,##0.###`|
 
 ### Examples
 
@@ -173,7 +176,9 @@ Use Integer when dealing with values up to ±2 billion (-2<sup>31</sup> to +2<su
 
 ### Additional Attributes
 
-No additional attributes.
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|formatters|Array[String]|false|{{< readfile file="/content/partials/fields/numberFormatters.md" markdown="true" >}}<br><br>Default: `#,##0;-#,##0`|
 
 ### Examples
 
@@ -199,7 +204,9 @@ Use a Long Integer when dealing with values greater than ±2 billion (-2<sup>63<
 
 ### Additional Attributes
 
-No additional attributes.
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|formatters|Array[String]|false|{{< readfile file="/content/partials/fields/numberFormatters.md" markdown="true" >}}<br><br>Default: `#,##0;-#,##0`|
 
 ### Examples
 
@@ -256,7 +263,7 @@ Spark does not have an internal `TimeType` representation of time. This type can
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
-|formatters|Array[String]|true|{{< readfile file="/content/partials/fields/formatters.md" markdown="true" >}}|
+|formatters|Array[String]|true|{{< readfile file="/content/partials/fields/dateFormatters.md" markdown="true" >}}|
 
 ### Examples
 
@@ -283,7 +290,7 @@ Spark does not have an internal `TimeType` representation of time. This type can
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
-|formatters|Array[String]|true|{{< readfile file="/content/partials/fields/formatters.md" markdown="true" >}}|
+|formatters|Array[String]|true|{{< readfile file="/content/partials/fields/dateFormatters.md" markdown="true" >}}|
 |timezoneId|String|true|The timezone of the incoming timestamp. This uses the [SimpleDateFormat](https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html#timezone) supported timezones. All timestamps are internally stored in [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time) to allow correctly sequenced events when dealing with events from multiple systems which may all run with different internal timezones.<br><br>Custom formats `ssssssssss` and `sssssssssssss` have been added to support epoch time (i.e. 1527727035) and epoch millis time (i.e. 1527727035456) respectively. Both require `timezoneId` of `UTC`.|
 |time|Map[String, Integer]|false|Use this capability if converting a Date label into a Timestamp for relative comparisons. Required fields are `hour`, `minute`, `second` and `nano` . These values can be agreed with source data suppliers to ensure intra-system data alignment. See below for example.|
 

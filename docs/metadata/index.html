@@ -656,6 +656,13 @@
 <td>true</td>
 <td>The number of digits in the fraction part. e.g. 1234.567 has a scale of 3.</td>
 </tr>
+
+<tr>
+<td>formatters</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0.###;-#,##0.###</code></td>
+</tr>
 </tbody>
 </table>
 
@@ -689,7 +696,25 @@
 
 <h3 id="additional-attributes-3">Additional Attributes</h3>
 
-<p>No additional attributes.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>formatters</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0.###;-#,##0.###</code></td>
+</tr>
+</tbody>
+</table>
 
 <h3 id="examples-4">Examples</h3>
 
@@ -714,7 +739,25 @@
 
 <h3 id="additional-attributes-4">Additional Attributes</h3>
 
-<p>No additional attributes.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>formatters</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0;-#,##0</code></td>
+</tr>
+</tbody>
+</table>
 
 <h3 id="examples-5">Examples</h3>
 
@@ -739,7 +782,25 @@
 
 <h3 id="additional-attributes-5">Additional Attributes</h3>
 
-<p>No additional attributes.</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>formatters</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0;-#,##0</code></td>
+</tr>
+</tbody>
+</table>
 
 <h3 id="examples-6">Examples</h3>
 

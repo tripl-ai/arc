@@ -2,6 +2,8 @@ package au.com.agl.arc.util
 
 import java.sql.Date
 import java.sql.Timestamp
+import java.text.DecimalFormat
+import java.text.ParsePosition
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.{ZoneId, ZonedDateTime}
@@ -191,60 +193,171 @@ object Typing {
 
     }
 
+    object NumberUtils {
+
+      // memoizedFormatters not used as DecimalFormat objects are not thread safe and performance
+      // cost of using them is not significant enough. Could be opportunity for optimisation if care is taken.
+
+      @scala.annotation.tailrec
+      def parseNumber(formatters: List[String], value: String): Option[Number] = {
+        formatters match {
+          case Nil => None
+          case head :: tail =>
+            try {
+              val formatter = new DecimalFormat(head)
+              val pos = new ParsePosition(0)
+              val number = formatter.parse(value, pos)
+
+              // ensure all characters from input string have been processed  
+              // and no errors exist
+              if (pos.getIndex != value.length || pos.getErrorIndex != -1) {
+                throw new Exception()
+              }
+
+              Option(number)
+            } catch {
+              case e: Exception =>
+                // Log Error and occurances?
+                parseNumber(tail, value)
+            }
+        }
+      }   
+
+      @scala.annotation.tailrec
+      def parseBigDecimal(formatters: List[String], value: String): Option[BigDecimal] = {
+        formatters match {
+          case Nil => None
+          case head :: tail =>
+            try {
+              // get the formatter from memory if available
+              val formatter = new DecimalFormat(head)
+              formatter.setParseBigDecimal(true)
+              val pos = new ParsePosition(0)
+              val number = formatter.parse(value, pos).asInstanceOf[java.math.BigDecimal]
+
+              // ensure all characters from input string have been processed  
+              // and no errors exist
+              if (pos.getIndex != value.length || pos.getErrorIndex != -1) {
+                throw new Exception
+              }
+
+              Option(scala.math.BigDecimal(number))
+            } catch {
+              case e: Exception =>
+                // Log Error and occurances?
+                parseBigDecimal(tail, value)
+            }
+        }
+      }  
+
+    }    
+
     object IntegerTypeable extends Typeable[IntegerColumn, Int] {
+      import NumberUtils._
 
       def typeValue(col: IntegerColumn, value: String): (Option[Int], Option[TypingError]) = {
-          try {
-            Option(value.toInt) -> None
-          } catch {
-            case e: Exception =>
-              None -> Some(TypingError.forCol(col, s"Unable to convert '${value}' to integer"))
+        val formatters = col.formatters.getOrElse(List("#,##0;-#,##0"))
+        
+        try {
+          val v = col.formatters match {
+            case Some(fmt) => {
+              // number.intValue does not throw exception when < Int.MinValue || > Int.MaxValue
+              val number = parseNumber(fmt, value)
+              number.map( num => num.toString.toInt )
+            } 
+            case None => Option(value.toInt)
           }
+          if(v == None)        
+            throw new Exception()        
+          v -> None                   
+        } catch {
+          case e: Exception =>
+            None -> Some(TypingError.forCol(col, s"""Unable to convert '${value}' to integer using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
+        }
       }
 
     }
 
-    object DoubleTypeable extends Typeable[DoubleColumn, Double] {
-      def typeValue(col: DoubleColumn, value: String): (Option[Double], Option[TypingError]) = {
-          try {
-              if (value.toDouble.isInfinite)
-                throw new Exception()
-              Option(value.toDouble) -> None
-          } catch {
-            case e: Exception =>
-              None -> Some(TypingError.forCol(col, s"Unable to convert '${value}' to double"))
+    object LongTypeable extends Typeable[LongColumn, Long] {
+      import NumberUtils._
+
+      def typeValue(col: LongColumn, value: String): (Option[Long], Option[TypingError]) = {
+        val formatters = col.formatters.getOrElse(List("#,##0;-#,##0"))
+
+        try {
+          val v = col.formatters match {
+            case Some(fmt) => {
+              // number.longValue does not throw exception when < Long.MinValue || >  Long.MaxValue
+              val number = parseNumber(fmt, value)
+              number.map( num => num.toString.toLong )
+            } 
+            case None => Option(value.toLong)
           }
+          if(v == None)        
+            throw new Exception()        
+          v -> None                   
+        } catch {
+          case e: Exception =>
+            None -> Some(TypingError.forCol(col, s"""Unable to convert '${value}' to long using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
+        }
+      }
+
+    }    
+
+    object DoubleTypeable extends Typeable[DoubleColumn, Double] {
+      import NumberUtils._
+
+      def typeValue(col: DoubleColumn, value: String): (Option[Double], Option[TypingError]) = {
+        val formatters = col.formatters.getOrElse(List("#,##0.###;-#,##0.###"))
+
+        try {
+          val v = col.formatters match {
+            case Some(fmt) => {
+              // number.doubleValue does not throw exception when < Double.MinValue || >  Double.MaxValue
+              val number = parseNumber(fmt, value)
+              number.map( num => num.toString.toDouble )
+            } 
+            case None => Option(value.toDouble)
+          }
+          if(v == None)        
+            throw new Exception()        
+          if (v.get.isInfinite)
+            throw new Exception()            
+          v -> None                   
+        } catch {
+          case e: Exception =>
+            None -> Some(TypingError.forCol(col, s"""Unable to convert '${value}' to double using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
+        }
       }
       
     }
 
-    object LongTypeable extends Typeable[LongColumn, Long] {
-      def typeValue(col: LongColumn, value: String): (Option[Long], Option[TypingError]) = {
-          try {
-            Option(value.toLong) -> None
-          } catch {
-            case e: Exception =>
-              None -> Some(TypingError.forCol(col, s"Unable to convert '${value}' to long"))
-          }
-      }
-    }
-
     object DecimalTypeable extends Typeable[DecimalColumn, Decimal] {
-      def typeValue(col: DecimalColumn, value: String): (Option[Decimal], Option[TypingError]) = {
-          try {
-            decimalOrError(col, value)
-          } catch {
-            case e: Exception =>
-              None -> Some(TypingError.forCol(col, s"Unable to convert '${value}' to decimal(${col.precision}, ${col.scale})"))
-          }
-      }
+      import NumberUtils._
 
-      def decimalOrError(col: DecimalColumn, value: String): TypingResult[Decimal] = {
-        val v = Decimal(value)
-        if (v.changePrecision(col.precision, col.scale)) {
-          Option(v) -> None
-        } else {
-          None -> Some(TypingError.forCol(col, s"Unable to convert '${value}' to decimal(${col.precision}, ${col.scale})"))
+      def typeValue(col: DecimalColumn, value: String): (Option[Decimal], Option[TypingError]) = {
+        val formatters = col.formatters.getOrElse(List("#,##0.###;-#,##0.###"))
+        
+        try {
+          val v = col.formatters match {
+            case Some(fmt) => {
+              val number = parseBigDecimal(fmt, value)
+              number.map( num => Decimal(num, col.precision, col.scale) )
+            } 
+            case None => {
+              val number = Decimal(value)
+              if (!number.changePrecision(col.precision, col.scale)) {
+                throw new Exception()
+              }
+              Option(number)
+            }
+          }            
+          if(v == None)     
+            throw new Exception()        
+          v -> None                   
+        } catch {
+          case e: Exception =>
+            None -> Some(TypingError.forCol(col, s"""Unable to convert '${value}' to decimal(${col.precision}, ${col.scale}) using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
         }
       }
       
