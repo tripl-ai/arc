@@ -91,6 +91,6 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
     assert(df.first.getDouble(0) > 0.0)
     assert(df.first.getDouble(0) < 1.0)
-    assert(df.schema.fields(0).dataType.toString == "ArrayType(DoubleType,false)")
+    assert(df.schema.fields(0).dataType.toString == "DoubleType")
   }       
 }
