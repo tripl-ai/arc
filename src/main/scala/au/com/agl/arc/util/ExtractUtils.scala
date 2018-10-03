@@ -30,19 +30,7 @@ object ExtractUtils {
       }
     }
   }   
-
-  def emptyDataFrameHandler(df: DataFrame, schema: Option[StructType])(implicit spark: SparkSession): DataFrame = {
-    // if incoming dataset has 0 columns then create empty dataset with correct schema
-   if (df.schema.length == 0) {
-     schema match {
-       case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
-       case None => throw new Exception(s"Extract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-     }
-    } else {
-      df
-    } 
-  }  
-
+  
   def addInternalColumns(input: DataFrame, contiguousIndex: Boolean): DataFrame = {
     if (!input.isStreaming) {
       // add meta columns including sequential index

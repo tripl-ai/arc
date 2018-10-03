@@ -85,8 +85,15 @@ object XMLExtract {
 
     // if incoming dataset has 0 columns then create empty dataset with correct schema
     val emptyDataframeHandlerDF = try {
-      stageDetail.put("records", Integer.valueOf(0))
-      ExtractUtils.emptyDataFrameHandler(df, optionSchema)(spark)
+      if (df.schema.length == 0) {
+        stageDetail.put("records", Integer.valueOf(0))
+        optionSchema match {
+          case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
+          case None => throw new Exception(s"XMLExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+        }
+      } else {
+        df
+      }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
         override val detail = stageDetail          
