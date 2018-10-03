@@ -281,17 +281,17 @@ object ConfigUtils {
 
     try {
       if (c.hasPath(path)) {
-        c.getString(path) match {
-          case "Append" => {
+        c.getString(path).toLowerCase match {
+          case "append" => {
             Right(Option(SaveMode.Append))
           } 
-          case "ErrorIfExists" => {
+          case "errorifexists" => {
             Right(Option(SaveMode.ErrorIfExists))
           }   
-          case "Ignore" => {
+          case "ignore" => {
             Right(Option(SaveMode.Ignore))
           }                    
-          case "Overwrite" => {
+          case "overwrite" => {
             Right(Option(SaveMode.Overwrite))
           }     
           case _ =>  throw new Exception(s"""Unable to parse SaveMode method: '${c.getString(path)}'. Must be one of ['Append', 'ErrorIfExists', 'Ignore', 'Overwrite'].""")

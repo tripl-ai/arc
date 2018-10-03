@@ -20,7 +20,7 @@ object ParquetLoad {
     stageDetail.put("outputURI", load.outputURI.toString)  
 
     val saveMode = load.saveMode.getOrElse(SaveMode.Overwrite)
-    stageDetail.put("saveMode", saveMode.toString)    
+    stageDetail.put("saveMode", saveMode.toString.toLowerCase)
     
     val df = spark.table(load.inputView)   
 
