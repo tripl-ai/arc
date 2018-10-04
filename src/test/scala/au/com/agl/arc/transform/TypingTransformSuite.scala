@@ -33,25 +33,24 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("FATAL")
 
     session = spark
     import spark.implicits._
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")   
 
     // recreate test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile)) 
     // Delimited does not support writing NullType
-    TestDataUtils.getKnownDataset.drop($"nullDatum").write.csv(targetFile)
+    TestDataUtils.getKnownDataset.drop($"nullDatum").write.csv(targetFile)     
   }
 
   after {
-    session.stop()
-
     // clean up test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile))     
+    session.stop() 
   }
 
   test("TypingTransform") {
@@ -73,7 +72,8 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView, 
         params=Map.empty,
-        persist=true
+        persist=false,
+        failMode=None
       )
     ).get
 
@@ -106,6 +106,42 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     assert(booleanDatumMetadata.getString("stringMeta") == "string")
     assert(booleanDatumMetadata.getStringArray("stringArrayMeta").deep == Array("string0", "string1").deep)
   }  
+
+  test("TypingTransform: failMode - failfast") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    // get a corrupt dataset dataset
+    // filter for a single row to have deterministic outcome
+    // booleanDatum deliberately broken
+    // timestamp will also fail due to format
+    val extractDataset = TestDataUtils.getKnownStringDataset.filter("booleanDatum = true").drop("nullDatum").withColumn("booleanDatum", lit("bad"))
+    extractDataset.createOrReplaceTempView(inputView)
+
+    // parse json schema to List[ExtractColumn]
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+
+    // try without providing column metadata
+    val thrown0 = intercept[Exception with DetailException] {
+      val actual = transform.TypingTransform.transform(
+        TypingTransform(
+          name="dataset",
+          cols=Right(cols.right.getOrElse(Nil)), 
+          inputView=inputView,
+          outputView=outputView, 
+          params=Map.empty,
+          persist=false,
+          failMode=Option(FailModeTypeFailFast)
+        )
+      ).get
+      actual.count
+    }
+
+    assert(thrown0.getMessage.contains("TypingTransform with failMode equal to 'failfast' cannot continue due to row with error(s): [[booleanDatum,Unable to convert 'bad' to boolean using provided true values: ['true'] or false values: ['false']], [timestampDatum,Unable to convert '2017-12-20 21:46:54' to timestamp using formatters ['yyyy-MM-dd'T'HH:mm:ss.SSSXXX'] and timezone 'UTC']]."))
+
+  }    
 
   test("TypingTransform: metadata bad array") {
     implicit val spark = session
@@ -335,7 +371,8 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView, 
         params=Map.empty,
-        persist=false
+        persist=false,
+        failMode=None
       )
     ).get
 

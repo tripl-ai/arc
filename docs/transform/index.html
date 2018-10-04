@@ -1290,6 +1290,13 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tr>
 
 <tr>
+<td>failMode</td>
+<td>String</td>
+<td>false</td>
+<td>Either <code>permissive</code> or <code>failfast</code>:<br><br><code>permissive</code> will process all rows in the dataset and collect any errors for each row in the <code>_errors</code> column. Rules can then be applied in a <a href="validate/#sqlvalidate">SQLValidate</a> stage if required.<br><br><code>failfast</code> will fail the Arc job on the first row containing at least one error.<br><br>Default: <code>permissive</code>.</td>
+</tr>
+
+<tr>
 <td>params</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -1388,7 +1395,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <h3 id="logical-flow">Logical Flow</h3>
 
-<p>The sequence that these fields are converted from <code>string</code> fields to <code>typed</code> fields is per this flow chart. Each value and its typing metadata is passed into this logical process. For each row the <code>values</code> are returned as standard table columns and the returned <code>error</code> values are groupd into a field called <code>_errors</code> on a row-by-row basis. Patterns for consuming the <code>_errors</code> array is are demonstrated in the <a href="../validate/#sqlvalidate">SQLValidate</a> stage.</p>
+<p>The sequence that these fields are converted from <code>string</code> fields to <code>typed</code> fields is per this flow chart. Each value and its typing metadata is passed into this logical process. For each row the <code>values</code> are returned as standard table columns and the returned <code>error</code> values are groupd into a field called <code>_errors</code> on a row-by-row basis. Patterns for consuming the <code>_errors</code> array is are demonstrated in the <a href="validate/#sqlvalidate">SQLValidate</a> stage.</p>
 
 <p><img src="https://aglenergy.github.io/arc/img/typing_flow.png" alt="Logical Flow for Data Typing" title="Logical Flow for Data Typing" /></p>
 

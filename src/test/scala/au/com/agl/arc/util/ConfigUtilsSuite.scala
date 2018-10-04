@@ -101,7 +101,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       inputView = "green_tripdata1_raw",
       outputView = "green_tripdata1",
       params = Map.empty,
-      persist = true
+      persist=true,
+      failMode=None
     )
 
     val subSQLValidateStage = SQLValidate(

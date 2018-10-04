@@ -71,7 +71,8 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView, 
         params=Map.empty,
-        persist=false
+        persist=false,
+        failMode=None
       )
     )
 
@@ -113,7 +114,8 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView, 
         params=Map.empty,
-        persist=false
+        persist=false,
+        failMode=None
       )
     )
 
@@ -171,7 +173,8 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView, 
         params=Map.empty,
-        persist=false
+        persist=false,
+        failMode=None
       )
     ).get
 

@@ -310,14 +310,14 @@ object ConfigUtils {
 
     try {
       if (c.hasPath(path)) {
-        c.getString(path) match {
-          case "Append" => {
+        c.getString(path).toLowerCase match {
+          case "append" => {
             Right(Option(OutputModeTypeAppend))
           } 
-          case "Complete" => {
+          case "complete" => {
             Right(Option(OutputModeTypeComplete))
           }   
-          case "Update" => {
+          case "update" => {
             Right(Option(OutputModeTypeUpdate))
           }                    
           case _ =>  throw new Exception(s"""Unable to parse outputMode: '${c.getString(path)}'. Must be one of ['Append', 'Complete', 'Update'].""")
@@ -329,6 +329,29 @@ object ConfigUtils {
       case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
     }
   }
+
+  def readFailMode(path: String)(implicit c: Config): Either[Errors, Option[FailModeType]] = {
+
+    def err(msg: String): Either[Errors, Option[FailModeType]] = Left(ConfigError(path, msg) :: Nil)
+
+    try {
+      if (c.hasPath(path)) {
+        c.getString(path).toLowerCase match {
+          case "permissive" => {
+            Right(Option(FailModeTypePermissive))
+          } 
+          case "failfast" => {
+            Right(Option(FailModeTypeFailFast))
+          }   
+          case _ =>  throw new Exception(s"""Unable to parse failMode: '${c.getString(path)}'. Must be one of ['permissive', 'failfast'].""")
+        }
+      } else {
+        Right(None)
+      }
+    } catch {
+      case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
+    }
+  }  
 
   def readResponseType(path: String)(implicit c: Config): Either[Errors, Option[ReponseType]] = {
   
@@ -1284,13 +1307,15 @@ object ConfigUtils {
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
 
-    (name, extractColumns, schemaView, inputView, outputView, persist) match {
-      case (Right(n), Right(cols), Right(sv), Right(iv), Right(ov), Right(p)) => 
+    val failMode = readFailMode("failMode")
+
+    (name, extractColumns, schemaView, inputView, outputView, persist, failMode) match {
+      case (Right(n), Right(cols), Right(sv), Right(iv), Right(ov), Right(p), Right(fm)) => 
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
-        Right(TypingTransform(n, schema, iv, ov, params, p))
+        Right(TypingTransform(n, schema, iv, ov, params, p, fm))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, parsedURI, extractColumns, schemaView, inputView, outputView, persist, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, parsedURI, extractColumns, schemaView, inputView, outputView, persist, authentication, failMode).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)

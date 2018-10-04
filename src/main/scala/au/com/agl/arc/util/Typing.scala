@@ -16,6 +16,7 @@ import org.apache.spark.rdd._
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
+import org.apache.spark.util.LongAccumulator
 
 import au.com.agl.arc.api._
 
@@ -31,7 +32,7 @@ object Typing {
     * We must use the DataFrame map and not RDD as RDD operations break the 
     * logical plan which is required for lineage.
     */
-  private def performTyping(df: DataFrame, cols: List[ExtractColumn], typedSchema: StructType)( implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Dataset[TypedRow] = {
+  private def performTyping(df: DataFrame, cols: List[ExtractColumn], typedSchema: StructType, failMode: FailModeType, valueAccumulator: LongAccumulator, errorAccumulator: LongAccumulator)( implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Dataset[TypedRow] = {
     val incomingSchema = df.schema.zipWithIndex
 
     /** Create a dynamic RowEncoder from the provided schema. We use the phantom
@@ -72,16 +73,24 @@ object Typing {
             }
         }
 
+        if (failMode == FailModeTypeFailFast && allErrors.length != 0) {
+          throw new Exception(s"""TypingTransform with failMode equal to '${failMode.sparkString}' cannot continue due to row with error(s): [${allErrors.map(_.toString).mkString(", ")}].""")
+        }        
+
         // TODO: added idx column back (if not in the extract)
         //val rowValues = allErrors :: idx :: values
         val rowValues = allErrors :: values
+
+        // record metrics
+        errorAccumulator.add(errors.length)
+        valueAccumulator.add(values.length)
 
         // cast to a TypedRow to fit the Dataset map method requirements
         Row(rowValues.reverse:_*).asInstanceOf[TypedRow]
     }
   }
 
-  def typeDataFrame(untypedDataframe: DataFrame, cols: List[ExtractColumn])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): DataFrame = {
+  def typeDataFrame(untypedDataframe: DataFrame, cols: List[ExtractColumn], failMode: FailModeType, valueAccumulator: LongAccumulator, errorAccumulator: LongAccumulator)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): DataFrame = {
     val schema = Extract.toStructType(cols)
     val internalFields = untypedDataframe.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).toList
     
@@ -90,7 +99,7 @@ object Typing {
     )
 
     // applies data types but not metadata
-    val typedDS = performTyping(untypedDataframe, cols, typedSchema)
+    val typedDS = performTyping(untypedDataframe, cols, typedSchema, failMode, valueAccumulator, errorAccumulator)
 
     // re-attach metadata to result
     var typedDF = typedDS.toDF

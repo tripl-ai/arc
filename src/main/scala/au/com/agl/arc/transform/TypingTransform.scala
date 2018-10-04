@@ -13,12 +13,15 @@ object TypingTransform {
 
   def transform(transform: TypingTransform)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
+
+    val failMode = transform.failMode.getOrElse(FailModeTypePermissive)
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
     stageDetail.put("inputView", transform.inputView)   
     stageDetail.put("outputView", transform.outputView)   
     stageDetail.put("persist", Boolean.valueOf(transform.persist))
+    stageDetail.put("failMode", failMode.sparkString)
 
     logger.info()
       .field("event", "enter")
@@ -62,12 +65,20 @@ object TypingTransform {
       }    
     }
 
+    // initialise statistics accumulators or reset if they exist
+    val valueAccumulator = spark.sparkContext.longAccumulator
+    val errorAccumulator = spark.sparkContext.longAccumulator
+
     val transformedDF = try {
-      Typing.typeDataFrame(df, cols)
+      Typing.typeDataFrame(df, cols, failMode, valueAccumulator, errorAccumulator)
     } catch {
-      case e: Exception => throw new Exception(e) with DetailException {
+      case e: Exception => 
+      
+      {
+        println(e.getMessage)
+        throw new Exception(e) with DetailException {
         override val detail = stageDetail          
-      }      
+      }}
     }  
 
     transformedDF.createOrReplaceTempView(transform.outputView)
@@ -75,6 +86,8 @@ object TypingTransform {
     if (transform.persist && !transformedDF.isStreaming) {
       transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
       stageDetail.put("records", Long.valueOf(transformedDF.count)) 
+      stageDetail.put("values", Long.valueOf(valueAccumulator.value))
+      stageDetail.put("errors", Long.valueOf(errorAccumulator.value))      
     }    
 
     logger.info()

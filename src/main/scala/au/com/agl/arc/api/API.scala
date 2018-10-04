@@ -227,7 +227,7 @@ object API {
 
   case class TensorFlowServingTransform(name: String, inputView: String, outputView: String, uri: URI, signatureName: Option[String], responseType: Option[ReponseType], batchSize: Option[Int], params: Map[String, String], persist: Boolean) extends Transform { val getType = "TensorFlowServingTransform" }
 
-  case class TypingTransform(name: String, cols: Either[String, List[ExtractColumn]], inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform with ColumnarExtract { val getType = "TypingTransform" }
+  case class TypingTransform(name: String, cols: Either[String, List[ExtractColumn]], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, failMode: Option[FailModeType]) extends Transform with ColumnarExtract { val getType = "TypingTransform" }
 
 
   sealed trait Load extends PipelineStage
@@ -253,6 +253,12 @@ object API {
   case class ParquetLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "ParquetLoad" }
 
   case class XMLLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: Option[SaveMode], params: Map[String, String]) extends Load { val getType = "XMLLoad" }
+
+  sealed trait FailModeType {
+    def sparkString(): String
+  }
+  case object FailModeTypePermissive extends FailModeType { val sparkString = "permissive" }
+  case object FailModeTypeFailFast extends FailModeType { val sparkString = "failfast" }
 
 
   sealed trait OutputModeType {
