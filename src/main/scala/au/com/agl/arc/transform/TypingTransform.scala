@@ -72,13 +72,9 @@ object TypingTransform {
     val transformedDF = try {
       Typing.typeDataFrame(df, cols, failMode, valueAccumulator, errorAccumulator)
     } catch {
-      case e: Exception => 
-      
-      {
-        println(e.getMessage)
-        throw new Exception(e) with DetailException {
+      case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          
-      }}
+      }      
     }  
 
     transformedDF.createOrReplaceTempView(transform.outputView)
