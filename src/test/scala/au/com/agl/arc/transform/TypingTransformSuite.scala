@@ -44,7 +44,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     // recreate test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile)) 
     // Delimited does not support writing NullType
-    TestDataUtils.getKnownDataset.drop($"nullDatum").write.csv(targetFile)     
+    TestDataUtils.getKnownDataset.repartition(1).drop($"nullDatum").write.csv(targetFile)     
   }
 
   after {
@@ -57,10 +57,24 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
 
     // load csv
-    val extractDataset = spark.read.csv(targetFile)
-    extractDataset.createOrReplaceTempView(inputView)
+    val extractDataset = extract.DelimitedExtract.extract(
+      DelimitedExtract(
+        name=inputView,
+        cols=Right(Nil),
+        outputView=inputView,
+        input=Right(targetFile),
+        settings=new Delimited(header=false, sep=Delimiter.Comma),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=None
+      )
+    ).get 
 
     // parse json schema to List[ExtractColumn]
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
@@ -89,7 +103,9 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
       .drop($"nullDatum")
       .withColumn("_errors", addErrors())
 
-    assert(TestDataUtils.datasetEquality(expected, actual))
+    assert(TestDataUtils.datasetEquality(expected, actual.drop("_filename").drop("_index")))
+    assert(actual.filter($"_filename".contains(targetFile)).count == 2)
+    assert(actual.filter($"_index".isNotNull).count == 2)
 
     // test metadata
     val booleanDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("booleanDatum")).metadata
