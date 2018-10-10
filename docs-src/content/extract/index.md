@@ -78,7 +78,7 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|input|URI|false|URI/Glob of the input binary files.|
+|inputURI|URI|false|URI/Glob of the input binary files.|
 |pathView|String|false|A `DataFrame` containing a list of URI/Globs to extract from.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -94,7 +94,7 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
     "type": "BytesExtract",
     "name": "load images from the customer vehicle photos directory",
     "environments": ["production", "test"],
-    "input": "hdfs://input_data/customer/vehicles/*.jpg",
+    "inputURI": "hdfs://input_data/customer/vehicles/*.jpg",
     "outputView": "customer_vehicles_photos",            
     "persist": false,
     "numPartitions": 10,
