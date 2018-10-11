@@ -185,7 +185,6 @@ This stage would typically be used with a `JSONExtract` stage by specifying `inp
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputURI|URI|true|URI of the HTTP server.|
 |inputView|String|false*|Name of the incoming Spark dataset containing the list of URIs in `value` field. If not present `inputURI` is requred.|
 |inputURI|URI|false*|URI of the HTTP server. If not present `inputView` is requred.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
