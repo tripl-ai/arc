@@ -408,4 +408,50 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
       writeStream.stop
     }
   }   
+
+  test("TypingTransform: StringType still has rules applied") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val meta = """
+    [
+      {
+        "id": "",
+        "name": "stringDatum",
+        "description": "stringDatum",
+        "type": "string",
+        "trim": true,
+        "nullable": true,
+        "nullableValues": [
+            "",
+            "null"
+        ],
+        "metadata": {}
+      }
+    ]
+    """
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+
+    val inputDataFrame = Seq((""),(" "), ("  ")).toDF("stringDatum")
+    inputDataFrame.createOrReplaceTempView(inputView)
+
+    val actual = transform.TypingTransform.transform(
+      TypingTransform(
+        name="dataset",
+        cols=Right(cols.right.getOrElse(Nil)), 
+        inputView=inputView,
+        outputView=outputView, 
+        params=Map.empty,
+        persist=false,
+        failMode=None
+      )
+    ).get
+
+    // ensure null has been set
+    val values = actual.collect
+    assert(values(0).isNullAt(0) == true)
+    assert(values(1).isNullAt(0) == true)
+    assert(values(2).isNullAt(0) == true)
+  }    
 }

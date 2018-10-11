@@ -51,7 +51,8 @@ object Typing {
           } else {
             val col = cols(fieldIdx)
             // Pass through when the incoming type matches the outgoing type
-            if (col.sparkDataType == field.dataType) {
+            // except where StringType so that rules like nullableValues can be applied consistently
+            if (col.sparkDataType == field.dataType && field.dataType != StringType) {
                 (row.get(fieldIdx) :: valuesAccum, errorsAccum)
             } else {              
               // TODO: add support for converting between types etc decimal to timestamp, date to timestamp etc

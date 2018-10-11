@@ -16,7 +16,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
   test("Type String Column") {
 
-   // Test trimming
+   // Test trimming with nullReplacementValue
     {
       val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("Maurice"), trim=true, nullableValues="" :: Nil,  metadata=None)
       
@@ -75,6 +75,31 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
         }
       }
     }    
+
+   // Test trimming without nullReplacementValue
+    {
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=None, trim=true, nullableValues="" :: "null" :: Nil,  metadata=None)
+      
+      // value.isAllowedNullValue after trim -> null
+      {
+        Typing.typeValue(" null", col) match {
+          case (res, err) => {
+            assert(res === None)
+            assert(err === None)
+          }
+        }
+      }
+
+      // value.isAllowedNullValue after trim -> null
+      {
+        Typing.typeValue(" ", col) match {
+          case (res, err) => {
+            assert(res === None)
+            assert(err === None)
+          }
+        }
+      }
+    }      
 
     // Test not trimming
     {
@@ -165,7 +190,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITHOUT nullReplacementValue
     {
-      val col = StringColumn(id="2", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, metadata=None)      
+      val col = StringColumn(id="2", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: " " :: Nil, metadata=None)      
 
       // value.isNull
       {
