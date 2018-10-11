@@ -7,6 +7,7 @@
 - added support for Spark SQL extensions via custom `User Defined Functions` registration.
 - added support for specifying custom `formatters` for `TypingTransform` of integer, long, double and decimal types.
 - added `failMode` for `TypingTransform` to allow either `permissive` or `failfast` mode.
+- added `inputView` capability to `HTTPExtract` stage.
 
 # 1.2.1
 

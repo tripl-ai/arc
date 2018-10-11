@@ -779,9 +779,13 @@ object ConfigUtils {
   def readHTTPExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val httpUriKey = "uri"
-    val inputURI = getValue[String](httpUriKey)
-    val parsedHttpURI = inputURI.rightFlatMap(uri => parseURI(httpUriKey, uri))
+    val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
+    val parsedURI = if (!c.hasPath("inputView")) {
+      input.rightFlatMap(uri => parseURI("inputURI", uri))
+    } else {
+      Right(new URI(""))
+    }
+
     val headers = readMap("headers", c)
     val validStatusCodes = if (c.hasPath("validStatusCodes")) Some(c.getIntList("validStatusCodes").asScala.map(f => f.toInt).toList) else None
 
@@ -794,11 +798,12 @@ object ConfigUtils {
     val method = readHttpMethod("method")
     val body = getOptionalValue[String]("body")
 
-    (name, parsedHttpURI, outputView, persist, numPartitions, method, body) match {
-      case (Right(n), Right(uri), Right(ov), Right(p), Right(np), Right(m), Right(b)) => 
-        Right(HTTPExtract(n, uri, m, headers, b, validStatusCodes, ov, params, p, np, partitionBy))
+    (name, input, parsedURI, outputView, persist, numPartitions, method, body) match {
+      case (Right(n), Right(in), Right(pu), Right(ov), Right(p), Right(np), Right(m), Right(b)) => 
+        val inp = if(c.hasPath("inputView")) Left(in) else Right(pu)
+        Right(HTTPExtract(n, inp, m, headers, b, validStatusCodes, ov, params, p, np, partitionBy))
       case _ =>
-        val allErrors: Errors = List(name, parsedHttpURI, outputView, persist, numPartitions, method, body).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, input, parsedURI, outputView, persist, numPartitions, method, body).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
