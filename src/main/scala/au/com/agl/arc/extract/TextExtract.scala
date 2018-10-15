@@ -64,7 +64,7 @@ object TextExtract {
             spark.read.option("wholetext", "false").textFile(extract.input).toDF
           }
         } catch {
-          case e: org.apache.hadoop.mapred.InvalidInputException => {
+          case e: org.apache.spark.sql.AnalysisException if (e.getMessage.contains("Path does not exist")) => {
             spark.emptyDataFrame
           }
           case e: Exception => throw e

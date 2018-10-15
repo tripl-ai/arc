@@ -26,6 +26,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
   val outputView = "outputView"
   val targetFile = getClass.getResource("/conf/simple.conf").toString
   val targetDirectory = s"""${getClass.getResource("/conf").toString}/*.conf"""
+  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.text" 
 
   before {
     implicit val spark = SparkSession
@@ -93,6 +94,33 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     assert(extractDataset.filter($"_filename".contains(targetFile.replace("file:", "file://"))).count != 0)
     assert(extractDataset.count == 1)
   }    
+
+  test("TextExtract: Empty Dataset") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false)
+
+    // try with wildcard
+    val thrown0 = intercept[Exception with DetailException] {
+      val extractDataset = extract.TextExtract.extract(
+        TextExtract(
+          name="dataset",
+          cols=Right(List.empty),
+          outputView=outputView, 
+          input=emptyDirectory,
+          authentication=None,
+          persist=false,
+          numPartitions=None,
+          contiguousIndex=None,
+          multiLine=Option(true),
+          params=Map.empty
+        )
+      )
+    }
+
+    assert(thrown0.getMessage === "TextExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+  }  
 
   test("TextExtract: Structured Streaming") {
     implicit val spark = session

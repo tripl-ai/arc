@@ -35,8 +35,8 @@ object SQLTransform {
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          
-      }      
-    }  
+      }
+    }
 
     transformedDF.createOrReplaceTempView(transform.outputView)
 
