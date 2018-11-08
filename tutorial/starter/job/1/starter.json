@@ -95,7 +95,7 @@
         "test"
       ],
       "inputView": "green_tripdata0_prediction",
-      "outputURI": "/tmp/prediction/green_tripdata0_prediction.parquet",
+      "outputURI": "/opt/tutorial/starter/data/output/green_tripdata0_prediction.parquet",
       "numPartitions": 4,
       "partitionBy": [],
       "authentication": {},
