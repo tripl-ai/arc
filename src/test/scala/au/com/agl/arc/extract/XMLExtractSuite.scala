@@ -45,6 +45,9 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(targetFile)) 
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory)) 
     FileUtils.forceMkdir(new java.io.File(emptyDirectory))
+
+    // force com.sun.xml.* implementation for writing xml to be compatible with spark-xml library
+    System.setProperty("javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl")    
     // XML will silently drop NullType on write
     TestDataUtils.getKnownDataset.write.option("rowTag", "testRow").format("com.databricks.spark.xml").save(targetFile)
   }

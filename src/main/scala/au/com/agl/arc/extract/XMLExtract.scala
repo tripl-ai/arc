@@ -18,6 +18,9 @@ import au.com.agl.arc.util._
 object XMLExtract {
 
   def extract(extract: XMLExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
+    // force com.sun.xml.* implementation for reading xml to be compatible with spark-xml library
+    System.setProperty("javax.xml.stream.XMLInputFactory", "com.sun.xml.internal.stream.XMLInputFactoryImpl")
+
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
