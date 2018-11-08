@@ -117,20 +117,6 @@ This is an example of a fairly standard pipeline:
       "params": {}
     },
     {
-      "type": "SQLValidate",
-      "name": "ensure no errors exist after data typing",
-      "environments": [
-        "production",
-        "test"
-      ],
-      "inputURI": "/opt/tutorial/starter/job/0/sqlvalidate_errors.sql",
-      "sqlParams": {
-        "table_name": "green_tripdata0"
-      },
-      "authentication": {},
-      "params": {}
-    },
-    {
       "type": "ParquetLoad",
       "name": "write green_tripdata records to parquet",
       "environments": [
