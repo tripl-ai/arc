@@ -177,8 +177,8 @@ docker-compose -f src/it/resources/docker-compose.yml down
 Additionally a `Dockerfile` is provided to copy these libraries into the [jupyter/all-spark-notebook](https://hub.docker.com/r/jupyter/all-spark-notebook/) so that it is easy to build jobs inside a notebook.
 
 ```bash
-docker build . -t seddonm1/all-spark-notebook-arc:latest -f JupyterDockerfile 
-docker run -p 8888:8888 seddonm1/all-spark-notebook-arc:latest
+docker build . -t jupyter/all-spark-notebook-arc:latest -f JupyterDockerfile 
+docker run -p 8888:8888 jupyter/all-spark-notebook-arc:latest
 ```
 
 ### Documentation
