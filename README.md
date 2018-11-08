@@ -74,74 +74,77 @@ This is an example of a fairly standard pipeline:
     {
       "type": "DelimitedExtract",
       "name": "extract data from green_tripdata/0",
-      "environments": ["production", "test"],
-      "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/0/*.csv",
-      "outputView": "green_tripdata0_raw",            
+      "environments": [
+        "production",
+        "test"
+      ],
+      "inputURI": "/opt/tutorial/starter/data/input/green_tripdata/0/green_tripdata_2013-08.csv",
+      "outputView": "green_tripdata0_raw",
       "persist": false,
       "delimiter": "Comma",
-      "quote" : "DoubleQuote",
+      "quote": "DoubleQuote",
       "header": true,
-      "authentication": {
-      },
-      "params": {
-      }
+      "authentication": {},
+      "params": {}
     },
     {
       "type": "TypingTransform",
       "name": "apply green_tripdata/0 data types",
-      "environments": ["production", "test"],
-      "inputURI": "/opt/tutorial/nyctaxi/meta/green_tripdata/0/green_tripdata.json",
-      "inputView": "green_tripdata0_raw",            
-      "outputView": "green_tripdata0",            
-      "persist": true,
-      "authentication": {
-      },       
-      "params": {
-      }
+      "environments": [
+        "production",
+        "test"
+      ],
+      "inputURI": "/opt/tutorial/starter/meta/green_tripdata/0/green_tripdata.json",
+      "inputView": "green_tripdata0_raw",
+      "outputView": "green_tripdata0",
+      "persist": false,
+      "authentication": {},
+      "params": {}
     },
     {
       "type": "SQLValidate",
       "name": "ensure no errors exist after data typing",
-      "environments": ["production", "test"],
-      "inputURI": "/opt/tutorial/nyctaxi/job/3/sqlvalidate_errors.sql",            
+      "environments": [
+        "production",
+        "test"
+      ],
+      "inputURI": "/opt/tutorial/starter/job/0/sqlvalidate_errors.sql",
       "sqlParams": {
-          "table_name": "green_tripdata0"
-      },              
-      "authentication": {
-      },    
-      "params": {
-      }
+        "table_name": "green_tripdata0"
+      },
+      "authentication": {},
+      "params": {}
     },
     {
-      "type": "SQLTransform",
-      "name": "merge *tripdata to create a full trips",
-      "environments": ["production", "test"],
-      "inputURI": "/opt/tutorial/nyctaxi/job/3/trips.sql",
-      "outputView": "trips",            
-      "persist": true,
-      "authentication": {
-      },    
+      "type": "SQLValidate",
+      "name": "ensure no errors exist after data typing",
+      "environments": [
+        "production",
+        "test"
+      ],
+      "inputURI": "/opt/tutorial/starter/job/0/sqlvalidate_errors.sql",
       "sqlParams": {
-        "year": "2016"
-      },   
-      "params": {
-      }
+        "table_name": "green_tripdata0"
+      },
+      "authentication": {},
+      "params": {}
     },
     {
       "type": "ParquetLoad",
-      "name": "write trips back to filesystem",
-      "environments": ["production", "test"],
-      "inputView": "trips",
-      "outputURI": ${ETL_CONF_BASE_URL}"/data/output/trips.parquet",
-      "numPartitions": 100,
-      "partitionBy": [
-          "vendor_id"
+      "name": "write green_tripdata records to parquet",
+      "environments": [
+        "production",
+        "test"
       ],
-      "authentication": {
-      },    
+      "inputView": "green_tripdata0",
+      "outputURI": "/opt/tutorial/starter/data/output/green_tripdata.parquet",
+      "numPartitions": 4,
+      "partitionBy": [],
+      "authentication": {},
+      "saveMode": "Overwrite",
       "params": {}
     }
-  ]    
+  ]
 }
 ```
 
@@ -180,6 +183,13 @@ To run integration tests:
 docker-compose -f src/it/resources/docker-compose.yml up --build -d
 sbt it:test
 docker-compose -f src/it/resources/docker-compose.yml down
+```
+
+### Jupyter Notebook
+
+```bash
+docker build . -t seddonm1/all-spark-notebook-arc:latest -f JupyterDockerfile 
+docker run -p 8888:8888 seddonm1/all-spark-notebook-arc:latest
 ```
 
 ### Documentation

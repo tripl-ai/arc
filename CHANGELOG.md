@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.3.1
+
+- added additional tutorial job at `/tutorial/starter`.
+
 # 1.3.0
 
 - added support for dynamic runtime configuration via `Dynamic Configuration Plugins`.

@@ -111,10 +111,10 @@ RUN chmod +x /opt/tutorial/nyctaxi/download_raw_data_small.sh
 RUN chmod +x /opt/tutorial/nyctaxi/download_raw_data_large.sh
 
 # copy in log4j.properties config file
-COPY log4j.properties /opt/spark/conf/log4j.properties
+COPY log4j.properties ${SPARK_HOME}/conf/log4j.properties
 
 # copy in etl library
-COPY target/scala-2.11/arc.jar /opt/spark/jars/arc.jar
+COPY target/scala-2.11/arc.jar ${SPARK_HOME}/jars/arc.jar
 
 WORKDIR $SPARK_HOME
 # EOF

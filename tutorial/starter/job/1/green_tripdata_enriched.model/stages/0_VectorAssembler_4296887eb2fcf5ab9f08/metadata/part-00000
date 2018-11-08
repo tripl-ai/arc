@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.VectorAssembler","timestamp":1541652314823,"sparkVersion":"2.3.1","uid":"VectorAssembler_4296887eb2fcf5ab9f08","paramMap":{"inputCols":["trip_distance","passenger_count","pickup_hour","pickup_dayofweek","duration","jfk"],"outputCol":"features"}}
