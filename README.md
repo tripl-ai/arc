@@ -7,6 +7,7 @@ Arc is an opinionated framework for defining data pipelines which are predictabl
 - [Why abstract from code?](#why-abstract-from-code)
 - [Why SQL first?](#why-sql-first)
 - [Example pipeline](#example-pipeline)
+- [Building](#building)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -150,7 +151,7 @@ This is an example of a fairly standard pipeline:
 
 A full worked example job is available [here](https://github.com/AGLEnergy/arc/tree/master/tutorial/gnaf/job/0). It is for the Australian Geocoded National Address File [G-NAF](https://data.gov.au/dataset/geocoded-national-address-file-g-naf) and will load the pipe-separated data, apply data types, ensure there are no errors in applying data types and write the output to Parquet. This could easily be modified to write to a JDBC target.
 
-## Compiling
+## Building
 
 ### Library
 
