@@ -68,7 +68,7 @@ This is an example of a fairly standard pipeline:
 
 5. Write out the aggreate resultset to a Parquet target.
 
-```hocon
+```json
 {
   "stages": [
     {
