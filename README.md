@@ -178,7 +178,7 @@ To run unit tests:
 sbt test
 ```
 
-To run integration tests:
+To run integration tests (which have external service depenencies):
 
 ```bash
 docker-compose -f src/it/resources/docker-compose.yml up --build -d
@@ -188,7 +188,7 @@ docker-compose -f src/it/resources/docker-compose.yml down
 
 ### Jupyter Notebook
 
-Additionally a `Dockerfile` is provided to copy these libraries into the [jupyter/all-spark-notebook](https://hub.docker.com/r/jupyter/all-spark-notebook/) so that it is easy to build jobs.
+Additionally a `Dockerfile` is provided to copy these libraries into the [jupyter/all-spark-notebook](https://hub.docker.com/r/jupyter/all-spark-notebook/) so that it is easy to build jobs inside a notebook.
 
 ```bash
 docker build . -t seddonm1/all-spark-notebook-arc:latest -f JupyterDockerfile 
