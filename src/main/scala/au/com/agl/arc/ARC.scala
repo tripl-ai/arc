@@ -230,6 +230,25 @@ object ARC {
               .log()       
             
             true
+
+          case e: Exception => 
+            val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
+            val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
+            val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
+
+            var detail = new java.util.HashMap[String, Object]()
+            detail.put("event", "exception")
+            detail.put("messages", exceptionThrowablesMessages)
+            detail.put("stackTrace", exceptionThrowablesStackTraces)
+
+            logger.error()
+              .field("event", "exit")
+              .field("status", "failure")
+              .field("duration", System.currentTimeMillis() - startTime)
+              .field("reason", detail)
+              .log()   
+              
+            true
         }
       case Left(errors) => {
         val errorMsg = ConfigUtils.Error.pipelineErrorMsg(errors)
