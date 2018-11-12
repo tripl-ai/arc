@@ -120,7 +120,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
            |    END AS error
            |  FROM ${table_name}
            |) input_table""".stripMargin,
-      sqlParams = Map("table_name" -> "green_tripdata1"),
+      sqlParams = Map("table_name" -> "green_tripdata1", "test_integer" -> "1"),
       params = Map.empty
     )
 

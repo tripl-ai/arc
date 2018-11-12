@@ -183,11 +183,9 @@ object ConfigUtils {
       (for (e <- params.asScala) yield {
         val k = e.getKey
         val v = e.getValue
-        val pv = v.unwrapped match {
-          case s:String => s
-          case _ => v.toString
-        }
-        k -> pv
+        
+        // append string value to map
+        k -> v.unwrapped.toString
       }).toMap
     } else {
       Map.empty
