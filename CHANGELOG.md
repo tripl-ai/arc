@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.4.0
+
+- bump to Spark [2.4.0](https://spark.apache.org/releases/spark-release-2-4-0.html).
+
 # 1.3.1
 
 - added additional tutorial job at `/tutorial/starter`.
@@ -15,7 +19,7 @@
 
 # 1.2.1
 
-- bump to Spark [2.3.2](https://spark.apache.org/news/spark-2-3-2-released.html).
+- bump to Spark [2.3.2](https://spark.apache.org/releases/spark-release-2-3-2.html).
 
 # 1.2.0
 
@@ -90,7 +94,7 @@
 
 # 1.0.1
 
-- bump to Spark [2.3.1](https://spark.apache.org/news/spark-2-3-1-released.html).
+- bump to Spark [2.3.1](https://spark.apache.org/releases/spark-release-2-3-1.html).
 
 # 1.0.0
 

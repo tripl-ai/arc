@@ -57,7 +57,7 @@ object AvroLoad {
         load.partitionBy match {
           case Nil =>
             val dfToWrite = load.numPartitions.map(nonNullDF.repartition(_)).getOrElse(nonNullDF)
-            dfToWrite.write.mode(saveMode).format("com.databricks.spark.avro").save(load.outputURI.toString)
+            dfToWrite.write.mode(saveMode).format("avro").save(load.outputURI.toString)
             dfToWrite
           case partitionBy => {
             // create a column array for repartitioning
@@ -65,11 +65,11 @@ object AvroLoad {
             load.numPartitions match {
               case Some(n) =>
                 val dfToWrite = nonNullDF.repartition(n, partitionCols:_*)
-                dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).format("com.databricks.spark.avro").save(load.outputURI.toString)
+                dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).format("avro").save(load.outputURI.toString)
                 dfToWrite
               case None =>
                 val dfToWrite = nonNullDF.repartition(partitionCols:_*)
-                dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).format("com.databricks.spark.avro").save(load.outputURI.toString)
+                dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).format("avro").save(load.outputURI.toString)
                 dfToWrite
             }
           }

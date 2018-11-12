@@ -76,7 +76,7 @@ object JDBCLoad {
     connectionProperties.put("dbtable", tableName)    
 
     // build spark JDBCOptions object so we can utilise their inbuilt dialect support
-    val jdbcOptions = new JDBCOptions(Map("url"-> load.jdbcURL, "dbtable" -> tableName, "user" -> load.params.get("user").getOrElse(""), "password" -> load.params.get("password").getOrElse(""), "databaseName" -> databaseName))
+    val jdbcOptions = new JdbcOptionsInWrite(Map("url"-> load.jdbcURL, "dbtable" -> tableName, "user" -> load.params.get("user").getOrElse(""), "password" -> load.params.get("password").getOrElse(""), "databaseName" -> databaseName))
 
     // execute a count query on target db to get intial count
     val targetPreCount = try {

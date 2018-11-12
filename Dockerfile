@@ -25,8 +25,7 @@ RUN { \
 ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
 ENV PATH $PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin
 
-ENV JAVA_VERSION 8u171
-ENV JAVA_ALPINE_VERSION 8.171.11-r0
+ENV JAVA_ALPINE_VERSION 8.181.13-r0
 
 RUN set -x \
     && apk add --no-cache \
@@ -36,7 +35,7 @@ RUN set -x \
 
 
 # Spark Verison
-ENV SPARK_VERSION         2.3.2
+ENV SPARK_VERSION         2.4.0
 ENV HADOOP_VERSION        2.7
 ENV SPARK_HOME            /opt/spark
 ENV SPARK_JARS            /opt/spark/jars/
@@ -65,7 +64,7 @@ RUN set -ex && \
 
 # spark extensions
 RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/spark-xml_2.11/0.4.1/spark-xml_2.11-0.4.1.jar && \    
-    wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/spark-avro_2.11/4.0.0/spark-avro_2.11-4.0.0.jar && \   
+    wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/spark/spark-avro_2.11/2.4.0/spark-avro_2.11-2.4.0.jar && \
     wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/spark-redshift_2.11/3.0.0-preview1/spark-redshift_2.11-3.0.0-preview1.jar && \  
     # aws hadoop
     wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-aws/2.7.4/hadoop-aws-2.7.4.jar && \

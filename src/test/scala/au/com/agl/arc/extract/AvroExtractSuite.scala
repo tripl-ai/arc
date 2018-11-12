@@ -83,9 +83,6 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
 
     val expected = TestDataUtils.getKnownDataset
       .drop($"nullDatum")
-      .withColumn("dateDatum", unix_timestamp($"dateDatum")*1000)
-      .withColumn("timestampDatum", unix_timestamp($"timestampDatum")*1000)
-      .withColumn("decimalDatum", $"decimalDatum".cast("string"))
     val actual = extractDataset.drop(internal:_*)
 
     assert(TestDataUtils.datasetEquality(expected, actual))

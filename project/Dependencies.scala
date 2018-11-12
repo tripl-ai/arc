@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   // Versions
-  lazy val sparkVersion = "2.3.2"
+  lazy val sparkVersion = "2.4.0"
   lazy val scalaTestVersion = "3.0.1"
 
   // Testing
@@ -19,7 +19,7 @@ object Dependencies {
   val sparkXML = "com.databricks" %% "spark-xml" % "0.4.1" % "provided"
 
   // Spark AVRO
-  val sparkAvro = "com.databricks" %% "spark-avro" % "4.0.0" % "provided"
+  val sparkAvro = "org.apache.spark" %% "spark-avro" % "2.4.0" % "provided"
 
   // Amazon S3
   val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % "2.7.3" % "provided"
@@ -55,7 +55,7 @@ object Dependencies {
   val scala_graph_json = "org.scala-graph" %% "graph-json" % "1.11.0"
 
   // hikari connection pool
-  val hikaricp = "com.zaxxer" % "HikariCP" % "3.2.0"
+  // val hikaricp = "com.zaxxer" % "HikariCP" % "3.2.0"
 
   // Project
   val etlDeps = Seq(
@@ -93,10 +93,10 @@ object Dependencies {
 
     // Azure EventHubs
     azureEventHub,
-    qpid,
+    qpid
 
     // hikari connection pool
-    hikaricp
+    // hikaricp
 
     // gcsConnector
   )

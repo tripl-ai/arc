@@ -69,9 +69,6 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
     // avro will convert date and times to epoch milliseconds
     val expected = dataset
       .drop($"nullDatum")
-      .withColumn("dateDatum", unix_timestamp($"dateDatum")*1000)
-      .withColumn("timestampDatum", unix_timestamp($"timestampDatum")*1000)
-      .withColumn("decimalDatum", $"decimalDatum".cast("string"))
     val actual = spark.read.format("com.databricks.spark.avro").load(targetFile)
 
     assert(TestDataUtils.datasetEquality(expected, actual))
