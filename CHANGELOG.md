@@ -3,6 +3,7 @@
 # 1.4.0
 
 - bump to Spark [2.4.0](https://spark.apache.org/releases/spark-release-2-4-0.html).
+- bump to OpenJDK 8.181.13-r0 in `Dockerfile`.
 
 # 1.3.1
 
