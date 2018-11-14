@@ -34,12 +34,11 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-    val env = "test"
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/simple.conf"), argsMap, env)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/simple.conf"), argsMap, arcContext)
 
     val stage = DelimitedExtract(
       name = "file extract",

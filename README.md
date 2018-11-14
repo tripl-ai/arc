@@ -172,15 +172,6 @@ sbt it:test
 docker-compose -f src/it/resources/docker-compose.yml down
 ```
 
-### Jupyter Notebook
-
-Additionally a `Dockerfile` is provided to copy these libraries into the [jupyter/all-spark-notebook](https://hub.docker.com/r/jupyter/all-spark-notebook/) so that it is easy to build jobs inside a notebook.
-
-```bash
-docker build . -t jupyter/all-spark-notebook-arc:latest -f JupyterDockerfile 
-docker run -p 8888:8888 jupyter/all-spark-notebook-arc:latest
-```
-
 ### Documentation
 
 To generate the documentation you need to download [Hugo](https://gohugo.io/) to `/docs-src` and run `./hugo` in that  directory. The `/docs` directory is the output of the docuementation generation and should not be edited by hand. The `/docs` directory is automatically published by the Github Pages process on commit.

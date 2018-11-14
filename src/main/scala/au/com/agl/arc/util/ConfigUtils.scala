@@ -24,14 +24,14 @@ object ConfigUtils {
       params.filter{ case (k,v) => options.contains(k) }
   }
 
-  def parsePipeline(configUri: Option[String], argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
+  def parsePipeline(configUri: Option[String], argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
     configUri match {
-      case Some(uri) => parseConfig(new URI(uri), argsMap, env)
+      case Some(uri) => parseConfig(new URI(uri), argsMap, arcContext)
       case None => Left(ConfigError("file", s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
      }
   }
 
-  def getConfigString(uri: URI, argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], String] = {
+  def getConfigString(uri: URI, argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], String] = {
     uri.getScheme match {
       case "local" => {
         val filePath = SparkFiles.get(uri.getPath)
@@ -139,10 +139,10 @@ object ConfigUtils {
     }
   }
 
-  def parseConfig(uri: URI, argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
+  def parseConfig(uri: URI, argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
     val base = ConfigFactory.load()
 
-    val etlConfString = getConfigString(uri, argsMap, env)
+    val etlConfString = getConfigString(uri, argsMap, arcContext)
 
     etlConfString.rightFlatMap { str =>
       val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
@@ -161,7 +161,7 @@ object ConfigUtils {
           config.resolveWith(pluginConf).resolve()
       }
 
-      readPipeline(c, uri, argsMap, env)
+      readPipeline(c, uri, argsMap, arcContext)
     }
   }
 
@@ -1683,7 +1683,7 @@ object ConfigUtils {
     }
   }    
 
-  def readPipelineExecute(name: StringConfigValue, params: Map[String, String], argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
+  def readPipelineExecute(name: StringConfigValue, params: Map[String, String], argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
     val uri = getValue[String]("uri")
@@ -1691,7 +1691,7 @@ object ConfigUtils {
     (name, uri) match {
       case (Right(n), Right(u)) => 
         val uri = new URI(u)
-        val subPipeline = parseConfig(uri, argsMap, env)
+        val subPipeline = parseConfig(uri, argsMap, arcContext)
         subPipeline match {
           case Right(etl) => Right(PipelineExecute(n, uri, etl))
           case Left(errors) => {
@@ -1775,7 +1775,7 @@ object ConfigUtils {
     }
   }
 
-  def readPipeline(c: Config, uri: URI, argsMap: collection.mutable.Map[String, String], env: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
+  def readPipeline(c: Config, uri: URI, argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
     import ConfigReader._
 
     val startTime = System.currentTimeMillis() 
@@ -1810,14 +1810,14 @@ object ConfigUtils {
         }
 
         // skip stage if not in environment
-        if (!depricationEnvironments.contains(env)) {
+        if (!arcContext.ignoreEnvironments && !depricationEnvironments.contains(arcContext.environment)) {
             logger.info()
               .field("event", "validateConfig")
               .field("name", name.right.getOrElse("unnamed stage"))
               .field("type", _type.right.getOrElse("unknown"))              
               .field("message", "skipping stage due to environment configuration")       
               .field("skipStage", true)
-              .field("environment", env)               
+              .field("environment", arcContext.environment)               
               .list("environments", depricationEnvironments.asJava)               
               .log()    
           
@@ -1828,7 +1828,7 @@ object ConfigUtils {
               .field("name", name.right.getOrElse("unnamed stage"))
               .field("type", _type.right.getOrElse("unknown"))              
               .field("skipStage", false)
-              .field("environment", env)               
+              .field("environment", arcContext.environment)               
               .list("environments", depricationEnvironments.asJava)               
               .log()   
 
@@ -1871,7 +1871,7 @@ object ConfigUtils {
             case Right("HTTPExecute") => Option(readHTTPExecute(name, params))
             case Right("JDBCExecute") => Option(readJDBCExecute(name, params))
             case Right("KafkaCommitExecute") => Option(readKafkaCommitExecute(name, params))
-            case Right("PipelineExecute") => Option(readPipelineExecute(name, params, argsMap, env))
+            case Right("PipelineExecute") => Option(readPipelineExecute(name, params, argsMap, arcContext))
 
             case Right("EqualityValidate") => Option(readEqualityValidate(name, params))
             case Right("SQLValidate") => Option(readSQLValidate(name, params))

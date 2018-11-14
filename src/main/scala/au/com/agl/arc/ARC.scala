@@ -52,11 +52,23 @@ object ARC {
 
     val streaming: Option[String] = argsMap.get("etl.config.streaming").orElse(envOrNone("ETL_CONF_STREAMING"))
     val isStreaming = streaming match {
-      case Some(v) if v.toLowerCase == "true" => true
-      case Some(v) if v.toLowerCase == "false" => false
+      case Some(v) if v.trim.toLowerCase == "true" => true
+      case Some(v) if v.trim.toLowerCase == "false" => false
       case _ => false
     }
     MDC.put("streaming", isStreaming.toString) 
+
+    val ignoreEnv: Option[String] = argsMap.get("etl.config.ignoreEnvironments").orElse(envOrNone("ETL_CONF_IGNORE_ENVIRONMENTS"))
+    val ignoreEnvironments = ignoreEnv match {
+      case Some(v) if v.trim.toLowerCase == "true" => true
+      case Some(v) if v.trim.toLowerCase == "false" => false
+      case _ => false
+    }
+    MDC.put("ignoreEnvironments", ignoreEnvironments.toString)     
+
+    val configUri: Option[String] = argsMap.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))    
+
+
 
     val spark: SparkSession = try {
       SparkSession
@@ -127,6 +139,8 @@ object ARC {
 
     MDC.put("applicationId", spark.sparkContext.applicationId) 
 
+    val arcContext = ARCContext(jobId, jobName, env, envId, configUri, isStreaming, ignoreEnvironments)    
+
     logger.info()
       .field("event", "enter")
       .field("config", sparkConf)
@@ -169,11 +183,9 @@ object ARC {
         sys.exit(1)    
     }
 
-    val configUri: Option[String] = argsMap.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))    
-
     // try to parse config
     val pipelineConfig = try {
-      ConfigUtils.parsePipeline(configUri, argsMap, env)(spark, logger)
+      ConfigUtils.parsePipeline(configUri, argsMap, arcContext)(spark, logger)
     } catch {
       case e: Exception => 
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
@@ -203,8 +215,6 @@ object ARC {
         spark.stop()
         sys.exit(1)
     }
-
-    val arcContext = ARCContext(jobId, jobName, env, envId, configUri, isStreaming)
 
     val error: Boolean = pipelineConfig match {
       case Right(pipeline) =>
@@ -321,91 +331,6 @@ object ARC {
       }
     }
 
-    def processStage(stage: PipelineStage): Option[DataFrame] = {
-      stage match {
-        case e : AvroExtract =>
-          extract.AvroExtract.extract(e)  
-        case e : BytesExtract =>
-          extract.BytesExtract.extract(e)                  
-        case e : DelimitedExtract =>
-          extract.DelimitedExtract.extract(e)
-        case e : HTTPExtract =>
-          extract.HTTPExtract.extract(e)              
-        case e : JDBCExtract =>
-          extract.JDBCExtract.extract(e)             
-        case e : JSONExtract =>
-          extract.JSONExtract.extract(e)
-        case e : KafkaExtract =>
-          extract.KafkaExtract.extract(e)                             
-        case e : ORCExtract =>
-          extract.ORCExtract.extract(e)              
-        case e : ParquetExtract =>
-          extract.ParquetExtract.extract(e)
-        case e : RateExtract =>
-          extract.RateExtract.extract(e)             
-        case e : TextExtract =>
-          extract.TextExtract.extract(e)          
-        case e : XMLExtract =>
-          extract.XMLExtract.extract(e)
-
-        case t : DiffTransform =>
-          transform.DiffTransform.transform(t)
-        case t : HTTPTransform =>
-          transform.HTTPTransform.transform(t)          
-        case t : JSONTransform =>
-          transform.JSONTransform.transform(t)
-        case t : MetadataFilterTransform =>
-          transform.MetadataFilterTransform.transform(t)                 
-        case t : MLTransform =>
-          transform.MLTransform.transform(t)          
-        case t : SQLTransform =>
-          transform.SQLTransform.transform(t)      
-        case t : TensorFlowServingTransform =>
-          transform.TensorFlowServingTransform.transform(t)              
-        case t : TypingTransform =>
-          transform.TypingTransform.transform(t)
-
-        case l : AvroLoad =>
-          load.AvroLoad.load(l)
-        case l : AzureEventHubsLoad =>
-          load.AzureEventHubsLoad.load(l)          
-        case l : ConsoleLoad =>
-          load.ConsoleLoad.load(l)          
-        case l : DelimitedLoad =>
-          load.DelimitedLoad.load(l)
-        case l : HTTPLoad =>
-          load.HTTPLoad.load(l)             
-        case l : JDBCLoad =>
-          load.JDBCLoad.load(l)          
-        case l : JSONLoad =>
-          load.JSONLoad.load(l)
-        case l : KafkaLoad =>
-          load.KafkaLoad.load(l)                              
-        case l : ORCLoad =>
-          load.ORCLoad.load(l)             
-        case l : ParquetLoad =>
-          load.ParquetLoad.load(l)   
-        case l : XMLLoad =>
-          load.XMLLoad.load(l)            
-
-        case x : HTTPExecute =>
-          execute.HTTPExecute.execute(x)  
-        case x : JDBCExecute =>
-          execute.JDBCExecute.execute(x)
-        case x : KafkaCommitExecute =>
-          execute.KafkaCommitExecute.execute(x)
-        case _ : PipelineExecute => None // skip as placeholder for other pipeline stages
-
-        case v : EqualityValidate =>
-          validate.EqualityValidate.validate(v)           
-        case v : SQLValidate =>
-          validate.SQLValidate.validate(v)
-
-        case c : CustomStage =>
-          c.stage.execute(c.name, c.params)
-      }
-    }
-
     @tailrec
     def runStages(stages: List[PipelineStage]) {
       stages match {
@@ -424,4 +349,89 @@ object ARC {
 
     runStages(pipeline.stages)
   }
+
+  def processStage(stage: PipelineStage)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    stage match {
+      case e : AvroExtract =>
+        extract.AvroExtract.extract(e)  
+      case e : BytesExtract =>
+        extract.BytesExtract.extract(e)                  
+      case e : DelimitedExtract =>
+        extract.DelimitedExtract.extract(e)
+      case e : HTTPExtract =>
+        extract.HTTPExtract.extract(e)              
+      case e : JDBCExtract =>
+        extract.JDBCExtract.extract(e)             
+      case e : JSONExtract =>
+        extract.JSONExtract.extract(e)
+      case e : KafkaExtract =>
+        extract.KafkaExtract.extract(e)                             
+      case e : ORCExtract =>
+        extract.ORCExtract.extract(e)              
+      case e : ParquetExtract =>
+        extract.ParquetExtract.extract(e)
+      case e : RateExtract =>
+        extract.RateExtract.extract(e)             
+      case e : TextExtract =>
+        extract.TextExtract.extract(e)          
+      case e : XMLExtract =>
+        extract.XMLExtract.extract(e)
+
+      case t : DiffTransform =>
+        transform.DiffTransform.transform(t)
+      case t : HTTPTransform =>
+        transform.HTTPTransform.transform(t)          
+      case t : JSONTransform =>
+        transform.JSONTransform.transform(t)
+      case t : MetadataFilterTransform =>
+        transform.MetadataFilterTransform.transform(t)                 
+      case t : MLTransform =>
+        transform.MLTransform.transform(t)          
+      case t : SQLTransform =>
+        transform.SQLTransform.transform(t)      
+      case t : TensorFlowServingTransform =>
+        transform.TensorFlowServingTransform.transform(t)              
+      case t : TypingTransform =>
+        transform.TypingTransform.transform(t)
+
+      case l : AvroLoad =>
+        load.AvroLoad.load(l)
+      case l : AzureEventHubsLoad =>
+        load.AzureEventHubsLoad.load(l)          
+      case l : ConsoleLoad =>
+        load.ConsoleLoad.load(l)          
+      case l : DelimitedLoad =>
+        load.DelimitedLoad.load(l)
+      case l : HTTPLoad =>
+        load.HTTPLoad.load(l)             
+      case l : JDBCLoad =>
+        load.JDBCLoad.load(l)          
+      case l : JSONLoad =>
+        load.JSONLoad.load(l)
+      case l : KafkaLoad =>
+        load.KafkaLoad.load(l)                              
+      case l : ORCLoad =>
+        load.ORCLoad.load(l)             
+      case l : ParquetLoad =>
+        load.ParquetLoad.load(l)   
+      case l : XMLLoad =>
+        load.XMLLoad.load(l)            
+
+      case x : HTTPExecute =>
+        execute.HTTPExecute.execute(x)  
+      case x : JDBCExecute =>
+        execute.JDBCExecute.execute(x)
+      case x : KafkaCommitExecute =>
+        execute.KafkaCommitExecute.execute(x)
+      case _ : PipelineExecute => None // skip as placeholder for other pipeline stages
+
+      case v : EqualityValidate =>
+        validate.EqualityValidate.validate(v)           
+      case v : SQLValidate =>
+        validate.SQLValidate.validate(v)
+
+      case c : CustomStage =>
+        c.stage.execute(c.name, c.params)
+    }
+  }  
 }

@@ -40,7 +40,11 @@ object API {
 
     /** whether the job is in structured streaming or batch mode
       */    
-    isStreaming: Boolean
+    isStreaming: Boolean,
+
+    /** whether to ignore environments and process everything
+      */    
+    ignoreEnvironments: Boolean    
 
   )
 

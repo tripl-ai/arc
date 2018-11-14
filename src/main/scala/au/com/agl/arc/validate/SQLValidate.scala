@@ -97,7 +97,7 @@ object SQLValidate {
       .map("stage", stageDetail)
       .log()
 
-    None
+    Option(df)
   }
 }
 
