@@ -79,7 +79,8 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         responseType=Option(IntegerResponse),
         batchSize=Option(10),
         params=Map.empty,
-        persist=false
+        persist=false,
+        inputField=None
       )
     ).get
 
@@ -112,7 +113,8 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         responseType=Option(DoubleResponse),
         batchSize=Option(10),
         params=Map.empty,
-        persist=false
+        persist=false,
+        inputField=None
       )
     ).get
 
@@ -145,12 +147,46 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         responseType=Option(StringResponse),
         batchSize=Option(10),
         params=Map.empty,
-        persist=false
+        persist=false,
+        inputField=None
       )
     ).get
 
     assert(transformDataset.first.getString(2) == "11")
   } 
+
+  test("HTTPTransform: Can call TensorFlowServing via REST: inputField" ) {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val df = spark.range(1, 10).toDF
+    df.createOrReplaceTempView(inputView)
+
+    var payloadDataset = spark.sql(s"""
+    SELECT 
+      id
+    FROM ${inputView}
+    """).repartition(1)
+    payloadDataset.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.TensorFlowServingTransform.transform(
+      TensorFlowServingTransform(
+        name=outputView,
+        uri=new URI(uri),
+        inputView=inputView,
+        outputView=outputView,
+        signatureName=None,
+        responseType=Option(IntegerResponse),
+        batchSize=Option(10),
+        params=Map.empty,
+        persist=false,
+        inputField=Option("id")
+      )
+    ).get
+
+    assert(transformDataset.first.getInt(1) == 11)
+  }     
 
   test("HTTPTransform: Can call TensorFlowServing via Structured Streaming" ) {
     implicit val spark = session
@@ -175,7 +211,8 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         responseType=Option(IntegerResponse),
         batchSize=Option(10),
         params=Map.empty,
-        persist=false
+        persist=false,
+        inputField=None
       )
     ).get
 

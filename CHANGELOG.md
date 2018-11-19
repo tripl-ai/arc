@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.4.1
+
+- added `inputField` to both `TensorFlowServingTransform` and `HTTPTransform` to allow overriding default field `value`.
+
 # 1.4.0
 
 - bump to Spark [2.4.0](https://spark.apache.org/releases/spark-release-2-4-0.html).

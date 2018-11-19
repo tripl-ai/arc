@@ -34,10 +34,12 @@ object TensorFlowServingTransform {
     val stageDetail = new java.util.HashMap[String, Object]()
 
     val batchSize = transform.batchSize.getOrElse(1)
+    val inputField = transform.inputField.getOrElse("value")
 
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
     stageDetail.put("inputView", transform.inputView)  
+    stageDetail.put("inputField", inputField)  
     stageDetail.put("outputView", transform.outputView)  
     stageDetail.put("uri", transform.uri.toString)
     stageDetail.put("batchSize", Integer.valueOf(batchSize))
@@ -75,7 +77,7 @@ object TensorFlowServingTransform {
       // get type and index so it doesnt have to be resolved for each row
       val bufferedPartition = partition.buffered
       val fieldIndex = bufferedPartition.hasNext match {
-        case true => bufferedPartition.head.fieldIndex("value")
+        case true => bufferedPartition.head.fieldIndex(inputField)
         case false => 0
       }
       val dataType = bufferedPartition.hasNext match {

@@ -120,7 +120,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         params=Map.empty,
-        persist=false
+        persist=false,
+        inputField=None
       )
     ).get
 
@@ -133,6 +134,42 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val timestampDatumMetadata = transformDataset.schema.fields(transformDataset.schema.fieldIndex("timestampDatum")).metadata    
     assert(timestampDatumMetadata.getLong("securityLevel") == 7)      
   }  
+
+  test("HTTPTransform: Can echo post data: inputField") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(inputView)
+    var payloadDataset = spark.sql(s"""
+      SELECT *, TO_JSON(NAMED_STRUCT('dateDatum', dateDatum)) AS inputField FROM ${inputView}
+    """)
+    val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
+    inputDataset.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.HTTPTransform.transform(
+      HTTPTransform(
+        name=outputView,
+        uri=new URI(s"${uri}/${echo}/"),
+        headers=Map.empty,
+        validStatusCodes=None,
+        inputView=inputView,
+        outputView=outputView,
+        params=Map.empty,
+        persist=false,
+        inputField=Option("inputField")
+      )
+    ).get
+
+    val expected = transformDataset.select(col("inputField")).withColumnRenamed("inputField", "value")
+    val actual = transformDataset.select(col("body")).withColumnRenamed("body", "value")
+
+    assert(TestDataUtils.datasetEquality(expected, actual))
+  }    
 
   test("HTTPTransform: Can handle empty response") {
     implicit val spark = session
@@ -152,7 +189,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         params=Map.empty,
-        persist=false
+        persist=false,
+        inputField=None
       )
     ).get
 
@@ -178,7 +216,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           inputView=inputView,
           outputView=outputView,
           params=Map.empty,
-          persist=false
+          persist=false,
+          inputField=None
         )
       ).get
     }
@@ -204,7 +243,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           inputView=inputView,
           outputView=outputView,
           params=Map.empty,
-          persist=false
+          persist=false,
+          inputField=None
         )
       ).get
     }
@@ -237,7 +277,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         params=Map.empty,
-        persist=false
+        persist=false,
+        inputField=None
       )
     ).get
 
@@ -273,7 +314,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           inputView=inputView,
           outputView=outputView,
           params=Map.empty,
-          persist=false
+          persist=false,
+          inputField=None
         )
       ).get
     }
@@ -306,12 +348,49 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           inputView=inputView,
           outputView=outputView,
           params=Map.empty,
-          persist=false
+          persist=false,
+          inputField=None
         )
       ).get
     }
     assert(thrown0.getMessage === "HTTPTransform requires a field named 'value' of type 'string' or 'binary'. 'value' is of type: 'date'.")
   }    
+
+  test("HTTPTransform: Wrong type of 'value' column: inputField") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(inputView)
+    var payloadDataset = spark.sql(s"""
+      SELECT * FROM ${inputView}
+    """)
+    val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
+    inputDataset.createOrReplaceTempView(inputView)
+
+    val inputField="stringDatumX"
+
+    val thrown0 = intercept[Exception with DetailException] {
+      val transformDataset = transform.HTTPTransform.transform(
+        HTTPTransform(
+          name=outputView,
+          uri=new URI(s"${uri}/${echo}/"),
+          headers=Map.empty,
+          validStatusCodes=None,
+          inputView=inputView,
+          outputView=outputView,
+          params=Map.empty,
+          persist=false,
+          inputField=Option(inputField)
+        )
+      ).get
+    }
+    assert(thrown0.getMessage === s"HTTPTransform requires a field named '${inputField}' of type 'string' or 'binary'. inputView has: [booleanDatum, dateDatum, decimalDatum, doubleDatum, integerDatum, longDatum, stringDatum, timeDatum, timestampDatum, nullDatum].")
+  }        
 
   test("HTTPTransform: Structured Streaming") {
     implicit val spark = session
@@ -343,7 +422,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         params=Map.empty,
-        persist=false
+        persist=false,
+        inputField=None
       )
     ).get
 

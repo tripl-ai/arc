@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.4.0</span></strong>
+          <span class="version">1.4.1</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -574,6 +574,13 @@
 <td>String</td>
 <td>true</td>
 <td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>inputField</td>
+<td>String</td>
+<td>false</td>
+<td>The field to pass to the endpoint. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: <code>value</code>.</td>
 </tr>
 
 <tr>
@@ -1157,6 +1164,13 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 <td>String</td>
 <td>true</td>
 <td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>inputField</td>
+<td>String</td>
+<td>false</td>
+<td>The field to pass to the model. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: <code>value</code>.</td>
 </tr>
 
 <tr>

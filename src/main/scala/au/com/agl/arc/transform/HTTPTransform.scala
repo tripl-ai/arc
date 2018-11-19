@@ -29,13 +29,18 @@ object HTTPTransform {
     import spark.implicits._
     
     val startTime = System.currentTimeMillis() 
-    val signature = "HTTPTransform requires a field named 'value' of type 'string' or 'binary'."
 
     val maskedHeaders = HTTPUtils.maskHeaders(transform.headers)
+
+    val inputField = transform.inputField.getOrElse("value")
+    val signature = s"HTTPTransform requires a field named '${inputField}' of type 'string' or 'binary'."
 
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
+    stageDetail.put("inputView", transform.inputView)  
+    stageDetail.put("inputField", inputField)  
+    stageDetail.put("outputView", transform.outputView) 
     stageDetail.put("uri", transform.uri.toString)      
     stageDetail.put("headers", maskedHeaders.asJava)
     stageDetail.put("persist", Boolean.valueOf(transform.persist))
@@ -49,7 +54,7 @@ object HTTPTransform {
     val schema = df.schema
 
     val fieldIndex = try { 
-      schema.fieldIndex("value")
+      schema.fieldIndex(inputField)
     } catch {
       case e: Exception => throw new Exception(s"""${signature} inputView has: [${df.schema.map(_.name).mkString(", ")}].""") with DetailException {
         override val detail = stageDetail          
@@ -59,7 +64,7 @@ object HTTPTransform {
     schema.fields(fieldIndex).dataType match {
       case _: StringType => 
       case _: BinaryType => 
-      case _ => throw new Exception(s"""${signature} 'value' is of type: '${schema.fields(fieldIndex).dataType.simpleString}'.""") with DetailException {
+      case _ => throw new Exception(s"""${signature} '${inputField}' is of type: '${schema.fields(fieldIndex).dataType.simpleString}'.""") with DetailException {
         override val detail = stageDetail          
       }  
     }
@@ -87,7 +92,7 @@ object HTTPTransform {
         // meaning we don't have to keep finding fieldIndex and dataType for each row (inefficient as they will not change)
         val bufferedPartition = partition.buffered
         val fieldIndex = bufferedPartition.hasNext match {
-          case true => bufferedPartition.head.fieldIndex("value")
+          case true => bufferedPartition.head.fieldIndex(inputField)
           case false => 0
         }
         val dataType = bufferedPartition.hasNext match {

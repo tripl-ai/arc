@@ -1118,6 +1118,7 @@ object ConfigUtils {
 
     val httpUriKey = "uri"
     val inputURI = getValue[String](httpUriKey)
+    val inputField = getOptionalValue[String]("inputField")
     val parsedHttpURI = inputURI.rightFlatMap(uri => parseURI(httpUriKey, uri))
     val headers = readMap("headers", c)
     val validStatusCodes = if (c.hasPath("validStatusCodes")) Some(c.getIntList("validStatusCodes").asScala.map(f => f.toInt).toList) else None
@@ -1126,11 +1127,11 @@ object ConfigUtils {
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
 
-    (name, inputView, outputView, parsedHttpURI, persist) match {
-      case (Right(n), Right(iv), Right(ov), Right(uri), Right(p)) => 
-        Right(HTTPTransform(n, uri, headers, validStatusCodes, iv, ov, params, p))
+    (name, inputView, outputView, parsedHttpURI, persist, inputField) match {
+      case (Right(n), Right(iv), Right(ov), Right(uri), Right(p), Right(ifld)) => 
+        Right(HTTPTransform(n, uri, headers, validStatusCodes, iv, ov, ifld, params, p))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputView, parsedHttpURI,  persist).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, outputView, parsedHttpURI, persist, inputField).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
@@ -1278,17 +1279,18 @@ object ConfigUtils {
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
     val inputURI = getValue[String]("uri")
+    val inputField = getOptionalValue[String]("inputField")
     val parsedURI = inputURI.rightFlatMap(uri => parseURI("uri", uri))
     val signatureName = getOptionalValue[String]("signatureName")
     val responseType = readResponseType("responseType")
     val batchSize = getOptionalValue[Int]("batchSize")
     val persist = getValue[Boolean]("persist")
 
-    (name, inputView, outputView, inputURI, parsedURI, signatureName, responseType, batchSize, persist) match {
-      case (Right(n), Right(iv), Right(ov), Right(uri), Right(puri), Right(sn), Right(rt), Right(bs), Right(p)) => 
-        Right(TensorFlowServingTransform(n, iv, ov, puri, sn, rt, bs, params, p))
+    (name, inputView, outputView, inputURI, parsedURI, signatureName, responseType, batchSize, persist, inputField) match {
+      case (Right(n), Right(iv), Right(ov), Right(uri), Right(puri), Right(sn), Right(rt), Right(bs), Right(p), Right(ifld)) => 
+        Right(TensorFlowServingTransform(n, iv, ov, puri, sn, rt, bs, ifld, params, p))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputView, inputURI, parsedURI, signatureName, responseType, batchSize, persist).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, outputView, inputURI, parsedURI, signatureName, responseType, batchSize, persist, inputField).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)

@@ -68,6 +68,7 @@ The `HTTPTransform` stage transforms the incoming dataset by `POST`ing the value
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|inputField|String|false|The field to pass to the endpoint. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |uri|URI|true|URI of the HTTP server.|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
@@ -332,6 +333,7 @@ The `TensorFlowServingTransform` stage transforms the incoming dataset by callin
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|inputField|String|false|The field to pass to the model. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
 |uri|String|true|The `URI` of the TensorFlow Serving REST end point.|
 |signatureName|String|false|{{< readfile file="/content/partials/fields/signatureName.md" markdown="true" >}}|
 |responseType|String|false|The type returned by the TensorFlow Serving API. Expected to be `integer`, `double` or `object`.|

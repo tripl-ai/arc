@@ -80,7 +80,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         params=Map.empty,
-        persist=false
+        persist=false,
+        inputField=None
       )
     ).get
 
@@ -92,5 +93,44 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     assert(output.first.getAs[scala.collection.mutable.WrappedArray[Integer]](0)(0) == 11)
     assert(output.schema.fields(0).dataType.toString == "ArrayType(IntegerType,false)")
   }  
+
+  test("HTTPTransform: Can call TensorflowServing via REST: inputField" ) {
+    implicit val spark = session
+    implicit val l = logger
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val df = spark.range(1, 10).toDF
+    df.createOrReplaceTempView(inputView)
+
+    var payloadDataset = spark.sql(s"""
+    SELECT 
+      id
+      ,TO_JSON(NAMED_STRUCT('instances', ARRAY(id))) AS input 
+    FROM ${inputView}
+    """)
+    payloadDataset.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.HTTPTransform.transform(
+      HTTPTransform(
+        name=outputView,
+        uri=new URI(uri),
+        headers=Map.empty,
+        validStatusCodes=None,
+        inputView=inputView,
+        outputView=outputView,
+        params=Map.empty,
+        persist=false,
+        inputField=Option("input")
+      )
+    ).get
+
+
+    val output = spark.sql(s"""
+    SELECT get_json_integer_array(body, '$$.predictions') FROM ${outputView}
+    """)
+
+    assert(output.first.getAs[scala.collection.mutable.WrappedArray[Integer]](0)(0) == 11)
+    assert(output.schema.fields(0).dataType.toString == "ArrayType(IntegerType,false)")
+  }    
 
 }

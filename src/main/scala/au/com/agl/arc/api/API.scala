@@ -219,7 +219,7 @@ object API {
 
   case class DiffTransform(name: String, inputLeftView: String, inputRightView: String, outputIntersectionView: Option[String], outputLeftView: Option[String], outputRightView: Option[String], params: Map[String, String], persist: Boolean) extends Transform { val getType = "DiffTransform" }
 
-  case class HTTPTransform(name: String, uri: URI, headers: Map[String, String], validStatusCodes: Option[List[Int]], inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "HTTPTransform" }  
+  case class HTTPTransform(name: String, uri: URI, headers: Map[String, String], validStatusCodes: Option[List[Int]], inputView: String, outputView: String, inputField: Option[String], params: Map[String, String], persist: Boolean) extends Transform { val getType = "HTTPTransform" }  
   
   case class JSONTransform(name: String, inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "JSONTransform" }
 
@@ -229,7 +229,7 @@ object API {
 
   case class SQLTransform(name: String, inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean) extends Transform { val getType = "SQLTransform" }
 
-  case class TensorFlowServingTransform(name: String, inputView: String, outputView: String, uri: URI, signatureName: Option[String], responseType: Option[ReponseType], batchSize: Option[Int], params: Map[String, String], persist: Boolean) extends Transform { val getType = "TensorFlowServingTransform" }
+  case class TensorFlowServingTransform(name: String, inputView: String, outputView: String, uri: URI, signatureName: Option[String], responseType: Option[ReponseType], batchSize: Option[Int], inputField: Option[String], params: Map[String, String], persist: Boolean) extends Transform { val getType = "TensorFlowServingTransform" }
 
   case class TypingTransform(name: String, cols: Either[String, List[ExtractColumn]], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, failMode: Option[FailModeType]) extends Transform with ColumnarExtract { val getType = "TypingTransform" }
 

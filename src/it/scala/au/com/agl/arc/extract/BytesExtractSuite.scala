@@ -74,7 +74,8 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         inputView=outputView,
         outputView=outputView,
         params=Map.empty,
-        persist=false
+        persist=false,
+        inputField=None
       )
     ).get    
 
