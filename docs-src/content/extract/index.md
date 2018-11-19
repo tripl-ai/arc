@@ -222,7 +222,7 @@ This stage would typically be used with a `JSONExtract` stage by specifying `inp
 ## ImageExtract
 ##### Since: 1.4.1 - Supports Streaming: True
 
-The `ImageExtract` stage reads one or more image files and returns a `DataFrame` which has one column: `image`, containing image data (`JPEG`, `PNG`, `GIF`, `BMP` and `WBMP`) stored with the schema:
+The `ImageExtract` stage reads one or more image files and returns a `DataFrame` which has one column: `image`, containing image data (`jpeg`, `png`, `gif`, `bmp`, `wbmp`) stored with the schema:
 
 | Field | Type | Description |
 |-------|------|-------------|
