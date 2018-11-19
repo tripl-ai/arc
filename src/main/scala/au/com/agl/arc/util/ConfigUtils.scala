@@ -806,7 +806,30 @@ object ConfigUtils {
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
     }
-  }  
+  } 
+
+  def readImageExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
+    import ConfigReader._
+
+    val inputURI = getValue[String]("inputURI")
+    val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist")
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val authentication = readAuthentication("authentication")
+    val dropInvalid = getOptionalValue[Boolean]("dropInvalid")
+
+    (name, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid) match {
+      case (Right(n), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(di)) => 
+        Right(ImageExtract(n, ov, pg, auth, params, p, np, partitionBy, di))
+      case _ =>
+        val allErrors: Errors = List(name, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, allErrors)
+        Left(err :: Nil)
+    }
+  }   
 
   def readJDBCExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
@@ -1840,6 +1863,7 @@ object ConfigUtils {
             case Right("BytesExtract") => Option(readBytesExtract(name, params))
             case Right("DelimitedExtract") => Option(readDelimitedExtract(name, params))
             case Right("HTTPExtract") => Option(readHTTPExtract(name, params))
+            case Right("ImageExtract") => Option(readImageExtract(name, params))
             case Right("JDBCExtract") => Option(readJDBCExtract(name, params))
             case Right("JSONExtract") => Option(readJSONExtract(name, params))
             case Right("KafkaExtract") => Option(readKafkaExtract(name, params))

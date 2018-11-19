@@ -3,6 +3,7 @@
 # 1.4.1
 
 - added `inputField` to both `TensorFlowServingTransform` and `HTTPTransform` to allow overriding default field `value`.
+- added `ImageExtract` to read image files for machine learning etc.
 
 # 1.4.0
 

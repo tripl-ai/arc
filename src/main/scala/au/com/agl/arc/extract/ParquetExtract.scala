@@ -48,7 +48,7 @@ object ParquetExtract {
       if (arcContext.isStreaming) {
         optionSchema match {
           case Some(schema) => spark.readStream.option("mergeSchema", "true").schema(schema).parquet(extract.input)
-          case None => throw new Exception("ORCExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
+          case None => throw new Exception("ParquetExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
         }       
       } else {      
         spark.read.option("mergeSchema", "true").parquet(extract.input)   

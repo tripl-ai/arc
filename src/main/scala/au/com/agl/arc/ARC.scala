@@ -360,6 +360,8 @@ object ARC {
         extract.DelimitedExtract.extract(e)
       case e : HTTPExtract =>
         extract.HTTPExtract.extract(e)              
+      case e : ImageExtract =>
+        extract.ImageExtract.extract(e)         
       case e : JDBCExtract =>
         extract.JDBCExtract.extract(e)             
       case e : JSONExtract =>

@@ -218,6 +218,61 @@ This stage would typically be used with a `JSONExtract` stage by specifying `inp
 }
 ```
 
+
+## ImageExtract
+##### Since: 1.4.1 - Supports Streaming: True
+
+The `ImageExtract` stage reads one or more image files and returns a `DataFrame` which has one column: `image`, containing image data (`JPEG`, `PNG`, `GIF`, `BMP` and `WBMP`) stored with the schema:
+
+| Field | Type | Description |
+|-------|------|-------------|
+|`origin`|String|The file path of the image.|
+|`height`|Integer|The height of the image.|
+|`width`|Integer|The width of the image.|
+|`nChannels`|Integer|The number of image channels.|
+|`mode`|Integer|OpenCV-compatible type.|
+|`data`|Binary|Image bytes in OpenCV-compatible order: row-wise BGR in most cases.|
+
+This means the image data can be accessed like:
+
+```sql
+SELECT image.height FROM dataset
+```
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|true|URI/Glob of the input images.|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|dropInvalid|Boolean|false|Whether to drop any invalid image files.<br><br>Default: true.|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+
+### Examples
+
+```json
+{
+    "type": "ImageExtract",
+    "name": "load customer images",
+    "environments": ["production", "test"],
+    "inputURI": "hdfs://input_data/customer/*.jpg",
+    "outputView": "customer_images",            
+    "persist": false,
+    "dropInvalid": true,
+    "authentication": {
+        ...
+    },    
+    "params": {
+    }
+}
+```
+
 ## JDBCExtract
 ##### Since: 1.0.0 - Supports Streaming: False
 
