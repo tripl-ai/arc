@@ -170,6 +170,24 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     """).repartition(1)
     payloadDataset.createOrReplaceTempView(inputView)
 
+    val thrown = intercept[Exception with DetailException] {
+      transform.TensorFlowServingTransform.transform(
+        TensorFlowServingTransform(
+          name=outputView,
+          uri=new URI(uri),
+          inputView=inputView,
+          outputView=outputView,
+          signatureName=None,
+          responseType=Option(IntegerResponse),
+          batchSize=Option(10),
+          params=Map.empty,
+          persist=false,
+          inputField=None
+        )
+      )
+    }
+    assert(thrown.getMessage.contains("""inputField 'value' is not present in inputView 'inputView' which has: [id] columns."""))  
+
     val transformDataset = transform.TensorFlowServingTransform.transform(
       TensorFlowServingTransform(
         name=outputView,
