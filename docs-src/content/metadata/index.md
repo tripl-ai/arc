@@ -316,7 +316,7 @@ Spark does not have an internal `TimeType` representation of time. This type can
     "d/MM/uuuu H:mm"
   ],
   "timezoneId": "+1000",    
-   "metadata": {
+  "metadata": {
     "primaryKey" : true,
     "position": 1
   }
