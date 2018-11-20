@@ -176,6 +176,8 @@ docker-compose -f src/it/resources/docker-compose.yml down
 
 To generate the documentation you need to download [Hugo](https://gohugo.io/) to `/docs-src` and run `./hugo` in that  directory. The `/docs` directory is the output of the docuementation generation and should not be edited by hand. The `/docs` directory is automatically published by the Github Pages process on commit.
 
+You can also generate documentation for previous version by checking out a previous tag (`git checkout tags/1.3.0`) and running `hugo server` from the `/docs-src` directory.
+
 ## Contributing
 
 If you have suggestions of additional components or find issues that you believe need fixing then please raise an issue. An issue with a test case is even more appreciated.
