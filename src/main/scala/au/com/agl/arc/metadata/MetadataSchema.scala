@@ -75,8 +75,9 @@ object MetadataSchema {
 
               n.get("type").textValue match {
                 case "string" => {
-                  val length = if (n.has("length")) Option(n.get("length").asInt) else None
-                  Right(StringColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata))
+                  val minLength = if (n.has("minLength")) Option(n.get("minLength").asInt) else None
+                  val maxLength = if (n.has("maxLength")) Option(n.get("maxLength").asInt) else None
+                  Right(StringColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength))
                 }
                 case "integer" => {
                   val formatters = if (n.has("formatters")) Option(asStringArray(n.get("formatters"))) else None

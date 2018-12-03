@@ -4,6 +4,7 @@
 
 - added `inputField` to both `TensorFlowServingTransform` and `HTTPTransform` to allow overriding default field `value`.
 - added `ImageExtract` to read image files for machine learning etc.
+- added the `minLength` and `maxLength` properties to the `string` metadata type.
 
 # 1.4.0
 

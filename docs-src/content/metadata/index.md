@@ -232,7 +232,8 @@ Use a Long Integer when dealing with values greater than ±2 billion (-2<sup>63<
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
-|length|Integer|false|The length of the string which can be used in data validation stages.|
+|minLength|Integer|false|The minimum length of the string value.|
+|maxLength|Integer|false|The maximum length of the string value.|
 
 ### Examples
 

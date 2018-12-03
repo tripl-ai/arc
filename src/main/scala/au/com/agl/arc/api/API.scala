@@ -105,7 +105,7 @@ object API {
     }
   }
 
-  case class StringColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String]) extends ExtractColumn {
+  case class StringColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], minLength: Option[Int], maxLength: Option[Int]) extends ExtractColumn {
     val sparkDataType: DataType = StringType
   }
 

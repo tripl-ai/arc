@@ -18,7 +18,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
    // Test trimming with nullReplacementValue
     {
-      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("Maurice"), trim=true, nullableValues="" :: Nil,  metadata=None)
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("Maurice"), trim=true, nullableValues="" :: Nil,  metadata=None, minLength=None, maxLength=None)
       
       // value is null -> nullReplacementValue
       {
@@ -78,7 +78,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
    // Test trimming without nullReplacementValue
     {
-      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=None, trim=true, nullableValues="" :: "null" :: Nil,  metadata=None)
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=None, trim=true, nullableValues="" :: "null" :: Nil,  metadata=None, minLength=None, maxLength=None)
       
       // value.isAllowedNullValue after trim -> null
       {
@@ -103,7 +103,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test not trimming
     {
-      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("Maurice"), trim=false, nullableValues="" :: Nil,  metadata=None)
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("Maurice"), trim=false, nullableValues="" :: Nil,  metadata=None, minLength=None, maxLength=None)
       
       // value has leading spaces
       {
@@ -152,7 +152,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITH nullReplacementValue
     {
-      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("Maurice"), trim=false, nullableValues="" :: Nil,  metadata=None)
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("Maurice"), trim=false, nullableValues="" :: Nil,  metadata=None, minLength=None, maxLength=None)
  
       // value.isNull
       {
@@ -190,7 +190,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITHOUT nullReplacementValue
     {
-      val col = StringColumn(id="2", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: " " :: Nil, metadata=None)      
+      val col = StringColumn(id="2", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: " " :: Nil, metadata=None, minLength=None, maxLength=None)      
 
       // value.isNull
       {
@@ -228,7 +228,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test complex nullableValues (unicode)
     {
-      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("ኃይሌ ገብረሥላሴ"), trim=false, nullableValues="español" :: "lamfo340jnf34" :: " a " :: Nil, metadata=None)
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("ኃይሌ ገብረሥላሴ"), trim=false, nullableValues="español" :: "lamfo340jnf34" :: " a " :: Nil, metadata=None, minLength=None, maxLength=None)
  
       // value.isAllowedNullValue
       {
@@ -275,4 +275,56 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
       }      
     }    
   }
+
+  test("Test minLength") {
+    {
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=None, trim=true, nullableValues="" :: Nil,  metadata=None, minLength=Option(30), maxLength=None)
+      val value = "abcdefghijklmnopqrstuvwxyz"
+
+      {
+        Typing.typeValue(value, col) match {
+          case (res, Some(err)) => {
+            assert(res === None)
+            assert(err === TypingError("name", s"String '${value}' (26 characters) is less than minLength (30)."))
+          }
+          case (_,_) => assert(false)
+        }
+      }
+    }
+  }
+
+  test("Test maxLength") {
+    {
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=None, trim=true, nullableValues="" :: Nil,  metadata=None, minLength=None, maxLength=Option(10))
+      val value = "abcdefghijklmnopqrstuvwxyz"
+
+      {
+        Typing.typeValue(value, col) match {
+          case (res, Some(err)) => {
+            assert(res === None)
+            assert(err === TypingError("name", s"String '${value}' (26 characters) is greater than maxLength (10)."))
+          }
+          case (_,_) => assert(false)
+        }
+      }
+    }
+  }
+
+  test("Test minLength and maxLength") {
+    {
+      val col = StringColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=None, trim=true, nullableValues="" :: Nil,  metadata=None, minLength=Option(50), maxLength=Option(10))
+      val value = "abcdefghijklmnopqrstuvwxyz"
+
+      {
+        Typing.typeValue(value, col) match {
+          case (res, Some(err)) => {
+            assert(res === None)
+            assert(err === TypingError("name", s"String '${value}' (26 characters) is less than minLength (50) and is greater than maxLength (10)."))
+          }
+          case (_,_) => assert(false)
+        }
+      }
+    }
+  }
+
 }

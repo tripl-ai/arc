@@ -198,7 +198,36 @@ object Typing {
     object StringTypeable extends Typeable[StringColumn, String] {
       
       def typeValue(col: StringColumn, value: String): (Option[String], Option[TypingError]) = {
-          Option(value) -> None
+        val valueLength = value.length
+        (col.minLength, col.maxLength) match {
+          case (None, None) => {
+            Option(value) -> None
+          }
+          case (Some(minLength), None) if (valueLength > minLength) => {
+            Option(value) -> None
+          }
+          case (Some(minLength), None) if (valueLength < minLength) => {
+            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength)."""))
+          }
+          case (None, Some(maxLength)) if (valueLength < maxLength) => {
+            Option(value) -> None
+          }
+          case (None, Some(maxLength)) if (valueLength > maxLength) => {
+            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is greater than maxLength ($maxLength)."""))
+          }
+          case (Some(minLength), Some(maxLength)) if (valueLength > minLength && valueLength < maxLength) => {
+            Option(value) -> None
+          }
+          case (Some(minLength), Some(maxLength)) if (valueLength < minLength && valueLength < maxLength) => {
+            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength)."""))
+          }
+          case (Some(minLength), Some(maxLength)) if (valueLength > minLength && valueLength > maxLength) => {
+            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is greater than maxLength ($maxLength)."""))
+          }
+          case (Some(minLength), Some(maxLength)) if (valueLength < minLength && valueLength > maxLength) => {
+            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength) and is greater than maxLength ($maxLength)."""))
+          }  
+        }
       }
 
     }
