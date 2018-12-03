@@ -1,6 +1,6 @@
 {
     "definitions": {},
-    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "$id": "http://example.com/example.json",
     "items": {
         "$id": "http://example.com/example.json/items",
@@ -36,6 +36,16 @@
                 "examples": [
                     "Customer First Name",
                     "Timestamp of last customer interaction."
+                ]
+            },
+            "nullReplacementValue": {
+                "$id": "http://example.com/example.json/items/properties/nullReplacementValue",
+                "type": "string",
+                "title": "nullReplacementValue",
+                "description": "The value to replace any nulls with.",
+                "default": "",
+                "examples": [
+                    "true"
                 ]
             },
             "trim": {
@@ -100,7 +110,8 @@
                     "decimal",
                     "integer",
                     "string",
-                    "timestamp"
+                    "timestamp",
+                    "boolean"
                 ],
                 "title": "type",
                 "description": "The data type of this field.",
@@ -168,23 +179,7 @@
                     "d/MM/yyyy H:mm:ss",
                     "d/MM/yyyy HH:mm",
                     "d/MM/yyyy H:mm"
-                ],
-                "items": {
-                    "$id": "http://example.com/example.json/items/properties/formatters/items",
-                    "type": "string",
-                    "title": "Field Allowed Timestamp Value",
-                    "description": "A formatter to attempt to convert a string to timestamp.",
-                    "examples": [
-                        "dd/MM/yyyy HH:mm:ss",
-                        "dd/MM/yyyy H:mm:ss",
-                        "dd/MM/yyyy HH:mm",
-                        "dd/MM/yyyy H:mm",
-                        "d/MM/yyyy HH:mm:ss",
-                        "d/MM/yyyy H:mm:ss",
-                        "d/MM/yyyy HH:mm",
-                        "d/MM/yyyy H:mm"
-                    ]
-                }
+                ]
             },
             "table": {
                 "$id": "http://example.com/example.json/items/properties/table",
@@ -197,90 +192,171 @@
                     "transactions"
                 ]
             },
-            "position": {
-                "$id": "http://example.com/example.json/items/properties/position",
-                "type": "integer",
-                "title": "position",
-                "description": "A source table field index used for metadata tracking/validation purposes.",
+            "trueValues": {
+                "$id": "http://example.com/example.json/items/properties/trueValues",
+                "type": "array",
+                "title": "trueValues",
+                "description": "A list of values which are considered as true. Try to order this list so the values are arranged from most frequent to least frequent.",
                 "examples": [
-                    1
+                    "true",
+                    "T",
+                    "1"
                 ]
+            },
+            "falseValues": {
+                "$id": "http://example.com/example.json/items/properties/falseValues",
+                "type": "array",
+                "title": "falseValues",
+                "description": "A list of values which are considered as false. Try to order this list so the values are arranged from most frequent to least frequent.",
+                "examples": [
+                    "false",
+                    "F",
+                    "0"
+                ]
+            },
+            "metadata": {
+                "$id": "http://example.com/example.json/items/properties/metadata",
+                "type": "object",
+                "title": "metadata",
+                "description": "Any metadata to attach to the column."
             }
         },
-        "anyOf": [
+        "allOf": [
             {
-                "properties": {
-                    "type": {
-                        "enum": [
-                            "integer",
-                            "string"
-                        ]
+                "if": {
+                    "properties": {
+                        "type": {
+                            "enum": [
+                                "integer",
+                                "long",
+                                "string"
+                            ]
+                        }
                     }
                 },
-                "required": [
-                    "id",
-                    "name",
-                    "trim",
-                    "nullable",
-                    "type",
-                    "nullableValues"
-                ]
+                "then": {
+                    "required": [
+                        "id",
+                        "name",
+                        "trim",
+                        "nullable",
+                        "type",
+                        "nullableValues"
+                    ]
+                }
             },
             {
-                "properties": {
-                    "type": {
-                        "enum": [
-                            "date"
-                        ]
+                "if": {
+                    "properties": {
+                        "type": {
+                            "enum": [
+                                "decimal"
+                            ]
+                        }
                     }
                 },
-                "required": [
-                    "id",
-                    "name",
-                    "trim",
-                    "nullable",
-                    "type",
-                    "nullableValues",
-                    "formatters"
-                ]
-            },         
-            {
-                "properties": {
-                    "type": {
-                        "enum": [
-                            "decimal"
-                        ]
-                    }
-                },
-                "required": [
-                    "id",
-                    "name",
-                    "trim",
-                    "nullable",
-                    "type",
-                    "nullableValues",
-                    "precision",
-                    "scale"
-                ]
+                "then": {
+                    "required": [
+                        "id",
+                        "name",
+                        "trim",
+                        "nullable",
+                        "type",
+                        "nullableValues",
+                        "precision",
+                        "scale"
+                    ]
+                }
             },
             {
-                "properties": {
-                    "type": {
-                        "enum": [
-                            "timestamp"
-                        ]
+                "if": {
+                    "properties": {
+                        "type": {
+                            "enum": [
+                                "timestamp"
+                            ]
+                        }
                     }
                 },
-                "required": [
-                    "id",
-                    "name",
-                    "trim",
-                    "nullable",
-                    "type",
-                    "nullableValues",
-                    "timezoneId",
-                    "formatters"
-                ]
+                "then": {
+                    "required": [
+                        "id",
+                        "name",
+                        "trim",
+                        "nullable",
+                        "type",
+                        "nullableValues",
+                        "timezoneId",
+                        "formatters"
+                    ]
+                }
+            },
+            {
+                "if": {
+                    "properties": {
+                        "type": {
+                            "enum": [
+                                "date"
+                            ]
+                        }
+                    }
+                },
+                "then": {
+                    "required": [
+                        "id",
+                        "name",
+                        "trim",
+                        "nullable",
+                        "type",
+                        "nullableValues",
+                        "formatters"
+                    ]
+                }
+            },
+            {
+                "if": {
+                    "properties": {
+                        "type": {
+                            "enum": [
+                                "time"
+                            ]
+                        }
+                    }
+                },
+                "then": {
+                    "required": [
+                        "id",
+                        "name",
+                        "trim",
+                        "nullable",
+                        "type",
+                        "nullableValues",
+                        "formatters"
+                    ]
+                }
+            },
+            {
+                "if": {
+                    "properties": {
+                        "type": {
+                            "enum": [
+                                "boolean"
+                            ]
+                        }
+                    }
+                },
+                "then": {
+                    "required": [
+                        "id",
+                        "name",
+                        "trim",
+                        "nullable",
+                        "type",
+                        "nullableValues",
+                        "trueValues",
+                        "falseValues"
+                    ]
+                }
             }
         ],
         "additionalProperties": false
