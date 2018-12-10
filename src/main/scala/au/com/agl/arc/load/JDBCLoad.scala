@@ -38,6 +38,7 @@ object JDBCLoad {
     stageDetail.put("bulkload", Boolean.valueOf(load.bulkload.getOrElse(false)))
     stageDetail.put("saveMode", saveMode.toString.toLowerCase)
     stageDetail.put("truncate", Boolean.valueOf(truncate))
+    stageDetail.put("partitionBy", load.partitionBy.asJava)
 
     val df = spark.table(load.inputView)
 
@@ -46,7 +47,7 @@ object JDBCLoad {
         case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
         case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
       }
-    }
+    } 
 
     logger.info()
       .field("event", "enter")

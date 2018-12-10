@@ -18,6 +18,7 @@ object ParquetLoad {
     stageDetail.put("name", load.name)
     stageDetail.put("inputView", load.inputView)  
     stageDetail.put("outputURI", load.outputURI.toString)  
+    stageDetail.put("partitionBy", load.partitionBy.asJava)
 
     val saveMode = load.saveMode.getOrElse(SaveMode.Overwrite)
     stageDetail.put("saveMode", saveMode.toString.toLowerCase)
