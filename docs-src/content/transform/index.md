@@ -336,7 +336,7 @@ The `TensorFlowServingTransform` stage transforms the incoming dataset by callin
 |inputField|String|false|The field to pass to the model. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
 |uri|String|true|The `URI` of the TensorFlow Serving REST end point.|
 |signatureName|String|false|{{< readfile file="/content/partials/fields/signatureName.md" markdown="true" >}}|
-|responseType|String|false|The type returned by the TensorFlow Serving API. Expected to be `integer`, `double` or `object`.|
+|responseType|String|false|The type returned by the TensorFlow Serving API. Expected to be `integer`, `double` or `object` (which may present as a `string` depending on how the model has been built).<br><br>Default: `object`.|
 |batchSize|Int|false|The number of records to sent to TensorFlow Serving in each call. A higher number will decrease the number of calls to TensorFlow Serving which may be more efficient|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
@@ -349,9 +349,11 @@ The `TensorFlowServingTransform` stage transforms the incoming dataset by callin
     "type": "TensorFlowServingTransform",
     "name": "call the customer segmentation model",
     "inputView": "customer",
+    "inputField": "value",
     "outputView": "customer_segmented",            
     "uri": "http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict",
     "signatureName": "serving_default",
+    "responseType": "integer",
     "batchSize": 100,
     "persist": true,
     "params": {}

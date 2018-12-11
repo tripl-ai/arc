@@ -1191,7 +1191,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 <td>responseType</td>
 <td>String</td>
 <td>false</td>
-<td>The type returned by the TensorFlow Serving API. Expected to be <code>integer</code>, <code>double</code> or <code>object</code>.</td>
+<td>The type returned by the TensorFlow Serving API. Expected to be <code>integer</code>, <code>double</code> or <code>object</code> (which may present as a <code>string</code> depending on how the model has been built).<br><br>Default: <code>object</code>.</td>
 </tr>
 
 <tr>
@@ -1224,9 +1224,11 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
     &quot;type&quot;: &quot;TensorFlowServingTransform&quot;,
     &quot;name&quot;: &quot;call the customer segmentation model&quot;,
     &quot;inputView&quot;: &quot;customer&quot;,
+    &quot;inputField&quot;: &quot;value&quot;,
     &quot;outputView&quot;: &quot;customer_segmented&quot;,            
     &quot;uri&quot;: &quot;http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict&quot;,
     &quot;signatureName&quot;: &quot;serving_default&quot;,
+    &quot;responseType&quot;: &quot;integer&quot;,
     &quot;batchSize&quot;: 100,
     &quot;persist&quot;: true,
     &quot;params&quot;: {}
