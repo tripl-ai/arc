@@ -13,7 +13,7 @@ object ParquetLoad {
 
   def load(load: ParquetLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
-    val stageDetail = new java.util.HashMap[String, Object]()
+    var stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
     stageDetail.put("name", load.name)
     stageDetail.put("inputView", load.inputView)  
@@ -52,6 +52,8 @@ object ParquetLoad {
 
     val nonNullDF = df.drop(nulls:_*)
 
+    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+
     try {
       if (nonNullDF.isStreaming) {
         load.partitionBy match {
@@ -83,7 +85,9 @@ object ParquetLoad {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail
       }
-    }           
+    }
+
+    spark.sparkContext.removeSparkListener(listener)           
 
     logger.info()
       .field("event", "exit")

@@ -152,7 +152,9 @@ object ARC {
     // add spark listeners
     try {
       GeoSparkSQLRegistrator.registerAll(spark)
-      ListenerUtils.addListeners()(spark, logger)
+      if (logger.isTraceEnabled) {
+        ListenerUtils.addExecutorListener()(spark, logger)
+      }
     } catch {
       case e: Exception => 
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala

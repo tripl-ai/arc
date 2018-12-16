@@ -79,9 +79,10 @@ object KafkaLoad {
         }
       }      
 
-      // initialise statistics accumulators or reset if they exist
+      // initialise statistics accumulators
       val recordAccumulator = spark.sparkContext.longAccumulator
-      recordAccumulator.reset
+      val bytesAccumulator = spark.sparkContext.longAccumulator
+      val outputMetricsMap = new java.util.HashMap[String, Long]()
 
       try {
         repartitionedDF.schema.map(_.dataType) match {
@@ -146,9 +147,13 @@ object KafkaLoad {
                 // send each message via producer
                 partition.foreach(row => {
                   // create payload and send sync
-                  val producerRecord = new ProducerRecord[String,String](load.topic, row.getString(0), row.getString(1))
+                  val key = row.getString(0)
+                  val value = row.getString(1)
+
+                  val producerRecord = new ProducerRecord[String,String](load.topic, key, value)
                   kafkaProducer.send(producerRecord)
                   recordAccumulator.add(1)
+                  bytesAccumulator.add(key.getBytes.length + value.getBytes.length)
                 }) 
               } finally {
                 kafkaProducer.close
@@ -158,12 +163,17 @@ object KafkaLoad {
         }
       } catch {
         case e: Exception => throw new Exception(e) with DetailException {
-          stageDetail.put("records", Long.valueOf(recordAccumulator.value)) 
+          outputMetricsMap.put("recordsWritten", Long.valueOf(recordAccumulator.value))         
+          outputMetricsMap.put("bytesWritten", Long.valueOf(bytesAccumulator.value))
+          stageDetail.put("outputMetrics", outputMetricsMap)
+
           override val detail = stageDetail          
         }
       }
 
-      stageDetail.put("records", Long.valueOf(recordAccumulator.value)) 
+      outputMetricsMap.put("recordsWritten", Long.valueOf(recordAccumulator.value))         
+      outputMetricsMap.put("bytesWritten", Long.valueOf(bytesAccumulator.value))
+      stageDetail.put("outputMetrics", outputMetricsMap)
 
       repartitionedDF
     }

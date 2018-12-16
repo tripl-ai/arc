@@ -2,11 +2,15 @@ package au.com.agl.arc.util
 
 import org.apache.spark.sql._
 import org.apache.spark.scheduler._
+import au.com.agl.arc.util.log.logger.JsonLogger
+
+import org.apache.spark.scheduler.SparkListenerInterface
 
 object ListenerUtils {
-  def addListeners()(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger) = {
 
-    spark.sparkContext.addSparkListener(new SparkListener() {
+  def addExecutorListener()(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): SparkListener = {
+
+    val listener = new SparkListener() {
       
       override def onExecutorAdded(executorAdded: SparkListenerExecutorAdded) {
       val executorInfo = executorAdded.executorInfo
@@ -18,7 +22,7 @@ object ListenerUtils {
           .field("executorHost", executorInfo.executorHost)
           .field("defaultParallelism", spark.sparkContext.defaultParallelism)
           .log()       
-       }
+      }
 
       override def onExecutorRemoved(executorRemoved: SparkListenerExecutorRemoved) {
         logger.debug()
@@ -27,7 +31,17 @@ object ListenerUtils {
           .field("executorId", executorRemoved.executorId)
           .field("reason", executorRemoved.reason)
           .log()       
-       }
+      }
+
+    }
+
+    spark.sparkContext.addSparkListener(listener)
+    listener
+  }
+
+  def addStageCompletedListener(stageDetail: java.util.HashMap[String, Object])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): SparkListener = {
+
+    val listener = new SparkListener() {
               
       override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
         val stageInfo = stageCompleted.stageInfo
@@ -53,17 +67,25 @@ object ListenerUtils {
         outputMetricsMap.put("bytesWritten", outputMetrics.bytesWritten)
         outputMetricsMap.put("recordsWritten", outputMetrics.recordsWritten)               
 
-        logger.debug()
-          .field("event", "SparkListenerStageCompleted")
-          .field("type", "SparkListener")
-          .field("name", stageInfo.name)
-          .field("numTasks", stageInfo.numTasks)
-          .field("executorCpuTime", taskMetrics.executorCpuTime)
-          .map("inputMetrics", inputMetricsMap)
-          .map("outputMetrics", outputMetricsMap)
-          .map("executorMemoryStatus", executorMemoryStatusMap)
-          .log()  
+        stageDetail.put("inputMetrics", inputMetricsMap)
+        stageDetail.put("outputMetrics", outputMetricsMap)
+        stageDetail.put("executorMemoryStatus", executorMemoryStatusMap)
+
+        // logger.info()
+        //   .field("event", "exit")
+        //   .map("stage", stageDetail)      
+        //   .log()        
       }
+
+    }
+
+    spark.sparkContext.addSparkListener(listener)
+    listener
+  } 
+
+  def addTaskCompletedListener(stageDetail: java.util.HashMap[String, Object])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): SparkListener = {
+
+    val listener = new SparkListener() {
 
       override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
         val taskInfo = taskEnd.taskInfo
@@ -92,6 +114,10 @@ object ListenerUtils {
           .log()  
       }
 
-    })
-  }
+    }
+
+    spark.sparkContext.addSparkListener(listener)
+    listener    
+  }   
+
 }

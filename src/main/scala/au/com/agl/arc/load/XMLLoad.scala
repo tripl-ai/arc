@@ -52,6 +52,8 @@ object XMLLoad {
 
     stageDetail.put("drop", dropMap) 
 
+    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+
     try {
       load.partitionBy match {
         case Nil => { 
@@ -73,7 +75,9 @@ object XMLLoad {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          
       }      
-    }           
+    }        
+
+    spark.sparkContext.removeSparkListener(listener)           
 
     logger.info()
       .field("event", "exit")

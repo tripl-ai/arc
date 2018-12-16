@@ -142,6 +142,8 @@ object JDBCLoad {
     
     val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)            
 
+    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+
     // if not table exists and SaveMode.Ignore
     val outputDF = if (nonNullDF.isStreaming) {
       val jdbcSink = new JDBCSink(load.jdbcURL, connectionProperties)
@@ -268,6 +270,8 @@ object JDBCLoad {
         Option(df)
       }
     }
+
+    spark.sparkContext.removeSparkListener(listener)    
 
     logger.info()
       .field("event", "exit")

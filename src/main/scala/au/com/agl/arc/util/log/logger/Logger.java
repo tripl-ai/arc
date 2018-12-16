@@ -29,8 +29,8 @@ import org.apache.commons.lang3.time.FastDateFormat;
 public class Logger {
   public static final String TRACE_LEVEL_NAME = "TRACE";
   public static final String DEBUG_LEVEL_NAME = "DEBUG";
-  public static final String INFO_LEVEL_NAME  = "INFO";
-  public static final String WARN_LEVEL_NAME  = "WARN";
+  public static final String INFO_LEVEL_NAME = "INFO";
+  public static final String WARN_LEVEL_NAME = "WARN";
   public static final String ERROR_LEVEL_NAME = "ERROR";
 
   private org.slf4j.Logger slf4jLogger;
@@ -39,7 +39,7 @@ public class Logger {
   private FastDateFormat formatter;
   private boolean includeLoggerName = true;
   private boolean includeThreadName = true;
-  private boolean includeClassName = true; 
+  private boolean includeClassName = true;
 
   private NoopLogger noopLogger = new NoopLogger();
 
@@ -48,9 +48,29 @@ public class Logger {
     this.formatter = formatter;
   }
 
-//========================================
-// Getters and Setters
-//----------------------------------------
+  // ========================================
+  // Getters and Setters
+  // ----------------------------------------
+
+  public boolean isTraceEnabled() {
+    return slf4jLogger.isTraceEnabled();
+  }
+
+  public boolean isDebugEnabled() {
+    return slf4jLogger.isDebugEnabled();
+  }
+
+  public boolean isInfoEnabled() {
+    return slf4jLogger.isInfoEnabled();
+  }
+
+  public boolean isWarnEnabled() {
+    return slf4jLogger.isWarnEnabled();
+  }
+
+  public boolean isErrorEnabled() {
+    return slf4jLogger.isErrorEnabled();
+  }
 
   public boolean isIncludeLoggerName() {
     return includeLoggerName;
@@ -76,16 +96,14 @@ public class Logger {
     this.includeClassName = includeClassName;
   }
 
-//========================================
-// Log Level API
-//----------------------------------------
+  // ========================================
+  // Log Level API
+  // ----------------------------------------
 
   public JsonLogger trace() {
     if (slf4jLogger.isTraceEnabled()) {
-      StandardJsonLogger
-          result =
-          new StandardJsonLogger(this.slf4jLogger, this.formatter, this.gson, TRACE_LEVEL_NAME,
-                                 this.slf4jLogger::trace, this.slf4jLogger::trace);
+      StandardJsonLogger result = new StandardJsonLogger(this.slf4jLogger, this.formatter, this.gson, TRACE_LEVEL_NAME,
+          this.slf4jLogger::trace, this.slf4jLogger::trace);
       this.configureLogger(result);
       return result;
     }
@@ -95,10 +113,8 @@ public class Logger {
 
   public JsonLogger debug() {
     if (slf4jLogger.isDebugEnabled()) {
-      StandardJsonLogger
-          result =
-          new StandardJsonLogger(this.slf4jLogger, this.formatter, this.gson, DEBUG_LEVEL_NAME,
-                                 this.slf4jLogger::debug, this.slf4jLogger::debug);
+      StandardJsonLogger result = new StandardJsonLogger(this.slf4jLogger, this.formatter, this.gson, DEBUG_LEVEL_NAME,
+          this.slf4jLogger::debug, this.slf4jLogger::debug);
       this.configureLogger(result);
       return result;
     }
@@ -108,10 +124,8 @@ public class Logger {
 
   public JsonLogger info() {
     if (slf4jLogger.isInfoEnabled()) {
-      StandardJsonLogger
-          result =
-          new StandardJsonLogger(this.slf4jLogger, this.formatter, this.gson, INFO_LEVEL_NAME,
-                                 this.slf4jLogger::info, this.slf4jLogger::info);
+      StandardJsonLogger result = new StandardJsonLogger(this.slf4jLogger, this.formatter, this.gson, INFO_LEVEL_NAME,
+          this.slf4jLogger::info, this.slf4jLogger::info);
       this.configureLogger(result);
       return result;
     }
@@ -121,10 +135,8 @@ public class Logger {
 
   public JsonLogger warn() {
     if (slf4jLogger.isWarnEnabled()) {
-      StandardJsonLogger
-          result =
-          new StandardJsonLogger(this.slf4jLogger, this.formatter, this.gson, WARN_LEVEL_NAME,
-                                 this.slf4jLogger::warn, this.slf4jLogger::warn);
+      StandardJsonLogger result = new StandardJsonLogger(this.slf4jLogger, this.formatter, this.gson, WARN_LEVEL_NAME,
+          this.slf4jLogger::warn, this.slf4jLogger::warn);
       this.configureLogger(result);
       return result;
     }
@@ -134,10 +146,8 @@ public class Logger {
 
   public JsonLogger error() {
     if (slf4jLogger.isErrorEnabled()) {
-      StandardJsonLogger
-          result =
-          new StandardJsonLogger(this.slf4jLogger, this.formatter, this.gson, ERROR_LEVEL_NAME,
-                                 this.slf4jLogger::error, this.slf4jLogger::error);
+      StandardJsonLogger result = new StandardJsonLogger(this.slf4jLogger, this.formatter, this.gson, ERROR_LEVEL_NAME,
+          this.slf4jLogger::error, this.slf4jLogger::error);
       this.configureLogger(result);
       return result;
     }
@@ -145,9 +155,9 @@ public class Logger {
     return noopLogger;
   }
 
-//========================================
-// Internal Methods
-//----------------------------------------
+  // ========================================
+  // Internal Methods
+  // ----------------------------------------
 
   private void configureLogger(StandardJsonLogger logger) {
     logger.setIncludeClassName(this.includeClassName);

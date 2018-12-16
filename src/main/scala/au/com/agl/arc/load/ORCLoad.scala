@@ -51,6 +51,8 @@ object ORCLoad {
 
     val nonNullDF = df.drop(nulls:_*)
 
+    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+
     try {
       if (nonNullDF.isStreaming) {
         load.partitionBy match {
@@ -83,6 +85,8 @@ object ORCLoad {
         override val detail = stageDetail
       }
     }    
+
+    spark.sparkContext.removeSparkListener(listener)           
 
     logger.info()
       .field("event", "exit")

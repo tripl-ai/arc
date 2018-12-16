@@ -63,11 +63,11 @@ object AzureEventHubsLoad {
       }
     }      
 
-    // initialise statistics accumulators or reset if they exist
+    // initialise statistics accumulators
     val recordAccumulator = spark.sparkContext.longAccumulator
+    val bytesAccumulator = spark.sparkContext.longAccumulator
     val batchAccumulator = spark.sparkContext.longAccumulator
-    recordAccumulator.reset
-    batchAccumulator.reset
+    val outputMetricsMap = new java.util.HashMap[String, Long]()
 
     try {
       repartitionedDF.foreachPartition(partition => {
@@ -107,6 +107,7 @@ object AzureEventHubsLoad {
             }
 
             recordAccumulator.add(1)
+            bytesAccumulator.add(jsonBytes.length)
           })
 
           // if there are events in the buffer send them
@@ -120,14 +121,18 @@ object AzureEventHubsLoad {
       })
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        stageDetail.put("records", Long.valueOf(recordAccumulator.value)) 
-        stageDetail.put("batches", Long.valueOf(batchAccumulator.value)) 
+        outputMetricsMap.put("recordsWritten", Long.valueOf(recordAccumulator.value))         
+        outputMetricsMap.put("bytesWritten", Long.valueOf(bytesAccumulator.value))
+        outputMetricsMap.put("batchesWritten", Long.valueOf(batchAccumulator.value)) 
+        stageDetail.put("outputMetrics", outputMetricsMap)        
         override val detail = stageDetail          
       }
     }
 
-    stageDetail.put("records", Long.valueOf(recordAccumulator.value)) 
-    stageDetail.put("batches", Long.valueOf(batchAccumulator.value)) 
+    outputMetricsMap.put("recordsWritten", Long.valueOf(recordAccumulator.value))         
+    outputMetricsMap.put("bytesWritten", Long.valueOf(bytesAccumulator.value))
+    outputMetricsMap.put("batchesWritten", Long.valueOf(batchAccumulator.value)) 
+    stageDetail.put("outputMetrics", outputMetricsMap)  
 
     logger.info()
       .field("event", "exit")

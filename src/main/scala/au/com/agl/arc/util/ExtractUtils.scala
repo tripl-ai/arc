@@ -35,9 +35,11 @@ object ExtractUtils {
     if (!input.isStreaming) {
       // add meta columns including sequential index
       // if schema already has metadata any columns ignore
-      if (!input.schema.map(_.name).intersect(List("_index","_monotonically_increasing_id")).nonEmpty) {
-        val window = Window.partitionBy("_filename").orderBy("_monotonically_increasing_id")
+      if (!input.columns.intersect(List("_index","_monotonically_increasing_id")).nonEmpty) {
         if (contiguousIndex) {
+          // the window function will break partition pushdown
+          val window = Window.partitionBy("_filename").orderBy("_monotonically_increasing_id")
+
           input
             .withColumn("_monotonically_increasing_id", monotonically_increasing_id())
             .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))

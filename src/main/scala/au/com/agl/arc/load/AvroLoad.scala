@@ -50,35 +50,38 @@ object AvroLoad {
 
     stageDetail.put("drop", dropMap) 
 
+    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+
     // Avro will convert date and times to epoch milliseconds
-    val outputDF =
-      try {
-        val nonNullDF = df.drop(nulls:_*)
-        load.partitionBy match {
-          case Nil =>
-            val dfToWrite = load.numPartitions.map(nonNullDF.repartition(_)).getOrElse(nonNullDF)
-            dfToWrite.write.mode(saveMode).format("avro").save(load.outputURI.toString)
-            dfToWrite
-          case partitionBy => {
-            // create a column array for repartitioning
-            val partitionCols = partitionBy.map(col => df(col))
-            load.numPartitions match {
-              case Some(n) =>
-                val dfToWrite = nonNullDF.repartition(n, partitionCols:_*)
-                dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).format("avro").save(load.outputURI.toString)
-                dfToWrite
-              case None =>
-                val dfToWrite = nonNullDF.repartition(partitionCols:_*)
-                dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).format("avro").save(load.outputURI.toString)
-                dfToWrite
-            }
+    val outputDF = try {
+      val nonNullDF = df.drop(nulls:_*)
+      load.partitionBy match {
+        case Nil =>
+          val dfToWrite = load.numPartitions.map(nonNullDF.repartition(_)).getOrElse(nonNullDF)
+          dfToWrite.write.mode(saveMode).format("avro").save(load.outputURI.toString)
+          dfToWrite
+        case partitionBy => {
+          // create a column array for repartitioning
+          val partitionCols = partitionBy.map(col => df(col))
+          load.numPartitions match {
+            case Some(n) =>
+              val dfToWrite = nonNullDF.repartition(n, partitionCols:_*)
+              dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).format("avro").save(load.outputURI.toString)
+              dfToWrite
+            case None =>
+              val dfToWrite = nonNullDF.repartition(partitionCols:_*)
+              dfToWrite.write.partitionBy(partitionBy:_*).mode(saveMode).format("avro").save(load.outputURI.toString)
+              dfToWrite
           }
         }
-      } catch {
-        case e: Exception => throw new Exception(e) with DetailException {
-          override val detail = stageDetail
-        }
       }
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail
+      }
+    }
+
+    spark.sparkContext.removeSparkListener(listener)
 
     logger.info()
       .field("event", "exit")
