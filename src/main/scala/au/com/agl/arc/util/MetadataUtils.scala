@@ -66,8 +66,6 @@ object MetadataUtils {
       val jsonNodeFactory = new JsonNodeFactory(true)
       val node = jsonNodeFactory.objectNode
 
-
-
       field.dataType match {
         case _: BooleanType => {
           node.set("id", jsonNodeFactory.textNode(""))
@@ -89,7 +87,9 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())                  
+          node.set("metadata", jsonNodeFactory.objectNode())               
+
+          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: DateType => {
           node.set("id", jsonNodeFactory.textNode(""))
@@ -99,7 +99,7 @@ object MetadataUtils {
           node.set("type", jsonNodeFactory.textNode("date"))
           
           val formattersArray = node.putArray("formatters")
-          formattersArray.add("yyyy-MM-dd")
+          formattersArray.add("uuuu-MM-dd")
 
           node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
           node.set("trim", jsonNodeFactory.booleanNode(true))
@@ -108,7 +108,9 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())             
+          node.set("metadata", jsonNodeFactory.objectNode())           
+
+          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: DecimalType => {
           node.set("id", jsonNodeFactory.textNode(""))
@@ -128,7 +130,9 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())             
+          node.set("metadata", jsonNodeFactory.objectNode())       
+
+          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: DoubleType => {
           node.set("id", jsonNodeFactory.textNode(""))
@@ -145,6 +149,8 @@ object MetadataUtils {
           nullableValuesArray.add("null")
 
           node.set("metadata", jsonNodeFactory.objectNode())             
+
+          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: IntegerType => { 
           node.set("id", jsonNodeFactory.textNode(""))
@@ -160,7 +166,9 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())             
+          node.set("metadata", jsonNodeFactory.objectNode())            
+
+          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: LongType => { 
           node.set("id", jsonNodeFactory.textNode(""))
@@ -176,7 +184,9 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())             
+          node.set("metadata", jsonNodeFactory.objectNode())      
+
+          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: StringType => { 
           node.set("id", jsonNodeFactory.textNode(""))
@@ -193,6 +203,8 @@ object MetadataUtils {
           nullableValuesArray.add("null")
 
           node.set("metadata", jsonNodeFactory.objectNode())             
+
+          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: TimestampType => {
           node.set("id", jsonNodeFactory.textNode(""))
@@ -202,7 +214,7 @@ object MetadataUtils {
           node.set("type", jsonNodeFactory.textNode("timestamp"))
 
           val formattersArray = node.putArray("formatters")
-          formattersArray.add("yyyy-MM-dd'T'HH:mm:ssZ")
+          formattersArray.add("uuuu-MM-dd HH:mm:ss")
 
           node.set("timezoneId", jsonNodeFactory.textNode("UTC"))
 
@@ -213,18 +225,16 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())             
-        }
-        case _: ArrayType => {
-          node.set("type", jsonNodeFactory.textNode("array - unsupported"))
-        }
-        case _: NullType => 
-      }
+          node.set("metadata", jsonNodeFactory.objectNode())          
 
-      objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node)
+          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
+        }
+        case _: ArrayType => None
+        case _: NullType => None
+      }
     })
 
-    s"""[${fields.mkString(",")}]"""
+    s"""[${fields.flatten.mkString(",")}]"""
   }
 }
 
