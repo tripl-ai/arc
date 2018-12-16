@@ -14,7 +14,7 @@ An example command to start a job is:
 docker run \
 -e "ETL_CONF_ENV=production" \
 -e "ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0" \
--it -p 4040:4040 seddonm1/arc:1.3.0 \
+-it -p 4040:4040 seddonm1/arc:1.4.1\
 bin/spark-submit \
 --master local[*] \
 --class au.com.agl.arc.ARC \
@@ -99,7 +99,8 @@ docker run \
 --net "arc-integration" \
 -e "ETL_CONF_ENV=test" \
 -e "ETL_CONF_STREAMING=true" \
--it -p 4040:4040 seddonm1/arc:1.3.0 \
+-e "ETL_CONF_ROWS_PER_SECOND=10" \
+-it -p 4040:4040 seddonm1/arc:1.4.1 \
 bin/spark-submit \
 --master local[*] \
 --class au.com.agl.arc.ARC \

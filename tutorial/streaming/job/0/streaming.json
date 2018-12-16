@@ -7,7 +7,7 @@
         "test"
       ],
       "outputView": "stream",
-      "rowsPerSecond": 1,
+      "rowsPerSecond": ${ETL_CONF_ROWS_PER_SECOND},
       "rampUpTime": 0,
       "numPartitions": 1
     },
@@ -33,22 +33,13 @@
       "persist": false
     },
     {
-      "type": "SQLTransform",
-      "name": "prepare data for model",
-      "environments": [
-        "test"
-      ],
-      "inputURI": "/opt/tutorial/streaming/job/0/prepare_data.sql",
-      "outputView": "random_customer_model_ready",
-      "persist": false
-    },
-    {
       "type": "TensorFlowServingTransform",
       "name": "call model to create new credit_score on fake data",
       "environments": [
         "test"
       ],
-      "inputView": "random_customer_model_ready",
+      "inputView": "random_customer_typed",
+      "inputField": "credit_score",
       "outputView": "random_customer_augmented",
       "uri": "http://resources_tensorflow_serving_1:9001/v1/models/simple/versions/1:predict",
       "batchSize": 100,
@@ -61,7 +52,7 @@
         "test"
       ],
       "inputView": "random_customer_augmented",
-      "outputMode": "Append",
+      "outputMode": "Append"
     }
   ]
 }
