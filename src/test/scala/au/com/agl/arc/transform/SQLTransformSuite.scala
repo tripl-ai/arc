@@ -43,7 +43,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(targetFile)) 
     // parquet does not support writing NullType
     // include partition by to test pushdown
-    TestDataUtils.getKnownDataset.drop($"nullDatum").write.partitionBy("dateDatum").parquet(targetFile)  
+    TestDataUtils.getKnownDataset.drop($"nullDatum").withColumn("_monotonically_increasing_id", monotonically_increasing_id()).write.partitionBy("dateDatum").parquet(targetFile)  
   }
 
   after {
@@ -143,22 +143,38 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform: partitionPushdown") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    extract.ParquetExtract.extract(
+      ParquetExtract(
+        name=inputView,
+        cols=Right(Nil),
+        outputView=outputView,
+        input=targetFile,
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=Option(true)
+      )
+    )    
 
     val transformed = transform.SQLTransform.transform(
       SQLTransform(
         name="SQLTransform", 
         inputURI=new URI(targetFile),
-        sql=s"SELECT * FROM parquet.`${targetFile}` WHERE DAY(dateDatum) = 19",
+        sql=s"SELECT * FROM ${outputView} WHERE dateDatum = TO_DATE('2016-12-19')",
         outputView=outputView,
         persist=false,
-        sqlParams=Map("sql_boolean_param" -> "FALSE"),
+        sqlParams=Map.empty,
         params=Map.empty
       )
     ).get
 
     val partitionFilters = QueryExecutionUtils.getPartitionFilters(transformed.queryExecution.executedPlan).toArray.mkString(",")
-    assert(partitionFilters.contains("(dayofmonth(dateDatum"))
-    assert(partitionFilters.contains(") = 19)"))
+    assert(partitionFilters.contains("dateDatum"))
+    assert(partitionFilters.contains("isnotnull(dateDatum"))
   }  
 
   test("SQLTransform: predicatePushdown") {
@@ -186,15 +202,31 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform: partitionPushdown and predicatePushdown") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    extract.ParquetExtract.extract(
+      ParquetExtract(
+        name=inputView,
+        cols=Right(Nil),
+        outputView=inputView,
+        input=targetFile,
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=None
+      )
+    )
 
     val transformed = transform.SQLTransform.transform(
       SQLTransform(
         name="SQLTransform", 
         inputURI=new URI(targetFile),
-        sql=s"SELECT * FROM parquet.`${targetFile}` WHERE DAY(dateDatum) = 19 AND booleanDatum = FALSE",
+        sql=s"SELECT * FROM ${inputView} WHERE DAY(dateDatum) = 19 AND booleanDatum = FALSE",
         outputView=outputView,
         persist=false,
-        sqlParams=Map("sql_boolean_param" -> "FALSE"),
+        sqlParams=Map.empty,
         params=Map.empty
       )
     ).get
