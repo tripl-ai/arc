@@ -66,52 +66,157 @@ object MetadataUtils {
       val jsonNodeFactory = new JsonNodeFactory(true)
       val node = jsonNodeFactory.objectNode
 
-      node.set("id", jsonNodeFactory.textNode(UUID.randomUUID().toString))
-      node.set("name", jsonNodeFactory.textNode(field.name))
-      node.set("description", jsonNodeFactory.textNode(""))
-      node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
-      node.set("trim", jsonNodeFactory.booleanNode(true))
 
-      val nullableValuesArray = node.putArray("nullableValues")
-      nullableValuesArray.add("")
-      nullableValuesArray.add("null")
-
-      node.set("metadata", jsonNodeFactory.objectNode())
 
       field.dataType match {
         case _: BooleanType => {
+          node.set("id", jsonNodeFactory.textNode(""))
+          node.set("name", jsonNodeFactory.textNode(field.name))
+          node.set("description", jsonNodeFactory.textNode(""))
+
           node.set("type", jsonNodeFactory.textNode("boolean"))
 
           val trueValuesArray = node.putArray("trueValues")
           trueValuesArray.add("true")
 
           val falseValuesArray = node.putArray("falseValues")
-          falseValuesArray.add("false")            
+          falseValuesArray.add("false")    
+
+          node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
+          node.set("trim", jsonNodeFactory.booleanNode(true))
+
+          val nullableValuesArray = node.putArray("nullableValues")
+          nullableValuesArray.add("")
+          nullableValuesArray.add("null")
+
+          node.set("metadata", jsonNodeFactory.objectNode())                  
         }
         case _: DateType => {
+          node.set("id", jsonNodeFactory.textNode(""))
+          node.set("name", jsonNodeFactory.textNode(field.name))
+          node.set("description", jsonNodeFactory.textNode(""))
+                    
           node.set("type", jsonNodeFactory.textNode("date"))
           
           val formattersArray = node.putArray("formatters")
           formattersArray.add("yyyy-MM-dd")
+
+          node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
+          node.set("trim", jsonNodeFactory.booleanNode(true))
+
+          val nullableValuesArray = node.putArray("nullableValues")
+          nullableValuesArray.add("")
+          nullableValuesArray.add("null")
+
+          node.set("metadata", jsonNodeFactory.objectNode())             
         }
         case _: DecimalType => {
+          node.set("id", jsonNodeFactory.textNode(""))
+          node.set("name", jsonNodeFactory.textNode(field.name))
+          node.set("description", jsonNodeFactory.textNode(""))
+                          
           val decimalField = field.dataType.asInstanceOf[DecimalType]
 
           node.set("type", jsonNodeFactory.textNode("decimal"))
           node.set("precision", jsonNodeFactory.numberNode(decimalField.precision))
           node.set("scale", jsonNodeFactory.numberNode(decimalField.scale))
+
+          node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
+          node.set("trim", jsonNodeFactory.booleanNode(true))
+
+          val nullableValuesArray = node.putArray("nullableValues")
+          nullableValuesArray.add("")
+          nullableValuesArray.add("null")
+
+          node.set("metadata", jsonNodeFactory.objectNode())             
         }
-        case _: DoubleType => node.set("type", jsonNodeFactory.textNode("double"))
-        case _: IntegerType => node.set("type", jsonNodeFactory.textNode("integer"))
-        case _: LongType => node.set("type", jsonNodeFactory.textNode("long"))
-        case _: StringType => node.set("type", jsonNodeFactory.textNode("string"))
+        case _: DoubleType => {
+          node.set("id", jsonNodeFactory.textNode(""))
+          node.set("name", jsonNodeFactory.textNode(field.name))
+          node.set("description", jsonNodeFactory.textNode(""))
+                          
+          node.set("type", jsonNodeFactory.textNode("double"))
+
+          node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
+          node.set("trim", jsonNodeFactory.booleanNode(true))
+
+          val nullableValuesArray = node.putArray("nullableValues")
+          nullableValuesArray.add("")
+          nullableValuesArray.add("null")
+
+          node.set("metadata", jsonNodeFactory.objectNode())             
+        }
+        case _: IntegerType => { 
+          node.set("id", jsonNodeFactory.textNode(""))
+          node.set("name", jsonNodeFactory.textNode(field.name))
+          node.set("description", jsonNodeFactory.textNode(""))
+                          
+          node.set("type", jsonNodeFactory.textNode("integer"))
+
+          node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
+          node.set("trim", jsonNodeFactory.booleanNode(true))
+
+          val nullableValuesArray = node.putArray("nullableValues")
+          nullableValuesArray.add("")
+          nullableValuesArray.add("null")
+
+          node.set("metadata", jsonNodeFactory.objectNode())             
+        }
+        case _: LongType => { 
+          node.set("id", jsonNodeFactory.textNode(""))
+          node.set("name", jsonNodeFactory.textNode(field.name))
+          node.set("description", jsonNodeFactory.textNode(""))
+                
+          node.set("type", jsonNodeFactory.textNode("long"))
+
+          node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
+          node.set("trim", jsonNodeFactory.booleanNode(true))
+
+          val nullableValuesArray = node.putArray("nullableValues")
+          nullableValuesArray.add("")
+          nullableValuesArray.add("null")
+
+          node.set("metadata", jsonNodeFactory.objectNode())             
+        }
+        case _: StringType => { 
+          node.set("id", jsonNodeFactory.textNode(""))
+          node.set("name", jsonNodeFactory.textNode(field.name))
+          node.set("description", jsonNodeFactory.textNode(""))
+                
+          node.set("type", jsonNodeFactory.textNode("string"))
+
+          node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
+          node.set("trim", jsonNodeFactory.booleanNode(true))
+
+          val nullableValuesArray = node.putArray("nullableValues")
+          nullableValuesArray.add("")
+          nullableValuesArray.add("null")
+
+          node.set("metadata", jsonNodeFactory.objectNode())             
+        }
         case _: TimestampType => {
+          node.set("id", jsonNodeFactory.textNode(""))
+          node.set("name", jsonNodeFactory.textNode(field.name))
+          node.set("description", jsonNodeFactory.textNode(""))
+                          
           node.set("type", jsonNodeFactory.textNode("timestamp"))
 
           val formattersArray = node.putArray("formatters")
           formattersArray.add("yyyy-MM-dd'T'HH:mm:ssZ")
 
           node.set("timezoneId", jsonNodeFactory.textNode("UTC"))
+
+          node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
+          node.set("trim", jsonNodeFactory.booleanNode(true))
+
+          val nullableValuesArray = node.putArray("nullableValues")
+          nullableValuesArray.add("")
+          nullableValuesArray.add("null")
+
+          node.set("metadata", jsonNodeFactory.objectNode())             
+        }
+        case _: ArrayType => {
+          node.set("type", jsonNodeFactory.textNode("array - unsupported"))
         }
         case _: NullType => 
       }
