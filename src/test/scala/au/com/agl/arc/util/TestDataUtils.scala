@@ -1,5 +1,6 @@
 package au.com.agl.arc.util
 
+import java.io.File
 import java.sql.Date
 import java.sql.Timestamp
 import java.time.{ZoneId, ZonedDateTime}
@@ -102,6 +103,15 @@ object TestDataUtils {
 
         objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonTree)
     }
+
+    def getListOfFiles(dir: String):List[File] = {
+        val d = new File(dir)
+        if (d.exists && d.isDirectory) {
+            d.listFiles.filter(_.isFile).filter(f => !f.getPath.contains("README.md")).toList
+        } else {
+            List[File]()
+        }
+    }     
 
     def getKnownDatasetMetadataJson(): String = {
     """

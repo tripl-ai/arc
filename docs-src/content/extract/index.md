@@ -89,22 +89,11 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
 
 ### Examples
 
-```json
-{
-    "type": "BytesExtract",
-    "name": "load images from the customer vehicle photos directory",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://input_data/customer/vehicles/*.jpg",
-    "outputView": "customer_vehicles_photos",            
-    "persist": false,
-    "numPartitions": 10,
-    "authentication": {
-        ...
-    },    
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/BytesExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/BytesExtractComplete" highlight="json" >}} 
 
 ## DelimitedExtract
 ##### Since: 1.0.0 - Supports Streaming: True

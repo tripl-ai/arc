@@ -7,6 +7,7 @@ metadataformat = "yaml"
 canonifyurls = true
 # Enable Google Analytics by entering your tracking id
 googleAnalytics = ""
+pygmentsUseClasses=true
 
 [params]
 	# General information
@@ -18,6 +19,7 @@ googleAnalytics = ""
 	provider = "GitHub"
 	repo_url = "https://github.com/aglenergy/arc"
 
+	image = "seddonm1/arc"
 	version = "1.4.1"
 	logo = "images/logo.png"
 	favicon = ""

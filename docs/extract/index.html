@@ -708,21 +708,31 @@
 
 <h3 id="examples-1">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;BytesExtract&quot;,
-    &quot;name&quot;: &quot;load images from the customer vehicle photos directory&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://input_data/customer/vehicles/*.jpg&quot;,
-    &quot;outputView&quot;: &quot;customer_vehicles_photos&quot;,            
-    &quot;persist&quot;: false,
-    &quot;numPartitions&quot;: 10,
-    &quot;authentication&quot;: {
-        ...
-    },    
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;BytesExtract&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load images from the customer vehicle photos directory&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;production&#34;</span><span class="p">,</span> <span class="s2">&#34;test&#34;</span><span class="p">],</span>
+    <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/vehicles/*.jpg&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_vehicles_photos&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span>       
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;BytesExtract&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load images from the customer vehicle photos directory&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;production&#34;</span><span class="p">,</span> <span class="s2">&#34;test&#34;</span><span class="p">],</span>
+    <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/vehicles/*.jpg&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_vehicles_photos&#34;</span><span class="p">,</span>            
+    <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+    <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+    <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>    
+    <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{}</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="delimitedextract">DelimitedExtract</h2>
 

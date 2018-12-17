@@ -2,6 +2,8 @@ package au.com.agl.arc.util
 
 import java.net.URI
 
+import scala.io.Source
+
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
@@ -10,6 +12,9 @@ import org.apache.spark.sql._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.api.{Delimited, Delimiter, QuoteCharacter}
 import au.com.agl.arc.util.log.LoggerFactory
+
+import com.typesafe.config._
+
 
 class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
@@ -29,6 +34,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   after {
     session.stop()
   }
+
 
   test("Read simple config") {
     implicit val spark = session
@@ -128,4 +134,36 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     assert(pipeline === Right(expected))
   }
 
+
+  // This test loops through the /src/test/resources/docs_resources directory and tries to parse each file as a config
+  // the same config files are used (embedded) on the documentation site so this confirms the examples will work.
+  test("Read documentation config files") {
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val argsMap = collection.mutable.HashMap[String, String]()
+
+    val resourcesDir = getClass.getResource("/docs_resources/").getPath
+
+    for (filename <- TestDataUtils.getListOfFiles(resourcesDir)) {
+      val fileContents = Source.fromFile(filename).getLines.mkString
+      val conf = s"""{"stages": [${fileContents.trim}]}"""
+
+      val base = ConfigFactory.load()
+      val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+      val config = etlConf.withFallback(base)
+      var argsMap = collection.mutable.Map[String, String]()
+      val pipelineEither = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)
+
+      pipelineEither match {
+        case Left(errors) => {
+          assert(false, s"Error in config ${filename}: ${ConfigUtils.Error.pipelineErrorMsg(errors)}")
+        }
+        case Right(pipeline) => {
+          assert(true)
+        }
+      }
+    }
+  }
 }

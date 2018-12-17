@@ -430,7 +430,7 @@
 <pre><code class="language-json">docker run \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&quot; \
--it -p 4040:4040 seddonm1/arc:1.4.1\
+-it -p 4040:4040 seddonm1/arc:1.4.1 \
 bin/spark-submit \
 --master local[*] \
 --class au.com.agl.arc.ARC \
