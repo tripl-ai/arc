@@ -430,82 +430,115 @@ object ConfigUtils {
 
   trait ConfigReader[A] {
 
-    def getValue(path: String, c: Config): Either[Errors, A]
+    def getValue(path: String, c: Config, default: Option[A] = None, validValues: Seq[A] = Seq.empty): Either[Errors, A] =
+      ConfigReader.getConfigValue[A](path, c, expectedType, default, validValues){ read(path, c) }
 
-    def getOptionalValue(path: String, c: Config): Either[Errors, Option[A]]
+    def getOptionalValue(path: String, c: Config, default: Option[A], validValues: Seq[A] = Seq.empty): Either[Errors, Option[A]] =
+      ConfigReader.getOptionalConfigValue(path, c, expectedType, default, validValues){ read(path, c) }
+
+    def expectedType: String
+
+    def read(path: String, c: Config): A
 
   }
   
   object ConfigReader {
 
-    def getConfigValue[A](path: String, c: Config, expectedType: String)(read: => A): Either[Errors, A] = {
+    def getConfigValue[A](path: String, c: Config, expectedType: String,
+                          default: Option[A] = None, validValues: Seq[A] = Seq.empty)(read: => A): Either[Errors, A] = {
     
       def err(msg: String): Either[Errors, A] = Left(ConfigError(path, msg) :: Nil)
 
       try {
         if (c.hasPath(path)) {
-          Right(read)
+          val value = read
+          if (!validValues.isEmpty) {
+            if (validValues.contains(value)) {
+              Right(value)
+            } else {
+              err(s"Invalid value found for $path. Valid values are ${validValues.map(_.toString).mkString(",")}. Line ${c.origin.lineNumber()}.")
+            }
+          } else {
+            Right(read)
+          }
         } else {
-          err(s"No value found for $path")
+          default.map( Right(_) ).getOrElse {
+            err(s"No value found for $path")
+          }
         }
       } catch {
-        case wt: ConfigException.WrongType => err(s"Unable to read config value, wrong type, expected: $expectedType")
+        case wt: ConfigException.WrongType => err(s"Unable to read config value, wrong type, expected: $expectedType, line ${c.origin.lineNumber()}.")
         case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
       }
 
     }
 
-    def getOptionalConfigValue[A](path: String, c: Config, expectedType: String)(read: => A): Either[Errors, Option[A]] = {
+    def getOptionalConfigValue[A](path: String, c: Config, expectedType: String,
+                                     default: Option[A] = None, validValues: Seq[A] = Seq.empty)(read: => A): Either[Errors, Option[A]] = {
       if (c.hasPath(path)) {
-        val value = getConfigValue(path, c, expectedType)(read)
+        val value = getConfigValue(path, c, expectedType, None, validValues)(read)
         value match {
           case Right(cv) => Right(Option(cv))
           case Left(l) => Left(l) // matching works around typing error
         }
       } else {
-        Right(None)
+        Right(default)
       }
     }
 
     implicit object StringConfigReader extends ConfigReader[String] {
 
-      def getValue(path: String, c: Config): Either[Errors, String] = getConfigValue(path, c, "string"){ c.getString(path) }
+      val expectedType = "string"
 
-      def getOptionalValue(path: String, c: Config): Either[Errors, Option[String]] = getOptionalConfigValue(path, c, "string"){ c.getString(path) }
+      def read(path: String, c: Config): String = c.getString(path)
+
+    }
+
+    implicit object StringListConfigReader extends ConfigReader[StringList] {
+
+      val expectedType = "string array"
+
+      def read(path: String, c: Config): StringList = c.getStringList(path).asScala.toList
 
     }
 
     implicit object BooleanConfigReader extends ConfigReader[Boolean] {
 
-      def getValue(path: String, c: Config): Either[Errors, Boolean] = getConfigValue(path, c, "boolean"){ c.getBoolean(path) }
+      val expectedType = "boolean"
 
-      def getOptionalValue(path: String, c: Config): Either[Errors, Option[Boolean]] = getOptionalConfigValue(path, c, "boolean"){ c.getBoolean(path) }
+      def read(path: String, c: Config): Boolean = c.getBoolean(path)
 
-    }  
+    }
 
     implicit object IntConfigReader extends ConfigReader[Int] {
 
-      def getValue(path: String, c: Config): Either[Errors, Int] = getConfigValue(path, c, "int"){ c.getInt(path) }
+      val expectedType = "int"
 
-      def getOptionalValue(path: String, c: Config): Either[Errors, Option[Int]] = getOptionalConfigValue(path, c, "int"){ c.getInt(path) }
+      def read(path: String, c: Config): Int = c.getInt(path)
 
-    }    
+    }
 
     implicit object LongConfigReader extends ConfigReader[Long] {
 
-      def getValue(path: String, c: Config): Either[Errors, Long] = getConfigValue(path, c, "long"){ c.getLong(path) }
+      val expectedType = "long"
 
-      def getOptionalValue(path: String, c: Config): Either[Errors, Option[Long]] = getOptionalConfigValue(path, c, "long"){ c.getLong(path) }
+      def read(path: String, c: Config): Long = c.getLong(path)
 
-    }        
+    }
 
-    def getValue[A](path: String)(implicit c: Config, reader: ConfigReader[A]): Either[Errors, A] = reader.getValue(path, c)
+    def getValue[A](path: String, default: Option[A] = None, validValues: Seq[A] = Seq.empty)(implicit c: Config, reader: ConfigReader[A]): Either[Errors, A] = {
+      reader.getValue(path, c, default, validValues)
+    }
 
-    def getOptionalValue[A](path: String)(implicit c: Config, reader: ConfigReader[A]): Either[Errors, Option[A]] = reader.getOptionalValue(path, c)
+    def getOptionalValue[A](path: String, default: Option[A] = None, validValues: Seq[A] = Seq.empty)(implicit c: Config, reader: ConfigReader[A]): Either[Errors, Option[A]] = {
+      reader.getOptionalValue(path, c, default, validValues)
+    }
 
   }
 
   type StringConfigValue = Either[Errors, String]
+
+  type StringList = List[String]
 
   private def stringOrDefault(sv: StringConfigValue, default: String): String = {
     sv match {
@@ -636,7 +669,7 @@ object ConfigUtils {
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
 
@@ -651,13 +684,13 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    (name, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
-      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
+    (name, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex) match {
+      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(pb), Right(auth), Right(ci)) =>
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
-        Right(AvroExtract(n, schema, ov, pg, auth, params, p, np, partitionBy, ci))
+        Right(AvroExtract(n, schema, ov, pg, auth, params, p, np, pb, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
@@ -706,10 +739,20 @@ object ConfigUtils {
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)
     }
-  }  
+  }
+
+  def checkValidKeys(c: Config)(expectedKeys: => Seq[String]): Seq[String] = c.root().keySet.asScala.toSeq.diff(expectedKeys)
 
   def readDelimitedExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
+    import au.com.agl.arc.extract.DelimitedExtract._
+
+    val expectedKeys = "inputView" :: "inputURI" :: "schemaURI" :: "outputView" :: "persist" :: "numPartitions" :: "partitionBy" :: "authentication" :: "contiguousIndex" :: "schemaView" :: "delimiter" :: "quote" :: "header" :: Nil
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    if (!invalidKeys.isEmpty) {
+      // print error
+    }
 
     val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
     val parsedGlob = if (!c.hasPath("inputView")) {
@@ -721,14 +764,13 @@ object ConfigUtils {
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist")
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
-    val header = getOptionalValue[Boolean]("header")
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getOptionalValue[Boolean]("contiguousIndex")
 
     val uriKey = "schemaURI"
     val stringURI = getOptionalValue[String](uriKey)
-    val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
+    val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI =>
       optURI match {
         case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
         case None => Right(None)
@@ -737,37 +779,18 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    // @TODO: FiX delimited OPTIONS
-    val delimited = Delimited()
-    val delimiter = if (c.hasPath("delimiter")) {
-      c.getString("delimiter") match {
-        case "Comma" => Delimiter.Comma
-        case "DefaultHive" => Delimiter.DefaultHive
-        case "Pipe" => Delimiter.Pipe
-      }
-    } else delimited.sep
-    val quote = if (c.hasPath("quote")) {
-      c.getString("quote") match {
-        case "DoubleQuote" => QuoteCharacter.DoubleQuote
-        case "SingleQuote" => QuoteCharacter.SingleQuote
-        case "None" => QuoteCharacter.Disabled
-      }
-    } else delimited.quote
+    val delimiter = getOptionalValue[String]("delimiter", Some("Comma"), "Comma" :: "Pipe" :: "DefaultHive" :: Nil) |> validateDelimiter("delimiter") _
+    val quote = getOptionalValue[String]("quote", Some("DoubleQuote"), "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> validateQuote("quote") _
+    val header = getValue[Boolean]("header", Some(false))
 
-    (name, input, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, header, authentication, contiguousIndex) match {
-      case (Right(n), Right(in), Right(pg), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(head), Right(auth), Right(ci)) => 
-
-        val header = head match {
-          case Some(value) => value
-          case None => delimited.header
-        }
-
+    (name, input, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote) match {
+      case (Right(n), Right(in), Right(pg), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(pb), Right(head), Right(auth), Right(ci), Right(delim), Right(q)) =>
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        val extract = DelimitedExtract(n, schema, ov, input, Delimited(header=header, sep=delimiter, quote=quote), auth, params, p, np, partitionBy, ci)
+        val extract = DelimitedExtract(n, schema, ov, input, Delimited(header=head, sep=delim, quote=q), auth, params, p, np, pb, ci)
         Right(extract)
       case _ =>
-        val allErrors: Errors = List(name, input, parsedGlob, extractColumns, outputView, persist, numPartitions, header, authentication, contiguousIndex).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, input, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, allErrors)
         Left(err :: Nil)

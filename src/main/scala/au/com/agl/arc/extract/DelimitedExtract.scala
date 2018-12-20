@@ -1,7 +1,5 @@
 package au.com.agl.arc.extract
 
-import java.lang._
-import java.net.URI
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
@@ -11,6 +9,7 @@ import org.apache.spark.storage.StorageLevel
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
+import au.com.agl.arc.util.ConfigUtils.{ConfigError, Errors}
 import au.com.agl.arc.util._
 
 object DelimitedExtract {
@@ -22,9 +21,9 @@ object DelimitedExtract {
     val contiguousIndex = extract.contiguousIndex.getOrElse(true)
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
-    stageDetail.put("persist", Boolean.valueOf(extract.persist))
+    stageDetail.put("persist", java.lang.Boolean.valueOf(extract.persist))
     stageDetail.put("outputView", extract.outputView)
-    stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
+    stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
 
     val options: Map[String, String] = Delimited.toSparkOptions(extract.settings)
 
@@ -136,7 +135,7 @@ object DelimitedExtract {
 
       if (extract.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
       }      
     }
 
@@ -147,6 +146,24 @@ object DelimitedExtract {
       .log()
 
     Option(repartitionedDF)
+  }
+
+  def validateDelimiter(path: String)(delim: Option[String]): Either[Errors, Delimiter] = {
+    delim.map(_.toLowerCase.trim) match {
+      case Some("comma") => Right(Delimiter.Comma)
+      case Some("defaulthive") => Right(Delimiter.DefaultHive)
+      case Some("pipe") => Right(Delimiter.Pipe)
+      case _ => Left(ConfigError(path, s"$delim is not a valid delimiter, valid options are Comma, Pipe, DefaultHive.") :: Nil)
+    }
+  }
+
+  def validateQuote(path: String)(quote: Option[String]): Either[Errors, QuoteCharacter] = {
+    quote.map(_.toLowerCase.trim) match {
+      case Some("doublequote") => Right(QuoteCharacter.DoubleQuote)
+      case Some("singlequote") => Right(QuoteCharacter.SingleQuote)
+      case Some("none") => Right(QuoteCharacter.Disabled)
+      case _ => Left(ConfigError(path, s"$quote is not a valid quote character, valid options are DoubleQuote, SingleQuote and None.") :: Nil)
+    }
   }
 
 }
