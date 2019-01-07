@@ -1,1 +1,1 @@
-A list expressions suitable for inclusion in `WHERE` clauses; each one defines one partition of the `DataFrame` to allow parallel reads.<br><br>e.g. `['id=1', 'id=2', 'id=3', 'id=4']` would create 4 parallel readers.
+A list expressions suitable for inclusion in `WHERE` clauses; each one defines one partition of the `DataFrame` to allow explicit parallel reads.<br><br>e.g. `['id=1', 'id=2', 'id=3', 'id=4']` would create 4 parallel readers.

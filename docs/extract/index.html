@@ -523,7 +523,49 @@
 <td>inputURI</td>
 <td>URI</td>
 <td>true</td>
-<td>URI of the input Avro files.</td>
+<td>URI/Glob of the input Avro files.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
 </tr>
 
 <tr>
@@ -546,74 +588,45 @@
 <td>false</td>
 <td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
-
-<tr>
-<td>outputView</td>
-<td>String</td>
-<td>true</td>
-<td>Name of outgoing Spark dataset after processing.</td>
-</tr>
-
-<tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
-<td>false</td>
-<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
-</tr>
-
-<tr>
-<td>partitionBy</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>Columns to partition the data by.</td>
-</tr>
-
-<tr>
-<td>contiguousIndex</td>
-<td>Boolean</td>
-<td>false</td>
-<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
-</tr>
-
-<tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
 </tbody>
 </table>
 
 <h3 id="examples">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;AvroExtract&quot;,
-    &quot;name&quot;: &quot;load customer avro extract&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://input_data/customer/*.avro&quot;,
-    &quot;outputView&quot;: &quot;customer&quot;,            
-    &quot;persist&quot;: false,
-    &quot;authentication&quot;: {
-        ...
-    },    
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;AvroExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customer avro extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.avro&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;AvroExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customer avro extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.avro&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="bytesextract">BytesExtract</h2>
 
@@ -649,17 +662,17 @@
 </tr>
 
 <tr>
-<td>inputURI</td>
-<td>URI</td>
-<td>false</td>
-<td>URI/Glob of the input binary files.</td>
+<td>inputView</td>
+<td>String</td>
+<td>true*</td>
+<td>Name of the incoming Spark dataset containing a list of URI/Globs to extract from.  If not present <code>inputURI</code> is requred.</td>
 </tr>
 
 <tr>
-<td>pathView</td>
-<td>String</td>
-<td>false</td>
-<td>A <code>DataFrame</code> containing a list of URI/Globs to extract from.</td>
+<td>inputURI</td>
+<td>URI</td>
+<td>true*</td>
+<td>URI/Glob of the input binaryfiles. If not present <code>inputView</code> is requred.</td>
 </tr>
 
 <tr>
@@ -670,17 +683,10 @@
 </tr>
 
 <tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
+<td>authentication</td>
+<td>Map[String, String]</td>
 <td>false</td>
-<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -691,47 +697,51 @@
 </tr>
 
 <tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
+<td>numPartitions</td>
+<td>Integer</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
 </tr>
 
 <tr>
-<td>params</td>
-<td>Map[String, String]</td>
+<td>persist</td>
+<td>Boolean</td>
 <td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-1">Examples</h3>
 
-<h4 id="minimal">Minimal</h4>
+<h4 id="minimal-1">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;BytesExtract&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load images from the customer vehicle photos directory&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;production&#34;</span><span class="p">,</span> <span class="s2">&#34;test&#34;</span><span class="p">],</span>
-    <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/vehicles/*.jpg&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_vehicles_photos&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span>       
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;BytesExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load images from the customer vehicle photos directory&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/vehicles/*.jpg&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_vehicles_photos&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete">Complete</h4>
+<h4 id="complete-1">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;BytesExtract&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load images from the customer vehicle photos directory&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;production&#34;</span><span class="p">,</span> <span class="s2">&#34;test&#34;</span><span class="p">],</span>
-    <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/vehicles/*.jpg&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_vehicles_photos&#34;</span><span class="p">,</span>            
-    <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-    <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-    <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-    <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>    
-    <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{}</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;BytesExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load images from the customer vehicle photos directory&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/vehicles/*.jpg&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_vehicles_photos&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{}</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="delimitedextract">DelimitedExtract</h2>
@@ -770,15 +780,78 @@
 <tr>
 <td>inputView</td>
 <td>String</td>
-<td>false*</td>
+<td>true*</td>
 <td>Name of the incoming Spark dataset. If not present <code>inputURI</code> is requred.</td>
 </tr>
 
 <tr>
 <td>inputURI</td>
 <td>URI</td>
-<td>false*</td>
+<td>true*</td>
 <td>URI/Glob of the input delimited text files. If not present <code>inputView</code> is requred.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>delimiter</td>
+<td>String</td>
+<td>false</td>
+<td>The type of delimiter in the file. Supported values: <code>Comma</code>, <code>Pipe</code>, <code>DefaultHive</code>. <code>DefaultHive</code> is  ASCII character 1, the default delimiter for Apache Hive extracts. <br><br>Default: <code>DefaultHive</code>.</td>
+</tr>
+
+<tr>
+<td>header</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named <code>_col1</code>, <code>_col2</code> &hellip; <code>_colN</code>.<br><br>Default: false.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+</tr>
+
+<tr>
+<td>quote</td>
+<td>String</td>
+<td>false</td>
+<td>The type of quoting in the file. Supported values: <code>None</code>, <code>SingleQuote</code>, <code>DoubleQuote</code>.<br><br>Default: <code>DoubleQuote</code>.</td>
 </tr>
 
 <tr>
@@ -801,116 +874,48 @@
 <td>false</td>
 <td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
-
-<tr>
-<td>outputView</td>
-<td>String</td>
-<td>true</td>
-<td>Name of outgoing Spark dataset after processing.</td>
-</tr>
-
-<tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
-<td>false</td>
-<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
-</tr>
-
-<tr>
-<td>partitionBy</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>Columns to partition the data by.</td>
-</tr>
-
-<tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
-</tr>
-
-<tr>
-<td>delimiter</td>
-<td>String</td>
-<td>true</td>
-<td>The type of delimiter in the file. Supported values: <code>Comma</code>, <code>Pipe</code>, <code>DefaultHive</code>. <code>DefaultHive</code> is  ASCII character 1, the default delimiter for Apache Hive extracts.</td>
-</tr>
-
-<tr>
-<td>quote</td>
-<td>String</td>
-<td>true</td>
-<td>The type of quoting in the file. Supported values: <code>None</code>, <code>SingleQuote</code>, <code>DoubleQuote</code>.</td>
-</tr>
-
-<tr>
-<td>header</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named <code>_col1</code>, <code>_col2</code> &hellip; <code>_colN</code>.</td>
-</tr>
-
-<tr>
-<td>contiguousIndex</td>
-<td>Boolean</td>
-<td>false</td>
-<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
 </tbody>
 </table>
 
 <h3 id="examples-2">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;DelimitedExtract&quot;,
-    &quot;name&quot;: &quot;load customer csv extract&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://input_data/customer/*.csv&quot;,
-    &quot;outputView&quot;: &quot;customer&quot;,            
-    &quot;persist&quot;: false,
-    &quot;delimiter&quot;: &quot;Comma&quot;,
-    &quot;quote&quot; : &quot;DoubleQuote&quot;,
-    &quot;header&quot;: true,
-    &quot;authentication&quot;: {
-        ...
-    },
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-2">Minimal</h4>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;DelimitedExtract&quot;,
-    &quot;name&quot;: &quot;split customer record extract&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputView&quot;: &quot;customer_raw&quot;,
-    &quot;outputView&quot;: &quot;customer&quot;,            
-    &quot;persist&quot;: false,
-    &quot;delimiter&quot;: &quot;DefaultHive&quot;,
-    &quot;quote&quot; : &quot;SingleQuote&quot;,
-    &quot;header&quot;: false,
-    &quot;authentication&quot;: {
-        ...
-    },    
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customer extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.csv&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-2">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customer csv extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.csv&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;delimiter&#34;</span><span class="p">:</span> <span class="s2">&#34;Comma&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;header&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;quote&#34;</span><span class="p">:</span> <span class="s2">&#34;DoubleQuote&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="httpextract">HTTPExtract</h2>
 
@@ -950,14 +955,14 @@
 <tr>
 <td>inputView</td>
 <td>String</td>
-<td>false*</td>
+<td>true*</td>
 <td>Name of the incoming Spark dataset containing the list of URIs in <code>value</code> field. If not present <code>inputURI</code> is requred.</td>
 </tr>
 
 <tr>
 <td>inputURI</td>
 <td>URI</td>
-<td>false*</td>
+<td>true*</td>
 <td>URI of the HTTP server. If not present <code>inputView</code> is requred.</td>
 </tr>
 
@@ -969,10 +974,24 @@
 </tr>
 
 <tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+<td>body</td>
+<td>String</td>
+<td>false</td>
+<td>The request body/entity that is sent with a <code>POST</code> request.</td>
+</tr>
+
+<tr>
+<td>headers</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td><a href="https://en.wikipedia.org/wiki/List_of_HTTP_header_fields">HTTP Headers</a> to set for the HTTP request. These are not limited to the Internet Engineering Task Force standard headers.</td>
+</tr>
+
+<tr>
+<td>method</td>
+<td>String</td>
+<td>false</td>
+<td>The request type with valid values <code>GET</code> or <code>POST</code>.<br><br>Default: <code>GET</code>.</td>
 </tr>
 
 <tr>
@@ -990,24 +1009,10 @@
 </tr>
 
 <tr>
-<td>method</td>
-<td>String</td>
+<td>persist</td>
+<td>Boolean</td>
 <td>false</td>
-<td>The request type with valid values <code>GET</code> or <code>POST</code>.<br><br>Default: <code>GET</code>.</td>
-</tr>
-
-<tr>
-<td>headers</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td><a href="https://en.wikipedia.org/wiki/List_of_HTTP_header_fields">HTTP Headers</a> to set for the HTTP request. These are not limited to the Internet Engineering Task Force standard headers.</td>
-</tr>
-
-<tr>
-<td>body</td>
-<td>String</td>
-<td>false</td>
-<td>The request body/entity that is sent with a <code>POST</code> request.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
 </tr>
 
 <tr>
@@ -1016,35 +1021,50 @@
 <td>false</td>
 <td>A list of valid status codes which will result in a successful stage if the list contains the HTTP server response code. If not provided the default values are <code>[200, 201, 202]</code>.</td>
 </tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
 </tbody>
 </table>
 
 <h3 id="examples-3">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;HTTPExtract&quot;,
-    &quot;name&quot;: &quot;load customer from customer api&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;http://internalserver/api/customer&quot;,
-    &quot;outputView&quot;: &quot;customer&quot;,            
-    &quot;persist&quot;: false,
-    &quot;headers&quot;: {
-        &quot;Authorization&quot;: &quot;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&quot;,
-        &quot;custom-header&quot;: &quot;payload&quot;,
-    },
-    &quot;validStatusCodes&quot;: [200],
-    &quot;method&quot;: &quot;GET&quot;,
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-3">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customer extract from api&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;https://endpoint:9000/customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-3">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customer extract from api&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;https://endpoint:9000/customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;body&#34;</span><span class="p">:</span> <span class="s2">&#34;&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;headers&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;Authorization&#34;</span><span class="p">:</span> <span class="s2">&#34;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;custom-header&#34;</span><span class="p">:</span> <span class="s2">&#34;payload&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;method&#34;</span><span class="p">:</span> <span class="s2">&#34;GET&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;validStatusCodes&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="mi">200</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="imageextract">ImageExtract</h2>
 
@@ -1147,10 +1167,17 @@
 </tr>
 
 <tr>
-<td>persist</td>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>dropInvalid</td>
 <td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+<td>false</td>
+<td>Whether to drop any invalid image files.<br><br>Default: true.</td>
 </tr>
 
 <tr>
@@ -1168,45 +1195,48 @@
 </tr>
 
 <tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
-</tr>
-
-<tr>
-<td>dropInvalid</td>
+<td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to drop any invalid image files.<br><br>Default: true.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-4">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;ImageExtract&quot;,
-    &quot;name&quot;: &quot;load customer images&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://input_data/customer/*.jpg&quot;,
-    &quot;outputView&quot;: &quot;customer_images&quot;,            
-    &quot;persist&quot;: false,
-    &quot;dropInvalid&quot;: true,
-    &quot;authentication&quot;: {
-        ...
-    },    
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-4">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ImageExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customer images&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.jpg&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-4">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ImageExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customer images&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.jpg&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;dropInvalid&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;image.width&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="jdbcextract">JDBCExtract</h2>
 
@@ -1242,6 +1272,20 @@
 </tr>
 
 <tr>
+<td>jdbcURL</td>
+<td>String</td>
+<td>true</td>
+<td>The JDBC URL to connect to. e.g., <code>jdbc:mysql://localhost:3306</code>.</td>
+</tr>
+
+<tr>
+<td>tableName</td>
+<td>String</td>
+<td>true</td>
+<td>The JDBC table that should be read. Note that anything that is valid in a <code>FROM</code> clause of a SQL query can be used, e.g. <code>(SELECT * FROM sourcetable WHERE key=value) sourcetable</code> or just <code>sourcetable</code>.</td>
+</tr>
+
+<tr>
 <td>outputView</td>
 <td>String</td>
 <td>true</td>
@@ -1249,10 +1293,66 @@
 </tr>
 
 <tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>fetchsize</td>
+<td>Integer</td>
+<td>false</td>
+<td>The JDBC fetch size, which determines how many rows to fetch per round trip. This can help performance on JDBC drivers which default to low fetch size (eg. Oracle with 10 rows).</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing. This also determines the maximum number of concurrent JDBC connections.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Map of configuration parameters.. Currently requires <code>user</code> and <code>password</code> to be set here - see example below.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>partitionColumn</td>
+<td>String</td>
+<td>false</td>
+<td>The name of a numeric column from the table in question which defines how to partition the table when reading in parallel from multiple workers. If set <code>numPartitions</code> must also be set.</td>
+</tr>
+
+<tr>
 <td>persist</td>
 <td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+</tr>
+
+<tr>
+<td>predicates</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>A list expressions suitable for inclusion in <code>WHERE</code> clauses; each one defines one partition of the <code>DataFrame</code> to allow explicit parallel reads.<br><br>e.g. <code>['id=1', 'id=2', 'id=3', 'id=4']</code> would create 4 parallel readers.</td>
 </tr>
 
 <tr>
@@ -1275,97 +1375,59 @@
 <td>false</td>
 <td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
-
-<tr>
-<td>jdbcURL</td>
-<td>String</td>
-<td>true</td>
-<td>The JDBC URL to connect to. e.g., <code>jdbc:mysql://localhost:3306</code>.</td>
-</tr>
-
-<tr>
-<td>tableName</td>
-<td>String</td>
-<td>true</td>
-<td>The JDBC table that should be read. Note that anything that is valid in a <code>FROM</code> clause of a SQL query can be used, e.g. <code>(SELECT * FROM sourcetable WHERE key=value) sourcetable</code> or just <code>sourcetable</code>.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
-<td>false</td>
-<td>The maximum number of partitions that can be used for parallelism in table reading and writing. This also determines the maximum number of concurrent JDBC connections.</td>
-</tr>
-
-<tr>
-<td>partitionColumn</td>
-<td>String</td>
-<td>false</td>
-<td>The name of a numeric column from the table in question which defines how to partition the table when reading in parallel from multiple workers. If set <code>numPartitions</code> must also be set.</td>
-</tr>
-
-<tr>
-<td>partitionBy</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>Columns to partition the data by.</td>
-</tr>
-
-<tr>
-<td>predicates</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>A list expressions suitable for inclusion in <code>WHERE</code> clauses; each one defines one partition of the <code>DataFrame</code> to allow parallel reads.<br><br>e.g. <code>['id=1', 'id=2', 'id=3', 'id=4']</code> would create 4 parallel readers.</td>
-</tr>
-
-<tr>
-<td>fetchsize</td>
-<td>Integer</td>
-<td>false</td>
-<td>The JDBC fetch size, which determines how many rows to fetch per round trip. This can help performance on JDBC drivers which default to low fetch size (eg. Oracle with 10 rows).</td>
-</tr>
-
-<tr>
-<td>contiguousIndex</td>
-<td>Boolean</td>
-<td>false</td>
-<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
-</tr>
-
-<tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters.. Currently requires <code>user</code> and <code>password</code> to be set here - see example below.</td>
-</tr>
 </tbody>
 </table>
 
 <h3 id="examples-5">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;JDBCExtract&quot;,
-    &quot;name&quot;: &quot;extract customer from jdbc&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;outputView&quot;: &quot;ative_customers&quot;,            
-    &quot;persist&quot;: false,
-    &quot;jdbcURL&quot;: &quot;jdbc:mysql://localhost/mydb&quot;,
-    &quot;tableName&quot;: &quot;(SELECT * FROM customer WHERE active=TRUE) customer&quot;,
-    &quot;numPartitions&quot;: 10,
-    &quot;fetchsize&quot;: 1000,
-    &quot;params&quot;: {
-        &quot;user&quot;: &quot;mydbuser&quot;,
-        &quot;password&quot;: &quot;mydbpassword&quot;,
-    }
-}
-</code></pre>
+<h4 id="minimal-5">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load active customers from postgres&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;tableName&#34;</span><span class="p">:</span> <span class="s2">&#34;(SELECT * FROM customer WHERE active=TRUE) customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-5">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load active customers from postgresql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;tableName&#34;</span><span class="p">:</span> <span class="s2">&#34;(SELECT * FROM customer WHERE active=TRUE) customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;fetchsize&#34;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;user&#34;</span><span class="p">:</span> <span class="s2">&#34;mydbuser&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;password&#34;</span><span class="p">:</span> <span class="s2">&#34;mydbpassword&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;partitionColumn&#34;</span><span class="p">:</span> <span class="s2">&#34;id&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;predicates&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;id=1&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;id=2&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;id=3&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;id=4&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="jsonextract">JSONExtract</h2>
 
@@ -1403,15 +1465,64 @@
 <tr>
 <td>inputView</td>
 <td>String</td>
-<td>false*</td>
+<td>true*</td>
 <td>Name of the incoming Spark dataset. If not present <code>inputURI</code> is requred.</td>
 </tr>
 
 <tr>
 <td>inputURI</td>
 <td>URI</td>
-<td>false*</td>
+<td>true*</td>
 <td>URI/Glob of the input <code>json</code> files. If not present <code>inputView</code> is requred.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>multiLine</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether the input directory contains a single JSON object per file or multiple JSON records in a single file, one per line (see <a href="http://jsonlines.org/">JSONLines</a>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
 </tr>
 
 <tr>
@@ -1434,82 +1545,46 @@
 <td>false</td>
 <td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
-
-<tr>
-<td>outputView</td>
-<td>String</td>
-<td>true</td>
-<td>Name of outgoing Spark dataset after processing.</td>
-</tr>
-
-<tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
-<td>false</td>
-<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
-</tr>
-
-<tr>
-<td>partitionBy</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>Columns to partition the data by.</td>
-</tr>
-
-<tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
-</tr>
-
-<tr>
-<td>multiLine</td>
-<td>Boolean</td>
-<td>false</td>
-<td>Whether the input directory contains a single JSON object per file or multiple JSON records in a single file, one per line (see <a href="http://jsonlines.org/">JSONLines</a>.<br><br>Default: true.</td>
-</tr>
-
-<tr>
-<td>contiguousIndex</td>
-<td>Boolean</td>
-<td>false</td>
-<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
 </tbody>
 </table>
 
 <h3 id="examples-6">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;JSONExtract&quot;,
-    &quot;name&quot;: &quot;load customer json extract&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://input_data/customer/*.json&quot;,
-    &quot;outputView&quot;: &quot;customer&quot;,            
-    &quot;persist&quot;: false,
-    &quot;multiLine&quot;: true,
-    &quot;authentication&quot;: {
-        ...
-    },
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-6">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-6">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;multiLine&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="kafkaextract">KafkaExtract</h2>
 
@@ -1562,17 +1637,17 @@
 </tr>
 
 <tr>
-<td>topic</td>
-<td>String</td>
-<td>true</td>
-<td>The target Kafka topic.</td>
-</tr>
-
-<tr>
 <td>bootstrapServers</td>
 <td>String</td>
 <td>true</td>
 <td>A list of host/port pairs to use for establishing the initial connection to the Kafka cluster. e.g. <code>host1:port1,host2:port2,...</code></td>
+</tr>
+
+<tr>
+<td>topic</td>
+<td>String</td>
+<td>true</td>
+<td>The target Kafka topic.</td>
 </tr>
 
 <tr>
@@ -1583,24 +1658,17 @@
 </tr>
 
 <tr>
-<td>maxPollRecords</td>
-<td>Int</td>
-<td>false</td>
-<td>The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read.<br><br>Default: 10000.</td>
-</tr>
-
-<tr>
-<td>timeout</td>
-<td>Long</td>
-<td>false</td>
-<td>The time, in milliseconds, spent waiting in poll if data is not available in Kafka. Default: 10000.</td>
-</tr>
-
-<tr>
 <td>autoCommit</td>
 <td>Boolean</td>
 <td>false</td>
 <td>Whether to update the offsets in Kafka automatically. To be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour.<br><br>If <code>autoCommit</code> is set to <code>false</code> this stage will force <code>persist</code> equal to <code>true</code> so that Spark will not execute the Kafka extract process twice with a potentially different result (e.g. new messages added between extracts).<br><br>Default: false.</td>
+</tr>
+
+<tr>
+<td>maxPollRecords</td>
+<td>Int</td>
+<td>false</td>
+<td>The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read.<br><br>Default: 10000.</td>
 </tr>
 
 <tr>
@@ -1620,36 +1688,58 @@
 <tr>
 <td>persist</td>
 <td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
 </tr>
 
 <tr>
-<td>params</td>
-<td>Map[String, String]</td>
+<td>timeout</td>
+<td>Long</td>
 <td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
+<td>The time, in milliseconds, spent waiting in poll if data is not available in Kafka. Default: 10000.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-7">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;KafkaExtract&quot;,
-    &quot;name&quot;: &quot;read customer records from kafka&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;outputView&quot;: &quot;customer&quot;,
-    &quot;topic&quot;: &quot;customer&quot;, 
-    &quot;bootstrapServers&quot;: &quot;kafka:29092&quot;, 
-    &quot;groupID&quot;: &quot;spark-customer-extract-job&quot;,
-    &quot;maxPollRecords&quot;: 10000,
-    &quot;timeout&quot;: 0,
-    &quot;autoCommit&quot;: false, 
-    &quot;persist&quot;: true,
-    &quot;params&quot;: {}
-}
-</code></pre>
+<h4 id="minimal-7">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;bootstrapServers&#34;</span><span class="p">:</span> <span class="s2">&#34;kafka:29092&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;topic&#34;</span><span class="p">:</span> <span class="s2">&#34;customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;groupID&#34;</span><span class="p">:</span> <span class="s2">&#34;spark-customer-extract-job&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-7">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;bootstrapServers&#34;</span><span class="p">:</span> <span class="s2">&#34;kafka:29092&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;topic&#34;</span><span class="p">:</span> <span class="s2">&#34;customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;groupID&#34;</span><span class="p">:</span> <span class="s2">&#34;spark-customer-extract-job&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;autoCommit&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;maxPollRecords&#34;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;timeout&#34;</span><span class="p">:</span> <span class="mi">10000</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="orcextract">ORCExtract</h2>
 
@@ -1692,6 +1782,48 @@
 </tr>
 
 <tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+</tr>
+
+<tr>
 <td>schemaURI</td>
 <td>URI</td>
 <td>false</td>
@@ -1711,74 +1843,45 @@
 <td>false</td>
 <td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
-
-<tr>
-<td>outputView</td>
-<td>String</td>
-<td>true</td>
-<td>Name of outgoing Spark dataset after processing.</td>
-</tr>
-
-<tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
-<td>false</td>
-<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
-</tr>
-
-<tr>
-<td>partitionBy</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>Columns to partition the data by.</td>
-</tr>
-
-<tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
-</tr>
-
-<tr>
-<td>contiguousIndex</td>
-<td>Boolean</td>
-<td>false</td>
-<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
 </tbody>
 </table>
 
 <h3 id="examples-8">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;ParquetExtract&quot;,
-    &quot;name&quot;: &quot;load customer orc extract&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://input_data/customer/*.orc&quot;,
-    &quot;outputView&quot;: &quot;customer&quot;,            
-    &quot;persist&quot;: false,
-    &quot;authentication&quot;: {
-        ...
-    },    
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-8">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ORCExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.orc&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-8">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ORCExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.orc&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="parquetextract">ParquetExtract</h2>
 
@@ -1821,6 +1924,48 @@
 </tr>
 
 <tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+</tr>
+
+<tr>
 <td>schemaURI</td>
 <td>URI</td>
 <td>false</td>
@@ -1840,74 +1985,45 @@
 <td>false</td>
 <td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
-
-<tr>
-<td>outputView</td>
-<td>String</td>
-<td>true</td>
-<td>Name of outgoing Spark dataset after processing.</td>
-</tr>
-
-<tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
-<td>false</td>
-<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
-</tr>
-
-<tr>
-<td>partitionBy</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>Columns to partition the data by.</td>
-</tr>
-
-<tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
-</tr>
-
-<tr>
-<td>contiguousIndex</td>
-<td>Boolean</td>
-<td>false</td>
-<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
 </tbody>
 </table>
 
 <h3 id="examples-9">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;ParquetExtract&quot;,
-    &quot;name&quot;: &quot;load customer parquet extract&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://input_data/customer/*.parquet&quot;,
-    &quot;outputView&quot;: &quot;customer&quot;,            
-    &quot;persist&quot;: false,
-    &quot;authentication&quot;: {
-        ...
-    },    
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-9">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.parquet&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-9">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.parquet&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="rateextract">RateExtract</h2>
 
@@ -1945,17 +2061,10 @@
 </tr>
 
 <tr>
-<td>rowsPerSecond</td>
-<td>Integer</td>
-<td>false</td>
-<td>How many rows should be generated per second.<br><br>Default: 1.</td>
-</tr>
-
-<tr>
-<td>rampUpTime</td>
-<td>Integer</td>
-<td>false</td>
-<td>How long to ramp up before the generating speed becomes rowsPerSecond. Using finer granularities than seconds will be truncated to integer seconds.<br><br>Default: 0.</td>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
 </tr>
 
 <tr>
@@ -1966,28 +2075,49 @@
 </tr>
 
 <tr>
-<td>params</td>
-<td>Map[String, String]</td>
+<td>rampUpTime</td>
+<td>Integer</td>
 <td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
+<td>How long to ramp up before the generating speed becomes rowsPerSecond. Using finer granularities than seconds will be truncated to integer seconds.<br><br>Default: 0.</td>
+</tr>
+
+<tr>
+<td>rowsPerSecond</td>
+<td>Integer</td>
+<td>false</td>
+<td>How many rows should be generated per second.<br><br>Default: 1.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-10">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;RateExtract&quot;,
-    &quot;name&quot;: &quot;create a streaming source&quot;,
-    &quot;environments&quot;: [&quot;test&quot;],
-    &quot;outputView&quot;: &quot;stream&quot;,
-    &quot;rowsPerSecond&quot;: 2,
-    &quot;rampUpTime&quot;: 0,
-    &quot;numPartitions&quot;: 10,
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-10">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;RateExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;create a streaming source&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;stream&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-10">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;RateExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;create a streaming source&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;stream&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;rowsPerSecond&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+  <span class="nt">&#34;rampUpTime&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="textextract">TextExtract</h2>
 
@@ -2025,8 +2155,50 @@
 <tr>
 <td>inputURI</td>
 <td>URI</td>
-<td>false*</td>
-<td>URI/Glob of the input <code>text</code> files. If not present <code>inputView</code> is requred.</td>
+<td>true</td>
+<td>URI/Glob of the input <code>text</code> files.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>contiguousIndex</td>
+<td>Boolean</td>
+<td>false</td>
+<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
+</tr>
+
+<tr>
+<td>multiLine</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether the to load the file as a single record or as individual records split by newline.<br><br>Default: false.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
 </tr>
 
 <tr>
@@ -2044,73 +2216,51 @@
 </tr>
 
 <tr>
-<td>outputView</td>
-<td>String</td>
-<td>true</td>
-<td>Name of outgoing Spark dataset after processing.</td>
-</tr>
-
-<tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
+<td>schemaView</td>
+<td>URI</td>
 <td>false</td>
-<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
-</tr>
-
-<tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
-</tr>
-
-<tr>
-<td>multiLine</td>
-<td>Boolean</td>
-<td>false</td>
-<td>Whether the to load the file as a single record or as individual records split by newline.<br><br>Default: false.</td>
-</tr>
-
-<tr>
-<td>contiguousIndex</td>
-<td>Boolean</td>
-<td>false</td>
-<td>When loading a file two additional <code>metadata</code> fields are added to each record: <code>_filename</code> and <code>_index</code> (row number in the file). These fields are automatically included as they are very useful when trying to understand where certain data came from when consuming the data downstream.<br><br>The computational cost of adding the <code>_index</code> column in a distributed execution engine like Spark means that sometimes it is not worth the time/expense of precisely resolving the row number. By setting <code>contiguousIndex</code> equal to <code>false</code> Spark will include a different field <code>_monotonically_increasing_id</code> which is a non-sequential/non-contiguous identifier from which <code>_index</code> can be derived later but will not incur the same cost penalty of resolving <code>_index</code>.<br><br>Default: true.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
+<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-11">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;TextExtract&quot;,
-    &quot;name&quot;: &quot;load customer text extract&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://input_data/customer/*.txt&quot;,
-    &quot;outputView&quot;: &quot;customer&quot;,            
-    &quot;persist&quot;: false,
-    &quot;multiLine&quot;: false,
-    &quot;authentication&quot;: {
-        ...
-    },
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-11">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TextExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.txt&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-11">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TextExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.txt&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;multiLine&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="xmlextract">XMLExtract</h2>
 
@@ -2146,38 +2296,17 @@
 </tr>
 
 <tr>
-<td>inputView</td>
-<td>String</td>
-<td>false*</td>
-<td>Name of the incoming Spark dataset. If not present <code>inputURI</code> is requred.</td>
-</tr>
-
-<tr>
 <td>inputURI</td>
 <td>URI</td>
-<td>false*</td>
+<td>true*</td>
 <td>URI/Glob of the input delimited  XML files. If not present <code>inputView</code> is requred.</td>
 </tr>
 
 <tr>
-<td>schemaView</td>
-<td>URI</td>
-<td>false</td>
-<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
-</tr>
-
-<tr>
-<td>schemaURI</td>
-<td>URI</td>
-<td>false</td>
-<td><p>Used for multiple purposes:</p>
-
-<ul>
-<li><p>Can be used to set metadata on a the extracted <code>DataFrame</code>. Note this will overwrite the existing metadata if it exists.</p></li>
-
-<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>DataFrame</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
-</ul>
-<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.</td>
+<td>inputView</td>
+<td>String</td>
+<td>true*</td>
+<td>Name of the incoming Spark dataset. If not present <code>inputURI</code> is requred.</td>
 </tr>
 
 <tr>
@@ -2185,27 +2314,6 @@
 <td>String</td>
 <td>true</td>
 <td>Name of outgoing Spark dataset after processing.</td>
-</tr>
-
-<tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
-<td>false</td>
-<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
-</tr>
-
-<tr>
-<td>partitionBy</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>Columns to partition the data by.</td>
 </tr>
 
 <tr>
@@ -2223,35 +2331,90 @@
 </tr>
 
 <tr>
-<td>params</td>
-<td>Map[String, String]</td>
+<td>numPartitions</td>
+<td>Integer</td>
 <td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
+<td>The maximum number of partitions that can be used for parallelism in table reading and writing.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+</tr>
+
+<tr>
+<td>schemaURI</td>
+<td>URI</td>
+<td>false</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>DataFrame</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>DataFrame</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.</td>
+</tr>
+
+<tr>
+<td>schemaView</td>
+<td>URI</td>
+<td>false</td>
+<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-12">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;XMLExtract&quot;,
-    &quot;name&quot;: &quot;load customer xml extract&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://input_data/customer/*.xml&quot;,
-    &quot;outputView&quot;: &quot;customer&quot;,            
-    &quot;persist&quot;: false,
-    &quot;authentication&quot;: {
-        ...
-    },    
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-12">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.xml&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-12">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.xml&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2018 Released under the MIT license
+				&copy; 2019 Released under the MIT license
 				
 			</aside>
 

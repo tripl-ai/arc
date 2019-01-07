@@ -156,7 +156,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=Option(true)
+        contiguousIndex=true
       )
     )    
 
@@ -215,7 +215,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     )
 

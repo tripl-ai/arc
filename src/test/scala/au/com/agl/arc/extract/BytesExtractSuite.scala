@@ -54,12 +54,11 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       BytesExtract(
         name="dataset",
         outputView=outputView, 
-        input=Option(targetFile),
-        pathView=None,
+        input=Right(targetFile),
         authentication=None,
         persist=false,
         numPartitions=None,
-        contiguousIndex=None,
+        contiguousIndex=true,
         params=Map.empty
       )
     ).get
@@ -81,12 +80,11 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       BytesExtract(
         name="dataset",
         outputView=outputView, 
-        input=None,
-        pathView=Option(pathView),
+        input=Left(pathView),
         authentication=None,
         persist=false,
         numPartitions=None,
-        contiguousIndex=None,
+        contiguousIndex=true,
         params=Map.empty
       )
     ).get

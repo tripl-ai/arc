@@ -54,8 +54,8 @@ object HTTPExtract {
     stageDetail.put("headers", maskedHeaders.asJava)
 
     val inputValue = extract.input match {
-      case Right(uri) => uri.toString
       case Left(view) => view
+      case Right(uri) => uri.toString
     }
 
     stageDetail.put("input", inputValue)  

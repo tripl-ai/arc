@@ -1,0 +1,10 @@
+{
+  "type": "TextExtract",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://input_data/customer/*.txt",
+  "outputView": "customer"
+}

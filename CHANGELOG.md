@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.5.0
+
+- changed `BytesExtract` attribute `pathView` to `inputView`.
+
 # 1.4.1
 
 - added `inputField` to both `TensorFlowServingTransform` and `HTTPTransform` to allow overriding default field `value`.

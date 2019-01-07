@@ -72,7 +72,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 
@@ -109,7 +109,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -126,7 +126,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -164,7 +164,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=None
+          contiguousIndex=true
         )
       )
     }
@@ -183,7 +183,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=None
+          contiguousIndex=true
         )
       )
     }
@@ -201,7 +201,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 

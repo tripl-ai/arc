@@ -19,18 +19,13 @@ object RateExtract {
   def extract(extract: RateExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
-
-    val rowsPerSecond = extract.rowsPerSecond.getOrElse(1)
-    val rampUpTime = extract.rampUpTime.getOrElse(0)
-    val numPartitions = extract.numPartitions.getOrElse(spark.sparkContext.defaultParallelism)
-
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
     stageDetail.put("outputView", extract.outputView)  
-    stageDetail.put("rowsPerSecond", Integer.valueOf(rowsPerSecond))
-    stageDetail.put("rampUpTime", Integer.valueOf(rampUpTime))
-    stageDetail.put("numPartitions", Integer.valueOf(numPartitions))
+    stageDetail.put("rowsPerSecond", Integer.valueOf(extract.rowsPerSecond))
+    stageDetail.put("rampUpTime", Integer.valueOf(extract.rampUpTime))
+    stageDetail.put("numPartitions", Integer.valueOf(extract.numPartitions))
 
     logger.info()
       .field("event", "enter")
@@ -45,9 +40,9 @@ object RateExtract {
 
     val df = spark.readStream
       .format("rate")
-      .option("rowsPerSecond", rowsPerSecond.toString)
-      .option("rampUpTime", s"${rampUpTime}s")
-      .option("numPartitions", numPartitions.toString)
+      .option("rowsPerSecond", extract.rowsPerSecond.toString)
+      .option("rampUpTime", s"${extract.rampUpTime}s")
+      .option("numPartitions", extract.numPartitions.toString)
       .load
 
     df.createOrReplaceTempView(extract.outputView)

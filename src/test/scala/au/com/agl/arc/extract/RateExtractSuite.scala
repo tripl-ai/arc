@@ -52,9 +52,9 @@ class RateExtractSuite extends FunSuite with BeforeAndAfter {
       RateExtract(
         name="dataset",
         outputView=outputView, 
-        rowsPerSecond=Option(10),
-        rampUpTime=Option(0),
-        numPartitions=Option(1),
+        rowsPerSecond=10,
+        rampUpTime=0,
+        numPartitions=1,
         params=Map.empty
       )
     ).get

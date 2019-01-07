@@ -1,0 +1,20 @@
+{
+  "type": "JSONExtract",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://input_data/customer/*.json",
+  "outputView": "customer",
+  "authentication": {},
+  "contiguousIndex": true,
+  "multiLine": false,
+  "numPartitions": 10,
+  "partitionBy": [
+    "country"
+  ],
+  "persist": false,
+  "schemaURI": "hdfs://input_data/schema/customer.json",
+  "schemaView": "customer_schema"
+}

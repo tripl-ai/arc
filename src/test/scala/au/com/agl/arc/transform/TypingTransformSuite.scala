@@ -72,7 +72,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get 
 

@@ -75,7 +75,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 
@@ -124,7 +124,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -142,7 +142,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -182,7 +182,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=None
+          contiguousIndex=true
         )
       )
     }
@@ -202,7 +202,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=None
+          contiguousIndex=true
         )
       )
     }
@@ -221,7 +221,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 
@@ -258,7 +258,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 
@@ -288,7 +288,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 
@@ -317,7 +317,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 
@@ -349,7 +349,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 

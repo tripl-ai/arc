@@ -1,0 +1,10 @@
+{
+  "type": "ImageExtract",
+  "name": "load customer images",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://input_data/customer/*.jpg",
+  "outputView": "customer"
+}

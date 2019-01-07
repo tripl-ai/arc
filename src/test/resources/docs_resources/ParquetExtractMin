@@ -1,0 +1,10 @@
+{
+  "type": "ParquetExtract",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://input_data/customer/*.parquet",
+  "outputView": "customer"
+}

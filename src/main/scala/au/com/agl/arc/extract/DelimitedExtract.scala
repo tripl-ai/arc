@@ -1,5 +1,7 @@
 package au.com.agl.arc.extract
 
+import java.lang._
+
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
@@ -18,18 +20,17 @@ object DelimitedExtract {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
-    val contiguousIndex = extract.contiguousIndex.getOrElse(true)
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
-    stageDetail.put("persist", java.lang.Boolean.valueOf(extract.persist))
+    stageDetail.put("persist", Boolean.valueOf(extract.persist))
     stageDetail.put("outputView", extract.outputView)
-    stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
+    stageDetail.put("contiguousIndex", Boolean.valueOf(extract.contiguousIndex))
 
     val options: Map[String, String] = Delimited.toSparkOptions(extract.settings)
 
     val inputValue = extract.input match {
-      case Right(glob) => glob
       case Left(view) => view
+      case Right(glob) => glob
     }
 
     stageDetail.put("input", inputValue)  
@@ -101,7 +102,7 @@ object DelimitedExtract {
     }      
 
     // add internal columns data _filename, _index
-    val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
+    val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, extract.contiguousIndex)
 
     // set column metadata if exists
     val enrichedDF = optionSchema match {

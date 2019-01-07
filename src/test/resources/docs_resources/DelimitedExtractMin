@@ -1,0 +1,10 @@
+{
+  "type": "DelimitedExtract",
+  "name": "load customer extract",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://input_data/customer/*.csv",
+  "outputView": "customer"
+}

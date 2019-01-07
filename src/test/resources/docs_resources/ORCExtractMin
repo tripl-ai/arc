@@ -1,0 +1,10 @@
+{
+  "type": "ORCExtract",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://input_data/customer/*.orc",
+  "outputView": "customer"
+}

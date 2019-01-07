@@ -1,12 +1,14 @@
 {
-    "type": "BytesExtract",
-    "name": "load images from the customer vehicle photos directory",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://input_data/customer/vehicles/*.jpg",
-    "outputView": "customer_vehicles_photos",            
-    "persist": false,
-    "numPartitions": 10,
-    "contiguousIndex": false,
-    "authentication": {},    
-    "params": {}
+  "type": "BytesExtract",
+  "name": "load images from the customer vehicle photos directory",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://input_data/customer/vehicles/*.jpg",
+  "outputView": "customer_vehicles_photos",
+  "persist": false,
+  "numPartitions": 10,
+  "contiguousIndex": false,
+  "authentication": {}
 }

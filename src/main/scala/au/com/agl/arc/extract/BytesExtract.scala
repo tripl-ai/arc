@@ -1,5 +1,7 @@
 package au.com.agl.arc.extract
 
+import java.lang._
+
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.{CloudUtils, DetailException, ExtractUtils}
@@ -9,18 +11,21 @@ import org.apache.spark.storage.StorageLevel
 object BytesExtract {
 
   def extract(extract: BytesExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
-
     import spark.implicits._
     val signature = "BytesExtract requires pathView to be dataset with [value: string] signature."
-
     val startTime = System.currentTimeMillis()
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
-    stageDetail.put("input", extract.input.getOrElse(""))
-    stageDetail.put("pathView", extract.pathView.getOrElse(""))
     stageDetail.put("outputView", extract.outputView)
-    stageDetail.put("persist", java.lang.Boolean.valueOf(extract.persist))
+    stageDetail.put("persist", Boolean.valueOf(extract.persist))
+
+    val inputValue = extract.input match {
+      case Left(view) => view
+      case Right(glob) => glob
+    }
+
+    stageDetail.put("input", inputValue)  
 
     logger.info()
       .field("event", "enter")
@@ -30,9 +35,9 @@ object BytesExtract {
     CloudUtils.setHadoopConfiguration(extract.authentication)
 
     val df = try {
-      extract.pathView match {
-        case Some(pv) =>
-          val pathView = spark.table(pv)
+      extract.input match {
+        case Left(view) => {
+          val pathView = spark.table(view)
           val schema = pathView.schema
 
           val fieldIndex = try {
@@ -53,8 +58,10 @@ object BytesExtract {
 
           val path = pathView.select($"value").collect().map( _.getString(0) ).mkString(",")
           spark.read.format("bytes").load(path)
-        case None =>
-          spark.read.format("bytes").load(extract.input.orNull)
+        }
+        case Right(glob) => {
+          spark.read.format("bytes").load(glob)          
+        }
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {

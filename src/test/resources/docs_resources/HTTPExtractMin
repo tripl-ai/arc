@@ -1,0 +1,10 @@
+{
+  "type": "HTTPExtract",
+  "name": "load customer extract from api",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "https://endpoint:9000/customers",
+  "outputView": "customer"
+}

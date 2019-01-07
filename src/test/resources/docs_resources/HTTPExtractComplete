@@ -1,0 +1,24 @@
+{
+  "type": "HTTPExtract",
+  "name": "load customer extract from api",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "https://endpoint:9000/customers",
+  "outputView": "customer",
+  "body": "",
+  "headers": {
+    "Authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
+    "custom-header": "payload"
+  },
+  "method": "GET",
+  "numPartitions": 10,
+  "partitionBy": [
+    "country"
+  ],
+  "persist": false,
+  "validStatusCodes": [
+    200
+  ]
+}

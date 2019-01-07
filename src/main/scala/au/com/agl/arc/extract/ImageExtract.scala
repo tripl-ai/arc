@@ -20,14 +20,12 @@ object ImageExtract {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
-    val dropInvalid = extract.dropInvalid.getOrElse(true)
-
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
     stageDetail.put("input", extract.input)  
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
-    stageDetail.put("dropInvalid", Boolean.valueOf(dropInvalid))
+    stageDetail.put("dropInvalid", Boolean.valueOf(extract.dropInvalid))
 
     logger.info()
       .field("event", "enter")
@@ -39,9 +37,9 @@ object ImageExtract {
     // if incoming dataset is empty create empty dataset with a known schema
     val df = try {
       if (arcContext.isStreaming) {
-        spark.readStream.format("image").option("dropInvalid", dropInvalid).schema(ImageSchema.imageSchema).load(extract.input)   
+        spark.readStream.format("image").option("dropInvalid", extract.dropInvalid).schema(ImageSchema.imageSchema).load(extract.input)   
       } else {      
-        spark.read.format("image").option("dropInvalid", dropInvalid).load(extract.input)  
+        spark.read.format("image").option("dropInvalid", extract.dropInvalid).load(extract.input)  
       }
     } catch {
       case e: AnalysisException if (e.getMessage.contains("Path does not exist")) => {

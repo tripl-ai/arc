@@ -20,15 +20,13 @@ object TextExtract {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
-    val contiguousIndex = extract.contiguousIndex.getOrElse(true)
-    val multiLine = extract.multiLine.getOrElse(false)
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
     stageDetail.put("input", extract.input)  
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
-    stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
-    stageDetail.put("multiLine", Boolean.valueOf(multiLine))
+    stageDetail.put("contiguousIndex", Boolean.valueOf(extract.contiguousIndex))
+    stageDetail.put("multiLine", Boolean.valueOf(extract.multiLine))
 
     logger.info()
       .field("event", "enter")
@@ -58,7 +56,7 @@ object TextExtract {
         // by reading first as text time drops by ~75%
         // this will not throw an error for empty directory (but will for missing directory)
         try {
-          if (multiLine) {
+          if (extract.multiLine) {
             spark.read.option("wholetext", "true").textFile(extract.input).toDF
           } else {
             spark.read.option("wholetext", "false").textFile(extract.input).toDF
@@ -94,7 +92,7 @@ object TextExtract {
     }    
 
     // add internal columns data _filename, _index
-    val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
+    val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, extract.contiguousIndex)
 
     // // set column metadata if exists
     val enrichedDF = optionSchema match {
