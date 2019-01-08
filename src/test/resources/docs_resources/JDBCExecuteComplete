@@ -1,0 +1,17 @@
+{
+  "type": "JDBCExecute",
+  "name": "execute the load date table",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/update_customer_load_date.sql",
+  "jdbcURL": "jdbc:postgresql://localhost:5432/customer",
+  "authentication": {},
+  "params": {},
+  "password": "mypassword",
+  "sqlParams": {
+    "current_timestamp": "2018-11-24 14:48:56"
+  },
+  "user": "myuser"
+}

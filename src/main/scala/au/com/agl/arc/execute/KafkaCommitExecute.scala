@@ -20,7 +20,6 @@ object KafkaCommitExecute {
 
   def execute(exec: KafkaCommitExecute)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
-
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", exec.getType)
     stageDetail.put("name", exec.name)

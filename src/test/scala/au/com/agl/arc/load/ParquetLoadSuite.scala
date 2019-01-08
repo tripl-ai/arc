@@ -61,7 +61,7 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
           partitionBy=Nil, 
           numPartitions=None, 
           authentication=None, 
-          saveMode=Some(SaveMode.Overwrite), 
+          saveMode=SaveMode.Overwrite, 
           params=Map.empty
       )
     )
@@ -89,7 +89,7 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
         partitionBy="booleanDatum" :: Nil, 
         numPartitions=None, 
         authentication=None, 
-        saveMode=Some(SaveMode.Overwrite), 
+        saveMode=SaveMode.Overwrite, 
         params=Map.empty
       )
     )
@@ -120,7 +120,7 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
           partitionBy=Nil, 
           numPartitions=None, 
           authentication=None, 
-          saveMode=Some(SaveMode.Overwrite), 
+          saveMode=SaveMode.Overwrite, 
           params=Map.empty
       )
     )

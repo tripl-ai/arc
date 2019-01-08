@@ -54,12 +54,11 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       BytesExtract(
         name="dataset",
         outputView=outputView, 
-        input=Option(dogImage),
-        pathView=None,
+        input=Right(dogImage),
         authentication=None,
         persist=false,
         numPartitions=None,
-        contiguousIndex=None,
+        contiguousIndex=true,
         params=Map.empty
       )
     )
@@ -70,12 +69,12 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         name="transform",
         uri=new URI(uri),
         headers=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         inputView=outputView,
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField=None
+        inputField="value"
       )
     ).get    
 

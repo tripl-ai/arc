@@ -33,7 +33,7 @@ object ConfigUtils {
   def parsePipeline(configUri: Option[String], argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
     configUri match {
       case Some(uri) => parseConfig(new URI(uri), argsMap, arcContext)
-      case None => Left(ConfigError("file", s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
+      case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
      }
   }
 
@@ -140,7 +140,7 @@ object ConfigUtils {
         Right(etlConfString)
       }
       case _ => {
-        Left(ConfigError("file", "make sure url scheme is defined e.g. file://${pwd}") :: Nil)
+        Left(ConfigError("file", None, "make sure url scheme is defined e.g. file://${pwd}") :: Nil)
       }
     }
   }
@@ -200,7 +200,7 @@ object ConfigUtils {
 
   def readAuthentication(path: String)(implicit c: Config): Either[Errors, Option[Authentication]] = {
   
-    def err(msg: String): Either[Errors, Option[Authentication]] = Left(ConfigError(path, msg) :: Nil)
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, Option[Authentication]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
       if (c.hasPath(path)) {
@@ -275,132 +275,74 @@ object ConfigUtils {
         Right(None)
       }
     } catch {
-      case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), s"Unable to read config value: ${e.getMessage}")
     }
   }
 
-  def readSaveMode(path: String)(implicit c: Config): Either[Errors, Option[SaveMode]] = {
-  
-    def err(msg: String): Either[Errors, Option[SaveMode]] = Left(ConfigError(path, msg) :: Nil)
-
-    try {
-      if (c.hasPath(path)) {
-        c.getString(path).toLowerCase match {
-          case "append" => {
-            Right(Option(SaveMode.Append))
-          } 
-          case "errorifexists" => {
-            Right(Option(SaveMode.ErrorIfExists))
-          }   
-          case "ignore" => {
-            Right(Option(SaveMode.Ignore))
-          }                    
-          case "overwrite" => {
-            Right(Option(SaveMode.Overwrite))
-          }     
-          case _ =>  throw new Exception(s"""Unable to parse SaveMode method: '${c.getString(path)}'. Must be one of ['Append', 'ErrorIfExists', 'Ignore', 'Overwrite'].""")
-        }
-      } else {
-        Right(None)
-      }
-    } catch {
-      case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
-    }
-  }
-
-  def readOutputMode(path: String)(implicit c: Config): Either[Errors, Option[OutputModeType]] = {
-
-    def err(msg: String): Either[Errors, Option[OutputModeType]] = Left(ConfigError(path, msg) :: Nil)
-
-    try {
-      if (c.hasPath(path)) {
-        c.getString(path).toLowerCase match {
-          case "append" => {
-            Right(Option(OutputModeTypeAppend))
-          } 
-          case "complete" => {
-            Right(Option(OutputModeTypeComplete))
-          }   
-          case "update" => {
-            Right(Option(OutputModeTypeUpdate))
-          }                    
-          case _ =>  throw new Exception(s"""Unable to parse outputMode: '${c.getString(path)}'. Must be one of ['Append', 'Complete', 'Update'].""")
-        }
-      } else {
-        Right(None)
-      }
-    } catch {
-      case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
-    }
-  }
-
-  def readFailMode(path: String)(implicit c: Config): Either[Errors, Option[FailModeType]] = {
-
-    def err(msg: String): Either[Errors, Option[FailModeType]] = Left(ConfigError(path, msg) :: Nil)
-
-    try {
-      if (c.hasPath(path)) {
-        c.getString(path).toLowerCase match {
-          case "permissive" => {
-            Right(Option(FailModeTypePermissive))
-          } 
-          case "failfast" => {
-            Right(Option(FailModeTypeFailFast))
-          }   
-          case _ =>  throw new Exception(s"""Unable to parse failMode: '${c.getString(path)}'. Must be one of ['permissive', 'failfast'].""")
-        }
-      } else {
-        Right(None)
-      }
-    } catch {
-      case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
+  def parseSaveMode(path: String)(delim: String)(implicit c: Config): Either[Errors, SaveMode] = {
+    delim.toLowerCase.trim match {
+      case "append" => Right(SaveMode.Append)
+      case "errorifexists" => Right(SaveMode.ErrorIfExists)
+      case "ignore" => Right(SaveMode.Ignore)
+      case "overwrite" => Right(SaveMode.Overwrite)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
   }  
 
-  def readResponseType(path: String)(implicit c: Config): Either[Errors, Option[ReponseType]] = {
-  
-    def err(msg: String): Either[Errors, Option[ReponseType]] = Left(ConfigError(path, msg) :: Nil)
+  def parseOutputModeType(path: String)(delim: String)(implicit c: Config): Either[Errors, OutputModeType] = {
+    delim.toLowerCase.trim match {
+      case "append" => Right(OutputModeTypeAppend)
+      case "complete" => Right(OutputModeTypeComplete)
+      case "update" => Right(OutputModeTypeUpdate)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }    
 
-    try {
-      if (c.hasPath(path)) {
-        c.getString(path) match {
-          case "integer" => {
-            Right(Option(IntegerResponse))
-          } 
-          case "double" => {
-            Right(Option(DoubleResponse))
-          } 
-          case "object" => {
-            Right(Option(StringResponse))
-          }           
-          case _ =>  throw new Exception(s"""Unable to parse responseType: '${c.getString(path)}'. Must be one of ['integer', 'double', 'object'].""")
-        }
-      } else {
-        Right(None)
-      }
-    } catch {
-      case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
+  def parseFailMode(path: String)(delim: String)(implicit c: Config): Either[Errors, FailModeType] = {
+    delim.toLowerCase.trim match {
+      case "permissive" => Right(FailModeTypePermissive)
+      case "failfast" => Right(FailModeTypeFailFast)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
   }  
 
-  def readHttpMethod(path: String)(implicit c: Config): Either[Errors, Option[String]] = {
-  
-    def err(msg: String): Either[Errors, Option[String]] = Left(ConfigError(path, msg) :: Nil)
-
-    try {
-      if (c.hasPath(path)) {
-        c.getString(path) match {
-          case "GET" => Right(Option("GET"))
-          case "POST" => Right(Option("POST"))
-          case _ =>  throw new Exception(s"""Unable to parse 'method' from: '${c.getString(path)}'. Must be one of ['GET', 'POST'].""")
-        }
-      } else {
-        Right(None)
-      }
-    } catch {
-      case e: Exception => err(s"Unable to read config value: ${e.getMessage}")
+  def parseResponseType(path: String)(delim: String)(implicit c: Config): Either[Errors, ResponseType] = {
+    delim.toLowerCase.trim match {
+      case "integer" => Right(IntegerResponse)
+      case "double" => Right(DoubleResponse)
+      case "object" => Right(StringResponse)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
   }
+
+  def parseDelimiter(path: String)(delim: String)(implicit c: Config): Either[Errors, Delimiter] = {
+    delim.toLowerCase.trim match {
+      case "comma" => Right(Delimiter.Comma)
+      case "defaulthive" => Right(Delimiter.DefaultHive)
+      case "pipe" => Right(Delimiter.Pipe)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }
+
+  def parseQuote(path: String)(quote: String)(implicit c: Config): Either[Errors, QuoteCharacter] = {
+    quote.toLowerCase.trim match {
+      case "doublequote" => Right(QuoteCharacter.DoubleQuote)
+      case "singlequote" => Right(QuoteCharacter.SingleQuote)
+      case "none" => Right(QuoteCharacter.Disabled)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }  
+
+  def parseIsolationLevel(path: String)(quote: String)(implicit c: Config): Either[Errors, IsolationLevelType] = {
+    quote.toLowerCase.trim match {
+      case "none" => Right(IsolationLevelNone)
+      case "read_committed" => Right(IsolationLevelReadCommitted)
+      case "read_uncommitted" => Right(IsolationLevelReadUncommitted)
+      case "repeatable_read" => Right(IsolationLevelRepeatableRead)
+      case "serializable" => Right(IsolationLevelSerializable)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }  
 
   sealed trait Error
 
@@ -410,7 +352,7 @@ object ConfigUtils {
       err match {
         case StageError(stage, lineNumber, configErrors) =>
           s"""Stage '${stage}' (line number ${lineNumber}):\n${configErrors.map(e => "\t\t" + errToString(e)).mkString("\n")}"""
-        case ConfigError(p, msg) => s"${p}: $msg"
+        case ConfigError(attribute, lineNumber, message) => s"${attribute} (line ${lineNumber}): $message"
       }
     }
 
@@ -421,13 +363,13 @@ object ConfigUtils {
 
   }
 
-  case class ConfigError(path: String, message: String) extends Error
+  case class ConfigError(path: String, lineNumber: Option[Int], message: String) extends Error
 
   case class StageError(stage: String, lineNumber: Int, errors: List[ConfigError]) extends Error
 
   object ConfigError {
 
-    def err(path: String, message: String): List[ConfigError] = ConfigError(path, message) :: Nil
+    def err(path: String, lineNumber: Option[Int], message: String): List[ConfigError] = ConfigError(path, lineNumber, message) :: Nil
 
   }
 
@@ -453,7 +395,7 @@ object ConfigUtils {
     def getConfigValue[A](path: String, c: Config, expectedType: String,
                           default: Option[A] = None, validValues: Seq[A] = Seq.empty)(read: => A): Either[Errors, A] = {
     
-      def err(msg: String): Either[Errors, A] = Left(ConfigError(path, msg) :: Nil)
+      def err(lineNumber: Option[Int], msg: String): Either[Errors, A] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
       try {
         if (c.hasPath(path)) {
@@ -462,19 +404,30 @@ object ConfigUtils {
             if (validValues.contains(value)) {
               Right(value)
             } else {
-              err(s"""Invalid value found for '$path' on line ${c.getValue(path).origin.lineNumber()}. Valid values are ${validValues.map(value => s"'${value.toString}'").mkString("[",",","]")}.""")
+              err(Some(c.getValue(path).origin.lineNumber()), s"""Invalid value. Valid values are ${validValues.map(value => s"'${value.toString}'").mkString("[",",","]")}.""")
             }
           } else {
             Right(read)
           }
         } else {
-          default.map( Right(_) ).getOrElse {
-            err(s"""Missing required attribute '$path'.""")
+          default match {
+            case Some(value) => {
+              if (!validValues.isEmpty) {
+                if (validValues.contains(value)) {
+                  Right(value)
+                } else {
+                  err(None, s"""Invalid default value '$value'. Valid values are ${validValues.map(value => s"'${value.toString}'").mkString("[",",","]")}.""")
+                }
+              } else {
+                Right(value)
+              }
+            }
+            case None => err(None, s"""Missing required attribute '$path'.""")
           }
         }
       } catch {
-        case wt: ConfigException.WrongType => err(s"Unable to read config value '$path', wrong type, expected: $expectedType, line ${c.origin.lineNumber()}.")
-        case e: Exception => err(s"Unable to read config value '$path': ${e.getMessage}")
+        case wt: ConfigException.WrongType => err(Some(c.getValue(path).origin.lineNumber()), s"Wrong type, expected: '$expectedType'.")
+        case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), s"Unable to read value: ${e.getMessage}")
       }
 
     }
@@ -507,6 +460,14 @@ object ConfigUtils {
       def read(path: String, c: Config): StringList = c.getStringList(path).asScala.toList
 
     }
+
+    implicit object IntListConfigReader extends ConfigReader[IntList] {
+
+      val expectedType = "integer array"
+
+      def read(path: String, c: Config): IntList = c.getIntList(path).asScala.map(f => f.toInt).toList
+
+    }    
 
     implicit object BooleanConfigReader extends ConfigReader[Boolean] {
 
@@ -546,6 +507,8 @@ object ConfigUtils {
 
   type StringList = List[String]
 
+  type IntList = List[Int]
+
   private def stringOrDefault(sv: StringConfigValue, default: String): String = {
     sv match {
       case Right(v) => v
@@ -571,9 +534,9 @@ object ConfigUtils {
       Left(diffKeys.map(key => {
         val possibleKeys = levenshteinDistance(expectedKeys, key)(4)
         if (!possibleKeys.isEmpty) {
-          ConfigError(key, s"""Invalid attribute '${key}' found on line ${c.getValue(key).origin.lineNumber()}. Perhaps you meant one of: ${possibleKeys.map(field => s"'${field}'").mkString("[",", ","]")}.""")
+          ConfigError(key, Some(c.getValue(key).origin.lineNumber()), s"""Invalid attribute '${key}'. Perhaps you meant one of: ${possibleKeys.map(field => s"'${field}'").mkString("[",", ","]")}.""")
         } else {
-          ConfigError(key, s"""Invalid attribute '${key}' found on line ${c.getValue(key).origin.lineNumber()}.""")
+          ConfigError(key, Some(c.getValue(key).origin.lineNumber()), s"""Invalid attribute '${key}'.""")
         }
       }))
     }
@@ -585,30 +548,30 @@ object ConfigUtils {
   }
 
   private def parseURI(path: String, uri: String)(implicit c: Config): Either[Errors, URI] = {
-    def err(msg: String): Either[Errors, URI] = Left(ConfigError(path, msg) :: Nil)
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, URI] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
       // try to parse uri
       Right(new URI(uri))
     } catch {
-      case e: Exception => err(s"""Invalid value for attribute '$path' on line ${c.getValue(path).origin.lineNumber()}: ${e.getMessage}.""")
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
   }
 
   private def parseGlob(path: String, glob: String)(implicit c: Config): Either[Errors, String] = {
-    def err(msg: String): Either[Errors, String] = Left(ConfigError(path, msg) :: Nil)
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
       // try to compile glob which will fail with bad characters
       GlobPattern.compile(glob)
       Right(glob)
     } catch {
-      case e: Exception => err(s"""Invalid value for attribute '$path' on line ${c.getValue(path).origin.lineNumber()}: ${e.getMessage}.""")
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
   }
 
   private def textContentForURI(uri: URI, uriKey: String, authentication: Either[Errors, Option[Authentication]])
-                               (implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[Errors, String] = {
+                               (implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[Errors, String] = {
     uri.getScheme match {
       case "classpath" =>
         val path = s"/${uri.getHost}${uri.getPath}"
@@ -622,25 +585,23 @@ object ConfigUtils {
     }
   }
 
-  private def getBlob(path: String, uri: URI)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[Errors, String] = {
-    import spark.sparkContext.{hadoopConfiguration => hc}
-
-    def err(msg: String): Either[Errors, String] = Left(ConfigError(path, msg) :: Nil)
+  private def getBlob(path: String, uri: URI)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[Errors, String] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
       val textFile = CloudUtils.getTextBlob(uri.toString)
       if (textFile.length == 0) {
-        err(s"file at ${uri.toString} is empty")
+        err(Some(c.getValue(path).origin.lineNumber()), s"""File at ${uri.toString} is empty.""")
       } else {
         Right(textFile)
       }
     } catch {
-      case e: Exception => err(s"${e.getMessage}")
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
   }  
 
-  private def getModel(path: String, uri: URI)(implicit spark: SparkSession): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = {
-    def err(msg: String): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = Left(ConfigError(path, msg) :: Nil)
+  private def getModel(path: String, uri: URI)(implicit spark: SparkSession, c: Config): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
       Right(Left(PipelineModel.load(uri.toString)))
@@ -649,13 +610,13 @@ object ConfigUtils {
         try{
          Right(Right(CrossValidatorModel.load(uri.toString)))
         } catch {
-          case e: Exception => err(s"${e.getMessage}")
+          case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
         }
       }
     }
   }    
 
-  private def getExtractColumns(parsedURI: Either[Errors, Option[URI]], uriKey: String, authentication: Either[Errors, Option[Authentication]])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[Errors, List[ExtractColumn]] = {
+  private def getExtractColumns(parsedURI: Either[Errors, Option[URI]], uriKey: String, authentication: Either[Errors, Option[Authentication]])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[Errors, List[ExtractColumn]] = {
     val schema: Either[Errors, Option[String]] = parsedURI.rightFlatMap {
       case Some(uri) =>
         textContentForURI(uri, uriKey, authentication).rightFlatMap(text => Right(Option(text)))
@@ -666,37 +627,37 @@ object ConfigUtils {
       val cols = sch.map{ s => MetadataSchema.parseJsonMetadata(s) }.getOrElse(Right(Nil))
 
       cols match {
-        case Left(errs) => Left(errs.map( e => ConfigError("schema", e) ))
+        case Left(errs) => Left(errs.map( e => ConfigError("schema", Some(c.getValue(uriKey).origin.lineNumber()), e) ))
         case Right(extractColumns) => Right(extractColumns)
       }
     }
   }
 
   private def getJDBCDriver(path: String, uri: String)(implicit c: Config): Either[Errors, java.sql.Driver] = {
-    def err(msg: String): Either[Errors, java.sql.Driver] = Left(ConfigError(path, msg) :: Nil)
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, java.sql.Driver] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
-    // without this line tests fail as drivers have not been instantiated yet
+    // without this line tests fail as drivers have not been registered yet
     val drivers = DriverManager.getDrivers.asScala.toList.map(driver => s"""'${driver.toString}'""")
 
     try {
       Right(DriverManager.getDriver(uri))
     } catch {
       case e: Exception => {
-        err(s"""Invalid value ('$uri') for attribute '$path' on line ${c.getValue(path).origin.lineNumber()}: ${e.getMessage}. Available JDBC drivers: ${drivers.mkString("[", ", ", "]")}.""")
+        err(Some(c.getValue(path).origin.lineNumber()), s"""Invalid driver for ('$uri'). Available JDBC drivers: ${drivers.mkString("[", ", ", "]")}.""")
       }
     }
   }  
 
   // validateSQL uses the parsePlan method to verify if the sql command is parseable/valid. it will not check table existence.
   private def validateSQL(path: String, sql: String)(implicit spark: SparkSession, c: Config): Either[Errors, String] = {
-    def err(msg: String): Either[Errors, String] = Left(ConfigError(path, msg) :: Nil)
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
       val parser = spark.sessionState.sqlParser
       parser.parsePlan(sql)
       Right(sql)
     } catch {
-      case e: Exception => err(s"""Invalid value for attribute '$path' on line ${c.getValue(path).origin.lineNumber()}: ${e.getMessage}.""")
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
   }  
 
@@ -772,7 +733,7 @@ object ConfigUtils {
 
           Right(BytesExtract(n, ov, input, auth, params, p, np, ci))
         } else {
-          val inputError = ConfigError("inputURI:inputView", "Either inputURI and inputView must be defined but only one can be defined at the same time") :: Nil
+          val inputError = ConfigError("inputURI:inputView", Some(c.getValue("inputURI").origin.lineNumber()), "Either inputURI and inputView must be defined but only one can be defined at the same time") :: Nil
           val stageName = stringOrDefault(name, "unnamed stage")
           val err = StageError(stageName, c.origin.lineNumber, inputError)
           Left(err :: Nil)
@@ -818,8 +779,8 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    val delimiter = getOptionalValue[String]("delimiter", Some("Comma"), "Comma" :: "Pipe" :: "DefaultHive" :: Nil) |> validateDelimiter("delimiter") _
-    val quote = getOptionalValue[String]("quote", Some("DoubleQuote"), "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> validateQuote("quote") _
+    val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: Nil) |> parseDelimiter("delimiter") _
+    val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
     val header = getValue[Boolean]("header", Some(false))
 
     (name, input, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys) match {
@@ -847,23 +808,24 @@ object ConfigUtils {
     }
 
     val headers = readMap("headers", c)
-    val validStatusCodes = if (c.hasPath("validStatusCodes")) Some(c.getIntList("validStatusCodes").asScala.map(f => f.toInt).toList) else None
+    val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
 
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
 
-    val method = readHttpMethod("method")
+    val method = getValue[String]("method", default = Some("GET"), validValues = "GET" :: "POST" :: Nil)
+
     val body = getOptionalValue[String]("body")
 
-    (name, input, parsedURI, outputView, persist, numPartitions, method, body) match {
-      case (Right(n), Right(in), Right(pu), Right(ov), Right(p), Right(np), Right(m), Right(b)) => 
+    (name, input, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes) match {
+      case (Right(n), Right(in), Right(pu), Right(ov), Right(p), Right(np), Right(m), Right(b), Right(pb), Right(vsc)) => 
         val inp = if(c.hasPath("inputView")) Left(in) else Right(pu)
-        Right(HTTPExtract(n, inp, m, headers, b, validStatusCodes, ov, params, p, np, partitionBy))
+        Right(HTTPExtract(n, inp, m, headers, b, vsc, ov, params, p, np, pb))
       case _ =>
-        val allErrors: Errors = List(name, input, parsedURI, outputView, persist, numPartitions, method, body).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, input, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -902,7 +864,7 @@ object ConfigUtils {
     val driver = jdbcURL.rightFlatMap(uri => getJDBCDriver("jdbcURL", uri))
     val tableName = getValue[String]("tableName")
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val fetchsize = getOptionalValue[Int]("fetchsize")
     val customSchema = getOptionalValue[String]("customSchema")
     val partitionColumn = getOptionalValue[String]("partitionColumn")
@@ -920,12 +882,12 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    (name, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, partitionColumn) match {
-      case (Right(n), Right(cols), Right(sv), Right(ov), Right(p), Right(ju), Right(d), Right(tn), Right(np), Right(fs), Right(cs), Right(pc)) => 
+    (name, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, partitionColumn, partitionBy) match {
+      case (Right(n), Right(cols), Right(sv), Right(ov), Right(p), Right(ju), Right(d), Right(tn), Right(np), Right(fs), Right(cs), Right(pc), Right(pb)) => 
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        Right(JDBCExtract(n, schema, ov, ju, tn, np, fs, cs, d, pc, params, p, partitionBy, predicates))
+        Right(JDBCExtract(n, schema, ov, ju, tn, np, fs, cs, d, pc, params, p, pb, predicates))
       case _ =>
-        val allErrors: Errors = List(name, outputView, schemaView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, extractColumns, partitionColumn).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, outputView, schemaView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, extractColumns, partitionColumn, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -945,7 +907,7 @@ object ConfigUtils {
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val multiLine = getOptionalValue[Boolean]("multiLine")
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
@@ -962,8 +924,8 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    (name, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex) match {
-      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci)) => 
+    (name, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy) match {
+      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci), Right(pb)) => 
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
@@ -972,9 +934,9 @@ object ConfigUtils {
           case Some(b: Boolean) => b
           case _ => json.multiLine
         }
-        Right(JSONExtract(n, schema, ov, input, JSON(multiLine=multiLine), auth, params, p, np, partitionBy, ci))
+        Right(JSONExtract(n, schema, ov, input, JSON(multiLine=multiLine), auth, params, p, np, pb, ci))
       case _ =>
-        val allErrors: Errors = List(name, input, schemaView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, input, schemaView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -991,17 +953,17 @@ object ConfigUtils {
 
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
 
     val maxPollRecords = getValue[Int]("maxPollRecords", default = Some(10000))
     val timeout = getValue[Long]("timeout", default = Some(10000L))
     val autoCommit = getValue[Boolean]("autoCommit", default = Some(false))
 
-    (name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit) match {
-      case (Right(n), Right(ov), Right(t), Right(bs), Right(g), Right(p), Right(np), Right(mpr), Right(time), Right(ac)) => 
-        Right(KafkaExtract(n, ov, t, bs, g, mpr, time, ac, params, p, np, partitionBy))
+    (name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit, partitionBy) match {
+      case (Right(n), Right(ov), Right(t), Right(bs), Right(g), Right(p), Right(np), Right(mpr), Right(time), Right(ac), Right(pb)) => 
+        Right(KafkaExtract(n, ov, t, bs, g, mpr, time, ac, params, p, np, pb))
       case _ =>
-        val allErrors: Errors = List(name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1019,7 +981,7 @@ object ConfigUtils {
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
 
@@ -1034,12 +996,12 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    (name, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, invalidKeys) match {
-      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(ik)) => 
+    (name, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, invalidKeys, partitionBy) match {
+      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(ik), Right(pb)) => 
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        Right(ORCExtract(n, schema, ov, pg, auth, params, p, np, partitionBy, ci))
+        Right(ORCExtract(n, schema, ov, pg, auth, params, p, np, pb, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, invalidKeys, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1054,7 +1016,7 @@ object ConfigUtils {
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
 
@@ -1069,12 +1031,12 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")  
 
-    (name, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
-      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
+    (name, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy) match {
+      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(pb)) => 
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        Right(ParquetExtract(n, schema, ov, pg, auth, params, p, np, partitionBy, ci))
+        Right(ParquetExtract(n, schema, ov, pg, auth, params, p, np, pb, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1148,7 +1110,7 @@ object ConfigUtils {
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
 
@@ -1163,14 +1125,14 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")  
 
-    (name, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex) match {
-      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci)) => 
+    (name, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy) match {
+      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(pb)) => 
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
-        Right(XMLExtract(n, schema, ov, input, auth, params, p, np, partitionBy, ci))
+        Right(XMLExtract(n, schema, ov, input, auth, params, p, np, pb, ci))
       case _ =>
-        val allErrors: Errors = List(name, input, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, input, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1187,7 +1149,7 @@ object ConfigUtils {
     val outputIntersectionView = getOptionalValue[String]("outputIntersectionView")
     val outputLeftView = getOptionalValue[String]("outputLeftView")
     val outputRightView = getOptionalValue[String]("outputRightView")
-    val persist = getValue[Boolean]("persist")
+    val persist = getValue[Boolean]("persist", default = Some(false))
 
     (name, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist) match {
       case (Right(n), Right(ilv), Right(irv), Right(oiv), Right(olv), Right(orv), Right(p)) => 
@@ -1205,20 +1167,19 @@ object ConfigUtils {
 
     val httpUriKey = "uri"
     val inputURI = getValue[String](httpUriKey)
-    val inputField = getOptionalValue[String]("inputField")
+    val inputField = getValue[String]("inputField", default = Some("value"))
     val parsedHttpURI = inputURI.rightFlatMap(uri => parseURI(httpUriKey, uri))
     val headers = readMap("headers", c)
-    val validStatusCodes = if (c.hasPath("validStatusCodes")) Some(c.getIntList("validStatusCodes").asScala.map(f => f.toInt).toList) else None
-
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist")
+    val persist = getValue[Boolean]("persist", default = Some(false))
+    val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
 
-    (name, inputView, outputView, parsedHttpURI, persist, inputField) match {
-      case (Right(n), Right(iv), Right(ov), Right(uri), Right(p), Right(ifld)) => 
-        Right(HTTPTransform(n, uri, headers, validStatusCodes, iv, ov, ifld, params, p))
+    (name, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes) match {
+      case (Right(n), Right(iv), Right(ov), Right(uri), Right(p), Right(ifld), Right(vsc)) => 
+        Right(HTTPTransform(n, uri, headers, vsc, iv, ov, ifld, params, p))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputView, parsedHttpURI, persist, inputField).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1230,7 +1191,7 @@ object ConfigUtils {
 
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist")
+    val persist = getValue[Boolean]("persist", default = Some(false))
 
     (name, inputView, outputView, persist) match {
       case (Right(n), Right(iv), Right(ov), Right(p)) => 
@@ -1256,7 +1217,7 @@ object ConfigUtils {
     }
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist")
+    val persist = getValue[Boolean]("persist", default = Some(false))
     val sqlParams = readMap("sqlParams", c)
 
     // try to verify if sql is technically valid against HQL dialect (will not check dependencies)
@@ -1290,7 +1251,7 @@ object ConfigUtils {
 
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist")
+    val persist = getValue[Boolean]("persist", default = Some(false))
 
     (name, inputURI, inputModel, inputView, outputView, persist) match {
       case (Right(n), Right(in), Right(mod), Right(iv), Right(ov), Right(p)) => 
@@ -1313,7 +1274,7 @@ object ConfigUtils {
     val authentication = readAuthentication("authentication")  
     val inputSQL = parsedURI.rightFlatMap{ uri => textContentForURI(uri, uriKey, authentication) }
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist")
+    val persist = getValue[Boolean]("persist", default = Some(false))
     val sqlParams = readMap("sqlParams", c)
 
     // try to verify if sql is technically valid against HQL dialect (will not check dependencies)
@@ -1366,12 +1327,12 @@ object ConfigUtils {
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
     val inputURI = getValue[String]("uri")
-    val inputField = getOptionalValue[String]("inputField")
+    val inputField = getValue[String]("inputField", default = Some("value"))
     val parsedURI = inputURI.rightFlatMap(uri => parseURI("uri", uri))
     val signatureName = getOptionalValue[String]("signatureName")
-    val responseType = readResponseType("responseType")
-    val batchSize = getOptionalValue[Int]("batchSize")
-    val persist = getValue[Boolean]("persist")
+    val batchSize = getValue[Int]("batchsize", default = Some(1))
+    val persist = getValue[Boolean]("persist", default = Some(false))
+    val responseType = getValue[String]("responseType", default = Some("object"), validValues = "integer" :: "double" :: "object" :: Nil) |> parseResponseType("responseType") _
 
     (name, inputView, outputView, inputURI, parsedURI, signatureName, responseType, batchSize, persist, inputField) match {
       case (Right(n), Right(iv), Right(ov), Right(uri), Right(puri), Right(sn), Right(rt), Right(bs), Right(p), Right(ifld)) => 
@@ -1397,9 +1358,9 @@ object ConfigUtils {
 
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist")
+    val persist = getValue[Boolean]("persist", default = Some(false))
 
-    val failMode = readFailMode("failMode")
+    val failMode = getValue[String]("failMode", default = Some("permissive"), validValues = "permissive" :: "failfast" :: Nil) |> parseFailMode("failMode") _
 
     (name, extractColumns, schemaView, inputView, outputView, persist, failMode) match {
       case (Right(n), Right(cols), Right(sv), Right(iv), Right(ov), Right(p), Right(fm)) => 
@@ -1421,17 +1382,17 @@ object ConfigUtils {
 
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")  
-    val saveMode = readSaveMode("saveMode")
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
 
-    (name, inputView, outputURI, numPartitions, authentication, saveMode) match {
-      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm)) => 
+    (name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy) match {
+      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb)) => 
         val uri = new URI(out)
-        Right(AvroLoad(n, iv, uri, partitionBy, np, auth, sm, params))
+        Right(AvroLoad(n, iv, uri, pb, np, auth, sm, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1447,9 +1408,9 @@ object ConfigUtils {
     val sharedAccessSignatureKeyName = getValue[String]("sharedAccessSignatureKeyName")
     val sharedAccessSignatureKey = getValue[String]("sharedAccessSignatureKey")
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val retryMinBackoff = getOptionalValue[Long]("retryMinBackoff")
-    val retryMaxBackoff = getOptionalValue[Long]("retryMaxBackoff")
-    val retryCount = getOptionalValue[Int]("retryCount")
+    val retryMinBackoff = getValue[Long]("retryMinBackoff", default = Some(0)) // DEFAULT_RETRY_MIN_BACKOFF = 0
+    val retryMaxBackoff = getValue[Long]("retryMaxBackoff", default = Some(30)) // DEFAULT_RETRY_MAX_BACKOFF = 30
+    val retryCount = getValue[Int]("retryCount", default = Some(10)) // DEFAULT_MAX_RETRY_COUNT = 10
 
     (name, inputView, namespaceName, eventHubName, sharedAccessSignatureKeyName, sharedAccessSignatureKey, numPartitions, retryMinBackoff, retryMaxBackoff, retryCount) match {
       case (Right(n), Right(iv), Right(nn), Right(ehn), Right(saskn), Right(sask), Right(np), Right(rmin), Right(rmax), Right(rcount)) => 
@@ -1466,7 +1427,7 @@ object ConfigUtils {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
-    val outputMode = readOutputMode("outputMode")
+    val outputMode = getValue[String]("outputMode", default = Some("Append"), validValues = "Append" :: "Complete" :: "Update" :: Nil) |> parseOutputModeType("outputMode") _
 
     (name, inputView, outputMode) match {
       case (Right(n), Right(iv), Right(om)) => 
@@ -1484,42 +1445,22 @@ object ConfigUtils {
 
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI")
-    val header = getOptionalValue[Boolean]("header")
     val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil    
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")  
-    val saveMode = readSaveMode("saveMode")
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
 
-    // @TODO: FiX delimited OPTIONS
-    val delimited = Delimited()
-    val delimiter = if (c.hasPath("delimiter")) {
-      c.getString("delimiter") match {
-        case "Comma" => Delimiter.Comma
-        case "DefaultHive" => Delimiter.DefaultHive
-        case "Pipe" => Delimiter.Pipe
-      }
-    } else delimited.sep
-    val quote = if (c.hasPath("quote")) {
-      c.getString("quote") match {
-        case "DoubleQuote" => QuoteCharacter.DoubleQuote
-        case "SingleQuote" => QuoteCharacter.SingleQuote
-        case "None" => QuoteCharacter.Disabled
-      }
-    } else delimited.quote
+    val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: Nil) |> parseDelimiter("delimiter") _
+    val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
+    val header = getValue[Boolean]("header", Some(false))    
 
-    (name, inputView, outputURI, header, numPartitions, authentication, saveMode) match {
-      case (Right(n), Right(in), Right(out), Right(head), Right(np), Right(auth), Right(sm)) => 
+    (name, inputView, outputURI, numPartitions, authentication, saveMode, delimiter, quote, header) match {
+      case (Right(n), Right(in), Right(out),  Right(np), Right(auth), Right(sm), Right(d), Right(q), Right(h)) => 
         val uri = new URI(out)
-
-        val header = head match {
-          case Some(value) => value
-          case None => delimited.header
-        }
-
-        val load = DelimitedLoad(n, in, uri, Delimited(header=header, sep=delimiter, quote=quote), partitionBy, np, auth, sm, params)
+        val load = DelimitedLoad(n, in, uri, Delimited(header=h, sep=d, quote=q), partitionBy, np, auth, sm, params)
         Right(load)
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, header, authentication, numPartitions, saveMode).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, outputURI, authentication, numPartitions, saveMode, delimiter, quote, header).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1530,9 +1471,8 @@ object ConfigUtils {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
-    val uriKey = "outputURI"
-    val inputURI = getValue[String](uriKey)
-    val parsedURI = inputURI.rightFlatMap(uri => parseURI(uriKey, uri))
+    val inputURI = getValue[String]("outputURI")
+    val parsedURI = inputURI.rightFlatMap(uri => parseURI("outputURI", uri))
     val headers = readMap("headers", c)
     val validStatusCodes = if (c.hasPath("validStatusCodes")) Some(c.getIntList("validStatusCodes").asScala.map(f => f.toInt).toList) else None
 
@@ -1554,22 +1494,22 @@ object ConfigUtils {
     val jdbcURL = getValue[String]("jdbcURL")
     val driver = jdbcURL.rightFlatMap(uri => getJDBCDriver("jdbcURL", uri))
     val tableName = getValue[String]("tableName")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil    
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val isolationLevel = getOptionalValue[String]("isolationLevel")
-    val batchsize = getOptionalValue[Int]("batchsize")
-    val truncate = getOptionalValue[Boolean]("truncate")
+    val isolationLevel = getValue[String]("isolationLevel", default = Some("READ_UNCOMMITTED"), validValues = "NONE" :: "READ_COMMITTED" :: "READ_UNCOMMITTED" :: "REPEATABLE_READ" :: "SERIALIZABLE" :: Nil) |> parseIsolationLevel("isolationLevel") _
+    val batchsize = getValue[Int]("batchsize", default = Some(1000))
+    val truncate = getValue[Boolean]("truncate", default = Some(false))
     val createTableOptions = getOptionalValue[String]("createTableOptions")
     val createTableColumnTypes = getOptionalValue[String]("createTableColumnTypes")
-    val saveMode = readSaveMode("saveMode")
-    val bulkload = getOptionalValue[Boolean]("bulkload")
-    val tablock = getOptionalValue[Boolean]("tablock")
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
+    val bulkload = getValue[Boolean]("bulkload", default = Some(false))
+    val tablock = getValue[Boolean]("tablock", default = Some(true))
 
-    (name, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock) match {
-      case (Right(n), Right(iv), Right(ju), Right(d), Right(tn), Right(np), Right(il), Right(bs), Right(t), Right(cto), Right(ctct), Right(sm), Right(bl), Right(tl)) => 
-        Right(JDBCLoad(n, iv, ju, tn, partitionBy, np, il, bs, t, cto, ctct, sm, d, bl, tl, params))
+    (name, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock, partitionBy) match {
+      case (Right(n), Right(iv), Right(ju), Right(d), Right(tn), Right(np), Right(il), Right(bs), Right(t), Right(cto), Right(ctct), Right(sm), Right(bl), Right(tl), Right(pb)) => 
+        Right(JDBCLoad(n, iv, ju, tn, pb, np, il, bs, t, cto, ctct, sm, d, bl, tl, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1581,17 +1521,17 @@ object ConfigUtils {
 
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")  
-    val saveMode = readSaveMode("saveMode")
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
 
-    (name, inputView, outputURI, numPartitions, authentication, saveMode) match {
-      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm)) => 
+    (name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy) match {
+      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb)) => 
         val uri = new URI(out)
-        Right(JSONLoad(n, iv, uri, partitionBy, np, auth, sm, params))
+        Right(JSONLoad(n, iv, uri, pb, np, auth, sm, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1602,12 +1542,12 @@ object ConfigUtils {
     import ConfigReader._
 
     val inputView = getValue[String]("inputView")
-    val topic = getValue[String]("topic")
     val bootstrapServers = getValue[String]("bootstrapServers")
-    val acks = getValue[Int]("acks")
+    val topic = getValue[String]("topic")
+    val acks = getValue[Int]("acks", default = Some(1))
+    val retries = getValue[Int]("retries", default = Some(0))
+    val batchSize = getValue[Int]("batchSize", default = Some(16384))
 
-    val retries = getOptionalValue[Int]("retries")
-    val batchSize = getOptionalValue[Int]("batchSize")
     val numPartitions = getOptionalValue[Int]("numPartitions")
 
     (name, inputView, topic, bootstrapServers, acks, retries, batchSize, numPartitions) match {
@@ -1626,17 +1566,17 @@ object ConfigUtils {
 
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")  
-    val saveMode = readSaveMode("saveMode")
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
 
-    (name, inputView, outputURI, numPartitions, authentication, saveMode) match {
-      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm)) => 
+    (name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy) match {
+      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb)) => 
         val uri = new URI(out)
-        Right(ORCLoad(n, iv, uri, partitionBy, np, auth, sm, params))
+        Right(ORCLoad(n, iv, uri, pb, np, auth, sm, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1648,17 +1588,17 @@ object ConfigUtils {
 
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")  
-    val saveMode = readSaveMode("saveMode")
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
 
-    (name, inputView, outputURI, numPartitions, authentication, saveMode) match {
-      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm)) => 
+    (name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy) match {
+      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb)) => 
         val uri = new URI(out)
-        Right(ParquetLoad(n, iv, uri, partitionBy, np, auth, sm, params))
+        Right(ParquetLoad(n, iv, uri, pb, np, auth, sm, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1670,17 +1610,17 @@ object ConfigUtils {
 
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI")
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")  
-    val saveMode = readSaveMode("saveMode")
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
 
-    (name, inputView, outputURI, numPartitions, authentication, saveMode) match {
-      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm)) => 
+    (name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy) match {
+      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb)) => 
         val uri = new URI(out)
-        Right(XMLLoad(n, iv, uri, partitionBy, np, auth, sm, params))
+        Right(XMLLoad(n, iv, uri, pb, np, auth, sm, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1695,14 +1635,14 @@ object ConfigUtils {
     val uri = getValue[String]("uri")
     val headers = readMap("headers", c)
     val payloads = readMap("payloads", c)
-    val validStatusCodes = if (c.hasPath("validStatusCodes")) Some(c.getIntList("validStatusCodes").asScala.map(f => f.toInt).toList) else None
+    val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
 
-    (name, uri) match {
-      case (Right(n), Right(u)) => 
+    (name, uri, validStatusCodes) match {
+      case (Right(n), Right(u), Right(vsc)) => 
         val uri = new URI(u)
-        Right(HTTPExecute(n, uri, headers, payloads, validStatusCodes, params))
+        Right(HTTPExecute(n, uri, headers, payloads, vsc, params))
       case _ =>
-        val allErrors: Errors = List(uri).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(uri, validStatusCodes).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1722,32 +1662,20 @@ object ConfigUtils {
         getBlob(uriKey, uri)
     }
 
-    val jdbcUrl = getValue[String]("url")
+    val jdbcURL = getValue[String]("jdbcURL")
+    val driver = jdbcURL.rightFlatMap(uri => getJDBCDriver("jdbcURL", uri))
     val user = getOptionalValue[String]("user")
     val password = getOptionalValue[String]("password")
 
     val sqlParams = readMap("sqlParams", c)    
 
-    val driverExists = jdbcUrl match {
-      case Right(url) => JDBCUtils.checkDriverExists(url)
-      case _ => false
-    }
-
-    (name, inputURI, inputSQL, jdbcUrl, user, password) match {
-      case (Right(n), Right(in), Right(sql), Right(url), Right(u), Right(p)) if driverExists => 
+    (name, inputURI, inputSQL, jdbcURL, user, password, driver) match {
+      case (Right(n), Right(in), Right(sql), Right(url), Right(u), Right(p), Right(d)) => 
         val sqlFileUri = new URI(in)
         
         Right(JDBCExecute(n, sqlFileUri, url, u, p, sql, sqlParams, params))
       case _ =>
-        val configErrors = List(name, inputURI, parsedURI, inputSQL, jdbcUrl, user, password).collect{ case Left(errs) => errs }.flatten
-
-        val allErrors = if (!driverExists) {
-          val driverError = ConfigError("url", "No jdbc driver found")
-          driverError :: configErrors
-        } else {
-          configErrors
-        }
-
+        val allErrors: Errors = List(name, inputURI, parsedURI, inputSQL, jdbcURL, user, password, driver).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1776,6 +1704,8 @@ object ConfigUtils {
     import ConfigReader._
 
     val uri = getValue[String]("uri")
+    val authentication = readAuthentication("authentication")  
+    authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))    
 
     (name, uri) match {
       case (Right(n), Right(u)) => 
@@ -1860,7 +1790,7 @@ object ConfigUtils {
             Left(err :: Nil)
         }
       case None =>
-        Left(StageError("unknown", c.origin.lineNumber, ConfigError("stages", s"Unknown stage type: '${stageType}'") :: Nil) :: Nil)
+        Left(StageError("unknown", c.origin.lineNumber, ConfigError("stages", Some(c.origin.lineNumber), s"Unknown stage type: '${stageType}'") :: Nil) :: Nil)
     }
   }
 
@@ -1900,7 +1830,7 @@ object ConfigUtils {
 
         // skip stage if not in environment
         if (!arcContext.ignoreEnvironments && !depricationEnvironments.contains(arcContext.environment)) {
-            logger.info()
+            logger.trace()
               .field("event", "validateConfig")
               .field("name", name.right.getOrElse("unnamed stage"))
               .field("type", _type.right.getOrElse("unknown"))              
@@ -1912,7 +1842,7 @@ object ConfigUtils {
           
           None
         } else {
-            logger.info()
+            logger.trace()
               .field("event", "validateConfig")
               .field("name", name.right.getOrElse("unnamed stage"))
               .field("type", _type.right.getOrElse("unknown"))              
@@ -1967,7 +1897,7 @@ object ConfigUtils {
             case Right("SQLValidate") => Option(readSQLValidate(name, params))
 
             case Right(stageType) => Option(readCustomStage(stageType, name, params))
-            case _ => Option(Left(StageError("unknown", s.origin.lineNumber, ConfigError("stages", s"Unknown stage type: '${_type}'") :: Nil) :: Nil))
+            case _ => Option(Left(StageError("unknown", s.origin.lineNumber, ConfigError("stages", Some(c.origin.lineNumber), s"Unknown stage type: '${_type}'") :: Nil) :: Nil))
           }
         }
       }).flatten.toList

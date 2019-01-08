@@ -146,13 +146,13 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         input=Right(new URI(s"${uri}/${get}/")),
         headers=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         outputView=outputView,
         params=Map.empty,
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        method=Option("GET"),
+        method="GET",
         body=None
       )
     ).get
@@ -182,13 +182,13 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         input=Right(new URI(s"${uri}/${post}/")),
         headers=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         outputView=outputView,
         params=Map.empty,
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        method=Option("POST"),
+        method="POST",
         body=None
       )
     ).get
@@ -217,13 +217,13 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         input=Right(new URI(s"${uri}/${payload}/")),
         headers=Map.empty,
-        validStatusCodes=Option(List(200)),
+        validStatusCodes=200 :: Nil,
         outputView=outputView,
         params=Map.empty,
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        method=Option("POST"),
+        method="POST",
         body=Option(body)
       )
     ).get
@@ -242,13 +242,13 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         input=Right(new URI(s"${uri}/${empty}/")),
         headers=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         outputView=outputView,
         params=Map.empty,
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        method=None,
+        method="GET",
         body=None   
       )
     ).get
@@ -269,14 +269,14 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         HTTPExtract(
           name=outputView,
           input=Right(new URI(s"${uri}/fail/")),
-          validStatusCodes=None,
+          validStatusCodes=200 :: 201 :: 202 :: Nil,
           headers=Map.empty,
           outputView=outputView,
           params=Map.empty,
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          method=None,
+          method="GET",
           body=None   
         )
       )
@@ -295,13 +295,13 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           input=Right(new URI(s"${uri}/${empty}/")),
           headers=Map.empty,
-          validStatusCodes=Option(List(201)),
+          validStatusCodes=201 :: Nil,
           outputView=outputView,
           params=Map.empty,
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          method=None,
+          method="GET",
           body=None   
         )
       )
@@ -320,13 +320,13 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           input=Right(new URI(badUri)),
           headers=Map.empty,
-          validStatusCodes=None,
+          validStatusCodes=200 :: 201 :: 202 :: Nil,
           outputView=outputView,
           params=Map.empty,
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          method=None,
+          method="GET",
           body=None   
         )
       )
@@ -347,13 +347,13 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         input=Left(inputView),
         headers=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         outputView=outputView,
         params=Map.empty,
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        method=Option("GET"),
+        method="GET",
         body=None
       )
     ).get

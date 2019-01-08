@@ -478,28 +478,23 @@
 <td>true</td>
 <td>Name of second incoming Spark dataset.</td>
 </tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
 </tbody>
 </table>
 
 <h3 id="examples">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;EqualityValidate&quot;,
-    &quot;name&quot;: &quot;verify data equality&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;leftView&quot;: &quot;customers_caculated&quot;,            
-    &quot;rightView&quot;: &quot;customers_known_correct&quot;,            
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;EqualityValidate&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;verify data equality&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;leftView&#34;</span><span class="p">:</span> <span class="s2">&#34;customers_caculated&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;rightView&#34;</span><span class="p">:</span> <span class="s2">&#34;customers_known_correct&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="sqlvalidate">SQLValidate</h2>
 
@@ -548,38 +543,50 @@
 </tr>
 
 <tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
 <td>sqlParams</td>
 <td>Map[String, String]</td>
 <td>false</td>
 <td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-1">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;SQLValidate&quot;,
-    &quot;name&quot;: &quot;apply data integrity rules&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://data_quality/customer/cutomer_error_threshold.sql&quot;,            
-    &quot;sqlParams&quot;: {
-        &quot;record_error_tolerance_percentage&quot;: &quot;0.05&quot;
-    },              
-    &quot;authentication&quot;: {
-        ...
-    },    
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-1">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLValidate&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply data integrity rules&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/customer_error_threshold.sql&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLValidate&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply data integrity rules&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/customer_error_threshold_dynamic.sql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;record_error_tolerance_percentage&#34;</span><span class="p">:</span> <span class="s2">&#34;0.05&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
 
 <p>For example after performing a <code>TypingTransform</code> it would be possible to execute a query which tests that a certain percentage of records are not errored:</p>
 
@@ -600,7 +607,7 @@
 <td>2016-12-19</td>
 <td>daily total</td>
 <td>14.23</td>
-<td>false</td>
+<td>[false]</td>
 </tr>
 
 <tr>
@@ -608,7 +615,7 @@
 <td>2016-12-20</td>
 <td>daily total</td>
 <td>null</td>
-<td>true</td>
+<td>[true]</td>
 </tr>
 
 <tr>
@@ -616,7 +623,7 @@
 <td>2016-12-21</td>
 <td>daily total</td>
 <td>18.20</td>
-<td>false</td>
+<td>[false]</td>
 </tr>
 </tbody>
 </table>

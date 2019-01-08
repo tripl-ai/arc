@@ -2,7 +2,10 @@
 
 # 1.5.0
 
-- changed `BytesExtract` attribute `pathView` to `inputView`.
+- changed `delimiter` for `DelimitedExtract` and `DelimitedLoad` from `DefaultHive` to `Comma`.
+- renamed `BytesExtract` attribute `pathView` to `inputView` for consistency.
+- renamed `JDBCExecute` attribute `url` to `jdbcURL` for consistency.
+- added `authentication` to `PipelineExecute` to allow reading external pipelines from different sources.
 
 # 1.4.1
 

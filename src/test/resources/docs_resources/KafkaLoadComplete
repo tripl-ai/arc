@@ -1,0 +1,15 @@
+{
+  "type": "KafkaLoad",
+  "name": "write customer to kafka",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "bootstrapServers": "kafka:29092",
+  "topic": "customers",
+  "acks": 1,
+  "batchSize": 16384,
+  "numPartitions": 10,
+  "retries": 0
+}

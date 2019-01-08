@@ -565,7 +565,7 @@
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -707,7 +707,7 @@
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -816,14 +816,14 @@
 <td>delimiter</td>
 <td>String</td>
 <td>false</td>
-<td>The type of delimiter in the file. Supported values: <code>Comma</code>, <code>Pipe</code>, <code>DefaultHive</code>. <code>DefaultHive</code> is  ASCII character 1, the default delimiter for Apache Hive extracts. <br><br>Default: <code>DefaultHive</code>.</td>
+<td>The type of delimiter in the file. Supported values: <code>Comma</code>, <code>Pipe</code>, <code>DefaultHive</code>. <code>DefaultHive</code> is  ASCII character 1, the default delimiter for Apache Hive extracts.<br><br>Default: <code>Comma</code>.</td>
 </tr>
 
 <tr>
 <td>header</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named <code>_col1</code>, <code>_col2</code> &hellip; <code>_colN</code>.<br><br>Default: false.</td>
+<td>Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named <code>_col1</code>, <code>_col2</code> &hellip; <code>_colN</code>.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -844,7 +844,7 @@
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -906,7 +906,7 @@
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
   <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
   <span class="nt">&#34;delimiter&#34;</span><span class="p">:</span> <span class="s2">&#34;Comma&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;header&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;header&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
   <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;country&#34;</span>
@@ -1012,7 +1012,7 @@
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -1198,7 +1198,7 @@
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -1345,7 +1345,7 @@
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -1522,7 +1522,7 @@
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -1668,7 +1668,7 @@
 <td>maxPollRecords</td>
 <td>Int</td>
 <td>false</td>
-<td>The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read.<br><br>Default: 10000.</td>
+<td>The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read.<br><br>Default: <code>10000</code>.</td>
 </tr>
 
 <tr>
@@ -1689,7 +1689,7 @@
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -1820,7 +1820,7 @@
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -1962,7 +1962,7 @@
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -2198,7 +2198,7 @@
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -2348,7 +2348,7 @@
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: false.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>

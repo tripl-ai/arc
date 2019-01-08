@@ -1,0 +1,10 @@
+{
+  "type": "EqualityValidate",
+  "name": "verify data equality",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "leftView": "customers_caculated",
+  "rightView": "customers_known_correct"
+}

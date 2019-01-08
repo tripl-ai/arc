@@ -1,0 +1,11 @@
+{
+  "type": "DiffTransform",
+  "name": "calculate the difference between the yesterday and today datasets",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputLeftView": "cutomer_20180501",
+  "inputRightView": "cutomer_20180502",
+  "outputIntersectionView": "customer_unchanged"
+}

@@ -490,37 +490,45 @@
 <td>false</td>
 <td>A list of valid status codes which will result in a successful stage if the list contains the HTTP server response code. If not provided the default values are <code>[200, 201, 202]</code>.</td>
 </tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
 </tbody>
 </table>
 
 <h3 id="examples">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;HTTPExecute&quot;,
-    &quot;name&quot;: &quot;informs job manager of job completion&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputView&quot;: &quot;customer&quot;,            
-    &quot;outputURI&quot;: &quot;http://internalserver/api/job&quot;,
-    &quot;payloads&quot;: {
-        &quot;jobName&quot;: &quot;customer&quot;,
-        &quot;jobStatus&quot;: &quot;complete&quot;,
-    },    
-    &quot;headers&quot;: {
-        &quot;Authorization&quot;: &quot;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&quot;,
-        &quot;custom-header&quot;: &quot;payload&quot;,
-    },
-    &quot;validStatusCodes&quot;: [200],
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;notify the customer api of job completion&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;notify the customer api of job completion&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;headers&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;Authorization&#34;</span><span class="p">:</span> <span class="s2">&#34;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;custom-header&#34;</span><span class="p">:</span> <span class="s2">&#34;payload&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;payloads&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;jobName&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;jobStatus&#34;</span><span class="p">:</span> <span class="s2">&#34;complete&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;validStatusCodes&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="mi">200</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="jdbcexecute">JDBCExecute</h2>
 
@@ -563,24 +571,10 @@
 </tr>
 
 <tr>
-<td>url</td>
+<td>jdbcURL</td>
 <td>String</td>
 <td>true</td>
 <td>The JDBC URL to connect to. e.g., <code>jdbc:mysql://localhost:3306</code>.</td>
-</tr>
-
-<tr>
-<td>user</td>
-<td>String</td>
-<td>false</td>
-<td>Database username to connect as. Optional, can also be in the url or params.</td>
-</tr>
-
-<tr>
-<td>password</td>
-<td>String</td>
-<td>false</td>
-<td>Database password for the given user. Optional, can also be in the url or params.</td>
 </tr>
 
 <tr>
@@ -591,6 +585,20 @@
 </tr>
 
 <tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Map of configuration parameters. All parameters will be added to the Connection Properties.</td>
+</tr>
+
+<tr>
+<td>password</td>
+<td>String</td>
+<td>false</td>
+<td>Database password for the given user. Optional, can also be in the url or params.</td>
+</tr>
+
+<tr>
 <td>sqlParams</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -598,34 +606,48 @@
 </tr>
 
 <tr>
-<td>params</td>
-<td>Map[String, String]</td>
+<td>user</td>
+<td>String</td>
 <td>false</td>
-<td>Map of configuration parameters. All parameters will be added to the Connection Properties.</td>
+<td>Database username to connect as. Optional, can also be in the url or params.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-1">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;JDBCExecute&quot;,
-    &quot;name&quot;: &quot;update the load date table&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://datalake/sql/update_customer_load_date.sql&quot;,          
-    &quot;url&quot;: &quot;jdbc:postgresql://localhost:5432/test&quot;,
-    &quot;user&quot;: &quot;test&quot;,
-    &quot;password&quot;: &quot;test&quot;,
-    &quot;sqlParams&quot;: {
-        &quot;current_timestamp&quot;: &quot;2018-11-24 14:48:56&quot;
-    },
-    &quot;authentication&quot;: {
-        ...
-    },     
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-1">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;execute the load date table&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/update_customer_load_date.sql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-1">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;execute the load date table&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/update_customer_load_date.sql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;password&#34;</span><span class="p">:</span> <span class="s2">&#34;mypassword&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;current_timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2018-11-24 14:48:56&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;user&#34;</span><span class="p">:</span> <span class="s2">&#34;myuser&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="kafkacommitexecute">KafkaCommitExecute</h2>
 
@@ -682,28 +704,24 @@
 <td>true</td>
 <td>A string that uniquely identifies the group of consumer processes to which this consumer belongs. This will retain the offset of the job between executions.</td>
 </tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
 </tbody>
 </table>
 
 <h3 id="examples-2">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;KafkaCommitExecute&quot;,
-    &quot;name&quot;: &quot;update the offsets in kafka&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputView&quot;: &quot;customer&quot;,
-    &quot;bootstrapServers&quot;: &quot;kafka:29092&quot;, 
-    &quot;groupID&quot;: &quot;spark-customer-extract-job&quot;,
-    &quot;params&quot;: {}
-}
-</code></pre>
+<h4 id="minimal-2">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaCommitExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;update the offsets in kafka after processing data&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;bootstrapServers&#34;</span><span class="p">:</span> <span class="s2">&#34;kafka:29092&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;groupID&#34;</span><span class="p">:</span> <span class="s2">&#34;spark-customer-extract-job&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="pipelineexecute">PipelineExecute</h2>
 
@@ -742,30 +760,46 @@
 
 <tr>
 <td>uri</td>
-<td>Array[String]</td>
+<td>String</td>
 <td>true</td>
 <td>URI of the input file containing the definition of the <code>pipeline</code> to include.</td>
 </tr>
 
 <tr>
-<td>params</td>
+<td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
+<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-3">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;PipelineExecute&quot;,
-    &quot;name&quot;: &quot;embed the active customer pipeline&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;uri&quot;: &quot;hdfs://datalake/jobs/active_customers.json&quot;,  
-    &quot;params&quot;: {}
-}
-</code></pre>
+<h4 id="minimal-3">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;PipelineExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;embed the active customer pipeline&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/jobs/active_customers.json&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-2">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;PipelineExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;embed the active customer pipeline&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/jobs/active_customers.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{}</span>
+<span class="p">}</span></code></pre></div>
 
 
 			<aside class="copyright" role="note">

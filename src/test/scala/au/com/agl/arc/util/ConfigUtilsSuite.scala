@@ -107,7 +107,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       outputView = "green_tripdata1",
       params = Map.empty,
       persist=true,
-      failMode=None
+      failMode=FailModeTypePermissive
     )
 
     val subSQLValidateStage = SQLValidate(
@@ -120,7 +120,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
            |FROM (
            |  SELECT
            |    CASE
-           |      WHEN SIZE(_errors) > 0 THEN 1
+           |      WHEN SIZE(_errors) > 0 THEN ${test_integer}
            |      ELSE 0
            |    END AS error
            |  FROM ${table_name}
@@ -149,8 +149,17 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val fileContents = Source.fromFile(filename).getLines.mkString("\n")
       val conf = s"""{"stages": [${fileContents.trim}]}"""
 
+      // replace sql directory with config so that the examples read correctly but have resource to validate
+      val sqlConf = conf.replaceAll("hdfs://datalake/sql/", getClass.getResource("/conf/sql/").toString)
+
+      // replace ml directory with config so that the examples read correctly but have resource to validate
+      val mlConf = sqlConf.replaceAll("hdfs://datalake/ml/", getClass.getResource("/conf/ml/").toString)
+
+      // replace meta directory with config so that the examples read correctly but have resource to validate
+      val metaConf = mlConf.replaceAll("hdfs://datalake/metadata/", getClass.getResource("/conf/metadata/").toString)
+
       val base = ConfigFactory.load()
-      val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+      val etlConf = ConfigFactory.parseString(metaConf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
       val config = etlConf.withFallback(base)
       var argsMap = collection.mutable.Map[String, String]()
       val pipelineEither = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)
@@ -194,8 +203,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       case Left(stageError) => {
         assert(stageError == 
         StageError("file extract",3,List(
-            ConfigError("inputURI", "Missing required attribute 'inputURI'.")
-            ,ConfigError("outputView", "Missing required attribute 'outputView'.")
+            ConfigError("inputURI", None, "Missing required attribute 'inputURI'.")
+            ,ConfigError("outputView", None, "Missing required attribute 'outputView'.")
           )
         ) :: Nil)
       }
@@ -233,9 +242,9 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       case Left(stageError) => {
         assert(stageError == 
         StageError("file extract",3,List(
-            ConfigError("inputURI", """Invalid value for attribute 'inputURI' on line 10: Unclosed group near index 25
+            ConfigError("inputURI", Some(10), """Unclosed group near index 25
 hdfs://test/{ab,c{de, fg}
-                         ^.""")
+                         ^""")
           )
         ) :: Nil)
       }
@@ -269,7 +278,7 @@ hdfs://test/{ab,c{de, fg}
           ],
           "inputView": "input",
           "outputVew": "output",
-          "persst": false
+          "nothinglikeanything": false
         }
       ]
     }"""
@@ -284,9 +293,9 @@ hdfs://test/{ab,c{de, fg}
       case Left(stageError) => {
         assert(stageError == 
         StageError("file extract 1",13,List(
-            ConfigError("outputView", "Missing required attribute 'outputView'.")
-            ,ConfigError("persst", "Invalid attribute 'persst' found on line 22. Perhaps you meant one of: ['persist'].")
-            ,ConfigError("outputVew", "Invalid attribute 'outputVew' found on line 21. Perhaps you meant one of: ['outputView'].")
+            ConfigError("outputView", None, "Missing required attribute 'outputView'.")
+            ,ConfigError("nothinglikeanything", Some(22), "Invalid attribute 'nothinglikeanything'.")
+            ,ConfigError("outputVew", Some(21), "Invalid attribute 'outputVew'. Perhaps you meant one of: ['outputView'].")
           )
         ) :: Nil)
       }
@@ -323,7 +332,7 @@ hdfs://test/{ab,c{de, fg}
 
     pipeline match {
       case Left(stageError) => {
-        assert(stageError == StageError("file extract",3,List(ConfigError("delimiter", "Invalid value found for 'delimiter' on line 12. Valid values are ['Comma','Pipe','DefaultHive']."))) :: Nil)
+        assert(stageError == StageError("file extract",3,List(ConfigError("delimiter", Some(12), "Invalid value. Valid values are ['Comma','Pipe','DefaultHive']."))) :: Nil)
       }
       case Right(_) => assert(false)
     }

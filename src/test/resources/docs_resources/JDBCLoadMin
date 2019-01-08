@@ -1,0 +1,15 @@
+{
+  "type": "JDBCLoad",
+  "name": "write customer to postgres",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "jdbcURL": "jdbc:postgresql://localhost:5432/customer",
+  "tableName": "mydatabase.myschema.customer",
+  "params": {
+    "user": "mydbuser",
+    "password": "mydbpassword"
+  }
+}

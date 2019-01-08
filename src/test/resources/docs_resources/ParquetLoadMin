@@ -1,0 +1,10 @@
+{
+  "type": "ParquetLoad",
+  "name": "write customer Parquet extract",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputURI": "hdfs://output_data/customer/customer.parquet"
+}

@@ -26,21 +26,12 @@ This stage will validate:
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |leftView|String|true|Name of first incoming Spark dataset.|
 |rightView|String|true|Name of second incoming Spark dataset.|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
-```json
-{
-    "type": "EqualityValidate",
-    "name": "verify data equality",
-    "environments": ["production", "test"],
-    "leftView": "customers_caculated",            
-    "rightView": "customers_known_correct",            
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/EqualityValidateMin" highlight="json" >}} 
+
 
 ## SQLValidate
 ##### Since: 1.0.0 - Supports Streaming: False
@@ -60,35 +51,24 @@ See [patterns](../patterns/) for more examples.
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
-```json
-{
-    "type": "SQLValidate",
-    "name": "apply data integrity rules",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://data_quality/customer/cutomer_error_threshold.sql",            
-    "sqlParams": {
-        "record_error_tolerance_percentage": "0.05"
-    },              
-    "authentication": {
-        ...
-    },    
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/SQLValidateMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/SQLValidateComplete" highlight="json" >}} 
 
 For example after performing a `TypingTransform` it would be possible to execute a query which tests that a certain percentage of records are not errored:
 
 |_type|date|description|total|_error|
 |----------|----|-----------|-----|-------|
-|detail|2016-12-19|daily total|14.23|false|
-|detail|2016-12-20|daily total|null|true|
-|detail|2016-12-21|daily total|18.20|false|
+|detail|2016-12-19|daily total|14.23|[false]|
+|detail|2016-12-20|daily total|null|[true]|
+|detail|2016-12-21|daily total|18.20|[false]|
 
 With a `JSON` message (preferred):
 

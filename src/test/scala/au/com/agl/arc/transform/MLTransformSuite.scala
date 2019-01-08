@@ -80,7 +80,6 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
 
     val crossValidatorModel = crossValidator.fit(training)
     crossValidatorModel.write.overwrite().save(crossValidatorModelTargetFile) 
-
   }
 
   after {

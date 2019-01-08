@@ -1,0 +1,13 @@
+{
+  "type": "SQLValidate",
+  "name": "apply data integrity rules",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/customer_error_threshold_dynamic.sql",
+  "authentication": {},
+  "sqlParams": {
+    "record_error_tolerance_percentage": "0.05"
+  }
+}

@@ -1,1 +1,1 @@
-Whether to enable a `bulk` copy. This is currently only available for `sqlserver` targets but more targets can be added as drivers become available.
+Whether to enable a `bulk` copy. This is currently only available for `sqlserver` targets but more targets can be added as drivers become available.<br><br>Default: `false`.

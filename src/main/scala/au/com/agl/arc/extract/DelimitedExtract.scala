@@ -148,23 +148,4 @@ object DelimitedExtract {
 
     Option(repartitionedDF)
   }
-
-  def validateDelimiter(path: String)(delim: Option[String]): Either[Errors, Delimiter] = {
-    delim.map(_.toLowerCase.trim) match {
-      case Some("comma") => Right(Delimiter.Comma)
-      case Some("defaulthive") => Right(Delimiter.DefaultHive)
-      case Some("pipe") => Right(Delimiter.Pipe)
-      case _ => Left(ConfigError(path, s"$delim is not a valid delimiter, valid options are Comma, Pipe, DefaultHive.") :: Nil)
-    }
-  }
-
-  def validateQuote(path: String)(quote: Option[String]): Either[Errors, QuoteCharacter] = {
-    quote.map(_.toLowerCase.trim) match {
-      case Some("doublequote") => Right(QuoteCharacter.DoubleQuote)
-      case Some("singlequote") => Right(QuoteCharacter.SingleQuote)
-      case Some("none") => Right(QuoteCharacter.Disabled)
-      case _ => Left(ConfigError(path, s"$quote is not a valid quote character, valid options are DoubleQuote, SingleQuote and None.") :: Nil)
-    }
-  }
-
 }

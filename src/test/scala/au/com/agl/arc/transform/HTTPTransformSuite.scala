@@ -116,12 +116,12 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         uri=new URI(s"${uri}/${echo}/"),
         headers=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         inputView=inputView,
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField=None
+        inputField="value"
       )
     ).get
 
@@ -156,12 +156,12 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         uri=new URI(s"${uri}/${echo}/"),
         headers=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         inputView=inputView,
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField=Option("inputField")
+        inputField="inputField"
       )
     ).get
 
@@ -185,12 +185,12 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         uri=new URI(s"${uri}/${empty}/"),
         headers=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         inputView=inputView,
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField=None
+        inputField="value"
       )
     ).get
 
@@ -212,12 +212,12 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           uri=new URI(s"${uri}/fail/"),
           headers=Map.empty,
-          validStatusCodes=None,
+          validStatusCodes=200 :: 201 :: 202 :: Nil,
           inputView=inputView,
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          inputField=None
+          inputField="value"
         )
       ).get
     }
@@ -239,12 +239,12 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           uri=new URI(s"${uri}/${empty}/"),
           headers=Map.empty,
-          validStatusCodes=Option(List(201)),
+          validStatusCodes=201 :: Nil,
           inputView=inputView,
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          inputField=None
+          inputField="value"
         )
       ).get
     }
@@ -273,12 +273,12 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         uri=new URI(s"${uri}/${echo}/"),
         headers=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         inputView=inputView,
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField=None
+        inputField="value"
       )
     ).get
 
@@ -310,12 +310,12 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           uri=new URI(s"${uri}/${echo}/"),
           headers=Map.empty,
-          validStatusCodes=None,
+          validStatusCodes=200 :: 201 :: 202 :: Nil,
           inputView=inputView,
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          inputField=None
+          inputField="value"
         )
       ).get
     }
@@ -344,12 +344,12 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           uri=new URI(s"${uri}/${echo}/"),
           headers=Map.empty,
-          validStatusCodes=None,
+          validStatusCodes=200 :: 201 :: 202 :: Nil,
           inputView=inputView,
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          inputField=None
+          inputField="value"
         )
       ).get
     }
@@ -380,12 +380,12 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           name=outputView,
           uri=new URI(s"${uri}/${echo}/"),
           headers=Map.empty,
-          validStatusCodes=None,
+          validStatusCodes=200 :: 201 :: 202 :: Nil,
           inputView=inputView,
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          inputField=Option(inputField)
+          inputField=inputField
         )
       ).get
     }
@@ -418,12 +418,12 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         uri=new URI(s"${uri}/${echo}/"),
         headers=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         inputView=inputView,
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField=None
+        inputField="value"
       )
     ).get
 

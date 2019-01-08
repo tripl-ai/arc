@@ -1,0 +1,17 @@
+{
+  "type": "SQLTransform",
+  "name": "standardise customer fields",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/customer_dynamic.sql",
+  "inputView": "customer_raw",
+  "outputView": "customer",
+  "authentication": {},
+  "persist": false,
+  "sqlParams": {
+    "current_date": "2018-11-24",
+    "current_timestamp": "2018-11-24 14:48:56"
+  }
+}

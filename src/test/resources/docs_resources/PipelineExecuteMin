@@ -1,0 +1,9 @@
+{
+  "type": "PipelineExecute",
+  "name": "embed the active customer pipeline",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "uri": "hdfs://datalake/jobs/active_customers.json"
+}

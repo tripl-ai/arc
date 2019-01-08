@@ -1,0 +1,16 @@
+{
+  "type": "MetadataFilterTransform",
+  "name": "filter out Personally identifiable information (pii) fields",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/filter_pii_dynamic.sql",
+  "inputView": "cutomer",
+  "outputView": "customer_safe",
+  "authentication": {},
+  "persist": false,
+  "sqlParams": {
+    "pii_authorized": "true"
+  }
+}

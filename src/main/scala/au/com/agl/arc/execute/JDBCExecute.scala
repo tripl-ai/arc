@@ -20,40 +20,16 @@ import au.com.agl.arc.util.ControlUtils._
 
 object JDBCExecute {
 
-  def getConnection(url: String, user: Option[String], password: Option[String], params: Map[String, String]): Connection = {
-    val _user = user.orElse(params.get("user"))
-    val _password = password.orElse(params.get("password"))
-
-    (_user, _password) match {
-      case (Some(u), Some(p)) =>
-        if (params.isEmpty) {
-          DriverManager.getConnection(url, u, p)
-        } else {
-          val props = new Properties()
-          props.setProperty("user", u)
-          props.setProperty("password", p)
-          for ( (k,v) <- params) {
-            props.setProperty(k, v)
-          }
-          DriverManager.getConnection(url, props)
-        }
-      case _ =>
-        DriverManager.getConnection(url)
-    }
-  }
-
   def execute(exec: JDBCExecute)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
-    import exec._
-
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
-    stageDetail.put("type", getType)
-    stageDetail.put("name", name)
-    stageDetail.put("inputURI", inputURI.toString)     
-    stageDetail.put("sqlParams", sqlParams.asJava)
+    stageDetail.put("type", exec.getType)
+    stageDetail.put("name", exec.name)
+    stageDetail.put("inputURI", exec.inputURI.toString)     
+    stageDetail.put("sqlParams", exec.sqlParams.asJava)
 
     // replace sql parameters
-    val sqlToExecute = SQLUtils.injectParameters(sql, sqlParams)
+    val sqlToExecute = SQLUtils.injectParameters(exec.sql, exec.sqlParams)
     stageDetail.put("sql", sqlToExecute)     
 
     logger.info()
@@ -62,7 +38,7 @@ object JDBCExecute {
       .log()
 
     try {
-      using(getConnection(url, user, password, params)) { conn =>
+      using(getConnection(exec.jdbcURL, exec.user, exec.password, exec.params)) { conn =>
         using(conn.createStatement) { stmt =>
           val res = stmt.execute(sqlToExecute)
           // try to get results to throw error if one exists
@@ -85,6 +61,28 @@ object JDBCExecute {
       .log()
 
     None
+  }
+
+  def getConnection(url: String, user: Option[String], password: Option[String], params: Map[String, String]): Connection = {
+    val _user = user.orElse(params.get("user"))
+    val _password = password.orElse(params.get("password"))
+
+    (_user, _password) match {
+      case (Some(u), Some(p)) =>
+        if (params.isEmpty) {
+          DriverManager.getConnection(url, u, p)
+        } else {
+          val props = new Properties()
+          props.setProperty("user", u)
+          props.setProperty("password", p)
+          for ( (k,v) <- params) {
+            props.setProperty(k, v)
+          }
+          DriverManager.getConnection(url, props)
+        }
+      case _ =>
+        DriverManager.getConnection(url)
+    }
   }
 
 }

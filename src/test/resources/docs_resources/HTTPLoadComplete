@@ -1,0 +1,18 @@
+{
+  "type": "HTTPLoad",
+  "name": "load customers to the customer api",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputURI": "http://internalserver/api/customer",
+  "headers": {
+    "Authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
+    "custom-header": "payload"
+  },
+  "validStatusCodes": [
+    200,
+    201
+  ]
+}

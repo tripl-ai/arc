@@ -88,14 +88,14 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
         partitionBy=Nil, 
         numPartitions=None, 
-        isolationLevel=None,
-        batchsize=None, 
-        truncate=None,
+        isolationLevel=IsolationLevelReadCommitted,
+        batchsize=1000, 
+        truncate=false,
         createTableOptions=None,
         createTableColumnTypes=None,        
-        saveMode=Some(SaveMode.Overwrite), 
-        bulkload=Option(false),
-        tablock=None,
+        saveMode=SaveMode.Overwrite, 
+        bulkload=false,
+        tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
     ).get
@@ -142,14 +142,14 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
         partitionBy=Nil, 
         numPartitions=None, 
-        isolationLevel=None,
-        batchsize=None, 
-        truncate=None,
+        isolationLevel=IsolationLevelReadCommitted,
+        batchsize=1000, 
+        truncate=false,
         createTableOptions=None,
         createTableColumnTypes=None,        
-        saveMode=Some(SaveMode.Overwrite), 
-        bulkload=Option(false),
-        tablock=None,
+        saveMode=SaveMode.Overwrite, 
+        bulkload=false,
+        tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
     ).get
@@ -195,14 +195,14 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
         partitionBy=Nil, 
         numPartitions=None, 
-        isolationLevel=None,
-        batchsize=None, 
-        truncate=None,
+        isolationLevel=IsolationLevelReadCommitted,
+        batchsize=1000, 
+        truncate=false,
         createTableOptions=None,
         createTableColumnTypes=None,        
-        saveMode=Some(SaveMode.Overwrite), 
-        bulkload=Option(false),
-        tablock=None,
+        saveMode=SaveMode.Overwrite, 
+        bulkload=false,
+        tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
     ).get

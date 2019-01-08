@@ -1,0 +1,9 @@
+{
+  "type": "ConsoleLoad",
+  "name": "write a streaming dataset to console",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer"
+}

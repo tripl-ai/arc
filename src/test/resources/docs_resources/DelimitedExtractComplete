@@ -10,7 +10,7 @@
   "authentication": {},
   "contiguousIndex": true,
   "delimiter": "Comma",
-  "header": true,
+  "header": false,
   "numPartitions": 10,
   "partitionBy": [
     "country"

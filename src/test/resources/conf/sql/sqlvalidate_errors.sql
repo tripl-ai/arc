@@ -4,7 +4,7 @@ SELECT
 FROM (
   SELECT
     CASE
-      WHEN SIZE(_errors) > 0 THEN 1
+      WHEN SIZE(_errors) > 0 THEN ${test_integer}
       ELSE 0
     END AS error
   FROM ${table_name}

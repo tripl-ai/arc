@@ -12,7 +12,6 @@ object BytesExtract {
 
   def extract(extract: BytesExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
-    val signature = "BytesExtract requires pathView to be dataset with [value: string] signature."
     val startTime = System.currentTimeMillis()
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", extract.getType)
@@ -31,6 +30,8 @@ object BytesExtract {
       .field("event", "enter")
       .map("stage", stageDetail)
       .log()
+
+    val signature = "BytesExtract requires pathView to be dataset with [value: string] signature."
 
     CloudUtils.setHadoopConfiguration(extract.authentication)
 

@@ -13,14 +13,11 @@ object ConsoleLoad {
 
   def load(load: ConsoleLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
-
-    val outputMode = load.outputMode.getOrElse(OutputModeTypeAppend)
-
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
     stageDetail.put("name", load.name)
     stageDetail.put("inputView", load.inputView)  
-    stageDetail.put("outputMode", outputMode.sparkString)  
+    stageDetail.put("outputMode", load.outputMode.sparkString)  
 
     logger.info()
       .field("event", "enter")
@@ -37,7 +34,7 @@ object ConsoleLoad {
 
     df.writeStream
         .format("console")
-        .outputMode(outputMode.sparkString)
+        .outputMode(load.outputMode.sparkString)
         .start
 
     logger.info()

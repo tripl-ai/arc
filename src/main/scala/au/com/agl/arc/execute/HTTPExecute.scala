@@ -63,12 +63,8 @@ object HTTPExecute {
     stageDetail.put("response", responseMap)   
 
     // verify status code is correct
-    val validStatusCodes = exec.validStatusCodes match {
-      case Some(value) => value
-      case None => 200 :: 201 :: 202 :: Nil
-    }
-    if (!validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
-      throw new Exception(s"""HTTPExecute expects a response StatusCode in [${validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""") with DetailException {
+    if (!exec.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+      throw new Exception(s"""HTTPExecute expects a response StatusCode in [${exec.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""") with DetailException {
         override val detail = stageDetail
       }
     }    

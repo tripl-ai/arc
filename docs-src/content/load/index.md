@@ -23,34 +23,19 @@ The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avr
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
-|outputURI|URI|true|URI of the Parquet file to write to.|
+|outputURI|URI|true|URI of the Avro file to write to.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
-```json
-{
-    "type": "AvroLoad",
-    "name": "write customer records to avro",
-    "environments": ["production", "test"],
-    "inputView": "customer",
-    "outputURI": "hdfs://datalake/raw/customer.avro",
-    "numPartitions": 100,
-    "partitionBy": [
-        "customer_segment",
-        "customer_type"
-    ],
-    "authentication": {
-        ...
-    },    
-    "saveMode": "Append",
-    "params": {}
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/AvroLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/AvroLoadComplete" highlight="json" >}} 
 
 ## AzureEventHubsLoad
 ##### Since: 1.0.0 - Supports Streaming: False
@@ -71,30 +56,18 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 |sharedAccessSignatureKeyName|String|true|{{< readfile file="/content/partials/fields/sharedAccessSignatureKeyName.md" markdown="true" >}}|
 |sharedAccessSignatureKey|String|true|{{< readfile file="/content/partials/fields/sharedAccessSignatureKey.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} Azure EventHubs will throw a `ServerBusyException` if too many executors write to a target in parallel which can be decreased by reducing the number of partitions.|
-|retryMinBackoff|Long|false|The minimum time (in seconds) for the exponential backoff algorithm to wait between retries.<br><br>Default: 0.|
-|retryMaxBackoff|Long|false|The maximum time (in seconds) for the exponential backoff algorithm to wait between retries.<br><br>Default: 30.|
 |retryCount|Integer|false|The maximum number of retries for the exponential backoff algorithm.<br><br>Default: 10.|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|retryMaxBackoff|Long|false|The maximum time (in seconds) for the exponential backoff algorithm to wait between retries.<br><br>Default: 30.|
+|retryMinBackoff|Long|false|The minimum time (in seconds) for the exponential backoff algorithm to wait between retries.<br><br>Default: 0.|
 
 ### Examples
 
-```json
-{
-    "type": "AzureEventHubsLoad",
-    "name": "write customer records to eventhub",
-    "environments": ["production", "test"],
-    "inputView": "customer",
-    "namespaceName": "mynamespace", 
-    "eventHubName": "myeventhub", 
-    "sharedAccessSignatureKeyName": "mysignaturename", 
-    "sharedAccessSignatureKey": "ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=",
-    "numPartitions": 4,
-    "retryMinBackoff": 5,
-    "retryMinBackoff": 60,
-    "retryCount": 30,
-    "params": {}
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/AzureEventHubsLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/AzureEventHubsLoadComplete" highlight="json" >}} 
+
 
 ## ConsoleLoad
 ##### Since: 1.2.0 - Supports Streaming: True
@@ -110,20 +83,16 @@ This stage has been included for testing Structured Streaming jobs as it can be 
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
-|outputMode|String|false|The output mode of the console writer. Allowed values `Append`, `Complete`, `Update`. See [Output Modes](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#output-modes) for full details.<br><br>Default: Append|
+|outputMode|String|false|The output mode of the console writer. Allowed values `Append`, `Complete`, `Update`. See [Output Modes](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#output-modes) for full details.<br><br>Default: `Append`|
 
 ### Examples
 
-```json
-{
-    "type": "ConsoleLoad",
-    "name": "write a streaming dataset to console",
-    "environments": ["test"],
-    "inputView": "customer",
-    "outputMode": "Append",
-    "params": {}
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/ConsoleLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/ConsoleLoadComplete" highlight="json" >}} 
+
 
 ## DelimitedLoad
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -139,36 +108,21 @@ The `DelimitedLoad` writes an input `DataFrame` to a target delimited file.
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputURI|URI|true|URI of the Delimited file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|delimiter|String|false|The type of delimiter in the file. Supported values: `Comma`, `Pipe`, `DefaultHive`. `DefaultHive` is  ASCII character 1, the default delimiter for Apache Hive extracts.<br><br>Default: `Comma`.|
+|header|Boolean|false|Whether to write a header row.<br><br>Default: `false`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
-|delimiter|String|true|The type of delimiter in the file. Supported values: `Comma`, `Pipe`, `DefaultHive`. `DefaultHive` is  ASCII character 1, the default delimiter for Apache Hive extracts.|
-|quote|String|true|The type of quoting in the file. Supported values: `None`, `SingleQuote`, `DoubleQuote`.|
-|header|Boolean|true|Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named `_col1`, `_col2` ... `_colN`.|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|quote|String|false|The type of quoting in the file. Supported values: `None`, `SingleQuote`, `DoubleQuote`.<br><br>Default: `DoubleQuote`.|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
-```json
-{
-    "type": "DelimitedLoad",
-    "name": "write out customer csvs",
-    "environments": ["production", "test"],
-    "inputView": "customer",            
-    "outputURI": "hdfs://input_data/customer/customer.csv",
-    "delimiter": "Comma",
-    "quote" : "DoubleQuote",
-    "header": true,
-    "partitionBy": ["active"],
-    "numPartitions": 10,
-    "authentication": {
-        ...
-    },
-    "saveMode": "Append",
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/DelimitedLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/DelimitedLoadComplete" highlight="json" >}} 
+
 
 ## HTTPLoad
 ##### Since: 1.0.0 - Supports Streaming: False
@@ -187,26 +141,15 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 |outputURI|URI|true|URI of the HTTP server.|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
 |validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}} Note: all request response codes must be contained in this list for the stage to be successful.|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
-```json
-{
-    "type": "HTTPLoad",
-    "name": "load customers to the customer api",
-    "environments": ["production", "test"],
-    "inputView": "customer",            
-    "outputURI": "http://internalserver/api/customer",
-    "headers": {
-        "Authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
-        "custom-header": "payload",
-    },
-    "validStatusCodes": [200],
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/HTTPLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/HTTPLoadComplete" highlight="json" >}} 
+
 
 ## JDBCLoad
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -224,39 +167,25 @@ Whilst it is possible to use `JDBCLoad` to create tables directly in the target 
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |jdbcURL|String|true|{{< readfile file="/content/partials/fields/jdbcURL.md" markdown="true" >}}|
 |tableName|String|true|The target JDBC table. Must be in `database`.`schema`.`table` format.|
-|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
-|isolationLevel|String|false|{{< readfile file="/content/partials/fields/isolationLevel.md" markdown="true" >}}|
+|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Currently requires `user` and `password` to be set here - see example below.|
 |batchsize|Integer|false|{{< readfile file="/content/partials/fields/batchsize.md" markdown="true" >}}|
-|createTableOptions|String|false|{{< readfile file="/content/partials/fields/createTableOptions.md" markdown="true" >}}|
-|createTableColumnTypes|String|false|{{< readfile file="/content/partials/fields/createTableColumnTypes.md" markdown="true" >}}|
-|saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
-|truncate|Boolean|false|{{< readfile file="/content/partials/fields/truncate.md" markdown="true" >}}|
 |bulkload|Boolean|false|{{< readfile file="/content/partials/fields/bulkload.md" markdown="true" >}}|
+|createTableColumnTypes|String|false|{{< readfile file="/content/partials/fields/createTableColumnTypes.md" markdown="true" >}}|
+|createTableOptions|String|false|{{< readfile file="/content/partials/fields/createTableOptions.md" markdown="true" >}}|
+|isolationLevel|String|false|{{< readfile file="/content/partials/fields/isolationLevel.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
+|saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
 |tablock|Boolean|false|When in `bulkload` mode whether to set `TABLOCK` on the driver.<br><br>Default: `true`.|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Currently requires `user` and `password` to be set here - see example below.|
+|truncate|Boolean|false|{{< readfile file="/content/partials/fields/truncate.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "JDBCLoad",
-    "name": "load active customers to web server database",
-    "environments": ["production", "test"],
-    "inputView": "ative_customers",            
-    "jdbcURL": "jdbc:mysql://localhost/mydb",
-    "tableName": "mydatabase.myschema.customers",
-    "numPartitions": 10,
-    "isolationLevel": "READ_COMMITTED",
-    "batchsize": 10000,
-    "truncate": false,
-    "saveMode": "Append",
-    "bulkload": false,
-    "params": {
-        "user": "mydbuser",
-        "password": "mydbpassword",
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/JDBCLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/JDBCLoadComplete" highlight="json" >}} 
+
 
 ## JSONLoad
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -272,26 +201,18 @@ The `JSONLoad` writes an input `DataFrame` to a target JSON file.
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputURI|URI|true|URI of the Delimited file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
-```json
-{
-    "type": "JSONLoad",
-    "name": "load customer json extract",
-    "environments": ["production", "test"],
-    "outputView": "customer",            
-    "outputURI": "hdfs://input_data/customer/customer.json",
-    "authentication": {
-        ...
-    },
-    "saveMode": "Append",
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/JSONLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/JSONLoadComplete" highlight="json" >}} 
+
 
 ## KafkaLoad
 ##### Since: 1.0.8 - Supports Streaming: True
@@ -308,31 +229,21 @@ In the future additional Transform stages (like `ProtoBufTransform`) may be adde
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
-|topic|String|true|{{< readfile file="/content/partials/fields/topic.md" markdown="true" >}}|
 |bootstrapServers|String|true|{{< readfile file="/content/partials/fields/bootstrapServers.md" markdown="true" >}}|
-|acks|Integer|true|{{< readfile file="/content/partials/fields/acks.md" markdown="true" >}}|
+|topic|String|true|{{< readfile file="/content/partials/fields/topic.md" markdown="true" >}}|
+|acks|Integer|false|{{< readfile file="/content/partials/fields/acks.md" markdown="true" >}}<br><br>Default: `1`.|
+|batchSize|Integer|false|Number of records to send in single requet to reduce number of requests to Kafka.<br><br>Default: `16384`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
-|batchSize|Integer|false|Number of records to send in single requet to reduce number of requests to Kafka.<br><br>Default: 16384.|
-|retries|Integer|false|How many times to try to resend any record whose send fails with a potentially transient error.<br><br>Default: 0.|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|retries|Integer|false|How many times to try to resend any record whose send fails with a potentially transient error.<br><br>Default: `0`.|
 
 ### Examples
 
-```json
-{
-    "type": "KafkaLoad",
-    "name": "write customer records to kafka",
-    "environments": ["production", "test"],
-    "inputView": "customer",
-    "topic": "customer", 
-    "bootstrapServers": "kafka:29092", 
-    "acks": -1,
-    "numPartitions": 4,
-    "batchSize": 16384,
-    "retries": 3,
-    "params": {}
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/KafkaLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/KafkaLoadComplete" highlight="json" >}} 
+
 
 ## ORCLoad
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -347,33 +258,19 @@ The `ORCLoad` writes an input `DataFrame` to a target [Apache ORC](https://orc.a
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputURI|URI|true|URI of the ORC file to write to.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
-```json
-{
-    "type": "ORCLoad",
-    "name": "write customer records to orc",
-    "environments": ["production", "test"],
-    "inputView": "customer",
-    "outputURI": "hdfs://datalake/raw/customer.orc",
-    "numPartitions": 100,
-    "partitionBy": [
-        "customer_segment",
-        "customer_type"
-    ],
-    "authentication": {
-        ...
-    },    
-    "saveMode": "Append",
-    "params": {}
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/ORCLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/ORCLoadComplete" highlight="json" >}} 
+
 
 ## ParquetLoad
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -388,33 +285,19 @@ The `ParquetLoad` writes an input `DataFrame` to a target [Apache Parquet](https
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputURI|URI|true|URI of the Parquet file to write to.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
-```json
-{
-    "type": "ParquetLoad",
-    "name": "write customer records to parquet",
-    "environments": ["production", "test"],
-    "inputView": "customer",
-    "outputURI": "hdfs://datalake/raw/customer.parquet",
-    "numPartitions": 100,
-    "partitionBy": [
-        "customer_segment",
-        "customer_type"
-    ],
-    "authentication": {
-        ...
-    },    
-    "saveMode": "Append",
-    "params": {}
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/ParquetLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/ParquetLoadComplete" highlight="json" >}} 
+
 
 ## XMLLoad
 ##### Since: 1.0.0 - Supports Streaming: False
@@ -428,30 +311,16 @@ The `XMLLoad` writes an input `DataFrame` to a target XML file.
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
-|outputURI|URI|true|URI of the Parquet file to write to.|
+|outputURI|URI|true|URI of the XML file to write to.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "XMLLoad",
-    "name": "write customer records to xml",
-    "environments": ["production", "test"],
-    "inputView": "customer",
-    "outputURI": "hdfs://datalake/raw/customer.xml",
-    "numPartitions": 100,
-    "partitionBy": [
-        "customer_segment",
-        "customer_type"
-    ],
-    "authentication": {
-        ...
-    },    
-    "saveMode": "Append",
-    "params": {}
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/XMLLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/XMLLoadComplete" highlight="json" >}} 

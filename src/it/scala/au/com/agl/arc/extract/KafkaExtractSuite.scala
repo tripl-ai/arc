@@ -23,7 +23,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
   val inputView = "inputView"
   val outputView = "outputView"
   val bootstrapServers = "localhost:29092"
-  val timeout = Option(3000L)
+  val timeout = 3000L
   val checkPointPath = "/tmp/checkpoint"
 
   before {
@@ -64,6 +64,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
       .repartition(10)
       .toJSON
     dataset.createOrReplaceTempView(inputView)
+
     load.KafkaLoad.load(
       KafkaLoad(
         name="df", 
@@ -72,8 +73,8 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         bootstrapServers=bootstrapServers,
         acks= -1,
         numPartitions=None, 
-        batchSize=None, 
-        retries=None, 
+        batchSize=16384, 
+        retries=0, 
         params=Map.empty
       )
     )   
@@ -85,9 +86,9 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(false), 
+        autoCommit=false, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
@@ -135,8 +136,8 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         bootstrapServers=bootstrapServers,
         acks= -1,
         numPartitions=None, 
-        batchSize=None, 
-        retries=None, 
+        batchSize=16384, 
+        retries=0, 
         params=Map.empty
       )
     )   
@@ -148,9 +149,9 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(false), 
+        autoCommit=false, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
@@ -165,9 +166,9 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(false), 
+        autoCommit=false, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
@@ -217,8 +218,8 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         bootstrapServers=bootstrapServers,
         acks= -1,
         numPartitions=None, 
-        batchSize=None, 
-        retries=None, 
+        batchSize=16384, 
+        retries=0, 
         params=Map.empty
       )
     )   
@@ -230,9 +231,9 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(true), 
+        autoCommit=true, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
@@ -247,9 +248,9 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(true), 
+        autoCommit=true, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
@@ -281,9 +282,9 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(false), 
+        autoCommit=false, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,

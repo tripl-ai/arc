@@ -1,0 +1,10 @@
+{
+  "type": "JSONLoad",
+  "name": "write customer json extract",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputURI": "hdfs://output_data/customer/customer.json"
+}

@@ -1,0 +1,9 @@
+{
+  "type": "SQLValidate",
+  "name": "apply data integrity rules",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/customer_error_threshold.sql"
+}
