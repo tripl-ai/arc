@@ -146,7 +146,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val resourcesDir = getClass.getResource("/docs_resources/").getPath
 
     for (filename <- TestDataUtils.getListOfFiles(resourcesDir)) {
-      val fileContents = Source.fromFile(filename).getLines.mkString("\n")
+      val fileContents = Source.fromFile(filename).mkString
       val conf = s"""{"stages": [${fileContents.trim}]}"""
 
       // replace sql directory with config so that the examples read correctly but have resource to validate

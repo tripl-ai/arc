@@ -263,14 +263,16 @@ object ARC {
             true
         }
       case Left(errors) => {
-        val errorMsg = ConfigUtils.Error.pipelineErrorMsg(errors)
-        println(errorMsg)
-
         // TODO add errors to json as data
         logger.error()
-          .field("event", "config_errors")
-          .field("message", errorMsg)
+          .field("event", "exit")
+          .field("status", "failure")
+          .field("duration", System.currentTimeMillis() - startTime)        
+          .list("reason", ConfigUtils.Error.pipelineErrorJSON(errors))
           .log()   
+
+        val errorMsg = ConfigUtils.Error.pipelineErrorMsg(errors)
+        println(errorMsg)
 
         true
       }

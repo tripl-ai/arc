@@ -350,9 +350,43 @@ object ConfigUtils {
 
     def errToString(err: Error): String = {
       err match {
-        case StageError(stage, lineNumber, configErrors) =>
-          s"""Stage '${stage}' (line number ${lineNumber}):\n${configErrors.map(e => "\t\t" + errToString(e)).mkString("\n")}"""
-        case ConfigError(attribute, lineNumber, message) => s"${attribute} (line ${lineNumber}): $message"
+        case StageError(stage, lineNumber, configErrors) => {
+          s"""Stage '${stage}' (Line ${lineNumber}):\n${configErrors.map(e => "\t\t" + errToString(e)).mkString("\n")}"""
+        }
+          
+        case ConfigError(attribute, lineNumber, message) => {
+          lineNumber match {
+            case Some(ln) => s"""${attribute} (Line ${ln}): $message"""
+            case None => s"""${attribute}: $message"""
+          }
+        }
+      }
+    }
+
+    def errorsToJSON(err: Error): java.util.HashMap[String, Object] = {
+      err match {
+        case StageError(stage, lineNumber, configErrors) => {  
+          val stageErrorMap = new java.util.HashMap[String, Object]()
+          stageErrorMap.put("stage", stage)
+          stageErrorMap.put("lineNumber", Integer.valueOf(lineNumber))
+          stageErrorMap.put("errors", configErrors.map(configError => errorsToJSON(configError)).asJava)
+          stageErrorMap
+        }
+        case ConfigError(attribute, lineNumber, message) => {
+          val configErrorMap = new java.util.HashMap[String, Object]()
+          lineNumber match {
+            case Some(ln) => {
+              configErrorMap.put("attribute", attribute)
+              configErrorMap.put("lineNumber", Integer.valueOf(ln))
+              configErrorMap.put("message", message)
+            }
+            case None => {
+              configErrorMap.put("attribute", attribute)
+              configErrorMap.put("message", message)          
+            }
+          } 
+          configErrorMap      
+        }
       }
     }
 
@@ -360,6 +394,10 @@ object ConfigUtils {
       val errorMsg = errors.map(e => s"\t${ConfigUtils.Error.errToString(e)}").mkString("\n")
       s"\nETL Config contains errors:\n\n$errorMsg\n\n"
     }
+
+    def pipelineErrorJSON(errors: List[Error]): java.util.List[java.util.HashMap[String, Object]] = {
+      errors.map(e => errorsToJSON(e)).asJava
+    }    
 
   }
 
