@@ -11,9 +11,6 @@
   "contiguousIndex": true,
   "multiLine": true,
   "numPartitions": 10,
-  "partitionBy": [
-    "country"
-  ],
   "persist": false,
   "schemaURI": "hdfs://input_data/schema/customer.json",
   "schemaView": "customer_schema"

@@ -6,7 +6,6 @@
     "test"
   ],
   "inputURI": "hdfs://datalake/sql/customer_dynamic.sql",
-  "inputView": "customer_raw",
   "outputView": "customer",
   "authentication": {},
   "persist": false,

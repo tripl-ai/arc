@@ -6,6 +6,5 @@
     "test"
   ],
   "inputURI": "hdfs://datalake/sql/customer.sql",
-  "inputView": "customer_raw",
   "outputView": "customer"
 }

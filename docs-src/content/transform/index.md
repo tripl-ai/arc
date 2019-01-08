@@ -30,6 +30,7 @@ This stage performs this 'diffing' operation in a single pass so if multiple of 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputLeftView|String|true|Name of first incoming Spark dataset.|
 |inputRightView|String|true|Name of second incoming Spark dataset.|
 |outputIntersectionView|String|false|Name of output `intersection` view.|

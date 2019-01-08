@@ -17,8 +17,7 @@ The `HTTPExecute` takes an input `Map[String, String]` from the configuration an
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
-|outputURI|URI|true|URI of the HTTP server.|
+|uri|URI|true|URI of the HTTP server.|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
 |payloads|Map[String, String]|false|{{< readfile file="/content/partials/fields/payloads.md" markdown="true" >}}|
 |validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}}|
