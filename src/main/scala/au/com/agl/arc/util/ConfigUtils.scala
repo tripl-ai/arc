@@ -351,7 +351,7 @@ object ConfigUtils {
     def errToString(err: Error): String = {
       err match {
         case StageError(stage, lineNumber, configErrors) => {
-          s"""Stage '${stage}' (Line ${lineNumber}):\n${configErrors.map(e => "\t\t" + errToString(e)).mkString("\n")}"""
+          s"""Stage '${stage}' (Line ${lineNumber}):\n${configErrors.map(e => "  - " + errToString(e)).mkString("\n")}"""
         }
           
         case ConfigError(attribute, lineNumber, message) => {
@@ -391,8 +391,7 @@ object ConfigUtils {
     }
 
     def pipelineErrorMsg(errors: List[Error]): String = {
-      val errorMsg = errors.map(e => s"\t${ConfigUtils.Error.errToString(e)}").mkString("\n")
-      s"\nETL Config contains errors:\n\n$errorMsg\n\n"
+      errors.map(e => s"${ConfigUtils.Error.errToString(e)}").mkString("\n")
     }
 
     def pipelineErrorJSON(errors: List[Error]): java.util.List[java.util.HashMap[String, Object]] = {

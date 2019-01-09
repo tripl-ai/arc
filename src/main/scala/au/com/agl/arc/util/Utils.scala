@@ -1,5 +1,6 @@
 package au.com.agl.arc.util
 
+import au.com.agl.arc.BuildInfo
 
 object Utils {
 
@@ -9,4 +10,5 @@ object Utils {
   def getContextOrSparkClassLoader: ClassLoader =
     Option(Thread.currentThread().getContextClassLoader).getOrElse(getSparkClassLoader)
 
+  def getFrameworkVersion: String = BuildInfo.version
 }
