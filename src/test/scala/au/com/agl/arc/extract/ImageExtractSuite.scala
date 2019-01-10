@@ -136,9 +136,6 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true, ignoreEnvironments=false)
 
-    // parse json schema to List[ExtractColumn]
-    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
-
     val extractDataset = extract.ImageExtract.extract(
       ImageExtract(
         name=outputView,

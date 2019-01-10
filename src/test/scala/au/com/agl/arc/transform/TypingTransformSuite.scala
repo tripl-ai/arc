@@ -193,7 +193,9 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     // parse json schema to List[ExtractColumn]
     val thrown = intercept[IllegalArgumentException] {
       val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    println(cols)
     }
+
 
     assert(thrown.getMessage.contains("Metadata in field 'booleanDatum' cannot contain arrays of different types"))
   }  

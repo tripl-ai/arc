@@ -214,10 +214,13 @@ object ConfigUtils {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AzureSharedKey' requires 'accountName' parameter.")
               } 
+              if (accountName.contains("fs.azure")) {
+                throw new Exception(s"Authentication method 'AzureSharedKey' 'accountName' should be just the account name not 'fs.azure.account.key...''.")
+              }
               val signature = authentication.get("signature") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AzureSharedKey' requires 'signature' parameter.")
-              } 
+              }            
               Right(Some(Authentication.AzureSharedKey(accountName, signature)))
             }
             case Some("AzureSharedAccessSignature") => {
@@ -225,10 +228,16 @@ object ConfigUtils {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AzureSharedAccessSignature' requires 'accountName' parameter.")
               } 
+              if (accountName.contains("fs.azure")) {
+                throw new Exception(s"Authentication method 'AzureSharedAccessSignature' 'accountName' should be just the account name not 'fs.azure.account.key...''.")
+              }              
               val container = authentication.get("container") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AzureSharedAccessSignature' requires 'container' parameter.")
               } 
+              if (accountName.contains("fs.azure")) {
+                throw new Exception(s"Authentication method 'AzureSharedAccessSignature' 'container' should be just the container name not 'fs.azure.account.key...''.")
+              }                
               val token = authentication.get("token") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AzureSharedAccessSignature' requires 'container' parameter.")
@@ -363,6 +372,22 @@ object ConfigUtils {
       }
     }
 
+    def errToSimpleString(err: Error): String = {
+      err match {
+        case StageError(stage, lineNumber, configErrors) => {
+          s"""${configErrors.map(e => "- " + errToString(e)).mkString("\n")}"""
+        }
+          
+        case ConfigError(attribute, lineNumber, message) => {
+          lineNumber match {
+            case Some(ln) => s"""${attribute} (Line ${ln}): $message"""
+            case None => s"""${attribute}: $message"""
+          }
+        }
+      }
+    }
+
+
     def errorsToJSON(err: Error): java.util.HashMap[String, Object] = {
       err match {
         case StageError(stage, lineNumber, configErrors) => {  
@@ -394,24 +419,27 @@ object ConfigUtils {
       errors.map(e => s"${ConfigUtils.Error.errToString(e)}").mkString("\n")
     }
 
+    def pipelineSimpleErrorMsg(errors: List[Error]): String = {
+      errors.map(e => s"${ConfigUtils.Error.errToSimpleString(e)}").mkString("\n")
+    }    
+
     def pipelineErrorJSON(errors: List[Error]): java.util.List[java.util.HashMap[String, Object]] = {
       errors.map(e => errorsToJSON(e)).asJava
     }    
 
   }
 
+  type Errors =  List[ConfigError]
+
   case class ConfigError(path: String, lineNumber: Option[Int], message: String) extends Error
 
-  case class StageError(stage: String, lineNumber: Int, errors: List[ConfigError]) extends Error
+  case class StageError(stage: String, lineNumber: Int, errors: Errors) extends Error
 
   object ConfigError {
 
-    def err(path: String, lineNumber: Option[Int], message: String): List[ConfigError] = ConfigError(path, lineNumber, message) :: Nil
+    def err(path: String, lineNumber: Option[Int], message: String): Errors = ConfigError(path, lineNumber, message) :: Nil
 
   }
-
-  type Errors =  List[ConfigError]
-
 
   trait ConfigReader[A] {
 
@@ -546,7 +574,7 @@ object ConfigUtils {
 
   type IntList = List[Int]
 
-  private def stringOrDefault(sv: StringConfigValue, default: String): String = {
+  def stringOrDefault(sv: StringConfigValue, default: String): String = {
     sv match {
       case Right(v) => v
       case Left(err) => default
@@ -571,7 +599,13 @@ object ConfigUtils {
       Left(diffKeys.map(key => {
         val possibleKeys = levenshteinDistance(expectedKeys, key)(4)
         if (!possibleKeys.isEmpty) {
-          ConfigError(key, Some(c.getValue(key).origin.lineNumber()), s"""Invalid attribute '${key}'. Perhaps you meant one of: ${possibleKeys.map(field => s"'${field}'").mkString("[",", ","]")}.""")
+          // if the value has been substituted line number is -1. can use description to detect it.
+          // description looks like: 'merge of String: 11,env var ETL_JOB_ROOT'
+          if (c.getValue(key).origin.description.contains("merge of")) {
+            ConfigError(key, None, s"""Invalid attribute '${key}'. Perhaps you meant one of: ${possibleKeys.map(field => s"'${field}'").mkString("[",", ","]")}.""")
+          } else {
+            ConfigError(key, Some(c.getValue(key).origin.lineNumber()), s"""Invalid attribute '${key}'. Perhaps you meant one of: ${possibleKeys.map(field => s"'${field}'").mkString("[",", ","]")}.""")
+          }
         } else {
           ConfigError(key, Some(c.getValue(key).origin.lineNumber()), s"""Invalid attribute '${key}'.""")
         }
@@ -579,6 +613,8 @@ object ConfigUtils {
     }
   }
 
+  // this method will get the keys from a case class via reflection so could be used for key comparison
+  // it does not work well if there is mapping between the hocon config and the case class fields (like the delimited object)
   def checkValidKeysReflection[T: TypeTag](c: Config): Seq[String] = {
     val expectedKeys = classAccessors[T]
     c.root().keySet.asScala.toSeq.diff(expectedKeys)
@@ -664,7 +700,7 @@ object ConfigUtils {
       val cols = sch.map{ s => MetadataSchema.parseJsonMetadata(s) }.getOrElse(Right(Nil))
 
       cols match {
-        case Left(errs) => Left(errs.map( e => ConfigError("schema", Some(c.getValue(uriKey).origin.lineNumber()), e) ))
+        case Left(errs) => Left(errs.map( e => ConfigError(uriKey, Some(c.getValue(uriKey).origin.lineNumber()), Error.pipelineSimpleErrorMsg(e.errors)) ))
         case Right(extractColumns) => Right(extractColumns)
       }
     }
