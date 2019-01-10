@@ -174,27 +174,32 @@ object MetadataSchema {
                   Right(StringColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength))
                 }
                 case _ => {
+                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength).collect{ case Left(errs) => errs }.flatten
+                  val metaName = stringOrDefault(name, "unnamed meta")
+                  val err = StageError(metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
-                case "timestamp" => {
-                  val formatters = asStringArray(n.get("formatters"))
+              }  
             }  
 
-                  val invalidFormatters = formatters.filter(!validateDateTimeFormatter(_))
-                  if (invalidFormatters.nonEmpty) {
-                    val strict = formatters.forall(formatter => strictDateTimeFormatter(name, formatter))
-                    val tz = n.get("timezoneId").textValue
-                      case true => {
-                        val timeConfig = n.get("time")
-                        // deal with embedded strings from sources like JDBC
-                        val parsedTimeConfig = timeConfig.getNodeType.toString match {
-                          case "STRING" => objectMapper.readTree(timeConfig.asText)
-                          case _ => timeConfig
+            case "time" => {
+              val formatters = ConfigReader.getValue[StringList]("formatters")
 
-                        Option(LocalTime.of(parsedTimeConfig.get("hour").asInt, parsedTimeConfig.get("minute").asInt, parsedTimeConfig.get("second").asInt, parsedTimeConfig.get("nano").asInt))
-                      }
               (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters) match {
+                case (Right(id), Right(name), Right(description), Right(_type), Right(nullable), Right(nullReplacementValue), Right(trim), Right(nullableValues), Right(metadata), Right(formatters)) => {
+                  Right(TimeColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, formatters, metadata))
+                }
+                case _ => {
+                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters).collect{ case Left(errs) => errs }.flatten
+                  val metaName = stringOrDefault(name, "unnamed meta")
+                  val err = StageError(metaName, c.origin.lineNumber, allErrors)
+                  Left(err :: Nil)
+                }
+              }  
             } 
+
+            case "timestamp" => {
+              val formatters = ConfigReader.getValue[StringList]("formatters") |> validateDateTimeFormatter("formatters") _
               val timezoneId = ConfigReader.getValue[String]("timezoneId")
 
               // try to parse time if exists
@@ -264,7 +269,6 @@ object MetadataSchema {
         Left(ConfigError(node.getKey, Some(config.getValue(node.getKey).origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot be the same name as column."))
       } else {
         node.getValue.valueType match {
-          case ConfigValueType.NULL => Left(ConfigError(node.getKey, Some(config.getValue(node.getKey).origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain `null` values."))
           case ConfigValueType.OBJECT => Left(ConfigError(node.getKey, Some(config.getValue(node.getKey).origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain nested `objects`."))
           case ConfigValueType.LIST => {
             val listNode = config.getList(node.getKey)
@@ -286,7 +290,7 @@ object MetadataSchema {
                         if (nodeList.forall(_.getClass == numberClass)) {
                           Right(true)
                         } else {
-                          Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain `number` arrays of different types (all values must be `integers` or all values must be`doubles`)."))
+                          Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain `number` arrays of different types (all values must be `integers` or all values must be `doubles`)."))
                         }                      
                       } 
                       case _ => Right(true)
@@ -297,6 +301,10 @@ object MetadataSchema {
                 }
               }
             }
+          }
+          case _ if (node.getKey.contains(".")) => {
+            val parentKey = node.getKey.split("\\.").head
+            Left(ConfigError(parentKey, Some(config.getValue(parentKey).origin.lineNumber), s"""Metadata attribute '${parentKey}' cannot contain nested `objects`."""))
           }
           case _ => Right(true)
         }

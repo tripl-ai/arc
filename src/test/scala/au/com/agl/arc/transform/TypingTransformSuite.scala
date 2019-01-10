@@ -14,6 +14,7 @@ import org.apache.spark.sql.types._
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.log.LoggerFactory 
+import au.com.agl.arc.util.ConfigUtils._
 
 import au.com.agl.arc.util._
 
@@ -190,14 +191,13 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     ]
     """
     
-    // parse json schema to List[ExtractColumn]
-    val thrown = intercept[IllegalArgumentException] {
-      val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
-    println(cols)
-    }
-
-
-    assert(thrown.getMessage.contains("Metadata in field 'booleanDatum' cannot contain arrays of different types"))
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    cols match {
+      case Left(stageError) => {
+        assert(stageError == StageError("booleanDatum",2,List(ConfigError("booleanArrayMeta", Some(20), "Metadata attribute 'booleanArrayMeta' cannot contain arrays of different types."))) :: Nil)
+      }
+      case Right(_) => assert(false)
+    }  
   }  
 
   test("TypingTransform: metadata bad type object") {
@@ -231,11 +231,13 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     ]
     """
     
-    // parse json schema to List[ExtractColumn]
-    val thrown = intercept[IllegalArgumentException] {
-      val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
-    }
-    assert(thrown.getMessage.contains("Metadata in field 'booleanDatum' cannot contain nested `objects`."))
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    cols match {
+      case Left(stageError) => {
+        assert(stageError == StageError("booleanDatum",2,List(ConfigError("booleanArrayMeta", Some(20), "Metadata attribute 'booleanArrayMeta' cannot contain nested `objects`."))) :: Nil)
+      }
+      case Right(_) => assert(false)
+    }      
   }  
 
   test("TypingTransform: metadata bad type null") {
@@ -269,11 +271,11 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     ]
     """
     
-    // parse json schema to List[ExtractColumn]
-    val thrown = intercept[IllegalArgumentException] {
-      val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
-    }
-    assert(thrown.getMessage.contains("Metadata in field 'booleanDatum' cannot contain `null` values."))
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    cols match {
+      case Left(_) => assert(false)
+      case Right(_) => assert(true)
+    }  
   }   
 
   test("TypingTransform: metadata bad type same name as column") {
@@ -301,17 +303,19 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
             "false"
         ],
         "metadata": {
-            "booleanDatum": null
+          "booleanDatum": 5
         }
       }
     ]
     """
-    
-    // parse json schema to List[ExtractColumn]
-    val thrown = intercept[IllegalArgumentException] {
-      val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
-    }
-    assert(thrown.getMessage.contains("Metadata in field 'booleanDatum' cannot contain key with same name as column."))
+
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    cols match {
+      case Left(stageError) => {
+        assert(stageError == StageError("booleanDatum",2,List(ConfigError("booleanDatum",Some(21),"Metadata attribute 'booleanDatum' cannot be the same name as column."))) :: Nil)
+      }
+      case Right(_) => assert(false)
+    }  
   }    
 
   test("TypingTransform: metadata bad type multiple") {
@@ -346,12 +350,13 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     ]
     """
     
-    // parse json schema to List[ExtractColumn]
-    val thrown = intercept[IllegalArgumentException] {
-      val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
-    }
-    assert(thrown.getMessage.contains("Metadata in field 'booleanDatum' cannot contain `number` arrays of different types (all must be integers or all doubles)."))
-    assert(thrown.getMessage.contains("Metadata in field 'booleanDatum' cannot contain `null` values."))
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    cols match {
+      case Left(stageError) => {
+        assert(stageError == StageError("booleanDatum",2,List(ConfigError("badArray", Some(20),"Metadata attribute 'badArray' cannot contain `number` arrays of different types (all values must be `integers` or all values must be `doubles`)."))) :: Nil)
+      }
+      case Right(_) => assert(false)
+    }  
   }   
 
   test("TypingTransform: Execute with Structured Streaming" ) {
