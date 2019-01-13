@@ -12,6 +12,7 @@ import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.EitherUtils._
 
 import com.typesafe.config._
+import org.apache.commons.lang.StringEscapeUtils
 
 object MetadataSchema {
 
@@ -50,10 +51,20 @@ object MetadataSchema {
         case (Right(n), Right(t)) => {
 
           val metadata: Either[Errors, Option[String]] = if( c.hasPath("metadata") ) {
-            val meta = c.getObject("metadata")
-            val valid = validateMetadata(n, meta.toConfig)
+
+            // if the metadata has been extracted from a database (e.g. a postgres jsonb field) it may be
+            // mapped to a string by the spark jdbc dialect. in this case unescape the string and parse it as a config
+            // so the values can be verified
+            val meta = c.getValue("metadata").valueType match {
+              case ConfigValueType.STRING => {
+                ConfigFactory.parseString(StringEscapeUtils.unescapeJava(c.getString("metadata")), ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+              }
+              case _ => c.getObject("metadata").toConfig
+            }
+
+            val valid = validateMetadata(n, meta)
             if (valid.forall(_.isRight)) {
-              Right(Option(meta.render(ConfigRenderOptions.concise())))
+              Right(Option(meta.root.render(ConfigRenderOptions.concise())))
             } else {
               Left(valid.collect{ case Left(errs) => errs })
             }
