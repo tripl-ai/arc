@@ -423,6 +423,15 @@ The `TextExtract` stage reads either one or more text files and returns a `DataF
 
 The `XMLExtract` stage reads one or more XML files or an input `Dataset[String]` and returns a `DataFrame`. 
 
+This extract works slightly different to the `spark-xml` package. To access the data you can use a [SQLTransform](../transform/#sqltransform) query like this which will create a new value for each row of the `bk:books` array:
+
+```sql
+SELECT EXPLODE(`bk:books`).*
+FROM books_xml
+```
+
+The backtick character (`) can be used to address fields with non-alphanumeric names.
+
 ### Parameters
 
 | Attribute | Type | Required | Description |
