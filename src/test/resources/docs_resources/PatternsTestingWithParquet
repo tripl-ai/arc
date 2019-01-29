@@ -1,0 +1,18 @@
+{
+  "type": "ParquetExtract",
+  "name": "load customers",
+  "environments": [
+    "test"
+  ],
+  "inputURI": "hdfs://input_data/customer/*.parquet",
+  "outputView": "customers_known_correct"
+},
+{
+  "type": "EqualityValidate",
+  "name": "verify calculated customer data equals preprepared customer data (test only)",
+  "environments": [
+    "test"
+  ],
+  "leftView": "customers_caculated",
+  "rightView": "customers_known_correct"
+}

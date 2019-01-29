@@ -37,6 +37,9 @@ object MetadataSchema {
       import ConfigReader._
       implicit var c = meta
 
+      // test keys
+      val baseKeys = "id" :: "name" :: "description" :: "type" :: "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "metadata" :: Nil
+
       // common attributes
       val id = ConfigReader.getValue[String]("id")
       val name = ConfigReader.getValue[String]("name")
@@ -75,6 +78,10 @@ object MetadataSchema {
           t match {
 
             case "boolean" => {
+              // test keys
+              val expectedKeys = "trueValues" :: "falseValues" :: baseKeys
+              val invalidKeys = checkValidKeys(c)(expectedKeys)      
+
               val trueValues = ConfigReader.getValue[StringList]("trueValues")
               val falseValues = ConfigReader.getValue[StringList]("falseValues")
 
@@ -83,7 +90,7 @@ object MetadataSchema {
                   Right(BooleanColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, trueValues, falseValues, metadata))
                 }
                 case _ => {
-                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, trueValues, falseValues).collect{ case Left(errs) => errs }.flatten
+                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, trueValues, falseValues, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
                   val err = StageError(metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
@@ -92,6 +99,10 @@ object MetadataSchema {
             }  
 
             case "date" => {
+              // test keys
+              val expectedKeys = "metadata" :: "formatters" :: baseKeys
+              val invalidKeys = checkValidKeys(c)(expectedKeys)    
+
               val formatters = ConfigReader.getValue[StringList]("formatters") |> validateDateTimeFormatter("formatters") _
 
               (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters) match {
@@ -102,7 +113,7 @@ object MetadataSchema {
                   Right(DateColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, formatters, metadata, strict))
                 }
                 case _ => {
-                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters).collect{ case Left(errs) => errs }.flatten
+                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
                   val err = StageError(metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
@@ -111,6 +122,10 @@ object MetadataSchema {
             }        
 
             case "decimal" => {
+              // test keys
+              val expectedKeys = "precision" :: "scale" :: "formatters" :: baseKeys
+              val invalidKeys = checkValidKeys(c)(expectedKeys)    
+
               val precision = ConfigReader.getValue[Int]("precision")
               val scale = ConfigReader.getValue[Int]("scale")
               val formatters = ConfigReader.getOptionalValue[StringList]("formatters")
@@ -120,7 +135,7 @@ object MetadataSchema {
                   Right(DecimalColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, precision, scale, metadata, formatters))
                 }
                 case _ => {
-                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, precision, scale, metadata, formatters).collect{ case Left(errs) => errs }.flatten
+                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, precision, scale, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
                   val err = StageError(metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
@@ -129,6 +144,10 @@ object MetadataSchema {
             }                    
 
             case "double" => {
+              // test keys
+              val expectedKeys = "formatters" :: baseKeys
+              val invalidKeys = checkValidKeys(c)(expectedKeys)    
+
               val formatters = ConfigReader.getOptionalValue[StringList]("formatters")
 
               (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters) match {
@@ -136,7 +155,7 @@ object MetadataSchema {
                   Right(DoubleColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues,  metadata, formatters))
                 }
                 case _ => {
-                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters).collect{ case Left(errs) => errs }.flatten
+                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
                   val err = StageError(metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
@@ -145,6 +164,10 @@ object MetadataSchema {
             }   
 
             case "integer" => {
+              // test keys
+              val expectedKeys = "formatters" :: baseKeys
+              val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
               val formatters = ConfigReader.getOptionalValue[StringList]("formatters")
 
               (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters) match {
@@ -152,7 +175,7 @@ object MetadataSchema {
                   Right(IntegerColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters))
                 }
                 case _ => {
-                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters).collect{ case Left(errs) => errs }.flatten
+                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
                   val err = StageError(metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
@@ -161,6 +184,10 @@ object MetadataSchema {
             }              
 
             case "long" => {
+              // test keys
+              val expectedKeys = "formatters" :: baseKeys
+              val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
               val formatters = ConfigReader.getOptionalValue[StringList]("formatters")
 
               (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters) match {
@@ -168,7 +195,7 @@ object MetadataSchema {
                   Right(LongColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters))
                 }
                 case _ => {
-                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters).collect{ case Left(errs) => errs }.flatten
+                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
                   val err = StageError(metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
@@ -177,6 +204,10 @@ object MetadataSchema {
             } 
 
             case "string" => {
+              // test keys
+              val expectedKeys = "minLength" :: "maxLength" :: baseKeys
+              val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
               val minLength = ConfigReader.getOptionalValue[Int]("minLength")
               val maxLength = ConfigReader.getOptionalValue[Int]("maxLength")
 
@@ -185,7 +216,7 @@ object MetadataSchema {
                   Right(StringColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength))
                 }
                 case _ => {
-                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength).collect{ case Left(errs) => errs }.flatten
+                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
                   val err = StageError(metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
@@ -194,6 +225,10 @@ object MetadataSchema {
             }  
 
             case "time" => {
+              // test keys
+              val expectedKeys = "formatters" :: baseKeys
+              val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
               val formatters = ConfigReader.getValue[StringList]("formatters")
 
               (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters) match {
@@ -201,7 +236,7 @@ object MetadataSchema {
                   Right(TimeColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, formatters, metadata))
                 }
                 case _ => {
-                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters).collect{ case Left(errs) => errs }.flatten
+                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
                   val err = StageError(metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
@@ -210,6 +245,10 @@ object MetadataSchema {
             } 
 
             case "timestamp" => {
+              // test keys
+              val expectedKeys = "formatters" :: "timezoneId" :: "time" :: baseKeys
+              val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
               val formatters = ConfigReader.getValue[StringList]("formatters") |> validateDateTimeFormatter("formatters") _
               val timezoneId = ConfigReader.getValue[String]("timezoneId")
 
@@ -243,7 +282,7 @@ object MetadataSchema {
                   Right(TimestampColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, timezoneId, formatters, time, metadata, strict))
                 }
                 case _ => {
-                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, timezoneId, time).collect{ case Left(errs) => errs }.flatten
+                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, timezoneId, time, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
                   val err = StageError(metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)

@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.4.1</span></strong>
+          <span class="version">1.5.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -466,6 +466,13 @@
 <td>String</td>
 <td>true</td>
 <td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1138,7 +1145,6 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/customer.sql&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_raw&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
@@ -1152,7 +1158,6 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/customer_dynamic.sql&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_raw&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
@@ -1504,46 +1509,45 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
-  
-      <a href="https://aglenergy.github.io/arc/extract/" title="Extract">
-        <span class="direction">
-          Previous
-        </span>
-        <div class="page">
-          <div class="button button-previous" role="button" aria-label="Previous">
-            <i class="icon icon-back"></i>
-          </div>
-          <div class="stretch">
-            <div class="title">
-              Extract
-            </div>
+    
+    <a href="https://aglenergy.github.io/arc/extract/" title="Extract">
+      <span class="direction">
+        Previous
+      </span>
+      <div class="page">
+        <div class="button button-previous" role="button" aria-label="Previous">
+          <i class="icon icon-back"></i>
+        </div>
+        <div class="stretch">
+          <div class="title">
+            Extract
           </div>
         </div>
-      </a>
-  
+      </div>
+    </a>
+    
   </div>
 
   <div class="next">
-  
-      <a href="https://aglenergy.github.io/arc/load/" title="Load">
-        <span class="direction">
-          Next
-        </span>
-        <div class="page">
-          <div class="stretch">
-            <div class="title">
-              Load
-            </div>
-          </div>
-          <div class="button button-next" role="button" aria-label="Next">
-            <i class="icon icon-forward"></i>
+    
+    <a href="https://aglenergy.github.io/arc/load/" title="Load">
+      <span class="direction">
+        Next
+      </span>
+      <div class="page">
+        <div class="stretch">
+          <div class="title">
+            Load
           </div>
         </div>
-      </a>
-  
+        <div class="button button-next" role="button" aria-label="Next">
+          <i class="icon icon-forward"></i>
+        </div>
+      </div>
+    </a>
+    
   </div>
 </nav>
-
 
 
 

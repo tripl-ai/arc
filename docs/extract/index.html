@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.4.1</span></strong>
+          <span class="version">1.5.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -2254,9 +2254,6 @@
   <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
   <span class="nt">&#34;multiLine&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
   <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;country&#34;</span>
-  <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
@@ -2267,6 +2264,14 @@
 <h5 id="since-1-0-0-supports-streaming-false-3">Since: 1.0.0 - Supports Streaming: False</h5>
 
 <p>The <code>XMLExtract</code> stage reads one or more XML files or an input <code>Dataset[String]</code> and returns a <code>DataFrame</code>.</p>
+
+<p>This extract works slightly different to the <code>spark-xml</code> package. To access the data you can use a <a href="../transform/#sqltransform">SQLTransform</a> query like this which will create a new value for each row of the <code>bk:books</code> array:</p>
+
+<pre><code class="language-sql">SELECT EXPLODE(`bk:books`).*
+FROM books_xml
+</code></pre>
+
+<p>The backtick character (`) can be used to address fields with non-alphanumeric names.</p>
 
 <h3 id="parameters-12">Parameters</h3>
 
@@ -2423,46 +2428,45 @@
 
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
-  
-      <a href="https://aglenergy.github.io/arc/tutorial/" title="Tutorial">
-        <span class="direction">
-          Previous
-        </span>
-        <div class="page">
-          <div class="button button-previous" role="button" aria-label="Previous">
-            <i class="icon icon-back"></i>
-          </div>
-          <div class="stretch">
-            <div class="title">
-              Tutorial
-            </div>
+    
+    <a href="https://aglenergy.github.io/arc/tutorial/" title="Tutorial">
+      <span class="direction">
+        Previous
+      </span>
+      <div class="page">
+        <div class="button button-previous" role="button" aria-label="Previous">
+          <i class="icon icon-back"></i>
+        </div>
+        <div class="stretch">
+          <div class="title">
+            Tutorial
           </div>
         </div>
-      </a>
-  
+      </div>
+    </a>
+    
   </div>
 
   <div class="next">
-  
-      <a href="https://aglenergy.github.io/arc/transform/" title="Transform">
-        <span class="direction">
-          Next
-        </span>
-        <div class="page">
-          <div class="stretch">
-            <div class="title">
-              Transform
-            </div>
-          </div>
-          <div class="button button-next" role="button" aria-label="Next">
-            <i class="icon icon-forward"></i>
+    
+    <a href="https://aglenergy.github.io/arc/transform/" title="Transform">
+      <span class="direction">
+        Next
+      </span>
+      <div class="page">
+        <div class="stretch">
+          <div class="title">
+            Transform
           </div>
         </div>
-      </a>
-  
+        <div class="button button-next" role="button" aria-label="Next">
+          <i class="icon icon-forward"></i>
+        </div>
+      </div>
+    </a>
+    
   </div>
 </nav>
-
 
 
 

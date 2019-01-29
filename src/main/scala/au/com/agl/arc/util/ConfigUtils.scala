@@ -375,7 +375,7 @@ object ConfigUtils {
     def errToSimpleString(err: Error): String = {
       err match {
         case StageError(stage, lineNumber, configErrors) => {
-          s"""${configErrors.map(e => "- " + errToString(e)).mkString("\n")}"""
+          s"""${configErrors.map(e => "- " + errToSimpleString(e)).mkString("\n")}"""
         }
           
         case ConfigError(attribute, lineNumber, message) => {
@@ -700,7 +700,7 @@ object ConfigUtils {
       val cols = sch.map{ s => MetadataSchema.parseJsonMetadata(s) }.getOrElse(Right(Nil))
 
       cols match {
-        case Left(errs) => Left(errs.map( e => ConfigError(uriKey, Some(c.getValue(uriKey).origin.lineNumber()), Error.pipelineSimpleErrorMsg(e.errors)) ))
+        case Left(errs) => Left(errs.map( e => ConfigError("metadata error", None, Error.pipelineSimpleErrorMsg(e.errors)) ))
         case Right(extractColumns) => Right(extractColumns)
       }
     }

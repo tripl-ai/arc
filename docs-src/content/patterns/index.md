@@ -13,36 +13,7 @@ When writing data to targets like databases using the `JDBCLoad` raises a risk o
 - execute a `JDBCExecute` stage to perform a change to a view on the database to point to the new version of the table in a transaction-safe manner
 - if the job fails during any of these stages then the users will be unaware and will continue to consume the `customers` view which has the latest successful data
 
-```json
-{
-    "type": "JDBCLoad",
-    "name": "load active customers to web server database",
-    "environments": ["production", "test"],
-    "inputView": "ative_customers",            
-    "jdbcURL": "jdbc:mysql://localhost/mydb",
-    "tableName": "customers_"${JOB_RUN_DATE},
-    "numPartitions": 10,
-    "isolationLevel": "READ_COMMITTED",
-    "batchsize": 10000,
-    "params": {
-        "user": "mydbuser",
-        "password": "mydbpassword",
-    }
-},
-{
-    "type": "JDBCExecute",
-    "name": "update the current view to point to the latest version of the table",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://datalake/sql/update_customer_view.sql",          
-    "sqlParams": {
-        "JOB_RUN_DATE": ${JOB_RUN_DATE}
-    },    
-    "params": {
-        "user": "mydbuser",
-        "password": "mydbpassword",
-    }
-}
-```
+{{< readfile file="/resources/docs_resources/PatternsDatabaseInconsistency" highlight="json" >}} 
 
 Where the `update_customer_view.sql` statement is:
 
@@ -51,7 +22,7 @@ CREATE OR REPLACE VIEW customers AS
 SELECT * FROM customers_${JOB_RUN_DATE}
 ```
 
-Each of the main SQL databases behaves slighly different and has slighty different syntax but most can achieve a repointing of a view to a different table in an atomic operation. 
+Each of the main SQL databases behaves slighly different and has slighty different syntax but most can achieve a repointing of a view to a different table in an atomic operation (as it is a single statement). 
 
 Note that this method will require some cleanup activity to be performed or the number of tables will grow with each execution. A second `JDBCExecute` stage could be added to clean up older verions of the underlying `customers_` tables after successful 'rollover' execution.
 
@@ -277,24 +248,6 @@ pq.write_table(table, '/tmp/data/example.parquet')
 
 The suggestion then is to use the `environments` key to only execute the `EqualityValidate` stage whilst in testing mode:
 
-```json
-{
-  "environments": ["test"],
-  "type": "ParquetExtract",
-  "name": "Load the known valid dataset",
-  "inputURI": "hdfs://datalake/correct.parquet",
-  "outputView": "correct",            
-  "persist": false,
-  "authentication": {
-  }
-},
-{
-  "environments": ["test"],
-  "type": "EqualityValidate",
-  "name": "verify calculated equals manually created dataset",
-  "leftView": "calculated",            
-  "rightView": "correct",              
-}
-```
+{{< readfile file="/resources/docs_resources/PatternsTestingWithParquet" highlight="json" >}} 
 
 

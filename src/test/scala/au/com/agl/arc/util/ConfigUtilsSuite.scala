@@ -3,6 +3,7 @@ package au.com.agl.arc.util
 import java.net.URI
 
 import scala.io.Source
+import scala.collection.JavaConverters._
 
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
@@ -162,7 +163,9 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val etlConf = ConfigFactory.parseString(metaConf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
       val config = etlConf.withFallback(base)
       var argsMap = collection.mutable.Map[String, String]()
-      val pipelineEither = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)
+
+      val environmentVariables = ConfigFactory.parseMap(Map("JOB_RUN_DATE" -> "0").asJava)
+      val pipelineEither = ConfigUtils.readPipeline(config.resolveWith(environmentVariables).resolve(), new URI(""), argsMap, arcContext)
 
       pipelineEither match {
         case Left(errors) => {

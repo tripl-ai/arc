@@ -6,6 +6,8 @@
 - renamed `BytesExtract` attribute `pathView` to `inputView` for consistency.
 - renamed `JDBCExecute` attribute `url` to `jdbcURL` for consistency.
 - added `authentication` to `PipelineExecute` to allow reading external pipelines from different sources.
+- major rework of error messages when reading job and metadata config files.
+- bump to OpenJDK 8.191.12-r0 in `Dockerfile`.
 
 # 1.4.1
 

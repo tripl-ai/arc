@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.4.1</span></strong>
+          <span class="version">1.5.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -432,35 +432,37 @@
 <li>if the job fails during any of these stages then the users will be unaware and will continue to consume the <code>customers</code> view which has the latest successful data</li>
 </ul>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;JDBCLoad&quot;,
-    &quot;name&quot;: &quot;load active customers to web server database&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputView&quot;: &quot;ative_customers&quot;,            
-    &quot;jdbcURL&quot;: &quot;jdbc:mysql://localhost/mydb&quot;,
-    &quot;tableName&quot;: &quot;customers_&quot;${JOB_RUN_DATE},
-    &quot;numPartitions&quot;: 10,
-    &quot;isolationLevel&quot;: &quot;READ_COMMITTED&quot;,
-    &quot;batchsize&quot;: 10000,
-    &quot;params&quot;: {
-        &quot;user&quot;: &quot;mydbuser&quot;,
-        &quot;password&quot;: &quot;mydbpassword&quot;,
-    }
-},
-{
-    &quot;type&quot;: &quot;JDBCExecute&quot;,
-    &quot;name&quot;: &quot;update the current view to point to the latest version of the table&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://datalake/sql/update_customer_view.sql&quot;,          
-    &quot;sqlParams&quot;: {
-        &quot;JOB_RUN_DATE&quot;: ${JOB_RUN_DATE}
-    },    
-    &quot;params&quot;: {
-        &quot;user&quot;: &quot;mydbuser&quot;,
-        &quot;password&quot;: &quot;mydbpassword&quot;,
-    }
-}
-</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCLoad&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load active customers to web server database&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;ative_customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;tableName&#34;</span><span class="p">:</span> <span class="s2">&#34;customers_&#34;</span><span class="err">$</span><span class="p">{</span><span class="err">JOB_RUN_DATE</span><span class="p">},</span>
+  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;user&#34;</span><span class="p">:</span> <span class="s2">&#34;mydbuser&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;password&#34;</span><span class="p">:</span> <span class="s2">&#34;mydbpassword&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span><span class="err">,</span>
+<span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;update the current view to point to the latest version of the table&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/update_customer_view.sql&#34;</span><span class="p">,</span>          
+  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;JOB_RUN_DATE&#34;</span><span class="p">:</span> <span class="err">$</span><span class="p">{</span><span class="err">JOB_RUN_DATE</span><span class="p">}</span>
+  <span class="p">},</span>    
+  <span class="nt">&#34;password&#34;</span><span class="p">:</span> <span class="s2">&#34;mypassword&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;user&#34;</span><span class="p">:</span> <span class="s2">&#34;myuser&#34;</span>
+<span class="p">}</span>
+</code></pre></div>
 
 <p>Where the <code>update_customer_view.sql</code> statement is:</p>
 
@@ -468,7 +470,7 @@
 SELECT * FROM customers_${JOB_RUN_DATE}
 </code></pre>
 
-<p>Each of the main SQL databases behaves slighly different and has slighty different syntax but most can achieve a repointing of a view to a different table in an atomic operation.</p>
+<p>Each of the main SQL databases behaves slighly different and has slighty different syntax but most can achieve a repointing of a view to a different table in an atomic operation (as it is a single statement).</p>
 
 <p>Note that this method will require some cleanup activity to be performed or the number of tables will grow with each execution. A second <code>JDBCExecute</code> stage could be added to clean up older verions of the underlying <code>customers_</code> tables after successful &lsquo;rollover&rsquo; execution.</p>
 
@@ -875,24 +877,24 @@ pq.write_table(table, '/tmp/data/example.parquet')
 
 <p>The suggestion then is to use the <code>environments</code> key to only execute the <code>EqualityValidate</code> stage whilst in testing mode:</p>
 
-<pre><code class="language-json">{
-  &quot;environments&quot;: [&quot;test&quot;],
-  &quot;type&quot;: &quot;ParquetExtract&quot;,
-  &quot;name&quot;: &quot;Load the known valid dataset&quot;,
-  &quot;inputURI&quot;: &quot;hdfs://datalake/correct.parquet&quot;,
-  &quot;outputView&quot;: &quot;correct&quot;,            
-  &quot;persist&quot;: false,
-  &quot;authentication&quot;: {
-  }
-},
-{
-  &quot;environments&quot;: [&quot;test&quot;],
-  &quot;type&quot;: &quot;EqualityValidate&quot;,
-  &quot;name&quot;: &quot;verify calculated equals manually created dataset&quot;,
-  &quot;leftView&quot;: &quot;calculated&quot;,            
-  &quot;rightView&quot;: &quot;correct&quot;,              
-}
-</code></pre>
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.parquet&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customers_known_correct&#34;</span>
+<span class="p">}</span><span class="err">,</span>
+<span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;EqualityValidate&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;verify calculated customer data equals preprepared customer data (test only)&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;leftView&#34;</span><span class="p">:</span> <span class="s2">&#34;customers_caculated&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;rightView&#34;</span><span class="p">:</span> <span class="s2">&#34;customers_known_correct&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 
 			<aside class="copyright" role="note">
@@ -906,46 +908,45 @@ pq.write_table(table, '/tmp/data/example.parquet')
 
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
-  
-      <a href="https://aglenergy.github.io/arc/partials/" title="Partials">
-        <span class="direction">
-          Previous
-        </span>
-        <div class="page">
-          <div class="button button-previous" role="button" aria-label="Previous">
-            <i class="icon icon-back"></i>
-          </div>
-          <div class="stretch">
-            <div class="title">
-              Partials
-            </div>
+    
+    <a href="https://aglenergy.github.io/arc/partials/" title="Partials">
+      <span class="direction">
+        Previous
+      </span>
+      <div class="page">
+        <div class="button button-previous" role="button" aria-label="Previous">
+          <i class="icon icon-back"></i>
+        </div>
+        <div class="stretch">
+          <div class="title">
+            Partials
           </div>
         </div>
-      </a>
-  
+      </div>
+    </a>
+    
   </div>
 
   <div class="next">
-  
-      <a href="https://aglenergy.github.io/arc/deploy/" title="Deploy">
-        <span class="direction">
-          Next
-        </span>
-        <div class="page">
-          <div class="stretch">
-            <div class="title">
-              Deploy
-            </div>
-          </div>
-          <div class="button button-next" role="button" aria-label="Next">
-            <i class="icon icon-forward"></i>
+    
+    <a href="https://aglenergy.github.io/arc/deploy/" title="Deploy">
+      <span class="direction">
+        Next
+      </span>
+      <div class="page">
+        <div class="stretch">
+          <div class="title">
+            Deploy
           </div>
         </div>
-      </a>
-  
+        <div class="button button-next" role="button" aria-label="Next">
+          <i class="icon icon-forward"></i>
+        </div>
+      </div>
+    </a>
+    
   </div>
 </nav>
-
 
 
 
