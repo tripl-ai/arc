@@ -1,0 +1,10 @@
+{
+  "type": "AvroLoad",
+  "name": "write customer avro extract",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputURI": "hdfs://output_data/customer/customer.avro"
+}

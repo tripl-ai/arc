@@ -26,9 +26,6 @@ object KafkaLoad {
   def load(load: KafkaLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
-
-    val signature = "KafkaLoad requires inputView to be dataset with [key: string, value: string] or [value: string] signature."
-
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
     stageDetail.put("name", load.name)
@@ -36,11 +33,15 @@ object KafkaLoad {
     stageDetail.put("topic", load.topic)  
     stageDetail.put("bootstrapServers", load.bootstrapServers)
     stageDetail.put("acks", Integer.valueOf(load.acks))
+    stageDetail.put("retries", Integer.valueOf(load.retries))
+    stageDetail.put("batchSize", Integer.valueOf(load.batchSize))
 
     logger.info()
       .field("event", "enter")
       .map("stage", stageDetail)      
       .log()
+
+    val signature = "KafkaLoad requires inputView to be dataset with [key: string, value: string] or [value: string] signature."
 
     val df = spark.table(load.inputView)     
 
@@ -95,16 +96,8 @@ object KafkaLoad {
               props.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))
               props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
               props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
-
-              // optional
-              for (retries <- load.retries) {
-                props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(retries))    
-                stageDetail.put(ProducerConfig.RETRIES_CONFIG, Integer.valueOf(retries))
-              }
-              for (batchSize <- load.batchSize) {
-                props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(batchSize))    
-                stageDetail.put(ProducerConfig.BATCH_SIZE_CONFIG, Integer.valueOf(batchSize))
-              }   
+              props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(load.retries))    
+              props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(load.batchSize))    
 
               // create producer
               val kafkaProducer = new KafkaProducer[String, String](props)
@@ -130,16 +123,8 @@ object KafkaLoad {
               props.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))
               props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
               props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
-
-              // optional
-              for (retries <- load.retries) {
-                props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(retries))    
-                stageDetail.put(ProducerConfig.RETRIES_CONFIG, Integer.valueOf(retries))
-              }
-              for (batchSize <- load.batchSize) {
-                props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(batchSize))    
-                stageDetail.put(ProducerConfig.BATCH_SIZE_CONFIG, Integer.valueOf(batchSize))
-              }   
+              props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(load.retries))    
+              props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(load.batchSize))     
 
               // create producer
               val kafkaProducer = new KafkaProducer[String, String](props)

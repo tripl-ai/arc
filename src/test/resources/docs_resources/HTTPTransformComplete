@@ -1,0 +1,21 @@
+{
+  "type": "HTTPTransform",
+  "name": "look up customer retention score",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputView": "customer_enriched",
+  "uri": "http://internalserver/api/customer_retention",
+  "headers": {
+    "Authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
+    "custom-header": "payload"
+  },
+  "inputField": "value",
+  "persist": false,
+  "validStatusCodes": [
+    200,
+    201
+  ]
+}

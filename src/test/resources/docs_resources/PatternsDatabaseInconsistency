@@ -1,0 +1,30 @@
+{
+  "type": "JDBCLoad",
+  "name": "load active customers to web server database",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "ative_customers",
+  "jdbcURL": "jdbc:postgresql://localhost:5432/customer",
+  "tableName": "customers_"${JOB_RUN_DATE},
+  "params": {
+    "user": "mydbuser",
+    "password": "mydbpassword"
+  }
+},
+{
+  "type": "JDBCExecute",
+  "name": "update the current view to point to the latest version of the table",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/update_customer_view.sql",          
+  "jdbcURL": "jdbc:postgresql://localhost:5432/customer",
+  "sqlParams": {
+      "JOB_RUN_DATE": ${JOB_RUN_DATE}
+  },    
+  "password": "mypassword",
+  "user": "myuser"
+}

@@ -32,17 +32,14 @@ object TensorFlowServingTransform {
   def transform(transform: TensorFlowServingTransform)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
-
-    val batchSize = transform.batchSize.getOrElse(1)
-    val inputField = transform.inputField.getOrElse("value")
-
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
     stageDetail.put("inputView", transform.inputView)  
-    stageDetail.put("inputField", inputField)  
+    stageDetail.put("inputField", transform.inputField)  
     stageDetail.put("outputView", transform.outputView)  
     stageDetail.put("uri", transform.uri.toString)
-    stageDetail.put("batchSize", Integer.valueOf(batchSize))
+    stageDetail.put("batchSize", Integer.valueOf(transform.batchSize))
+    stageDetail.put("responseType", transform.responseType.sparkString)
 
     logger.info()
       .field("event", "enter")
@@ -52,15 +49,15 @@ object TensorFlowServingTransform {
 
     val df = spark.table(transform.inputView)
 
-    if (!df.columns.contains(inputField)) {
-      throw new Exception(s"""inputField '${inputField}' is not present in inputView '${transform.inputView}' which has: [${df.columns.mkString(", ")}] columns.""") with DetailException {
+    if (!df.columns.contains(transform.inputField)) {
+      throw new Exception(s"""inputField '${transform.inputField}' is not present in inputView '${transform.inputView}' which has: [${df.columns.mkString(", ")}] columns.""") with DetailException {
         override val detail = stageDetail          
       }    
     }   
 
     val tensorFlowResponseSchema = transform.responseType match {
-      case Some(IntegerResponse) => StructType(df.schema.fields.toList ::: List(new StructField("result", IntegerType, true)))
-      case Some(DoubleResponse) => StructType(df.schema.fields.toList ::: List(new StructField("result", DoubleType, true)))
+      case IntegerResponse => StructType(df.schema.fields.toList ::: List(new StructField("result", IntegerType, true)))
+      case DoubleResponse => StructType(df.schema.fields.toList ::: List(new StructField("result", DoubleType, true)))
       case _ => StructType(df.schema.fields.toList ::: List(new StructField("result", StringType, true)))
     }
 
@@ -84,7 +81,7 @@ object TensorFlowServingTransform {
         // get type and index so it doesnt have to be resolved for each row
         val bufferedPartition = partition.buffered
         val fieldIndex = bufferedPartition.hasNext match {
-          case true => bufferedPartition.head.fieldIndex(inputField)
+          case true => bufferedPartition.head.fieldIndex(transform.inputField)
           case false => 0
         }
         val dataType = bufferedPartition.hasNext match {
@@ -93,7 +90,7 @@ object TensorFlowServingTransform {
         }
 
         // group so we can send multiple rows per request
-        val groupedPartition = bufferedPartition.grouped(batchSize)
+        val groupedPartition = bufferedPartition.grouped(transform.batchSize)
 
         groupedPartition.flatMap[TensorFlowResponseRow] { groupedRow => 
 
@@ -103,6 +100,7 @@ object TensorFlowServingTransform {
           // optionally set signature_name
           for (signatureName <- transform.signatureName) {
             node.put("signature_name", signatureName)
+            stageDetail.put("signature_name", signatureName)
           }
           val instancesArray = node.putArray("instances")
 
@@ -148,8 +146,8 @@ object TensorFlowServingTransform {
           // try to unpack result 
           groupedRow.zipWithIndex.map { case (row, index) => {
             val result = transform.responseType match {
-              case Some(IntegerResponse) => Seq(response(index).asInt)
-              case Some(DoubleResponse) => Seq(response(index).asDouble)
+              case IntegerResponse => Seq(response(index).asInt)
+              case DoubleResponse => Seq(response(index).asDouble)
               case _ => Seq(response(index).asText)
             }
 

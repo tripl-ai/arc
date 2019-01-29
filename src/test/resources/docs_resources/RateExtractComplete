@@ -1,0 +1,12 @@
+{
+  "type": "RateExtract",
+  "name": "create a streaming source",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "outputView": "stream",
+  "rowsPerSecond": 2,
+  "rampUpTime": 0,
+  "numPartitions": 10
+}

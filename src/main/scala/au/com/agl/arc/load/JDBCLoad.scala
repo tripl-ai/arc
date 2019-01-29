@@ -26,19 +26,19 @@ object JDBCLoad {
   def load(load: JDBCLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     val startTime = System.currentTimeMillis 
     val stageDetail = new java.util.HashMap[String, Object]()
-    val saveMode = load.saveMode.getOrElse(SaveMode.Overwrite)
-    val truncate = load.truncate.getOrElse(false)
-
     stageDetail.put("type", load.getType)
     stageDetail.put("name", load.name)
     stageDetail.put("inputView", load.inputView)  
     stageDetail.put("jdbcURL", load.jdbcURL)  
-    stageDetail.put("driver", load.driver.getClass.toString)  
     stageDetail.put("tableName", load.tableName)  
-    stageDetail.put("bulkload", Boolean.valueOf(load.bulkload.getOrElse(false)))
-    stageDetail.put("saveMode", saveMode.toString.toLowerCase)
-    stageDetail.put("truncate", Boolean.valueOf(truncate))
+    stageDetail.put("batchsize", Integer.valueOf(load.batchsize))
+    stageDetail.put("bulkload", Boolean.valueOf(load.bulkload))
+    stageDetail.put("driver", load.driver.getClass.toString)  
+    stageDetail.put("isolationLevel", load.isolationLevel.sparkString)
     stageDetail.put("partitionBy", load.partitionBy.asJava)
+    stageDetail.put("saveMode", load.saveMode.toString.toLowerCase)
+    stageDetail.put("tablock", Boolean.valueOf(load.tablock))
+    stageDetail.put("truncate", Boolean.valueOf(load.truncate))
 
     val df = spark.table(load.inputView)
 
@@ -84,7 +84,7 @@ object JDBCLoad {
       using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>
         // check if table exists
         if (JdbcUtils.tableExists(connection, jdbcOptions)) {
-          saveMode match {
+          load.saveMode match {
             case SaveMode.ErrorIfExists => {
               throw new Exception(s"Table '${tableName}' already exists in database '${databaseName}' and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
             }
@@ -93,7 +93,7 @@ object JDBCLoad {
               SaveModeIgnore
             }          
             case SaveMode.Overwrite => {
-              if (truncate) {
+              if (load.truncate) {
                 JdbcUtils.truncateTable(connection, jdbcOptions)
               } else {
                 using(connection.createStatement) { statement =>
@@ -111,7 +111,7 @@ object JDBCLoad {
             }
           }
         } else {
-          if (load.bulkload.getOrElse(false)) {
+          if (load.bulkload) {
             throw new Exception(s"Table '${tableName}' does not exist in database '${databaseName}' and 'bulkLoad' equals 'true' so cannot continue.")
           }
           0
@@ -165,7 +165,7 @@ object JDBCLoad {
             // switch to custom jdbc actions based on driver
             val resultDF = load.driver match {
               // switch to custom sqlserver bulkloader
-              case _: com.microsoft.sqlserver.jdbc.SQLServerDriver if (load.bulkload.getOrElse(false)) => {              
+              case _: com.microsoft.sqlserver.jdbc.SQLServerDriver if (load.bulkload) => {              
 
                 // ensure schemas align after dropping invalid columns
                 using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>
@@ -184,20 +184,14 @@ object JDBCLoad {
                 // remove the "jdbc:" prefix
                 val uri = new URI(load.jdbcURL.substring(5))
 
-                val batchsize = load.batchsize.getOrElse(10000)
-                stageDetail.put("batchsize", Integer.valueOf(batchsize))
-
-                val tablock = load.tablock.getOrElse(true)
-                stageDetail.put("tablock", Boolean.valueOf(tablock))
-
                 val bulkCopyConfig = com.microsoft.azure.sqldb.spark.config.Config(Map(
                   "url"               -> s"${uri.getHost}:${uri.getPort}",
                   "user"              -> load.params.get("user").getOrElse(""),
                   "password"          -> load.params.get("password").getOrElse(""),
                   "databaseName"      -> databaseName,
                   "dbTable"           -> tableName,
-                  "bulkCopyBatchSize" -> batchsize.toString,
-                  "bulkCopyTableLock" -> tablock.toString,
+                  "bulkCopyBatchSize" -> load.batchsize.toString,
+                  "bulkCopyTableLock" -> load.tablock.toString,
                   "bulkCopyTimeout"   -> "42300"
                 ))
 
@@ -208,19 +202,12 @@ object JDBCLoad {
 
               // default spark jdbc
               case _ => {
+                connectionProperties.put("truncate", load.truncate.toString)
+                connectionProperties.put("isolationLevel", load.isolationLevel.sparkString)
+                connectionProperties.put("batchsize", load.batchsize.toString)
+
                 for (numPartitions <- load.numPartitions) {
                   connectionProperties.put("numPartitions", numPartitions.toString)
-                }
-                for (isolationLevel <- load.isolationLevel) {
-                  connectionProperties.put("isolationLevel", isolationLevel)
-                  stageDetail.put("isolationLevel", isolationLevel)
-                }
-                for (batchsize <- load.batchsize) {
-                  connectionProperties.put("batchsize", batchsize.toString)
-                  stageDetail.put("batchsize", Integer.valueOf(batchsize))
-                }
-                for (truncate <- load.truncate) {
-                  connectionProperties.put("truncate", truncate.toString)
                 }
                 for (createTableOptions <- load.createTableOptions) {
                   connectionProperties.put("createTableOptions", createTableOptions)
@@ -233,10 +220,10 @@ object JDBCLoad {
 
                 load.partitionBy match {
                   case Nil => {
-                    nonNullDF.write.mode(saveMode).jdbc(load.jdbcURL, tableName, connectionProperties)
+                    nonNullDF.write.mode(load.saveMode).jdbc(load.jdbcURL, tableName, connectionProperties)
                   }
                   case partitionBy => {
-                    nonNullDF.write.partitionBy(partitionBy:_*).mode(saveMode).jdbc(load.jdbcURL, tableName, connectionProperties)
+                    nonNullDF.write.partitionBy(partitionBy:_*).mode(load.saveMode).jdbc(load.jdbcURL, tableName, connectionProperties)
                   }
                 }
                 nonNullDF

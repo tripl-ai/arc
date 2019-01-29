@@ -1,0 +1,11 @@
+{
+  "type": "KafkaLoad",
+  "name": "write customer to kafka",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "bootstrapServers": "kafka:29092",
+  "topic": "customers"
+}

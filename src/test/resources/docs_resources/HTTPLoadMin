@@ -1,0 +1,10 @@
+{
+  "type": "HTTPLoad",
+  "name": "load customers to the customer api",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputURI": "http://internalserver/api/customer"
+}

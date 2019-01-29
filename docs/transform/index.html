@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.4.1</span></strong>
+          <span class="version">1.5.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -469,6 +469,13 @@
 </tr>
 
 <tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
 <td>inputLeftView</td>
 <td>String</td>
 <td>true</td>
@@ -506,35 +513,44 @@
 <tr>
 <td>persist</td>
 <td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
 <td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
+<td>Whether to persist dataset to Spark cache.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;DiffTransform&quot;,
-    &quot;name&quot;: &quot;calculate the difference between the yesterday and today datasets&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputLeftView&quot;: &quot;cutomer_20180501&quot;,            
-    &quot;inputRightView&quot;: &quot;cutomer_20180502&quot;,            
-    &quot;outputIntersectionView&quot;: &quot;customer_unchanged&quot;,            
-    &quot;outputLeftView&quot;: &quot;customer_removed&quot;,            
-    &quot;outputRightView&quot;: &quot;customer_added&quot;,            
-    &quot;persist&quot;: true,
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DiffTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;calculate the difference between the yesterday and today datasets&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputLeftView&#34;</span><span class="p">:</span> <span class="s2">&#34;cutomer_20180501&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputRightView&#34;</span><span class="p">:</span> <span class="s2">&#34;cutomer_20180502&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputIntersectionView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_unchanged&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DiffTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;calculate the difference between the yesterday and today datasets&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputLeftView&#34;</span><span class="p">:</span> <span class="s2">&#34;cutomer_20180501&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputRightView&#34;</span><span class="p">:</span> <span class="s2">&#34;cutomer_20180502&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputIntersectionView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_unchanged&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputLeftView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_removed&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputRightView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_added&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="httptransform">HTTPTransform</h2>
 
@@ -577,13 +593,6 @@
 </tr>
 
 <tr>
-<td>inputField</td>
-<td>String</td>
-<td>false</td>
-<td>The field to pass to the endpoint. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: <code>value</code>.</td>
-</tr>
-
-<tr>
 <td>outputView</td>
 <td>String</td>
 <td>true</td>
@@ -605,47 +614,67 @@
 </tr>
 
 <tr>
-<td>validStatusCodes</td>
-<td>Array[Integer]</td>
+<td>inputField</td>
+<td>String</td>
 <td>false</td>
-<td>A list of valid status codes which will result in a successful stage if the list contains the HTTP server response code. If not provided the default values are <code>[200, 201, 202]</code>. Note: all request response codes must be contained in this list for the stage to be successful.</td>
+<td>The field to pass to the endpoint. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: <code>value</code>.</td>
 </tr>
 
 <tr>
 <td>persist</td>
 <td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
-<td>params</td>
-<td>Map[String, String]</td>
+<td>validStatusCodes</td>
+<td>Array[Integer]</td>
 <td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
+<td>A list of valid status codes which will result in a successful stage if the list contains the HTTP server response code. If not provided the default values are <code>[200, 201, 202]</code>. Note: all request response codes must be contained in this list for the stage to be successful.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-1">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;HTTPTransform&quot;,
-    &quot;name&quot;: &quot;call the machine learning model&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputView&quot;: &quot;cutomers&quot;,            
-    &quot;outputView&quot;: &quot;customers_scored&quot;,   
-    &quot;outputURI&quot;: &quot;http://internalserver/api/customer_scoring_v101/&quot;,
-    &quot;headers&quot;: {
-        &quot;Authorization&quot;: &quot;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&quot;,
-        &quot;custom-header&quot;: &quot;payload&quot;,
-    },
-    &quot;validStatusCodes&quot;: [200],             
-    &quot;persist&quot;: false,
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-1">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;look up customer retention score&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_enriched&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer_retention&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-1">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;look up customer retention score&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_enriched&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer_retention&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;headers&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;Authorization&#34;</span><span class="p">:</span> <span class="s2">&#34;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;custom-header&#34;</span><span class="p">:</span> <span class="s2">&#34;payload&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;inputField&#34;</span><span class="p">:</span> <span class="s2">&#34;value&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;validStatusCodes&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="mi">200</span><span class="p">,</span>
+    <span class="mi">201</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="jsontransform">JSONTransform</h2>
 
@@ -697,32 +726,40 @@
 <tr>
 <td>persist</td>
 <td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
 <td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-2">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;JSONTransform&quot;,
-    &quot;name&quot;: &quot;convert customer data to json&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputView&quot;: &quot;cutomers&quot;,            
-    &quot;outputView&quot;: &quot;customersJSON&quot;,            
-    &quot;persist&quot;: false,
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-2">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;convert customer to json for sending to eternal api&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;cutomer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_json&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-2">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;convert customer to json for sending to eternal api&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;cutomer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="metadatafiltertransform">MetadataFilterTransform</h2>
 
@@ -843,17 +880,17 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
 <td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -862,35 +899,43 @@ WHERE metadata.pii = (
 <td>false</td>
 <td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.</td>
 </tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
 </tbody>
 </table>
 
 <h3 id="examples-3">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;MetadataFilterTransform&quot;,
-    &quot;name&quot;: &quot;filter out Personally identifiable information (pii)&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://datalake/sql/0.0.1/filterPii.sql&quot;,
-    &quot;inputView&quot;: &quot;customerData&quot;,         
-    &quot;outputView&quot;: &quot;safeCustomerData&quot;,            
-    &quot;persist&quot;: false,
-    &quot;authentication&quot;: {
-        ...
-    },
-    &quot;sqlParams&quot;: {
-    },       
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-3">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataFilterTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;filter out Personally identifiable information (pii) fields&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/filter_pii.sql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;cutomer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_safe&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-3">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataFilterTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;filter out Personally identifiable information (pii) fields&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/filter_pii_dynamic.sql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;cutomer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_safe&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;pii_authorized&#34;</span><span class="p">:</span> <span class="s2">&#34;true&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="mltransform">MLTransform</h2>
 
@@ -947,13 +992,6 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count. MLTransform will also log percentiles of prediction probabilities for classification models if this option is enabled.</td>
-</tr>
-
-<tr>
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -961,31 +999,45 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
+<td>persist</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>. MLTransform will also log percentiles of prediction probabilities for classification models if this option is enabled.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-4">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;MLTransform&quot;,
-    &quot;name&quot;: &quot;apply machine learning model&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://input_data/ml/machineLearningPipelineModel.parquet&quot;,
-    &quot;inputView&quot;: &quot;inputDF&quot;,         
-    &quot;outputView&quot;: &quot;outputDF&quot;,            
-    &quot;persist&quot;: false,
-    &quot;authentication&quot;: {
-        ...
-    },
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-4">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MLTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply machine learning model&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/ml/machineLearningPipelineModel&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_scored&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-4">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MLTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply machine learning model&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/ml/machineLearningPipelineModel&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_scored&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="sqltransform">SQLTransform</h2>
 
@@ -1047,17 +1099,17 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
 <td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -1066,38 +1118,8 @@ WHERE metadata.pii = (
 <td>false</td>
 <td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.<br><br>For example if the sqlParams contains parameter <code>current_timestamp</code> of value <code>2018-11-24 14:48:56</code> then this statement would execute in a deterministic way: <code>SELECT * FROM customer WHERE expiry &gt; FROM_UNIXTIME(UNIX_TIMESTAMP('${current_timestamp}', 'uuuu-MM-dd HH:mm:ss'))</code> (so would be testable).</td>
 </tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
-</tr>
 </tbody>
 </table>
-
-<h3 id="examples-5">Examples</h3>
-
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;SQLTransform&quot;,
-    &quot;name&quot;: &quot;Join customer and account&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://datalake/sql/0.0.1/customerAccountJoin.sql&quot;,
-    &quot;outputView&quot;: &quot;customerAccountDF&quot;,            
-    &quot;persist&quot;: false,
-    &quot;authentication&quot;: {
-        ...
-    },    
-    &quot;sqlParams&quot;: {
-        &quot;current_date&quot;: &quot;2018-11-24&quot;,
-        &quot;current_timestamp&quot;: &quot;2018-11-24 14:48:56&quot;
-    },    
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
-
-<p>The <code>current_date</code> and <code>current_timestamp</code> can easily be passed in as environment variables using <code>$(date &quot;+%Y-%m-%d&quot;)</code> and <code>$(date &quot;+%Y-%m-%d %H:%M:%S&quot;)</code> respectively.</p>
 
 <p>The SQL statement is a plain Spark SQL statement, for example:</p>
 
@@ -1110,6 +1132,42 @@ WHERE metadata.pii = (
 FROM customer
 LEFT JOIN account ON account.customer_id = customer.customer_id
 </code></pre>
+
+<h3 id="examples-5">Examples</h3>
+
+<h4 id="minimal-5">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;standardise customer fields&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/customer.sql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-5">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;standardise customer fields&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/customer_dynamic.sql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;current_date&#34;</span><span class="p">:</span> <span class="s2">&#34;2018-11-24&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;current_timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2018-11-24 14:48:56&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<p>The <code>current_date</code> and <code>current_timestamp</code> can easily be passed in as environment variables using <code>$(date &quot;+%Y-%m-%d&quot;)</code> and <code>$(date &quot;+%Y-%m-%d %H:%M:%S&quot;)</code> respectively.</p>
 
 <h2 id="tensorflowservingtransform">TensorFlowServingTransform</h2>
 
@@ -1167,31 +1225,10 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tr>
 
 <tr>
-<td>inputField</td>
-<td>String</td>
-<td>false</td>
-<td>The field to pass to the model. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: <code>value</code>.</td>
-</tr>
-
-<tr>
 <td>uri</td>
 <td>String</td>
 <td>true</td>
 <td>The <code>URI</code> of the TensorFlow Serving REST end point.</td>
-</tr>
-
-<tr>
-<td>signatureName</td>
-<td>String</td>
-<td>false</td>
-<td>The name of the TensorFlow Serving signature.</td>
-</tr>
-
-<tr>
-<td>responseType</td>
-<td>String</td>
-<td>false</td>
-<td>The type returned by the TensorFlow Serving API. Expected to be <code>integer</code>, <code>double</code> or <code>object</code> (which may present as a <code>string</code> depending on how the model has been built).<br><br>Default: <code>object</code>.</td>
 </tr>
 
 <tr>
@@ -1202,10 +1239,10 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tr>
 
 <tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
+<td>inputField</td>
+<td>String</td>
+<td>false</td>
+<td>The field to pass to the model. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: <code>value</code>.</td>
 </tr>
 
 <tr>
@@ -1214,26 +1251,63 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 <td>false</td>
 <td>Map of configuration parameters. Currently unused.</td>
 </tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
+</tr>
+
+<tr>
+<td>responseType</td>
+<td>String</td>
+<td>false</td>
+<td>The type returned by the TensorFlow Serving API. Expected to be <code>integer</code>, <code>double</code> or <code>object</code> (which may present as a <code>string</code> depending on how the model has been built).<br><br>Default: <code>object</code>.</td>
+</tr>
+
+<tr>
+<td>signatureName</td>
+<td>String</td>
+<td>false</td>
+<td>The name of the TensorFlow Serving signature.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-6">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;environments&quot;: [&quot;prd&quot;,&quot;tst&quot;],
-    &quot;type&quot;: &quot;TensorFlowServingTransform&quot;,
-    &quot;name&quot;: &quot;call the customer segmentation model&quot;,
-    &quot;inputView&quot;: &quot;customer&quot;,
-    &quot;inputField&quot;: &quot;value&quot;,
-    &quot;outputView&quot;: &quot;customer_segmented&quot;,            
-    &quot;uri&quot;: &quot;http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict&quot;,
-    &quot;signatureName&quot;: &quot;serving_default&quot;,
-    &quot;responseType&quot;: &quot;integer&quot;,
-    &quot;batchSize&quot;: 100,
-    &quot;persist&quot;: true,
-    &quot;params&quot;: {}
-}   
-</code></pre>
+<h4 id="minimal-6">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TensorFlowServingTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;call the customer segmentation model&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_segmented&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-6">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TensorFlowServingTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;call the customer segmentation model&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_segmented&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;signatureName&#34;</span><span class="p">:</span> <span class="s2">&#34;serving_default&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;batchSize&#34;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;responseType&#34;</span><span class="p">:</span> <span class="s2">&#34;integer&#34;</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="typingtransform">TypingTransform</h2>
 
@@ -1292,13 +1366,6 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tr>
 
 <tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.</td>
-</tr>
-
-<tr>
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -1313,31 +1380,46 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tr>
 
 <tr>
-<td>params</td>
-<td>Map[String, String]</td>
+<td>persist</td>
+<td>Boolean</td>
 <td>false</td>
-<td>Map of configuration parameters. Currently unused.</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 </tbody>
 </table>
 
 <h3 id="examples-7">Examples</h3>
 
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;TypingTransform&quot;,
-    &quot;name&quot;: &quot;apply data types to customer records&quot;,
-    &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: &quot;hdfs://datalake/meta/0.0.1/customer_meta.json&quot;,
-    &quot;inputView&quot;: &quot;customerUntypedDF&quot;,            
-    &quot;outputView&quot;: &quot;customerTypeDF&quot;,            
-    &quot;persist&quot;: false,
-    &quot;authentication&quot;: {
-        ...
-    },       
-    &quot;params&quot;: {
-    }
-}
-</code></pre>
+<h4 id="minimal-7">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply data types to customer records&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_untyped&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-7">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply data types to customer records&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_untyped&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;failMode&#34;</span><span class="p">:</span> <span class="s2">&#34;failfast&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span>
+<span class="p">}</span></code></pre></div>
 
 <p>A demonstration of how the <code>TypingTransform</code> behaves. Assuming you have read an input like a <a href="../extract/#DelimitedExtract">DelimitedExtract</a> which will read a dataset where all the columns are read as strings:</p>
 
@@ -1418,7 +1500,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2018 Released under the MIT license
+				&copy; 2019 Released under the MIT license
 				
 			</aside>
 
@@ -1427,46 +1509,45 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
-  
-      <a href="https://aglenergy.github.io/arc/extract/" title="Extract">
-        <span class="direction">
-          Previous
-        </span>
-        <div class="page">
-          <div class="button button-previous" role="button" aria-label="Previous">
-            <i class="icon icon-back"></i>
-          </div>
-          <div class="stretch">
-            <div class="title">
-              Extract
-            </div>
+    
+    <a href="https://aglenergy.github.io/arc/extract/" title="Extract">
+      <span class="direction">
+        Previous
+      </span>
+      <div class="page">
+        <div class="button button-previous" role="button" aria-label="Previous">
+          <i class="icon icon-back"></i>
+        </div>
+        <div class="stretch">
+          <div class="title">
+            Extract
           </div>
         </div>
-      </a>
-  
+      </div>
+    </a>
+    
   </div>
 
   <div class="next">
-  
-      <a href="https://aglenergy.github.io/arc/load/" title="Load">
-        <span class="direction">
-          Next
-        </span>
-        <div class="page">
-          <div class="stretch">
-            <div class="title">
-              Load
-            </div>
-          </div>
-          <div class="button button-next" role="button" aria-label="Next">
-            <i class="icon icon-forward"></i>
+    
+    <a href="https://aglenergy.github.io/arc/load/" title="Load">
+      <span class="direction">
+        Next
+      </span>
+      <div class="page">
+        <div class="stretch">
+          <div class="title">
+            Load
           </div>
         </div>
-      </a>
-  
+        <div class="button button-next" role="button" aria-label="Next">
+          <i class="icon icon-forward"></i>
+        </div>
+      </div>
+    </a>
+    
   </div>
 </nav>
-
 
 
 

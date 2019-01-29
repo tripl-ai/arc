@@ -28,9 +28,6 @@ object AzureEventHubsLoad {
   def load(load: AzureEventHubsLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
-
-    val signature = "AzureEventHubsLoad requires inputView to be dataset with [value: string] signature."
-
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
     stageDetail.put("name", load.name)
@@ -38,11 +35,16 @@ object AzureEventHubsLoad {
     stageDetail.put("namespaceName", load.namespaceName)  
     stageDetail.put("eventHubName", load.eventHubName)  
     stageDetail.put("sharedAccessSignatureKeyName", load.sharedAccessSignatureKeyName)  
+    stageDetail.put("retryMinBackoff", Long.valueOf(load.retryMinBackoff))
+    stageDetail.put("retryMaxBackoff", Long.valueOf(load.retryMaxBackoff))
+    stageDetail.put("retryCount", Integer.valueOf(load.retryCount))
 
     logger.info()
       .field("event", "enter")
       .map("stage", stageDetail)      
       .log()
+
+    val signature = "AzureEventHubsLoad requires inputView to be dataset with [value: string] signature."
 
     val df = spark.table(load.inputView)     
 
@@ -80,9 +82,9 @@ object AzureEventHubsLoad {
         }
         val executorService = Executors.newSingleThreadExecutor()
         val retryPolicy = new RetryExponential(
-          Duration.ofSeconds(load.retryMinBackoff.getOrElse(0)),    // DEFAULT_RETRY_MIN_BACKOFF = 0
-          Duration.ofSeconds(load.retryMaxBackoff.getOrElse(30)),   // DEFAULT_RETRY_MAX_BACKOFF = 30
-          load.retryCount.getOrElse(10),                            // DEFAULT_MAX_RETRY_COUNT = 10
+          Duration.ofSeconds(load.retryMinBackoff),    // DEFAULT_RETRY_MIN_BACKOFF = 0
+          Duration.ofSeconds(load.retryMaxBackoff),   // DEFAULT_RETRY_MAX_BACKOFF = 30
+          load.retryCount,                            // DEFAULT_MAX_RETRY_COUNT = 10
           "Custom")                                                 // DEFAULT_RETRY = "Default"
         val eventHubClient = EventHubClient.createSync(connStr.toString(), retryPolicy, executorService)
 

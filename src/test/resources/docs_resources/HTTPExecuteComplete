@@ -1,0 +1,20 @@
+{
+  "type": "HTTPExecute",
+  "name": "notify the customer api of job completion",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "uri": "http://internalserver/api/customer",
+  "headers": {
+    "Authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
+    "custom-header": "payload"
+  },
+  "payloads": {
+    "jobName": "customer",
+    "jobStatus": "complete"
+  },
+  "validStatusCodes": [
+    200
+  ]
+}

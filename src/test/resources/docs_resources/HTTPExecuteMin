@@ -1,0 +1,9 @@
+{
+  "type": "HTTPExecute",
+  "name": "notify the customer api of job completion",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "uri": "http://internalserver/api/customer"
+}

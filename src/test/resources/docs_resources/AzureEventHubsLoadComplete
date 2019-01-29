@@ -1,0 +1,17 @@
+{
+  "type": "AzureEventHubsLoad",
+  "name": "write customer to azure event hubs",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "namespaceName": "mynamespace",
+  "eventHubName": "myeventhub",
+  "sharedAccessSignatureKeyName": "mysignaturename",
+  "sharedAccessSignatureKey": "ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=",
+  "numPartitions": 4,
+  "retryCount": 30,
+  "retryMaxBackoff": 60,
+  "retryMinBackoff": 5
+}

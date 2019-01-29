@@ -19,13 +19,12 @@ object ParquetExtract {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
-    val contiguousIndex = extract.contiguousIndex.getOrElse(true)
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
     stageDetail.put("input", extract.input)  
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
-    stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
+    stageDetail.put("contiguousIndex", Boolean.valueOf(extract.contiguousIndex))
 
     logger.info()
       .field("event", "enter")
@@ -79,7 +78,7 @@ object ParquetExtract {
     }    
 
     // add internal columns data _filename, _index
-    val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, contiguousIndex)
+    val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, extract.contiguousIndex)
 
     // set column metadata if exists
     val enrichedDF = optionSchema match {

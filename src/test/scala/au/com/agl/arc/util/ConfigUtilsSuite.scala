@@ -3,6 +3,7 @@ package au.com.agl.arc.util
 import java.net.URI
 
 import scala.io.Source
+import scala.collection.JavaConverters._
 
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
@@ -12,6 +13,7 @@ import org.apache.spark.sql._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.api.{Delimited, Delimiter, QuoteCharacter}
 import au.com.agl.arc.util.log.LoggerFactory
+import au.com.agl.arc.util.ConfigUtils._
 
 import com.typesafe.config._
 
@@ -35,7 +37,6 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-
   test("Read simple config") {
     implicit val spark = session
 
@@ -57,7 +58,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       persist = false,
       numPartitions = None,
       partitionBy = Nil,
-      contiguousIndex = None
+      contiguousIndex = true
     )
 
     val subDelimitedExtractStage = DelimitedExtract(
@@ -71,7 +72,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       persist = false,
       numPartitions = None,
       partitionBy = Nil,
-      contiguousIndex = None
+      contiguousIndex = true
     )
 
     val schema =
@@ -107,7 +108,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       outputView = "green_tripdata1",
       params = Map.empty,
       persist=true,
-      failMode=None
+      failMode=FailModeTypePermissive
     )
 
     val subSQLValidateStage = SQLValidate(
@@ -120,7 +121,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
            |FROM (
            |  SELECT
            |    CASE
-           |      WHEN SIZE(_errors) > 0 THEN 1
+           |      WHEN SIZE(_errors) > 0 THEN ${test_integer}
            |      ELSE 0
            |    END AS error
            |  FROM ${table_name}
@@ -134,9 +135,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     assert(pipeline === Right(expected))
   }
 
-
   // This test loops through the /src/test/resources/docs_resources directory and tries to parse each file as a config
-  // the same config files are used (embedded) on the documentation site so this confirms the examples will work.
+  // the same config files are used (embedded) on the documentation site so this ensures the examples will work.
   test("Read documentation config files") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -147,14 +147,25 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val resourcesDir = getClass.getResource("/docs_resources/").getPath
 
     for (filename <- TestDataUtils.getListOfFiles(resourcesDir)) {
-      val fileContents = Source.fromFile(filename).getLines.mkString
+      val fileContents = Source.fromFile(filename).mkString
       val conf = s"""{"stages": [${fileContents.trim}]}"""
 
+      // replace sql directory with config so that the examples read correctly but have resource to validate
+      val sqlConf = conf.replaceAll("hdfs://datalake/sql/", getClass.getResource("/conf/sql/").toString)
+
+      // replace ml directory with config so that the examples read correctly but have resource to validate
+      val mlConf = sqlConf.replaceAll("hdfs://datalake/ml/", getClass.getResource("/conf/ml/").toString)
+
+      // replace meta directory with config so that the examples read correctly but have resource to validate
+      val metaConf = mlConf.replaceAll("hdfs://datalake/metadata/", getClass.getResource("/conf/metadata/").toString)
+
       val base = ConfigFactory.load()
-      val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+      val etlConf = ConfigFactory.parseString(metaConf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
       val config = etlConf.withFallback(base)
       var argsMap = collection.mutable.Map[String, String]()
-      val pipelineEither = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)
+
+      val environmentVariables = ConfigFactory.parseMap(Map("JOB_RUN_DATE" -> "0").asJava)
+      val pipelineEither = ConfigUtils.readPipeline(config.resolveWith(environmentVariables).resolve(), new URI(""), argsMap, arcContext)
 
       pipelineEither match {
         case Left(errors) => {
@@ -166,4 +177,167 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       }
     }
   }
+
+  test("Test missing keys exception") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val conf = """{
+      "stages": [
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract",
+          "environments": [
+            "production",
+            "test"
+          ]
+        }
+      ]
+    }"""
+
+    val base = ConfigFactory.load()
+    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+    val config = etlConf.withFallback(base)
+    var argsMap = collection.mutable.Map[String, String]()
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+
+    pipeline match {
+      case Left(stageError) => {
+        assert(stageError == 
+        StageError("file extract",3,List(
+            ConfigError("inputURI", None, "Missing required attribute 'inputURI'.")
+            ,ConfigError("outputView", None, "Missing required attribute 'outputView'.")
+          )
+        ) :: Nil)
+      }
+      case Right(_) => assert(false)
+    }    
+  }
+
+  test("Test rightFlatMap validation") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val conf = """{
+      "stages": [
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "hdfs://test/{ab,c{de, fg}",
+          "outputView": "output"
+        }
+      ]
+    }"""
+
+    val base = ConfigFactory.load()
+    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+    val config = etlConf.withFallback(base)
+    var argsMap = collection.mutable.Map[String, String]()
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+
+    pipeline match {
+      case Left(stageError) => {
+        assert(stageError == 
+        StageError("file extract",3,List(
+            ConfigError("inputURI", Some(10), """Unclosed group near index 25
+hdfs://test/{ab,c{de, fg}
+                         ^""")
+          )
+        ) :: Nil)
+      }
+      case Right(_) => assert(false)
+    }     
+  }
+
+  test("Test extraneous attributes") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val conf = """{
+      "stages": [
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract 0",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "input",
+          "outputView": "output",
+        },        
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract 1",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "input",
+          "outputVew": "output",
+          "nothinglikeanything": false
+        }
+      ]
+    }"""
+
+    val base = ConfigFactory.load()
+    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+    val config = etlConf.withFallback(base)
+    var argsMap = collection.mutable.Map[String, String]()
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+
+    pipeline match {
+      case Left(stageError) => {
+        assert(stageError == 
+        StageError("file extract 1",13,List(
+            ConfigError("outputView", None, "Missing required attribute 'outputView'.")
+            ,ConfigError("nothinglikeanything", Some(22), "Invalid attribute 'nothinglikeanything'.")
+            ,ConfigError("outputVew", Some(21), "Invalid attribute 'outputVew'. Perhaps you meant one of: ['outputView'].")
+          )
+        ) :: Nil)
+      }
+      case Right(_) => assert(false)
+    }    
+  }
+  
+  test("Test invalid validValues") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val conf = """{
+      "stages": [       
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "input",
+          "outputView": "output",
+          "delimiter": "abc"
+        }
+      ]
+    }"""
+
+    val base = ConfigFactory.load()
+    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+    val config = etlConf.withFallback(base)
+    var argsMap = collection.mutable.Map[String, String]()
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+
+    pipeline match {
+      case Left(stageError) => {
+        assert(stageError == StageError("file extract",3,List(ConfigError("delimiter", Some(12), "Invalid value. Valid values are ['Comma','Pipe','DefaultHive']."))) :: Nil)
+      }
+      case Right(_) => assert(false)
+    }
+  }  
 }

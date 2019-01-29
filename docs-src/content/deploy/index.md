@@ -26,7 +26,7 @@ This job executes the following job file which is included in the docker image:
 
 ```json
 {"stages":
-	[{
+  [{
     "type": "SQLValidate",
     "name": "a simple stage which prints a message",
     "environments": [
@@ -35,7 +35,7 @@ This job executes the following job file which is included in the docker image:
     ],
     "inputURI": ${ETL_CONF_JOB_PATH}"/print_message.sql",
     "sqlParams": {
-      "message0": "Hello"
+      "message0": "Hello",
       "message1": "World!"
     },
     "authentication": {},

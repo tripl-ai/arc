@@ -1,0 +1,2 @@
+CREATE OR REPLACE VIEW customers AS 
+SELECT * FROM customers_${JOB_RUN_DATE}

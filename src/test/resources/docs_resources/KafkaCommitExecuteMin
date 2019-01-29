@@ -1,0 +1,11 @@
+{
+  "type": "KafkaCommitExecute",
+  "name": "update the offsets in kafka after processing data",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "bootstrapServers": "kafka:29092",
+  "groupID": "spark-customer-extract-job"
+}

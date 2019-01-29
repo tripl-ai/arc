@@ -28,6 +28,12 @@ object SQLUtils {
     val stmt = sqlParams.foldLeft(sql) {
       case (sql, (k,v)) => { 
           val regex = "[$][{]\\s*" + k + "\\s*(?:=[^}]+)?[}]"
+
+          // throw error if no match found
+          if (regex.r.findAllIn(sql).length == 0) {
+            throw new Exception(s"No placeholder found in SQL statement for sqlParam: '${k}'")
+          }           
+
           regex.r.replaceAllIn(sql, v)
       }
     }

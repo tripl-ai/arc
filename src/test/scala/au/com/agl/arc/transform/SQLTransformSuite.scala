@@ -156,7 +156,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=Option(true)
+        contiguousIndex=true
       )
     )    
 
@@ -185,7 +185,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
       SQLTransform(
         name="SQLTransform", 
         inputURI=new URI(targetFile),
-        sql=s"SELECT * FROM parquet.`${targetFile}` WHERE booleanDatum = FALSE",
+        sql=s"SELECT * FROM parquet.`${targetFile}` WHERE booleanDatum = $${sql_boolean_param}",
         outputView=outputView,
         persist=false,
         sqlParams=Map("sql_boolean_param" -> "FALSE"),
@@ -215,7 +215,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     )
 

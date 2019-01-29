@@ -24,7 +24,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
   val inputView1 = "inputView1"
   val outputView = "outputView"
   val bootstrapServers = "localhost:29092"
-  val timeout = Option(3000L)
+  val timeout = 3000L
 
   before {
     implicit val spark = SparkSession
@@ -68,8 +68,8 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         bootstrapServers=bootstrapServers,
         acks= -1,
         numPartitions=None, 
-        batchSize=None, 
-        retries=None, 
+        batchSize=16384, 
+        retries=0, 
         params=Map.empty
       )
     )
@@ -82,9 +82,9 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(false), 
+        autoCommit=false, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
@@ -105,9 +105,9 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(false), 
+        autoCommit=false, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
@@ -139,9 +139,9 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(false), 
+        autoCommit=false, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
@@ -167,8 +167,8 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         bootstrapServers=bootstrapServers,
         acks= -1,
         numPartitions=None, 
-        batchSize=None, 
-        retries=None, 
+        batchSize=16384, 
+        retries=0, 
         params=Map.empty
       )
     ) 
@@ -181,9 +181,9 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(false), 
+        autoCommit=false, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,

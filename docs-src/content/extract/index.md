@@ -38,34 +38,24 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputURI|URI|true|URI of the input Avro files.|
-|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|inputURI|URI|true|URI/Glob of the input Avro files.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
-|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "AvroExtract",
-    "name": "load customer avro extract",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://input_data/customer/*.avro",
-    "outputView": "customer",            
-    "persist": false,
-    "authentication": {
-        ...
-    },    
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/AvroExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/AvroExtractComplete" highlight="json" >}} 
+
 
 ## BytesExtract
 ##### Since: 1.0.9 - Supports Streaming: False
@@ -78,14 +68,13 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputURI|URI|false|URI/Glob of the input binary files.|
-|pathView|String|false|A `DataFrame` containing a list of URI/Globs to extract from.|
+|inputView|String|true*|Name of the incoming Spark dataset containing a list of URI/Globs to extract from.  If not present `inputURI` is requred.|
+|inputURI|URI|true*|URI/Glob of the input binaryfiles. If not present `inputView` is requred.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
-|contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 
 ### Examples
 
@@ -94,6 +83,7 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
 
 #### Complete
 {{< readfile file="/resources/docs_resources/BytesExtractComplete" highlight="json" >}} 
+
 
 ## DelimitedExtract
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -106,60 +96,28 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputView|String|false*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
-|inputURI|URI|false*|URI/Glob of the input delimited text files. If not present `inputView` is requred.|
-|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|inputView|String|true*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
+|inputURI|URI|true*|URI/Glob of the input delimited text files. If not present `inputView` is requred.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
+|delimiter|String|false|The type of delimiter in the file. Supported values: `Comma`, `Pipe`, `DefaultHive`. `DefaultHive` is  ASCII character 1, the default delimiter for Apache Hive extracts.<br><br>Default: `Comma`.|
+|header|Boolean|false|Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named `_col1`, `_col2` ... `_colN`.<br><br>Default: `false`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|delimiter|String|true|The type of delimiter in the file. Supported values: `Comma`, `Pipe`, `DefaultHive`. `DefaultHive` is  ASCII character 1, the default delimiter for Apache Hive extracts.|
-|quote|String|true|The type of quoting in the file. Supported values: `None`, `SingleQuote`, `DoubleQuote`.|
-|header|Boolean|true|Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named `_col1`, `_col2` ... `_colN`.|
-|contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|quote|String|false|The type of quoting in the file. Supported values: `None`, `SingleQuote`, `DoubleQuote`.<br><br>Default: `DoubleQuote`.|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "DelimitedExtract",
-    "name": "load customer csv extract",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://input_data/customer/*.csv",
-    "outputView": "customer",            
-    "persist": false,
-    "delimiter": "Comma",
-    "quote" : "DoubleQuote",
-    "header": true,
-    "authentication": {
-        ...
-    },
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/DelimitedExtractMin" highlight="json" >}} 
 
-```json
-{
-    "type": "DelimitedExtract",
-    "name": "split customer record extract",
-    "environments": ["production", "test"],
-    "inputView": "customer_raw",
-    "outputView": "customer",            
-    "persist": false,
-    "delimiter": "DefaultHive",
-    "quote" : "SingleQuote",
-    "header": false,
-    "authentication": {
-        ...
-    },    
-    "params": {
-    }
-}
-```
+#### Complete
+{{< readfile file="/resources/docs_resources/DelimitedExtractComplete" highlight="json" >}} 
+
 
 ## HTTPExtract
 ##### Since: 1.0.0 - Supports Streaming: False
@@ -174,38 +132,24 @@ This stage would typically be used with a `JSONExtract` stage by specifying `inp
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputView|String|false*|Name of the incoming Spark dataset containing the list of URIs in `value` field. If not present `inputURI` is requred.|
-|inputURI|URI|false*|URI of the HTTP server. If not present `inputView` is requred.|
+|inputView|String|true*|Name of the incoming Spark dataset containing the list of URIs in `value` field. If not present `inputURI` is requred.|
+|inputURI|URI|true*|URI of the HTTP server. If not present `inputView` is requred.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|body|String|false|The request body/entity that is sent with a `POST` request.|
+|headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
+|method|String|false|The request type with valid values `GET` or `POST`.<br><br>Default: `GET`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|method|String|false|The request type with valid values `GET` or `POST`.<br><br>Default: `GET`.|
-|headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
-|body|String|false|The request body/entity that is sent with a `POST` request.|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
-```json
-{
-    "type": "HTTPExtract",
-    "name": "load customer from customer api",
-    "environments": ["production", "test"],
-    "inputURI": "http://internalserver/api/customer",
-    "outputView": "customer",            
-    "persist": false,
-    "headers": {
-        "Authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
-        "custom-header": "payload",
-    },
-    "validStatusCodes": [200],
-    "method": "GET",
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/HTTPExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/HTTPExtractComplete" highlight="json" >}} 
 
 
 ## ImageExtract
@@ -236,31 +180,20 @@ SELECT image.height FROM dataset
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputURI|URI|true|URI/Glob of the input images.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
-|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |dropInvalid|Boolean|false|Whether to drop any invalid image files.<br><br>Default: true.|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "ImageExtract",
-    "name": "load customer images",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://input_data/customer/*.jpg",
-    "outputView": "customer_images",            
-    "persist": false,
-    "dropInvalid": true,
-    "authentication": {
-        ...
-    },    
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/ImageExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/ImageExtractComplete" highlight="json" >}} 
+
 
 ## JDBCExtract
 ##### Since: 1.0.0 - Supports Streaming: False
@@ -273,40 +206,29 @@ The `JDBCExtract` reads directly from a JDBC Database and returns a `DataFrame`.
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 |jdbcURL|String|true|{{< readfile file="/content/partials/fields/jdbcURL.md" markdown="true" >}}|
 |tableName|String|true|{{< readfile file="/content/partials/fields/tableName.md" markdown="true" >}}|
-|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
-|partitionColumn|String|false|The name of a numeric column from the table in question which defines how to partition the table when reading in parallel from multiple workers. If set `numPartitions` must also be set.|
-|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|predicates|Array[String]|false|{{< readfile file="/content/partials/fields/predicates.md" markdown="true" >}}|
-|fetchsize|Integer|false|{{< readfile file="/content/partials/fields/fetchsize.md" markdown="true" >}}|
-|contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
+|fetchsize|Integer|false|{{< readfile file="/content/partials/fields/fetchsize.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Currently requires `user` and `password` to be set here - see example below.|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|partitionColumn|String|false|The name of a numeric column from the table in question which defines how to partition the table when reading in parallel from multiple workers. If set `numPartitions` must also be set.|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|predicates|Array[String]|false|{{< readfile file="/content/partials/fields/predicates.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "JDBCExtract",
-    "name": "extract customer from jdbc",
-    "environments": ["production", "test"],
-    "outputView": "ative_customers",            
-    "persist": false,
-    "jdbcURL": "jdbc:mysql://localhost/mydb",
-    "tableName": "(SELECT * FROM customer WHERE active=TRUE) customer",
-    "numPartitions": 10,
-    "fetchsize": 1000,
-    "params": {
-        "user": "mydbuser",
-        "password": "mydbpassword",
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/JDBCExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/JDBCExtractComplete" highlight="json" >}} 
+
 
 ## JSONExtract
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -319,37 +241,26 @@ The `JSONExtract` stage reads either one or more JSON files or an input `Dataset
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputView|String|false*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
-|inputURI|URI|false*|URI/Glob of the input `json` files. If not present `inputView` is requred.|
-|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|inputView|String|true*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
+|inputURI|URI|true*|URI/Glob of the input `json` files. If not present `inputView` is requred.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
+|multiLine|Boolean|false|Whether the input directory contains a single JSON object per file or multiple JSON records in a single file, one per line (see [JSONLines](http://jsonlines.org/).<br><br>Default: true.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|multiLine|Boolean|false|Whether the input directory contains a single JSON object per file or multiple JSON records in a single file, one per line (see [JSONLines](http://jsonlines.org/).<br><br>Default: true.|
-|contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
+|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "JSONExtract",
-    "name": "load customer json extract",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://input_data/customer/*.json",
-    "outputView": "customer",            
-    "persist": false,
-    "multiLine": true,
-    "authentication": {
-        ...
-    },
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/JSONExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/JSONExtractComplete" highlight="json" >}} 
+
 
 ## KafkaExtract
 ##### Since: 1.0.8 - Supports Streaming: True
@@ -371,35 +282,24 @@ Can be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecu
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|topic|String|true|{{< readfile file="/content/partials/fields/topic.md" markdown="true" >}}|
 |bootstrapServers|String|true|{{< readfile file="/content/partials/fields/bootstrapServers.md" markdown="true" >}}|
+|topic|String|true|{{< readfile file="/content/partials/fields/topic.md" markdown="true" >}}|
 |groupID|String|true|{{< readfile file="/content/partials/fields/groupID.md" markdown="true" >}}|
-|maxPollRecords|Int|false|The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read.<br><br>Default: 10000.|
-|timeout|Long|false|The time, in milliseconds, spent waiting in poll if data is not available in Kafka. Default: 10000.|
 |autoCommit|Boolean|false|Whether to update the offsets in Kafka automatically. To be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecute) to allow quasi-transactional behaviour.<br><br>If `autoCommit` is set to `false` this stage will force `persist` equal to `true` so that Spark will not execute the Kafka extract process twice with a potentially different result (e.g. new messages added between extracts).<br><br>Default: false.|
+|maxPollRecords|Int|false|The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read.<br><br>Default: `10000`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|timeout|Long|false|The time, in milliseconds, spent waiting in poll if data is not available in Kafka. Default: 10000.|
 
 ### Examples
 
-```json
-{
-    "type": "KafkaExtract",
-    "name": "read customer records from kafka",
-    "environments": ["production", "test"],
-    "outputView": "customer",
-    "topic": "customer", 
-    "bootstrapServers": "kafka:29092", 
-    "groupID": "spark-customer-extract-job",
-    "maxPollRecords": 10000,
-    "timeout": 0,
-    "autoCommit": false, 
-    "persist": true,
-    "params": {}
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/KafkaExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/KafkaExtractComplete" highlight="json" >}} 
+
 
 ## ORCExtract
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -413,33 +313,23 @@ The `ORCExtract` stage reads one or more [Apache ORC](https://orc.apache.org/) f
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputURI|URI|true|URI/Glob of the input ORC files.|
-|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
-|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "ParquetExtract",
-    "name": "load customer orc extract",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://input_data/customer/*.orc",
-    "outputView": "customer",            
-    "persist": false,
-    "authentication": {
-        ...
-    },    
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/ORCExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/ORCExtractComplete" highlight="json" >}} 
+
 
 ## ParquetExtract
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -453,33 +343,23 @@ The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.ap
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputURI|URI|true|URI/Glob of the input Parquet files.|
-|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
-|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "ParquetExtract",
-    "name": "load customer parquet extract",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://input_data/customer/*.parquet",
-    "outputView": "customer",            
-    "persist": false,
-    "authentication": {
-        ...
-    },    
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/ParquetExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/ParquetExtractComplete" highlight="json" >}} 
+
 
 ## RateExtract
 ##### Since: 1.2.0 - Supports Streaming: True
@@ -494,26 +374,19 @@ This stage has been included for testing Structured Streaming jobs as it can be 
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|rowsPerSecond|Integer|false|How many rows should be generated per second.<br><br>Default: 1.|
-|rampUpTime|Integer|false|How long to ramp up before the generating speed becomes rowsPerSecond. Using finer granularities than seconds will be truncated to integer seconds.<br><br>Default: 0.|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|rampUpTime|Integer|false|How long to ramp up before the generating speed becomes rowsPerSecond. Using finer granularities than seconds will be truncated to integer seconds.<br><br>Default: 0.|
+|rowsPerSecond|Integer|false|How many rows should be generated per second.<br><br>Default: 1.|
 
 ### Examples
 
-```json
-{
-    "type": "RateExtract",
-    "name": "create a streaming source",
-    "environments": ["test"],
-    "outputView": "stream",
-    "rowsPerSecond": 2,
-    "rampUpTime": 0,
-    "numPartitions": 10,
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/RateExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/RateExtractComplete" highlight="json" >}} 
+
 
 ## TextExtract
 ##### Since: 1.2.0 - Supports Streaming: True
@@ -526,39 +399,38 @@ The `TextExtract` stage reads either one or more text files and returns a `DataF
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputURI|URI|false*|URI/Glob of the input `text` files. If not present `inputView` is requred.|
-|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|inputURI|URI|true|URI/Glob of the input `text` files.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|multiLine|Boolean|false|Whether the to load the file as a single record or as individual records split by newline.<br><br>Default: false.|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|multiLine|Boolean|false|Whether the to load the file as a single record or as individual records split by newline.<br><br>Default: false.|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "TextExtract",
-    "name": "load customer text extract",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://input_data/customer/*.txt",
-    "outputView": "customer",            
-    "persist": false,
-    "multiLine": false,
-    "authentication": {
-        ...
-    },
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/TextExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/TextExtractComplete" highlight="json" >}} 
+
 
 ## XMLExtract
 ##### Since: 1.0.0 - Supports Streaming: False
 
 The `XMLExtract` stage reads one or more XML files or an input `Dataset[String]` and returns a `DataFrame`. 
+
+This extract works slightly different to the `spark-xml` package. To access the data you can use a [SQLTransform](../transform/#sqltransform) query like this which will create a new value for each row of the `bk:books` array:
+
+```sql
+SELECT EXPLODE(`bk:books`).*
+FROM books_xml
+```
+
+The backtick character (`) can be used to address fields with non-alphanumeric names.
 
 ### Parameters
 
@@ -566,32 +438,21 @@ The `XMLExtract` stage reads one or more XML files or an input `Dataset[String]`
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputView|String|false*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
-|inputURI|URI|false*|URI/Glob of the input delimited  XML files. If not present `inputView` is requred.|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
-|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
+|inputURI|URI|true*|URI/Glob of the input delimited  XML files. If not present `inputView` is requred.|
+|inputView|String|true*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
-|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
+|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "XMLExtract",
-    "name": "load customer xml extract",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://input_data/customer/*.xml",
-    "outputView": "customer",            
-    "persist": false,
-    "authentication": {
-        ...
-    },    
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/XMLExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/XMLExtractComplete" highlight="json" >}} 

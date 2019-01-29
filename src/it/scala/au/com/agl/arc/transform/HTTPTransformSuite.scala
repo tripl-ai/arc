@@ -76,12 +76,12 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         uri=new URI(uri),
         headers=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         inputView=inputView,
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField=None
+        inputField="value"
       )
     ).get
 
@@ -115,12 +115,12 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         uri=new URI(uri),
         headers=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         inputView=inputView,
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField=Option("input")
+        inputField="input"
       )
     ).get
 

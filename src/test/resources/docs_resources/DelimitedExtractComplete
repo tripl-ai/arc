@@ -1,0 +1,22 @@
+{
+  "type": "DelimitedExtract",
+  "name": "load customer csv extract",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://input_data/customer/*.csv",
+  "outputView": "customer",
+  "authentication": {},
+  "contiguousIndex": true,
+  "delimiter": "Comma",
+  "header": false,
+  "numPartitions": 10,
+  "partitionBy": [
+    "country"
+  ],
+  "persist": false,
+  "quote": "DoubleQuote",
+  "schemaURI": "hdfs://input_data/schema/customer.json",
+  "schemaView": "customer_schema"
+}

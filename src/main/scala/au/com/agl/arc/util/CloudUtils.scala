@@ -80,7 +80,6 @@ object CloudUtils {
 
     // temporarily remove the delimiter so all the data is loaded as a single line
     spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)
-    
     val textFile = spark.sparkContext.textFile(filePath).collect()(0)
 
     // reset delimiter back to original value

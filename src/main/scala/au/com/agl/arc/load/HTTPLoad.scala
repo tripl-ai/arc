@@ -30,10 +30,7 @@ object HTTPLoad {
   def load(load: HTTPLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
-    val signature = "HTTPLoad requires inputView to be dataset with [value: string] signature."
-
     val maskedHeaders = HTTPUtils.maskHeaders(load.headers)
-
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
     stageDetail.put("name", load.name)
@@ -45,6 +42,8 @@ object HTTPLoad {
       .field("event", "enter")
       .map("stage", stageDetail)      
       .log()
+
+    val signature = "HTTPLoad requires inputView to be dataset with [value: string] signature."
 
     val df = spark.table(load.inputView)      
 

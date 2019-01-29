@@ -1,0 +1,32 @@
+{
+  "type": "JDBCExtract",
+  "name": "load active customers from postgresql",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "jdbcURL": "jdbc:postgresql://localhost:5432/customer",
+  "tableName": "(SELECT * FROM customer WHERE active=TRUE) customer",
+  "outputView": "customer",
+  "authentication": {},
+  "contiguousIndex": true,
+  "fetchsize": 1000,
+  "numPartitions": 10,
+  "params": {
+    "user": "mydbuser",
+    "password": "mydbpassword"
+  },
+  "partitionBy": [
+    "country"
+  ],
+  "partitionColumn": "id",
+  "persist": true,
+  "predicates": [
+    "id=1",
+    "id=2",
+    "id=3",
+    "id=4"
+  ],
+  "schemaURI": "hdfs://input_data/schema/customer.json",
+  "schemaView": "customer_schema"
+}

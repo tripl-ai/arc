@@ -101,7 +101,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
         uri=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
         headers=Map(key -> value),
         payloads=Map.empty,
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         params=Map.empty
       )
     )
@@ -119,7 +119,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
           uri=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
           headers=Map.empty,
           payloads=Map.empty,
-          validStatusCodes=None,
+          validStatusCodes=200 :: 201 :: 202 :: Nil,
           params=Map.empty
         )
       )
@@ -138,7 +138,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
         uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
         headers=Map.empty,
         payloads=Map(key -> value),
-        validStatusCodes=None,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
         params=Map.empty
       )
     )
@@ -156,7 +156,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
           uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
           headers=Map.empty,
           payloads=Map.empty,
-          validStatusCodes=None,
+          validStatusCodes=200 :: 201 :: 202 :: Nil,
           params=Map.empty
         )
       )
@@ -176,7 +176,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
           uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
           headers=Map.empty,
           payloads=Map.empty,
-          validStatusCodes=None,
+          validStatusCodes=200 :: 201 :: 202 :: Nil,
           params=Map.empty
         )
       )
@@ -195,7 +195,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
         uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
         headers=Map.empty,
         payloads=Map.empty,
-        validStatusCodes=Option(List(401)),
+        validStatusCodes=401 :: Nil,
         params=Map.empty
       )
     )

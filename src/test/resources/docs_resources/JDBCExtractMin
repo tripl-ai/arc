@@ -1,0 +1,11 @@
+{
+  "type": "JDBCExtract",
+  "name": "load active customers from postgres",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "jdbcURL": "jdbc:postgresql://localhost:5432/customer",
+  "tableName": "(SELECT * FROM customer WHERE active=TRUE) customer",
+  "outputView": "customer"
+}

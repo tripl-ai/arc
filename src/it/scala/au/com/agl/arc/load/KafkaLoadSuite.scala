@@ -28,7 +28,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
   val inputView = "inputView"
   val outputView = "outputView"
   val bootstrapServers = "localhost:29092"
-  val timeout = Option(3000L)
+  val timeout = 3000L
   val checkPointPath = "/tmp/checkpoint"
 
   before {
@@ -75,12 +75,12 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         bootstrapServers=bootstrapServers,
         acks= -1,
         numPartitions=None, 
-        batchSize=None, 
-        retries=None, 
+        batchSize=16384, 
+        retries=0, 
         params=Map.empty
       )
     )   
-  
+
     val extractDataset = extract.KafkaExtract.extract(
       KafkaExtract(
         name="df", 
@@ -88,9 +88,9 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(false), 
+        autoCommit=false, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
@@ -143,8 +143,8 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         bootstrapServers=bootstrapServers,
         acks= -1,
         numPartitions=None, 
-        batchSize=None, 
-        retries=None, 
+        batchSize=16384, 
+        retries=0, 
         params=Map.empty
       )
     )   
@@ -156,9 +156,9 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(false), 
+        autoCommit=false, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
@@ -219,8 +219,8 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         bootstrapServers=bootstrapServers,
         acks= -1,
         numPartitions=None, 
-        batchSize=None, 
-        retries=None, 
+        batchSize=16384, 
+        retries=0, 
         params=Map.empty
       )
     ) 
@@ -237,9 +237,9 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         topic=topic,
         bootstrapServers=bootstrapServers,
         groupID=groupId,
-        maxPollRecords=None, 
+        maxPollRecords=10000, 
         timeout=timeout, 
-        autoCommit=Option(false), 
+        autoCommit=false, 
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,

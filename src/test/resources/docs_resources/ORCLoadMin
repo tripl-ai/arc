@@ -1,0 +1,10 @@
+{
+  "type": "ORCLoad",
+  "name": "write customer ORC extract",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputURI": "hdfs://output_data/customer/customer.orc"
+}

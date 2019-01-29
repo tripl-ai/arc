@@ -76,11 +76,11 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         signatureName=None,
-        responseType=Option(IntegerResponse),
-        batchSize=Option(10),
+        responseType=IntegerResponse,
+        batchSize=10,
         params=Map.empty,
         persist=false,
-        inputField=None
+        inputField="value"
       )
     ).get
 
@@ -110,11 +110,11 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         signatureName=None,
-        responseType=Option(DoubleResponse),
-        batchSize=Option(10),
+        responseType=DoubleResponse,
+        batchSize=10,
         params=Map.empty,
         persist=false,
-        inputField=None
+        inputField="value"
       )
     ).get
 
@@ -144,11 +144,11 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         signatureName=None,
-        responseType=Option(StringResponse),
-        batchSize=Option(10),
+        responseType=StringResponse,
+        batchSize=10,
         params=Map.empty,
         persist=false,
-        inputField=None
+        inputField="value"
       )
     ).get
 
@@ -178,11 +178,11 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
           inputView=inputView,
           outputView=outputView,
           signatureName=None,
-          responseType=Option(IntegerResponse),
-          batchSize=Option(10),
+          responseType=IntegerResponse,
+          batchSize=10,
           params=Map.empty,
           persist=false,
-          inputField=None
+          inputField="value"
         )
       )
     }
@@ -195,11 +195,11 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         signatureName=None,
-        responseType=Option(IntegerResponse),
-        batchSize=Option(10),
+        responseType=IntegerResponse,
+        batchSize=10,
         params=Map.empty,
         persist=false,
-        inputField=Option("id")
+        inputField="id"
       )
     ).get
 
@@ -226,11 +226,11 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         signatureName=None,
-        responseType=Option(IntegerResponse),
-        batchSize=Option(10),
+        responseType=IntegerResponse,
+        batchSize=10,
         params=Map.empty,
         persist=false,
-        inputField=None
+        inputField="value"
       )
     ).get
 

@@ -77,7 +77,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       JDBCExecute(
         name=outputView, 
         inputURI=new URI(testURI), 
-        url = url,
+        jdbcURL = url,
         user = None,
         password = None,
         sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
@@ -106,7 +106,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       JDBCExecute(
         name=outputView, 
         inputURI=new URI(testURI), 
-        url = url,
+        jdbcURL = url,
         user = None,
         password = None,
         sql=s"CREATE TABLE ${newTable} (${newColumn} VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
@@ -136,7 +136,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
         JDBCExecute(
           name=outputView, 
           inputURI=new URI(testURI), 
-          url = "jdbc:derby:invalid",
+          jdbcURL = "jdbc:derby:invalid",
           user = None,
           password = None,
           sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
@@ -158,7 +158,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
         JDBCExecute(
           name=outputView, 
           inputURI=new URI(testURI), 
-          url = "0.0.0.0",
+          jdbcURL = "0.0.0.0",
           user = None,
           password = None,
           sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
@@ -180,7 +180,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
         JDBCExecute(
           name=outputView, 
           inputURI=new URI(testURI), 
-          url = "",
+          jdbcURL = "",
           user = None,
           password = None,
           sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 

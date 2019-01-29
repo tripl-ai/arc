@@ -1,0 +1,19 @@
+{
+  "type": "DelimitedLoad",
+  "name": "write customer as csv",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputURI": "hdfs://output_data/customer/customer.csv",
+  "authentication": {},
+  "delimiter": "Comma",
+  "header": true,
+  "numPartitions": 10,
+  "partitionBy": [
+    "country"
+  ],
+  "quote": "DoubleQuote",
+  "saveMode": "Overwrite"
+}

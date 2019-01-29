@@ -13,15 +13,13 @@ object TypingTransform {
 
   def transform(transform: TypingTransform)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
-
-    val failMode = transform.failMode.getOrElse(FailModeTypePermissive)
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
     stageDetail.put("inputView", transform.inputView)   
     stageDetail.put("outputView", transform.outputView)   
     stageDetail.put("persist", Boolean.valueOf(transform.persist))
-    stageDetail.put("failMode", failMode.sparkString)
+    stageDetail.put("failMode", transform.failMode.sparkString)
 
     logger.info()
       .field("event", "enter")
@@ -70,7 +68,7 @@ object TypingTransform {
     val errorAccumulator = spark.sparkContext.longAccumulator
 
     val transformedDF = try {
-      Typing.typeDataFrame(df, cols, failMode, valueAccumulator, errorAccumulator)
+      Typing.typeDataFrame(df, cols, transform.failMode, valueAccumulator, errorAccumulator)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          

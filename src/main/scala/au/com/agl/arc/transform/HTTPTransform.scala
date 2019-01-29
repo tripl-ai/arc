@@ -27,34 +27,31 @@ object HTTPTransform {
 
   def transform(transform: HTTPTransform)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
-    
     val startTime = System.currentTimeMillis() 
-
     val maskedHeaders = HTTPUtils.maskHeaders(transform.headers)
-
-    val inputField = transform.inputField.getOrElse("value")
-    val signature = s"HTTPTransform requires a field named '${inputField}' of type 'string' or 'binary'."
-
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
     stageDetail.put("inputView", transform.inputView)  
-    stageDetail.put("inputField", inputField)  
+    stageDetail.put("inputField", transform.inputField)  
     stageDetail.put("outputView", transform.outputView) 
     stageDetail.put("uri", transform.uri.toString)      
     stageDetail.put("headers", maskedHeaders.asJava)
     stageDetail.put("persist", Boolean.valueOf(transform.persist))
+    stageDetail.put("validStatusCodes", transform.validStatusCodes.asJava)
 
     logger.info()
       .field("event", "enter")
       .map("stage", stageDetail)      
       .log()      
 
+    val signature = s"HTTPTransform requires a field named '${transform.inputField}' of type 'string' or 'binary'."
+
     val df = spark.table(transform.inputView)      
     val schema = df.schema
 
     val fieldIndex = try { 
-      schema.fieldIndex(inputField)
+      schema.fieldIndex(transform.inputField)
     } catch {
       case e: Exception => throw new Exception(s"""${signature} inputView has: [${df.schema.map(_.name).mkString(", ")}].""") with DetailException {
         override val detail = stageDetail          
@@ -64,7 +61,7 @@ object HTTPTransform {
     schema.fields(fieldIndex).dataType match {
       case _: StringType => 
       case _: BinaryType => 
-      case _ => throw new Exception(s"""${signature} '${inputField}' is of type: '${schema.fields(fieldIndex).dataType.simpleString}'.""") with DetailException {
+      case _ => throw new Exception(s"""${signature} '${transform.inputField}' is of type: '${schema.fields(fieldIndex).dataType.simpleString}'.""") with DetailException {
         override val detail = stageDetail          
       }  
     }
@@ -92,7 +89,7 @@ object HTTPTransform {
         // meaning we don't have to keep finding fieldIndex and dataType for each row (inefficient as they will not change)
         val bufferedPartition = partition.buffered
         val fieldIndex = bufferedPartition.hasNext match {
-          case true => bufferedPartition.head.fieldIndex(inputField)
+          case true => bufferedPartition.head.fieldIndex(transform.inputField)
           case false => 0
         }
         val dataType = bufferedPartition.hasNext match {
@@ -127,13 +124,8 @@ object HTTPTransform {
             // throw early exception if in streaming mode and bad response code
             if (arcContext.isStreaming) {
               // verify status code is correct
-              val validStatusCodes = transform.validStatusCodes match {
-                case Some(value) => value
-                case None => 200 :: 201 :: 202 :: Nil
-              }
-
-              if (!validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
-                throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${validStatusCodes.mkString(", ")}] but server responded with [${response.getStatusLine.getStatusCode}].""")
+              if (!transform.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+                throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${transform.validStatusCodes.mkString(", ")}] but server responded with [${response.getStatusLine.getStatusCode}].""")
               }
             }
 
@@ -174,14 +166,10 @@ object HTTPTransform {
       stageDetail.put("responses", responseMap)    
 
       // verify status code is correct
-      val validStatusCodes = transform.validStatusCodes match {
-        case Some(value) => value
-        case None => 200 :: 201 :: 202 :: Nil
-      }
-      if (!(distinctReponses.map(d => d.getInt(0)).collect forall (validStatusCodes contains _))) {
+      if (!(distinctReponses.map(d => d.getInt(0)).collect forall (transform.validStatusCodes contains _))) {
         val responseMessages = distinctReponses.map(response => s"${response.getLong(3)} reponses ${response.getInt(0)} (${response.getString(1)})").collect.mkString(", ")
 
-        throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${validStatusCodes.mkString(", ")}] but server responded with [${responseMessages}].""") with DetailException {
+        throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${transform.validStatusCodes.mkString(", ")}] but server responded with [${responseMessages}].""") with DetailException {
           override val detail = stageDetail          
         }
       }     

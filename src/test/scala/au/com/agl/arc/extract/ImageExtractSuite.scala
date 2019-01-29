@@ -57,7 +57,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        dropInvalid=None
+        dropInvalid=true
       )
     ).get
 
@@ -85,7 +85,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        dropInvalid=None
+        dropInvalid=true
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -101,7 +101,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
-        dropInvalid=None
+        dropInvalid=true
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -123,7 +123,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        dropInvalid=None
+        dropInvalid=true
       )
     ).get
     
@@ -136,9 +136,6 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true, ignoreEnvironments=false)
 
-    // parse json schema to List[ExtractColumn]
-    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
-
     val extractDataset = extract.ImageExtract.extract(
       ImageExtract(
         name=outputView,
@@ -149,7 +146,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
-        dropInvalid=None        
+        dropInvalid=true        
       )
     ).get
 

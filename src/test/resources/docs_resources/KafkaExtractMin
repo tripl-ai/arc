@@ -1,0 +1,12 @@
+{
+  "type": "KafkaExtract",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "outputView": "customer",
+  "bootstrapServers": "kafka:29092",
+  "topic": "customers",
+  "groupID": "spark-customer-extract-job"
+}

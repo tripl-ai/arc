@@ -1,0 +1,11 @@
+{
+  "type": "JSONTransform",
+  "name": "convert customer to json for sending to eternal api",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "cutomer",
+  "outputView": "customer_json",
+  "persist": false
+}

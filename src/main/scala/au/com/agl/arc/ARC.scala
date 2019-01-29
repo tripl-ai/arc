@@ -5,6 +5,7 @@ import au.com.agl.arc.udf.UDF
 
 object ARC {
 
+  import java.lang._
   import java.util.UUID
   import org.apache.commons.lang3.exception.ExceptionUtils
   import scala.collection.JavaConverters._
@@ -68,12 +69,12 @@ object ARC {
 
     val configUri: Option[String] = argsMap.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))    
 
-
+    val frameworkVersion = Utils.getFrameworkVersion
 
     val spark: SparkSession = try {
       SparkSession
         .builder()
-        .appName(jobId.getOrElse(s"arc:${BuildInfo.version}-${UUID.randomUUID.toString}"))
+        .appName(jobId.getOrElse(s"arc:${frameworkVersion}-${UUID.randomUUID.toString}"))
         .config("spark.debug.maxToStringFields", "8192")
         .config("spark.sql.orc.impl", "native") // needed to overcome structured streaming write issue
         .config("spark.kryo.registrator", classOf[GeoSparkKryoRegistrator].getName)
@@ -89,10 +90,11 @@ object ARC {
         detail.put("messages", exceptionThrowablesMessages)
         detail.put("stackTrace", exceptionThrowablesStackTraces)
 
-        val logger = LoggerFactory.getLogger(jobId.getOrElse(s"arc:${BuildInfo.version}-${UUID.randomUUID.toString}"))
+        val logger = LoggerFactory.getLogger(jobId.getOrElse(s"arc:${frameworkVersion}-${UUID.randomUUID.toString}"))
         logger.error()
           .field("event", "exit")
           .field("status", "failure")
+          .field("success", Boolean.valueOf(false))
           .field("duration", System.currentTimeMillis() - startTime)
           .field("reason", detail)
           .log()   
@@ -145,7 +147,7 @@ object ARC {
       .field("event", "enter")
       .field("config", sparkConf)
       .field("sparkVersion", spark.version)
-      .field("frameworkVersion", BuildInfo.version)
+      .field("frameworkVersion", frameworkVersion)
       .field("environment", env)
       .log()   
 
@@ -169,6 +171,7 @@ object ARC {
         logger.error()
           .field("event", "exit")
           .field("status", "failure")
+          .field("success", Boolean.valueOf(false))
           .field("duration", System.currentTimeMillis() - startTime)
           .field("reason", detail)
           .log()   
@@ -202,6 +205,7 @@ object ARC {
         logger.error()
           .field("event", "exit")
           .field("status", "failure")
+          .field("success", Boolean.valueOf(false))
           .field("duration", System.currentTimeMillis() - startTime)
           .field("reason", detail)
           .log()   
@@ -237,6 +241,7 @@ object ARC {
             logger.error()
               .field("event", "exit")
               .field("status", "failure")
+              .field("success", Boolean.valueOf(false))
               .field("duration", System.currentTimeMillis() - startTime)
               .map("stage", e.detail)
               .log()       
@@ -256,6 +261,7 @@ object ARC {
             logger.error()
               .field("event", "exit")
               .field("status", "failure")
+              .field("success", Boolean.valueOf(false))
               .field("duration", System.currentTimeMillis() - startTime)
               .field("reason", detail)
               .log()   
@@ -263,14 +269,15 @@ object ARC {
             true
         }
       case Left(errors) => {
-        val errorMsg = ConfigUtils.Error.pipelineErrorMsg(errors)
-        println(errorMsg)
-
-        // TODO add errors to json as data
         logger.error()
-          .field("event", "config_errors")
-          .field("message", errorMsg)
+          .field("event", "exit")
+          .field("status", "failure")
+          .field("success", Boolean.valueOf(false))
+          .field("duration", System.currentTimeMillis() - startTime)        
+          .list("reason", ConfigUtils.Error.pipelineErrorJSON(errors))
           .log()   
+
+        println(s"ETL Config contains errors:\n${ConfigUtils.Error.pipelineErrorMsg(errors)}\n")
 
         true
       }
@@ -281,6 +288,7 @@ object ARC {
         logger.info()
           .field("event", "exit")
           .field("status", "success")
+          .field("success", Boolean.valueOf(true))
           .field("duration", System.currentTimeMillis() - startTime)
           .log()   
       }

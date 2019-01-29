@@ -1,0 +1,15 @@
+{
+  "type": "TensorFlowServingTransform",
+  "name": "call the customer segmentation model",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputView": "customer_segmented",
+  "uri": "http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict",
+  "signatureName": "serving_default",
+  "batchSize": 100,
+  "persist": true,
+  "responseType": "integer"
+}

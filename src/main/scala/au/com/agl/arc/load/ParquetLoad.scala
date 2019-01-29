@@ -19,10 +19,8 @@ object ParquetLoad {
     stageDetail.put("inputView", load.inputView)  
     stageDetail.put("outputURI", load.outputURI.toString)  
     stageDetail.put("partitionBy", load.partitionBy.asJava)
+    stageDetail.put("saveMode", load.saveMode.toString.toLowerCase)
 
-    val saveMode = load.saveMode.getOrElse(SaveMode.Overwrite)
-    stageDetail.put("saveMode", saveMode.toString.toLowerCase)
-    
     val df = spark.table(load.inputView)   
 
     if (!df.isStreaming) {
@@ -67,16 +65,16 @@ object ParquetLoad {
         load.partitionBy match {
           case Nil => {
             load.numPartitions match {
-              case Some(n) => nonNullDF.repartition(n).write.mode(saveMode).parquet(load.outputURI.toString)
-              case None => nonNullDF.write.mode(saveMode).parquet(load.outputURI.toString)
+              case Some(n) => nonNullDF.repartition(n).write.mode(load.saveMode).parquet(load.outputURI.toString)
+              case None => nonNullDF.write.mode(load.saveMode).parquet(load.outputURI.toString)
             }
           }
           case partitionBy => {
             // create a column array for repartitioning
             val partitionCols = partitionBy.map(col => nonNullDF(col))
             load.numPartitions match {
-              case Some(n) => nonNullDF.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).parquet(load.outputURI.toString)
-              case None => nonNullDF.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(saveMode).parquet(load.outputURI.toString)
+              case Some(n) => nonNullDF.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(load.saveMode).parquet(load.outputURI.toString)
+              case None => nonNullDF.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(load.saveMode).parquet(load.outputURI.toString)
             }
           }
         }

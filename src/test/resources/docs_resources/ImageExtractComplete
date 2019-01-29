@@ -1,0 +1,17 @@
+{
+  "type": "ImageExtract",
+  "name": "load customer images",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://input_data/customer/*.jpg",
+  "outputView": "customer",
+  "authentication": {},
+  "dropInvalid": true,
+  "numPartitions": 10,
+  "partitionBy": [
+    "image.width"
+  ],
+  "persist": false
+}

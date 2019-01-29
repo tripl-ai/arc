@@ -22,9 +22,7 @@ object XMLLoad {
     stageDetail.put("inputView", load.inputView)  
     stageDetail.put("outputURI", load.outputURI.toString)  
     stageDetail.put("partitionBy", load.partitionBy.asJava)
-
-    val saveMode = load.saveMode.getOrElse(SaveMode.Overwrite)
-    stageDetail.put("saveMode", saveMode.toString.toLowerCase)
+    stageDetail.put("saveMode", load.saveMode.toString.toLowerCase)
 
     val df = spark.table(load.inputView) 
 
@@ -58,16 +56,16 @@ object XMLLoad {
       load.partitionBy match {
         case Nil => { 
           load.numPartitions match {
-            case Some(n) => df.repartition(n).write.format("com.databricks.spark.xml").mode(saveMode).save(load.outputURI.toString)
-            case None => df.write.format("com.databricks.spark.xml").mode(saveMode).save(load.outputURI.toString)  
+            case Some(n) => df.repartition(n).write.format("com.databricks.spark.xml").mode(load.saveMode).save(load.outputURI.toString)
+            case None => df.write.format("com.databricks.spark.xml").mode(load.saveMode).save(load.outputURI.toString)  
           }   
         }
         case partitionBy => {
           // create a column array for repartitioning
           val partitionCols = partitionBy.map(col => df(col))
           load.numPartitions match {
-            case Some(n) => df.repartition(n, partitionCols:_*).write.format("com.databricks.spark.xml").partitionBy(partitionBy:_*).mode(saveMode).save(load.outputURI.toString)
-            case None => df.repartition(partitionCols:_*).write.format("com.databricks.spark.xml").partitionBy(partitionBy:_*).mode(saveMode).save(load.outputURI.toString)
+            case Some(n) => df.repartition(n, partitionCols:_*).write.format("com.databricks.spark.xml").partitionBy(partitionBy:_*).mode(load.saveMode).save(load.outputURI.toString)
+            case None => df.repartition(partitionCols:_*).write.format("com.databricks.spark.xml").partitionBy(partitionBy:_*).mode(load.saveMode).save(load.outputURI.toString)
           }   
         }
       }    

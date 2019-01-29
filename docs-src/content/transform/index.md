@@ -30,31 +30,22 @@ This stage performs this 'diffing' operation in a single pass so if multiple of 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputLeftView|String|true|Name of first incoming Spark dataset.|
 |inputRightView|String|true|Name of second incoming Spark dataset.|
 |outputIntersectionView|String|false|Name of output `intersection` view.|
 |outputLeftView|String|false|Name of output `left` view.|
 |outputRightView|String|false|Name of output `right` view.|
-|persist|Boolean|true|Whether to persist dataset to Spark cache.|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|persist|Boolean|false|Whether to persist dataset to Spark cache.|
 
 ### Examples
 
-```json
-{
-    "type": "DiffTransform",
-    "name": "calculate the difference between the yesterday and today datasets",
-    "environments": ["production", "test"],
-    "inputLeftView": "cutomer_20180501",            
-    "inputRightView": "cutomer_20180502",            
-    "outputIntersectionView": "customer_unchanged",            
-    "outputLeftView": "customer_removed",            
-    "outputRightView": "customer_added",            
-    "persist": true,
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/DiffTransformMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/DiffTransformComplete" highlight="json" >}} 
+
 
 ## HTTPTransform
 ##### Since: 1.0.9 - Supports Streaming: True
@@ -68,34 +59,21 @@ The `HTTPTransform` stage transforms the incoming dataset by `POST`ing the value
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
-|inputField|String|false|The field to pass to the endpoint. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |uri|URI|true|URI of the HTTP server.|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
+|inputField|String|false|The field to pass to the endpoint. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}} Note: all request response codes must be contained in this list for the stage to be successful.|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
-```json
-{
-    "type": "HTTPTransform",
-    "name": "call the machine learning model",
-    "environments": ["production", "test"],
-    "inputView": "cutomers",            
-    "outputView": "customers_scored",   
-    "outputURI": "http://internalserver/api/customer_scoring_v101/",
-    "headers": {
-        "Authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
-        "custom-header": "payload",
-    },
-    "validStatusCodes": [200],             
-    "persist": false,
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/HTTPTransformMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/HTTPTransformComplete" highlight="json" >}} 
+
 
 ## JSONTransform
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -110,23 +88,16 @@ The `JSONTransform` stage transforms the incoming dataset to rows of `json` stri
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "JSONTransform",
-    "name": "convert customer data to json",
-    "environments": ["production", "test"],
-    "inputView": "cutomers",            
-    "outputView": "customersJSON",            
-    "persist": false,
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/JSONTransformMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/JSONTransformComplete" highlight="json" >}} 
+
 
 ## MetadataFilterTransform
 ##### Since: 1.0.9 - Supports Streaming: True
@@ -186,31 +157,18 @@ The `inputView` and `outputView` can be set to the same name so that downstream 
 |inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}<br><br>This statement must be written to query against a table called `metadata` and must return at least the `name` column or an error will be raised.|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 
 ### Examples
 
-```json
-{
-    "type": "MetadataFilterTransform",
-    "name": "filter out Personally identifiable information (pii)",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://datalake/sql/0.0.1/filterPii.sql",
-    "inputView": "customerData",         
-    "outputView": "safeCustomerData",            
-    "persist": false,
-    "authentication": {
-        ...
-    },
-    "sqlParams": {
-    },       
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/MetadataFilterTransformMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/MetadataFilterTransformComplete" highlight="json" >}} 
+
 
 ## MLTransform
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -226,28 +184,17 @@ The `MLTransform` stage transforms the incoming dataset with a pretrained Spark 
 |inputURI|URI|true|URI of the input `PipelineModel` or `CrossValidatorModel`.|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}} MLTransform will also log percentiles of prediction probabilities for classification models if this option is enabled.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}} MLTransform will also log percentiles of prediction probabilities for classification models if this option is enabled.|
 
 ### Examples
 
-```json
-{
-    "type": "MLTransform",
-    "name": "apply machine learning model",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://input_data/ml/machineLearningPipelineModel.parquet",
-    "inputView": "inputDF",         
-    "outputView": "outputDF",            
-    "persist": false,
-    "authentication": {
-        ...
-    },
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/MLTransformMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/MLTransformComplete" highlight="json" >}} 
+
 
 ## SQLTransform
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -272,34 +219,9 @@ Whilst SQL is capable of converting data types using the `CAST` function (e.g. `
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}<br><br>For example if the sqlParams contains parameter `current_timestamp` of value `2018-11-24 14:48:56` then this statement would execute in a deterministic way: `SELECT * FROM customer WHERE expiry > FROM_UNIXTIME(UNIX_TIMESTAMP('${current_timestamp}', 'uuuu-MM-dd HH:mm:ss'))` (so would be testable).|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
-
-### Examples
-
-```json
-{
-    "type": "SQLTransform",
-    "name": "Join customer and account",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://datalake/sql/0.0.1/customerAccountJoin.sql",
-    "outputView": "customerAccountDF",            
-    "persist": false,
-    "authentication": {
-        ...
-    },    
-    "sqlParams": {
-        "current_date": "2018-11-24",
-        "current_timestamp": "2018-11-24 14:48:56"
-    },    
-    "params": {
-    }
-}
-```
-
-The `current_date` and `current_timestamp` can easily be passed in as environment variables using `$(date "+%Y-%m-%d")` and `$(date "+%Y-%m-%d %H:%M:%S")` respectively.
 
 The SQL statement is a plain Spark SQL statement, for example:
 
@@ -313,6 +235,16 @@ SELECT
 FROM customer
 LEFT JOIN account ON account.customer_id = customer.customer_id
 ```
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/SQLTransformMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/SQLTransformComplete" highlight="json" >}} 
+
+The `current_date` and `current_timestamp` can easily be passed in as environment variables using `$(date "+%Y-%m-%d")` and `$(date "+%Y-%m-%d %H:%M:%S")` respectively.
 
 ## TensorFlowServingTransform
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -333,32 +265,22 @@ The `TensorFlowServingTransform` stage transforms the incoming dataset by callin
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|inputField|String|false|The field to pass to the model. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
 |uri|String|true|The `URI` of the TensorFlow Serving REST end point.|
-|signatureName|String|false|{{< readfile file="/content/partials/fields/signatureName.md" markdown="true" >}}|
-|responseType|String|false|The type returned by the TensorFlow Serving API. Expected to be `integer`, `double` or `object` (which may present as a `string` depending on how the model has been built).<br><br>Default: `object`.|
 |batchSize|Int|false|The number of records to sent to TensorFlow Serving in each call. A higher number will decrease the number of calls to TensorFlow Serving which may be more efficient.|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|inputField|String|false|The field to pass to the model. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|responseType|String|false|The type returned by the TensorFlow Serving API. Expected to be `integer`, `double` or `object` (which may present as a `string` depending on how the model has been built).<br><br>Default: `object`.|
+|signatureName|String|false|{{< readfile file="/content/partials/fields/signatureName.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "environments": ["prd","tst"],
-    "type": "TensorFlowServingTransform",
-    "name": "call the customer segmentation model",
-    "inputView": "customer",
-    "inputField": "value",
-    "outputView": "customer_segmented",            
-    "uri": "http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict",
-    "signatureName": "serving_default",
-    "responseType": "integer",
-    "batchSize": 100,
-    "persist": true,
-    "params": {}
-}   
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/TensorFlowServingTransformMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/TensorFlowServingTransformComplete" highlight="json" >}} 
+
 
 ## TypingTransform
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -376,29 +298,18 @@ The logical process that is applied to perform the typing on a field-by-field ba
 |inputURI|URI|true|URI of the input file containing the SQL statement.|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |failMode|String|false|Either `permissive` or `failfast`:<br><br>`permissive` will process all rows in the dataset and collect any errors for each row in the `_errors` column. Rules can then be applied in a [SQLValidate](validate/#sqlvalidate) stage if required.<br><br>`failfast` will fail the Arc job on the first row containing at least one error.<br><br>Default: `permissive`.|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 
 ### Examples
 
-```json
-{
-    "type": "TypingTransform",
-    "name": "apply data types to customer records",
-    "environments": ["production", "test"],
-    "inputURI": "hdfs://datalake/meta/0.0.1/customer_meta.json",
-    "inputView": "customerUntypedDF",            
-    "outputView": "customerTypeDF",            
-    "persist": false,
-    "authentication": {
-        ...
-    },       
-    "params": {
-    }
-}
-```
+#### Minimal
+{{< readfile file="/resources/docs_resources/TypingTransformMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/TypingTransformComplete" highlight="json" >}} 
+
 
 A demonstration of how the `TypingTransform` behaves. Assuming you have read an input like a [DelimitedExtract](../extract/#DelimitedExtract) which will read a dataset where all the columns are read as strings:
 

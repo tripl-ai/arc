@@ -1,0 +1,10 @@
+{
+  "type": "SQLTransform",
+  "name": "standardise customer fields",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/customer.sql",
+  "outputView": "customer"
+}

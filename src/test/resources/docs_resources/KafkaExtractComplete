@@ -1,0 +1,20 @@
+{
+  "type": "KafkaExtract",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "outputView": "customer",
+  "bootstrapServers": "kafka:29092",
+  "topic": "customers",
+  "groupID": "spark-customer-extract-job",
+  "autoCommit": false,
+  "maxPollRecords": 10000,
+  "numPartitions": 10,
+  "partitionBy": [
+    "country"
+  ],
+  "persist": false,
+  "timeout": 10000
+}

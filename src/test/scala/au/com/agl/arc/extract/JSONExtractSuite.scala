@@ -89,7 +89,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 
@@ -135,7 +135,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -153,7 +153,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     )
     assert(spark.catalog.isCached(outputView) === true)
@@ -193,7 +193,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=None
+          contiguousIndex=true
         )
       )
     }
@@ -214,7 +214,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=None
+          contiguousIndex=true
         )
       )
     }
@@ -234,7 +234,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 
@@ -266,7 +266,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 
@@ -282,7 +282,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 
@@ -339,7 +339,7 @@ test("JSONExtract: Input Schema") {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 
@@ -371,7 +371,7 @@ test("JSONExtract: Input Schema") {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=None
+        contiguousIndex=true
       )
     ).get
 

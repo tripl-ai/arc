@@ -39,7 +39,7 @@ object Dependencies {
 
   // SQL Server
   val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "6.4.0.jre8" % "provided"
-  val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.2" % "provided"
+  val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.2" % "it,test,provided"
 
   // geospark
   val geospark = "org.datasyslab" % "geospark" % "1.1.1"  % "provided"

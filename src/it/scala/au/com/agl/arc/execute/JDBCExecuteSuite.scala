@@ -31,11 +31,11 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
 
   before {
     implicit val spark = SparkSession
-                  .builder()
-                  .master("local[*]")
-                  .config("spark.ui.port", "9999")
-                  .appName("Spark ETL Test")
-                  .getOrCreate()
+      .builder()
+      .master("local[*]")
+      .config("spark.ui.port", "9999")
+      .appName("Spark ETL Test")
+      .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
     session = spark
@@ -72,7 +72,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       JDBCExecute(
         name=outputView, 
         inputURI=new URI(testURI), 
-        url=sqlserverurl,
+        jdbcURL=sqlserverurl,
         user=Option(user),
         password=Option(password),
         sql=transaction, 
@@ -112,7 +112,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
         JDBCExecute(
           name=outputView, 
           inputURI=new URI(testURI), 
-          url=sqlserverurl,
+          jdbcURL=sqlserverurl,
           user=Option(user),
           password=Option(password),
           sql=transaction, 

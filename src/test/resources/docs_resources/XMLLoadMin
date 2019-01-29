@@ -1,0 +1,10 @@
+{
+  "type": "XMLLoad",
+  "name": "write customer XML extract",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputURI": "hdfs://output_data/customer/customer.xml"
+}

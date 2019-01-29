@@ -1,0 +1,1 @@
+INSERT INTO customer_loads VALUES ('${current_timestamp}')

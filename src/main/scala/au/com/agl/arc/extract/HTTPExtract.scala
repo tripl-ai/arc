@@ -31,7 +31,6 @@ case class RequestResponse(
     body: String
 )
 
-
 object HTTPExtract {
 
   /** Phantom Type to enable compiler to find the encoder we want
@@ -41,21 +40,19 @@ object HTTPExtract {
   def extract(extract: HTTPExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
-
     val maskedHeaders = HTTPUtils.maskHeaders(extract.headers)
-    val method = extract.method.getOrElse("GET")
-
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
-    stageDetail.put("method", method)
+    stageDetail.put("method", extract.method)
     stageDetail.put("headers", maskedHeaders.asJava)
+    stageDetail.put("validStatusCodes", extract.validStatusCodes.asJava)
 
     val inputValue = extract.input match {
-      case Right(uri) => uri.toString
       case Left(view) => view
+      case Right(uri) => uri.toString
     }
 
     stageDetail.put("input", inputValue)  
@@ -98,7 +95,7 @@ object HTTPExtract {
         bufferedPartition.map[RequestResponseRow] { row: Row =>
           val uri = row.getString(uriFieldIndex)
 
-          val request = method match {
+          val request = extract.method match {
             case "GET" => new HttpGet(uri)
             case "POST" => { 
               val post = new HttpPost(uri)
@@ -161,14 +158,10 @@ object HTTPExtract {
     stageDetail.put("responses", responseMap)    
 
     // verify status code is correct
-    val validStatusCodes = extract.validStatusCodes match {
-      case Some(value) => value
-      case None => 200 :: 201 :: 202 :: Nil
-    }
-    if (!(distinctReponses.map(d => d.getInt(0)).collect forall (validStatusCodes contains _))) {
+    if (!(distinctReponses.map(d => d.getInt(0)).collect forall (extract.validStatusCodes contains _))) {
       val responseMessages = distinctReponses.map(response => s"${response.getLong(3)} reponses ${response.getInt(0)} (${response.getString(1)})").collect.mkString(", ")
 
-      throw new Exception(s"""HTTPExtract expects all response StatusCode(s) in [${validStatusCodes.mkString(", ")}] but server responded with [${responseMessages}].""") with DetailException {
+      throw new Exception(s"""HTTPExtract expects all response StatusCode(s) in [${extract.validStatusCodes.mkString(", ")}] but server responded with [${responseMessages}].""") with DetailException {
         override val detail = stageDetail          
       }
     }   

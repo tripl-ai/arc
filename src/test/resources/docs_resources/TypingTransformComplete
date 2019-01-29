@@ -1,0 +1,14 @@
+{
+  "type": "TypingTransform",
+  "name": "apply data types to customer records",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/metadata/customer.json",
+  "inputView": "customer_untyped",
+  "outputView": "customer",
+  "authentication": {},
+  "failMode": "failfast",
+  "persist": false
+}

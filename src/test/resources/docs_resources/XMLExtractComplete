@@ -1,0 +1,19 @@
+{
+  "type": "XMLExtract",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://input_data/customer/*.xml",
+  "outputView": "customer",
+  "authentication": {},
+  "contiguousIndex": true,
+  "numPartitions": 10,
+  "partitionBy": [
+    "country"
+  ],
+  "persist": false,
+  "schemaURI": "hdfs://input_data/schema/customer.json",
+  "schemaView": "customer_schema"
+}

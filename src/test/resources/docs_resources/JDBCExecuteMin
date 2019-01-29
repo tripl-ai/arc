@@ -1,0 +1,10 @@
+{
+  "type": "JDBCExecute",
+  "name": "execute the load date table",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/update_customer_load_date.sql",
+  "jdbcURL": "jdbc:postgresql://localhost:5432/customer"
+}

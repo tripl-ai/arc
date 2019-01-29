@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.4.1</span></strong>
+          <span class="version">1.5.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -430,7 +430,7 @@
 <pre><code class="language-json">docker run \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&quot; \
--it -p 4040:4040 seddonm1/arc:1.4.1 \
+-it -p 4040:4040 seddonm1/arc:1.5.0 \
 bin/spark-submit \
 --master local[*] \
 --class au.com.agl.arc.ARC \
@@ -441,7 +441,7 @@ bin/spark-submit \
 <p>This job executes the following job file which is included in the docker image:</p>
 
 <pre><code class="language-json">{&quot;stages&quot;:
-	[{
+  [{
     &quot;type&quot;: &quot;SQLValidate&quot;,
     &quot;name&quot;: &quot;a simple stage which prints a message&quot;,
     &quot;environments&quot;: [
@@ -450,7 +450,7 @@ bin/spark-submit \
     ],
     &quot;inputURI&quot;: ${ETL_CONF_JOB_PATH}&quot;/print_message.sql&quot;,
     &quot;sqlParams&quot;: {
-      &quot;message0&quot;: &quot;Hello&quot;
+      &quot;message0&quot;: &quot;Hello&quot;,
       &quot;message1&quot;: &quot;World!&quot;
     },
     &quot;authentication&quot;: {},
@@ -613,7 +613,7 @@ bin/spark-submit \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_STREAMING=true&quot; \
 -e &quot;ETL_CONF_ROWS_PER_SECOND=10&quot; \
--it -p 4040:4040 seddonm1/arc:1.4.1 \
+-it -p 4040:4040 seddonm1/arc:1.5.0 \
 bin/spark-submit \
 --master local[*] \
 --class au.com.agl.arc.ARC \
@@ -624,7 +624,7 @@ bin/spark-submit \
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2018 Released under the MIT license
+				&copy; 2019 Released under the MIT license
 				
 			</aside>
 
@@ -633,46 +633,45 @@ bin/spark-submit \
 
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
-  
-      <a href="https://aglenergy.github.io/arc/patterns/" title="Patterns">
-        <span class="direction">
-          Previous
-        </span>
-        <div class="page">
-          <div class="button button-previous" role="button" aria-label="Previous">
-            <i class="icon icon-back"></i>
-          </div>
-          <div class="stretch">
-            <div class="title">
-              Patterns
-            </div>
+    
+    <a href="https://aglenergy.github.io/arc/patterns/" title="Patterns">
+      <span class="direction">
+        Previous
+      </span>
+      <div class="page">
+        <div class="button button-previous" role="button" aria-label="Previous">
+          <i class="icon icon-back"></i>
+        </div>
+        <div class="stretch">
+          <div class="title">
+            Patterns
           </div>
         </div>
-      </a>
-  
+      </div>
+    </a>
+    
   </div>
 
   <div class="next">
-  
-      <a href="https://aglenergy.github.io/arc/extend/" title="Extend">
-        <span class="direction">
-          Next
-        </span>
-        <div class="page">
-          <div class="stretch">
-            <div class="title">
-              Extend
-            </div>
-          </div>
-          <div class="button button-next" role="button" aria-label="Next">
-            <i class="icon icon-forward"></i>
+    
+    <a href="https://aglenergy.github.io/arc/extend/" title="Extend">
+      <span class="direction">
+        Next
+      </span>
+      <div class="page">
+        <div class="stretch">
+          <div class="title">
+            Extend
           </div>
         </div>
-      </a>
-  
+        <div class="button button-next" role="button" aria-label="Next">
+          <i class="icon icon-forward"></i>
+        </div>
+      </div>
+    </a>
+    
   </div>
 </nav>
-
 
 
 
