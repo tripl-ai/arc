@@ -441,7 +441,7 @@ bin/spark-submit \
 <p>This job executes the following job file which is included in the docker image:</p>
 
 <pre><code class="language-json">{&quot;stages&quot;:
-	[{
+  [{
     &quot;type&quot;: &quot;SQLValidate&quot;,
     &quot;name&quot;: &quot;a simple stage which prints a message&quot;,
     &quot;environments&quot;: [
@@ -450,7 +450,7 @@ bin/spark-submit \
     ],
     &quot;inputURI&quot;: ${ETL_CONF_JOB_PATH}&quot;/print_message.sql&quot;,
     &quot;sqlParams&quot;: {
-      &quot;message0&quot;: &quot;Hello&quot;
+      &quot;message0&quot;: &quot;Hello&quot;,
       &quot;message1&quot;: &quot;World!&quot;
     },
     &quot;authentication&quot;: {},
