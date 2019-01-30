@@ -79,14 +79,12 @@ This is an example of a fairly standard pipeline:
         "production",
         "test"
       ],
-      "inputURI": "/opt/tutorial/starter/data/input/green_tripdata/0/green_tripdata_2013-08.csv",
+      "inputURI": "hdfs://datalake/input/green_tripdata/0/*.csv",
       "outputView": "green_tripdata0_raw",
       "persist": false,
       "delimiter": "Comma",
       "quote": "DoubleQuote",
-      "header": true,
-      "authentication": {},
-      "params": {}
+      "header": true
     },
     {
       "type": "TypingTransform",
@@ -95,12 +93,10 @@ This is an example of a fairly standard pipeline:
         "production",
         "test"
       ],
-      "inputURI": "/opt/tutorial/starter/meta/green_tripdata/0/green_tripdata.json",
+      "inputURI": "hdfs://datalake/metadata/green_tripdata.json",
       "inputView": "green_tripdata0_raw",
       "outputView": "green_tripdata0",
-      "persist": false,
-      "authentication": {},
-      "params": {}
+      "persist": true
     },
     {
       "type": "SQLValidate",
@@ -109,27 +105,38 @@ This is an example of a fairly standard pipeline:
         "production",
         "test"
       ],
-      "inputURI": "/opt/tutorial/starter/job/0/sqlvalidate_errors.sql",
+      "inputURI": "hdfs://datalake/sql/sqlvalidate_errors.sql",
       "sqlParams": {
         "table_name": "green_tripdata0"
-      },
-      "authentication": {},
-      "params": {}
+      }
     },
     {
-      "type": "ParquetLoad",
-      "name": "write green_tripdata records to parquet",
+      "type": "SQLTransform",
+      "name": "merge *tripdata to create a full trips",
       "environments": [
         "production",
         "test"
       ],
-      "inputView": "green_tripdata0",
-      "outputURI": "/opt/tutorial/starter/data/output/green_tripdata.parquet",
-      "numPartitions": 4,
-      "partitionBy": [],
-      "authentication": {},
-      "saveMode": "Overwrite",
-      "params": {}
+      "inputURI": "hdfs://datalake/sql/trips.sql",
+      "outputView": "trips",
+      "persist": true,
+      "sqlParams": {
+        "year": "2016"
+      }
+    },
+    {
+      "type": "ParquetLoad",
+      "name": "write trips back to filesystem",
+      "environments": [
+        "production",
+        "test"
+      ],
+      "inputView": "trips",
+      "outputURI": ${ETL_CONF_BASE_URL}"/data/output/trips.parquet",
+      "numPartitions": 100,
+      "partitionBy": [
+        "vendor_id"
+      ]
     }
   ]
 }
