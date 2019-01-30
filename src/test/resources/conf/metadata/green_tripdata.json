@@ -1,0 +1,296 @@
+[
+  {
+    "id": "f457e562-5c7a-4215-a754-ab749509f3fb",
+    "name": "vendor_id",
+    "description": "A code indicating the TPEP provider that provided the record.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "d61934ed-e32e-406b-bd18-8d6b7296a8c0",
+    "name": "lpep_pickup_datetime",
+    "description": "The date and time when the meter was engaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "timestamp",
+    "formatters": [
+      "uuuu-MM-dd HH:mm:ss"
+    ],
+    "timezoneId": "America/New_York",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "d61934ed-e32e-406b-bd18-8d6b7296a8c0",
+    "name": "lpep_dropoff_datetime",
+    "description": "The date and time when the meter was disengaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "timestamp",
+    "formatters": [
+      "uuuu-MM-dd HH:mm:ss"
+    ],
+    "timezoneId": "America/New_York",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "aa315986-9fa9-4aa2-a72e-411196648351",
+    "name": "store_and_fwd_flag",
+    "description": "This flag indicates whether the trip record was held in vehicle memory before sending to the vendor, aka 'store and forward', because the vehicle did not have a connection to the server.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "boolean",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "trueValues": [
+      "Y"
+    ],
+    "falseValues": [
+      "N"
+    ]
+  },
+  {
+    "id": "ce66288c-65c1-45b7-83b4-5de3f38f89b7",
+    "name": "rate_code_id",
+    "description": "The final rate code in effect at the end of the trip.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "2d7b4a53-5203-4273-bd4a-3bbc742539ec",
+    "name": "pickup_longitude",
+    "description": "Longitude where the meter was engaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "0"
+    ],
+    "precision": 18,
+    "scale": 14
+  },
+  {
+    "id": "a183ecd0-6169-429c-8bc0-0df4f08526e8",
+    "name": "pickup_latitude",
+    "description": "Latitude where the meter was engaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "0"
+    ],
+    "precision": 18,
+    "scale": 14
+  },
+  {
+    "id": "a3d6135c-202f-4ba6-ab25-93fa6c28bc97",
+    "name": "dropoff_longitude",
+    "description": "Longitude where the meter was disengaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "0"
+    ],
+    "precision": 18,
+    "scale": 14
+  },
+  {
+    "id": "77160ee6-5040-4444-a731-45902b32911f",
+    "name": "dropoff_latitude",
+    "description": "Latitude where the meter was disengaged.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "0"
+    ],
+    "precision": 18,
+    "scale": 14
+  },
+  {
+    "id": "ef1fe668-7850-4ef5-966b-0813d2024c32",
+    "name": "passenger_count",
+    "description": "The number of passengers in the vehicle. This is a driver-entered value.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "77160ee6-5040-4444-a731-45902b32911f",
+    "name": "trip_distance",
+    "description": "The elapsed trip distance in miles reported by the taximeter.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "0",
+      "null"
+    ],
+    "precision": 18,
+    "scale": 15
+  },
+  {
+    "id": "e71597c1-67ae-4176-9ae3-ae4dbe0886b9",
+    "name": "fare_amount",
+    "description": "The time-and-distance fare calculated by the meter.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "77d91cb6-22e4-4dba-883a-eee0c8690f31",
+    "name": "extra",
+    "description": "Miscellaneous extras and surcharges. Currently, this only includes the $0.50 and $1 rush hour and overnight charges.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "aebe7970-91dc-4155-b9a9-78dbcf836ac8",
+    "name": "mta_tax",
+    "description": "$0.50 MTA tax that is automatically triggered based on the metered rate in use.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "3630c209-a88c-4dd7-ab43-276234f04252",
+    "name": "tip_amount",
+    "description": "Tip amount – This field is automatically populated for credit card tips. Cash tips are not included.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "9d10371c-c08c-461a-a1a9-e5cd0c46655c",
+    "name": "tolls_amount",
+    "description": "Total amount of all tolls paid in trip.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "f59aba58-2a8c-40f9-830b-f1abafe80b7f",
+    "name": "ehail_fee",
+    "description": "Fee for allowing passengers to 'e-hail' a New York City taxicab via downloadable smartphone applications.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "1414fd4b-32ed-430c-a4b0-a569e7144bbb",
+    "name": "total_amount",
+    "description": "The total amount charged to passengers. Does not include cash tips.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "decimal",
+    "nullableValues": [
+      "",
+      "null"
+    ],
+    "precision": 10,
+    "scale": 2
+  },
+  {
+    "id": "5b43ec13-dc16-40bd-8af5-4e2f85285e15",
+    "name": "payment_type",
+    "description": "A numeric code signifying how the passenger paid for the trip.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  },
+  {
+    "id": "bccf357f-6671-4168-998a-c991fdcf7fe0",
+    "name": "trip_type",
+    "description": "A code indicating whether the trip was a street-hail or a dispatch that is automatically assigned based on the metered rate in use but can be altered by the driver.",
+    "trim": true,
+    "nullable": true,
+    "primaryKey": false,
+    "type": "integer",
+    "nullableValues": [
+      "",
+      "null"
+    ]
+  }
+]

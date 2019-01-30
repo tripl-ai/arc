@@ -46,6 +46,8 @@ Currently the [HIVE](https://cwiki.apache.org/confluence/display/Hive/LanguageMa
 
 ## Example pipeline
 
+### Logic
+
 This is an example of a fairly standard pipeline:
 
 1. First load a set of CSV files from an input directory. Separator is a comma and the file does not have a header.
@@ -58,82 +60,10 @@ This is an example of a fairly standard pipeline:
 
 5. Write out the aggreate resultset to a Parquet target.
 
-```json
-{
-  "stages": [
-    {
-      "type": "DelimitedExtract",
-      "name": "extract data from green_tripdata/0",
-      "environments": ["production", "test"],
-      "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/0/*.csv",
-      "outputView": "green_tripdata0_raw",            
-      "persist": false,
-      "delimiter": "Comma",
-      "quote" : "DoubleQuote",
-      "header": true,
-      "authentication": {
-      },
-      "params": {
-      }
-    },
-    {
-      "type": "TypingTransform",
-      "name": "apply green_tripdata/0 data types",
-      "environments": ["production", "test"],
-      "inputURI": "/opt/tutorial/nyctaxi/meta/green_tripdata/0/green_tripdata.json",
-      "inputView": "green_tripdata0_raw",            
-      "outputView": "green_tripdata0",            
-      "persist": true,
-      "authentication": {
-      },       
-      "params": {
-      }
-    },
-    {
-      "type": "SQLValidate",
-      "name": "ensure no errors exist after data typing",
-      "environments": ["production", "test"],
-      "inputURI": "/opt/tutorial/nyctaxi/job/3/sqlvalidate_errors.sql",            
-      "sqlParams": {
-          "table_name": "green_tripdata0"
-      },              
-      "authentication": {
-      },    
-      "params": {
-      }
-    },
-    {
-      "type": "SQLTransform",
-      "name": "merge *tripdata to create a full trips",
-      "environments": ["production", "test"],
-      "inputURI": "/opt/tutorial/nyctaxi/job/3/trips.sql",
-      "outputView": "trips",            
-      "persist": true,
-      "authentication": {
-      },    
-      "sqlParams": {
-        "year": "2016"
-      },   
-      "params": {
-      }
-    },
-    {
-      "type": "ParquetLoad",
-      "name": "write trips back to filesystem",
-      "environments": ["production", "test"],
-      "inputView": "trips",
-      "outputURI": ${ETL_CONF_BASE_URL}"/data/output/trips.parquet",
-      "numPartitions": 100,
-      "partitionBy": [
-          "vendor_id"
-      ],
-      "authentication": {
-      },    
-      "params": {}
-    }
-  ]    
-}
-```
+
+### Implementation
+
+{{< readfile file="/resources/docs_resources/MainExample" highlight="json" >}} 
 
 ## Contributing
 

@@ -470,6 +470,8 @@
 
 <h2 id="example-pipeline">Example pipeline</h2>
 
+<h3 id="logic">Logic</h3>
+
 <p>This is an example of a fairly standard pipeline:</p>
 
 <ol>
@@ -484,81 +486,78 @@
 <li><p>Write out the aggreate resultset to a Parquet target.</p></li>
 </ol>
 
-<pre><code class="language-json">{
-  &quot;stages&quot;: [
-    {
-      &quot;type&quot;: &quot;DelimitedExtract&quot;,
-      &quot;name&quot;: &quot;extract data from green_tripdata/0&quot;,
-      &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-      &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/green_tripdata/0/*.csv&quot;,
-      &quot;outputView&quot;: &quot;green_tripdata0_raw&quot;,            
-      &quot;persist&quot;: false,
-      &quot;delimiter&quot;: &quot;Comma&quot;,
-      &quot;quote&quot; : &quot;DoubleQuote&quot;,
-      &quot;header&quot;: true,
-      &quot;authentication&quot;: {
-      },
-      &quot;params&quot;: {
-      }
-    },
-    {
-      &quot;type&quot;: &quot;TypingTransform&quot;,
-      &quot;name&quot;: &quot;apply green_tripdata/0 data types&quot;,
-      &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-      &quot;inputURI&quot;: &quot;/opt/tutorial/nyctaxi/meta/green_tripdata/0/green_tripdata.json&quot;,
-      &quot;inputView&quot;: &quot;green_tripdata0_raw&quot;,            
-      &quot;outputView&quot;: &quot;green_tripdata0&quot;,            
-      &quot;persist&quot;: true,
-      &quot;authentication&quot;: {
-      },       
-      &quot;params&quot;: {
-      }
-    },
-    {
-      &quot;type&quot;: &quot;SQLValidate&quot;,
-      &quot;name&quot;: &quot;ensure no errors exist after data typing&quot;,
-      &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-      &quot;inputURI&quot;: &quot;/opt/tutorial/nyctaxi/job/3/sqlvalidate_errors.sql&quot;,            
-      &quot;sqlParams&quot;: {
-          &quot;table_name&quot;: &quot;green_tripdata0&quot;
-      },              
-      &quot;authentication&quot;: {
-      },    
-      &quot;params&quot;: {
-      }
-    },
-    {
-      &quot;type&quot;: &quot;SQLTransform&quot;,
-      &quot;name&quot;: &quot;merge *tripdata to create a full trips&quot;,
-      &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-      &quot;inputURI&quot;: &quot;/opt/tutorial/nyctaxi/job/3/trips.sql&quot;,
-      &quot;outputView&quot;: &quot;trips&quot;,            
-      &quot;persist&quot;: true,
-      &quot;authentication&quot;: {
-      },    
-      &quot;sqlParams&quot;: {
-        &quot;year&quot;: &quot;2016&quot;
-      },   
-      &quot;params&quot;: {
-      }
-    },
-    {
-      &quot;type&quot;: &quot;ParquetLoad&quot;,
-      &quot;name&quot;: &quot;write trips back to filesystem&quot;,
-      &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-      &quot;inputView&quot;: &quot;trips&quot;,
-      &quot;outputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/output/trips.parquet&quot;,
-      &quot;numPartitions&quot;: 100,
-      &quot;partitionBy&quot;: [
-          &quot;vendor_id&quot;
-      ],
-      &quot;authentication&quot;: {
-      },    
-      &quot;params&quot;: {}
-    }
-  ]    
-}
-</code></pre>
+<h3 id="implementation">Implementation</h3>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;stages&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedExtract&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;extract data from green_tripdata/0&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;test&#34;</span>
+      <span class="p">],</span>
+      <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/input/green_tripdata/0/*.csv&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;green_tripdata0_raw&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+      <span class="nt">&#34;delimiter&#34;</span><span class="p">:</span> <span class="s2">&#34;Comma&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;quote&#34;</span><span class="p">:</span> <span class="s2">&#34;DoubleQuote&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;header&#34;</span><span class="p">:</span> <span class="kc">true</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply green_tripdata/0 data types&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;test&#34;</span>
+      <span class="p">],</span>
+      <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/green_tripdata.json&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;green_tripdata0_raw&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;green_tripdata0&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLValidate&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;ensure no errors exist after data typing&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;test&#34;</span>
+      <span class="p">],</span>
+      <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/sqlvalidate_errors.sql&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;table_name&#34;</span><span class="p">:</span> <span class="s2">&#34;green_tripdata0&#34;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;merge *tripdata to create a full trips&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;test&#34;</span>
+      <span class="p">],</span>
+      <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/trips.sql&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;trips&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+      <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;year&#34;</span><span class="p">:</span> <span class="s2">&#34;2016&#34;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetLoad&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write trips back to filesystem&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;test&#34;</span>
+      <span class="p">],</span>
+      <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;trips&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="err">$</span><span class="p">{</span><span class="err">ETL_CONF_BASE_URL</span><span class="p">}</span><span class="s2">&#34;/data/output/trips.parquet&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+      <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&#34;vendor_id&#34;</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></div>
 
 <h2 id="contributing">Contributing</h2>
 

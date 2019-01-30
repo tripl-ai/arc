@@ -164,7 +164,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val config = etlConf.withFallback(base)
       var argsMap = collection.mutable.Map[String, String]()
 
-      val environmentVariables = ConfigFactory.parseMap(Map("JOB_RUN_DATE" -> "0").asJava)
+      val environmentVariables = ConfigFactory.parseMap(Map("JOB_RUN_DATE" -> "0", "ETL_CONF_BASE_URL" -> "").asJava)
       val pipelineEither = ConfigUtils.readPipeline(config.resolveWith(environmentVariables).resolve(), new URI(""), argsMap, arcContext)
 
       pipelineEither match {
