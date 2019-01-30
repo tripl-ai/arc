@@ -8,7 +8,7 @@ type: blog
 
 Transformers should meet this criteria:
 
-- Be [pure](https://en.wikipedia.org/wiki/Pure_function).
+- Be logically [pure](https://en.wikipedia.org/wiki/Pure_function).
 - Perform only a [single function](https://en.wikipedia.org/wiki/Separation_of_concerns).
 - Utilise Spark [internal functionality](https://spark.apache.org/docs/latest/sql-programming-guide.html) where possible.
 
