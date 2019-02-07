@@ -365,6 +365,9 @@ object Delimiter {
   case object Pipe extends Delimiter {
     val value = "|"
   }
+  case object Custom extends Delimiter {
+    val value = ""
+  }  
 }
 
 sealed trait QuoteCharacter {
@@ -403,7 +406,8 @@ case class Delimited(
   sep: Delimiter = Delimiter.DefaultHive, 
   quote: QuoteCharacter = QuoteCharacter.DoubleQuote,
   header: Boolean = false,
-  inferSchema: Boolean = false
+  inferSchema: Boolean = false,
+  customDelimiter: String = ""
 ) extends SourceType {
   val getDescription = "Delimited"
 }
@@ -411,12 +415,25 @@ case class Delimited(
 object Delimited {
   def toSparkOptions(delimited: Delimited): Map[String, String] = {
     import delimited._
-    Map(
-      "sep" -> sep.value,
-      "quote" -> quote.value,
-      "header" -> header.toString,
-      "inferSchema" -> inferSchema.toString
-    )
+
+    delimited.sep match {
+      case Delimiter.Custom => {
+        Map(
+          "sep" -> customDelimiter,
+          "quote" -> quote.value,
+          "header" -> header.toString,
+          "inferSchema" -> inferSchema.toString
+        )
+      }
+      case _ => {
+        Map(
+          "sep" -> sep.value,
+          "quote" -> quote.value,
+          "header" -> header.toString,
+          "inferSchema" -> inferSchema.toString
+        )
+      }
+    }
   }
 }
 

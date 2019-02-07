@@ -341,6 +341,7 @@ object ConfigUtils {
       case "comma" => Right(Delimiter.Comma)
       case "defaulthive" => Right(Delimiter.DefaultHive)
       case "pipe" => Right(Delimiter.Pipe)
+      case "custom" => Right(Delimiter.Custom)
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
   }
@@ -842,7 +843,7 @@ object ConfigUtils {
     import ConfigReader._
     import au.com.agl.arc.extract.DelimitedExtract._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: Nil
+    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
@@ -870,18 +871,25 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: Nil) |> parseDelimiter("delimiter") _
+    val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: "Custom" :: Nil) |> parseDelimiter("delimiter") _
     val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
     val header = getValue[Boolean]("header", Some(false))
 
-    (name, input, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys) match {
-      case (Right(n), Right(in), Right(pg), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(pb), Right(head), Right(auth), Right(ci), Right(delim), Right(q), Right(_)) =>
+    val customDelimiter = delimiter match {
+      case Right(Delimiter.Custom) => {
+        getValue[String]("customDelimiter")
+      }
+      case _ => Right("")
+    }
+
+    (name, input, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter) match {
+      case (Right(n), Right(in), Right(pg), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(pb), Right(head), Right(auth), Right(ci), Right(delim), Right(q), Right(_), Right(cd)) =>
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        val extract = DelimitedExtract(n, schema, ov, input, Delimited(header=head, sep=delim, quote=q), auth, params, p, np, pb, ci)
+        val extract = DelimitedExtract(n, schema, ov, input, Delimited(header=head, sep=delim, quote=q, customDelimiter=cd), auth, params, p, np, pb, ci)
         Right(extract)
       case _ =>
-        val allErrors: Errors = List(name, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1594,7 +1602,7 @@ object ConfigUtils {
   def readDelimitedLoad(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "delimiter" :: "header" :: "numPartitions" :: "partitionBy" :: "quote" :: "saveMode" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "delimiter" :: "header" :: "numPartitions" :: "partitionBy" :: "quote" :: "saveMode" :: "params"  :: "customDelimiter" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
     val inputView = getValue[String]("inputView")
@@ -1604,17 +1612,24 @@ object ConfigUtils {
     val authentication = readAuthentication("authentication")  
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
 
-    val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: Nil) |> parseDelimiter("delimiter") _
+    val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: "Custom" :: Nil) |> parseDelimiter("delimiter") _
     val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
-    val header = getValue[Boolean]("header", Some(false))    
+    val header = getValue[Boolean]("header", Some(false))   
 
-    (name, inputView, outputURI, numPartitions, authentication, saveMode, delimiter, quote, header, invalidKeys) match {
-      case (Right(n), Right(in), Right(out),  Right(np), Right(auth), Right(sm), Right(d), Right(q), Right(h), Right(_)) => 
+    val customDelimiter = delimiter match {
+      case Right(Delimiter.Custom) => {
+        getValue[String]("customDelimiter")
+      }
+      case _ => Right("")
+    }     
+
+    (name, inputView, outputURI, numPartitions, authentication, saveMode, delimiter, quote, header, invalidKeys, customDelimiter) match {
+      case (Right(n), Right(in), Right(out),  Right(np), Right(auth), Right(sm), Right(d), Right(q), Right(h), Right(_), Right(cd)) => 
         val uri = new URI(out)
-        val load = DelimitedLoad(n, in, uri, Delimited(header=h, sep=d, quote=q), partitionBy, np, auth, sm, params)
+        val load = DelimitedLoad(n, in, uri, Delimited(header=h, sep=d, quote=q, customDelimiter=cd), partitionBy, np, auth, sm, params)
         Right(load)
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, authentication, numPartitions, saveMode, delimiter, quote, header, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, inputView, outputURI, authentication, numPartitions, saveMode, delimiter, quote, header, invalidKeys, customDelimiter).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

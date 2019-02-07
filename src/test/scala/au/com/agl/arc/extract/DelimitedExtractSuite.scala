@@ -21,6 +21,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   // currently assuming local file system
   var session: SparkSession = _  
   val targetFile = FileUtils.getTempDirectoryPath() + "extract.csv" 
+  val customDelimiterTargetFile = FileUtils.getTempDirectoryPath() + "extract_custom.csv" 
   val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.csv" 
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.csv" 
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.csv.gz" 
@@ -40,10 +41,12 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
     // recreate test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile)) 
+    FileUtils.deleteQuietly(new java.io.File(customDelimiterTargetFile)) 
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory)) 
     FileUtils.forceMkdir(new java.io.File(emptyDirectory))
     // Delimited does not support writing NullType
     TestDataUtils.getKnownDataset.drop($"nullDatum").write.option("header", true).csv(targetFile)
+    TestDataUtils.getKnownDataset.drop($"nullDatum").write.option("header", true).option("sep", "%").csv(customDelimiterTargetFile)
   }
 
   after {
@@ -51,6 +54,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
     // clean up test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile))     
+    FileUtils.deleteQuietly(new java.io.File(customDelimiterTargetFile))     
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory))     
   }
 
@@ -269,6 +273,48 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     assert(actual.columns.length == 1)
   }  
   
+  test("DelimitedExtract Settings: Custom Delimiter") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    // incorrect delimiter
+    var dataset = extract.DelimitedExtract.extract(
+      DelimitedExtract(
+        name=outputView,
+        cols=Right(Nil),
+        outputView=outputView,
+        input=Right(customDelimiterTargetFile),
+        settings=new Delimited(header=true, sep=Delimiter.Custom, inferSchema=false, customDelimiter="%"),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true
+      )
+    ).get
+
+    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = dataset.drop(internal:_*)
+
+    // Delimited will load everything as StringType
+    // Delimited does not support writing NullType
+    val expected = TestDataUtils.getKnownDataset
+      .withColumn("booleanDatum", $"booleanDatum".cast("string"))
+      .withColumn("dateDatum", $"dateDatum".cast("string"))
+      .withColumn("decimalDatum", $"decimalDatum".cast("string"))
+      .withColumn("doubleDatum", $"doubleDatum".cast("string"))
+      .withColumn("integerDatum", $"integerDatum".cast("string"))
+      .withColumn("longDatum", $"longDatum".cast("string"))
+      .withColumn("timestampDatum", from_unixtime(unix_timestamp($"timestampDatum"), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))
+      .drop($"nullDatum")
+
+
+    assert(TestDataUtils.datasetEquality(expected, actual))
+  }  
+
   test("DelimitedExtract Settings: Header") {
     implicit val spark = session
     import spark.implicits._

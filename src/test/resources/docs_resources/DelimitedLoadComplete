@@ -8,7 +8,8 @@
   "inputView": "customer",
   "outputURI": "hdfs://output_data/customer/customer.csv",
   "authentication": {},
-  "delimiter": "Comma",
+  "delimiter": "Custom",
+  "customDelimiter": "#",
   "header": true,
   "numPartitions": 10,
   "partitionBy": [

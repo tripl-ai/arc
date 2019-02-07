@@ -9,7 +9,8 @@
   "outputView": "customer",
   "authentication": {},
   "contiguousIndex": true,
-  "delimiter": "Comma",
+  "delimiter": "Custom",
+  "customDelimiter": "#",
   "header": false,
   "numPartitions": 10,
   "partitionBy": [
