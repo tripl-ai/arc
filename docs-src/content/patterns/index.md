@@ -6,9 +6,11 @@ type: blog
 
 ## Database Inconsistency
 
-When writing data to targets like databases using the `JDBCLoad` raises a risk of 'stale reads' where a client is reading a dataset which is either old or one which is in the process of being updated and so is internally inconsistent. A pattern for preventing this is to:
+When writing data to targets like databases using the `JDBCLoad` raises a risk of 'stale reads' where a client is reading a dataset which is either old or one which is in the process of being updated and so is internally inconsistent. 
 
-- create a new table each run using a `JDBCLoad` stage with a dynamic destination table specified as the `${JOB_RUN_DATE}` environment variable
+### Example
+
+- create a new table each run using a `JDBCLoad` stage with a dynamic destination table specified as the `${JOB_RUN_DATE}` environment variable (easily created with GNU [date](https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html) like: `$(date +%Y-%m-%d)`)
 - the `JDBCLoad` will only complete successfully once the record count of source and target data have been confirmed to match
 - execute a `JDBCExecute` stage to perform a change to a view on the database to point to the new version of the table in a transaction-safe manner
 - if the job fails during any of these stages then the users will be unaware and will continue to consume the `customers` view which has the latest successful data
@@ -30,7 +32,9 @@ Note that this method will require some cleanup activity to be performed or the 
 
 A common pattern is to reduce the amount of computation by processing only new files thereby reducing the amount of processing (and therefore cost) of expensive operations like the [TypingTransform](../transform/#typingtransform).
 
-A simple way to do this is to use the `glob` capabilities of Spark to [extract](../extract) a subset of files and then use a [SQLTransform](../transform/#sqltransform) to select the most recent version of a record by primary key after unioning the data to a previous state stored in something like Parquet. It is suggested to have a large overlap with the state dataset to avoid missed data. Be careful with this pattern as it assumes that the previous state is correct/complete and that no input files are late arriving.
+A simple way to do this is to use the `glob` capabilities of Spark to [extract](../extract) a subset of files and then use a [SQLTransform](../transform/#sqltransform) to merge them with a previous state stored in something like Parquet. It is suggested to have a large date overlap with the previous state dataset to avoid missed data. Be careful with this pattern as it assumes that the previous state is correct/complete and that no input files are late arriving.
+
+### Example
 
 Assuming an input file structure like:
 
@@ -44,7 +48,7 @@ hdfs://datalake/input/customer/customers_2019-02-06.csv
 hdfs://datalake/input/customer/customers_2019-02-07.csv
 ```
 
-Add an additional environment variable to the `docker run` command which will calculate the delta processing period. By using GNU [date](https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html) the date maths of crossing month boundaries is easy and the formatting can be changed to suit your file naming convention.
+Add an additional environment variable to the `docker run` command which will calculate the delta processing period. By using GNU [date](https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html) the date maths of crossing month/year boundaries is easy and the formatting can be changed to suit your file naming convention.
 
 ```bash
 -e ETL_CONF_DELTA_PERIOD="$(date --date='3 days ago' +%Y-%m-%d),$(date --date='2 days ago' +%Y-%m-%d),$(date --date='1 days ago' +%Y-%m-%d),$(date +%Y-%m-%d),$(date --date='1 days' +%Y-%m-%d)"
@@ -115,7 +119,9 @@ WHERE row_number = 1
 
 ## Duplicate Keys
 
-To find duplicate keys and stop the job so any issues are not propogated can be done using a `SQLValidate` stage which will fail with a list of invalid `customer_id`s if more than one are found:
+To find duplicate keys and stop the job so any issues are not propogated can be done using a `SQLValidate` stage which will fail with a list of invalid `customer_id`s if more than one are found.
+
+### Example
 
 ```sql
 SELECT 
@@ -134,13 +140,15 @@ WHERE customer_id_count > 1
 
 ## Fixed Width Input Formats
 
-It is also quite common to recieve fixed width formats from older systems like IBM Mainframes.
+It is also quite common to recieve fixed width formats from older systems like IBM Mainframes like:
 
 | data |
 |------|
 |detail2016-12-1914.23|
 |detail2016-12-20-3.98|
 |detail2016-12-2118.20|
+
+### Example
 
 - Use a `DelimitedExtract` stage with a delimiter that will not be found in the data like `DefaultHive` to return dataset of many rows but single column.
 - Use a `SQLTransform` stage to split the data into columns.
@@ -157,16 +165,18 @@ FROM fixed_width_demo
 
 ## Foreign Key Constraint
 
-Another common data quality check is to check Foreign Key integrity, for example ensuring a customer record exists when loading an accounts dataset:
+Another common data quality check is to check Foreign Key integrity, for example ensuring a customer record exists when loading an accounts dataset.
 
-### Customers
+### Example
+
+#### Customers
 
 |customer_id|customer_name|
 |-----------|-------------|
 |29728375|Eleazar Stehr|
 |69752261|Lisette Roberts|
 
-### Accounts
+#### Accounts
 
 |customer_id|account_id|account_name|
 |-----------|----------|------------|
@@ -201,7 +211,7 @@ FROM (
 
 ## Header/Trailer Load Assurance
 
-It is common to see formats like where the input dataset contains multiple record types with a trailer for some sort of load assurance/validation:
+It is common to see formats like where the input dataset contains multiple record types with a trailer for some sort of load assurance/validation which allows processing this sort of data and ensure all records are successful.
 
 | col0 | col1 | col2 | col3 |
 |------|------|------|------|
@@ -211,12 +221,12 @@ It is common to see formats like where the input dataset contains multiple recor
 |detail|2016-12-21|daily total|18.20|
 |trailer|3|28.45|
 
-To process this sort of data and ensure all records are successful:
+### Example
 
 - First use a `DelimitedExtract` stage to load the raw data without headers.
 - Use two `SQLTransform` stages to split the input dataset into two new `DataFrame`s using SQL `WHERE` statements.
 
-### detail
+#### detail
 
 ```sql
 SELECT 
@@ -234,7 +244,7 @@ WHERE col0 = 'detail'
 |detail|2016-12-20|daily total|-3.98|
 |detail|2016-12-21|daily total|18.20|
 
-### trailer
+#### trailer
 
 ```sql
 SELECT 
@@ -265,7 +275,7 @@ FROM (
 
 ## Machine Learning Prediction Thresholds
 
-When used for classification the `MLTransform` stage will add a `probability` column which exposes the highest probability score from the Spark ML probability vector which led to the predicted value. This can then be used as a boundary to prevent low probability predictions being sent to other systems if, for example, a change in input data resulted in a major change in predictions. The threshold parameter could be easily passed in as a sqlParam parameter and referenced as `${CUSTOMER_CHURN_PROBABILITY_THRESHOLD}` in the SQL code.
+When used for classification the `MLTransform` stage will add a `probability` column which exposes the highest probability score from the Spark ML probability vector which led to the predicted value. This can then be used as a boundary to prevent low probability predictions being sent to other systems if, for example, a change in input data resulted in a major change in predictions. 
 
 |id|input|prediction|probability|
 |---|-----|----------|-----------|
@@ -273,6 +283,8 @@ When used for classification the `MLTransform` stage will add a `probability` co
 |5|l m n|0.0|0.8378325685476612|
 |6|spark hadoop spark|1.0|0.9307336686702373|
 |7|apache hadoop|0.0|0.9821575333444208|
+
+### Example
 
 ```sql
 SELECT 
@@ -288,9 +300,13 @@ FROM (
 ) valid
 ```
 
+The threshold parameter could be easily passed in as a sqlParam parameter and referenced as `${CUSTOMER_CHURN_PROBABILITY_THRESHOLD}` in the SQL code.
+
 ## Testing with Parquet
 
 If you want to manually create test data to compare against a Spark DataFrame a good option is to use the [Apache Arrow](https://arrow.apache.org/) library and the Python API to create a correctly typed [Parquet](https://parquet.apache.org/). This file can then be loaded and compared with the `EqualityValidate` stage.
+
+### Example
 
 Using the publicly available [Docker](https://www.docker.com/) [Conda](https://conda.io) image:
 
