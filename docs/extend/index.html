@@ -438,7 +438,7 @@
 <p>Use of this functionality is discouraged as it goes against the <a href="https://aglenergy.github.io/arc/#principles">principles of Arc</a> specifically around statelessness/deterministic behaviour but is inlcuded here for users who have not yet committed to a job orchestrator such as <a href="https://airflow.apache.org/">Apache Airflow</a> and have dynamic configuration requirements.</p>
 </div>
 
-<p>The <code>Dynamic Configuration Plugin</code> plugin allow users to inject custom configuration parameters which will be processed before resolving the job configuration file. The plugin must return a <code>Map[String, Object]</code> which will be included in the job configuration resolution step.</p>
+<p>The <code>Dynamic Configuration Plugin</code> plugin allow users to inject custom configuration parameters which will be processed before resolving the job configuration file. The plugin must return a Java <code>Map[String, Object]</code> which will be included in the job configuration resolution step.</p>
 
 <h3 id="examples">Examples</h3>
 
@@ -454,7 +454,8 @@ import au.com.agl.arc.plugins
 import au.com.agl.arc.util.log.logger.Logger
 
 class MyFakeBusinessLastProcessingDayPlugin extends ConfigPlugin {
-  override def values()(implicit logger: Logger): util.Map[String, Object] = {
+
+  override def values(params: Map[String, String])(implicit logger: Logger): util.Map[String, Object] = {
 
     val lastProcessingDay = LocalDate.now.`with`(lastInMonth(DayOfWeek.THURSDAY))
 
@@ -463,6 +464,7 @@ class MyFakeBusinessLastProcessingDayPlugin extends ConfigPlugin {
 
     values
   }
+  
 }
 </code></pre>
 
@@ -475,29 +477,30 @@ class MyFakeBusinessLastProcessingDayPlugin extends ConfigPlugin {
 <pre><code class="language-json">{
   &quot;plugins&quot;: {
     &quot;config&quot;: [
-      &quot;au.com.myfakebusiness.plugins.MyFakeBusinessLastProcessingDayPlugin&quot;
+      {
+        &quot;type&quot;: &quot;au.com.myfakebusiness.plugins.MyFakeBusinessLastProcessingDayPlugin&quot;,
+        &quot;params&quot;: {
+          &quot;key&quot;: &quot;value&quot;
+        }
+      }
     ]
   },
   &quot;stages&quot;: [
     {
       &quot;type&quot;: &quot;SQLTransform&quot;,
       &quot;name&quot;: &quot;run the end of month report&quot;,
-      &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+      &quot;environments&quot;: [
+        &quot;production&quot;,
+        &quot;test&quot;
+      ],
       &quot;inputURI&quot;: &quot;hdfs://datalake/sql/0.0.1/endOfMonthReport.sql&quot;,
-      &quot;outputView&quot;: &quot;endOfMonthReport&quot;,            
-      &quot;persist&quot;: false,
-      &quot;authentication&quot;: {
-          ...
-      },    
+      &quot;outputView&quot;: &quot;endOfMonthReport&quot;,
       &quot;sqlParams&quot;: {
-          &quot;processing_date&quot;: ${ETL_CONF_LAST_PROCESSING_DAY}
-      },    
-      &quot;params&quot;: {
+        &quot;processing_date&quot;: ${ETL_CONF_LAST_PROCESSING_DAY}
       }
     }
   ]
 }
-
 </code></pre>
 
 <h2 id="pipeline-stage-plugins">Pipeline Stage Plugins</h2>

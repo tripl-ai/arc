@@ -4,7 +4,6 @@ import java.util
 import au.com.agl.arc.util.log.logger.Logger
 
 class DynamicConfigurationPluginTest extends DynamicConfigurationPlugin {
-  var params = Map[String, String]()
 
   override def values(params: Map[String, String])(implicit logger: Logger): util.Map[String, Object] = {
 

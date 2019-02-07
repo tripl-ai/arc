@@ -17,7 +17,7 @@ Arc can be exended in three ways by registering:
 Use of this functionality is discouraged as it goes against the [principles of Arc](/#principles) specifically around statelessness/deterministic behaviour but is inlcuded here for users who have not yet committed to a job orchestrator such as [Apache Airflow](https://airflow.apache.org/) and have dynamic configuration requirements.
 {{</note>}}
 
-The `Dynamic Configuration Plugin` plugin allow users to inject custom configuration parameters which will be processed before resolving the job configuration file. The plugin must return a `Map[String, Object]` which will be included in the job configuration resolution step.
+The `Dynamic Configuration Plugin` plugin allow users to inject custom configuration parameters which will be processed before resolving the job configuration file. The plugin must return a Java `Map[String, Object]` which will be included in the job configuration resolution step.
 
 ### Examples
 
@@ -34,7 +34,8 @@ import au.com.agl.arc.plugins
 import au.com.agl.arc.util.log.logger.Logger
 
 class MyFakeBusinessLastProcessingDayPlugin extends ConfigPlugin {
-  override def values()(implicit logger: Logger): util.Map[String, Object] = {
+
+  override def values(params: Map[String, String])(implicit logger: Logger): util.Map[String, Object] = {
 
     val lastProcessingDay = LocalDate.now.`with`(lastInMonth(DayOfWeek.THURSDAY))
 
@@ -43,6 +44,7 @@ class MyFakeBusinessLastProcessingDayPlugin extends ConfigPlugin {
 
     values
   }
+  
 }
 ```
 
@@ -56,29 +58,30 @@ The `ETL_CONF_LAST_PROCESSING_DAY` variable is then available to be resolved in 
 {
   "plugins": {
     "config": [
-      "au.com.myfakebusiness.plugins.MyFakeBusinessLastProcessingDayPlugin"
+      {
+        "type": "au.com.myfakebusiness.plugins.MyFakeBusinessLastProcessingDayPlugin",
+        "params": {
+          "key": "value"
+        }
+      }
     ]
   },
   "stages": [
     {
       "type": "SQLTransform",
       "name": "run the end of month report",
-      "environments": ["production", "test"],
+      "environments": [
+        "production",
+        "test"
+      ],
       "inputURI": "hdfs://datalake/sql/0.0.1/endOfMonthReport.sql",
-      "outputView": "endOfMonthReport",            
-      "persist": false,
-      "authentication": {
-          ...
-      },    
+      "outputView": "endOfMonthReport",
       "sqlParams": {
-          "processing_date": ${ETL_CONF_LAST_PROCESSING_DAY}
-      },    
-      "params": {
+        "processing_date": ${ETL_CONF_LAST_PROCESSING_DAY}
       }
     }
   ]
 }
-
 ```
 
 ## Pipeline Stage Plugins
