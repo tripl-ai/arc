@@ -155,7 +155,7 @@ object ConfigUtils {
       val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
       // try to read objects in the plugins.config path
-      val resolvedConfigPlugins = resolveConfigPlugins(etlConf)
+      val resolvedConfigPlugins = resolveConfigPlugins(etlConf, base)
       
       val pluginConfs: List[Config] = resolvedConfigPlugins.map( c => ConfigFactory.parseMap(c) )
 
@@ -175,11 +175,11 @@ object ConfigUtils {
     }
   }
 
-  def resolveConfigPlugins(c: Config)(implicit logger: au.com.agl.arc.util.log.logger.Logger): List[JMap[String, Object]] = {
+  def resolveConfigPlugins(c: Config, base: Config)(implicit logger: au.com.agl.arc.util.log.logger.Logger): List[JMap[String, Object]] = {
     if (c.hasPath("plugins.config")) {
       val plugins =
         (for (p <- c.getObjectList("plugins.config").asScala) yield {
-          val plugin = p.toConfig
+          val plugin = p.toConfig.withFallback(base).resolve()
           
           if (plugin.hasPath("type")) {
             val name = plugin.getString("type")
