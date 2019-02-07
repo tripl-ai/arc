@@ -64,6 +64,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.SQLTransform.transform(
       SQLTransform(
         name="SQLTransform", 
+        description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM ${inputView} WHERE booleanDatum = FALSE",
         outputView=outputView,
@@ -90,6 +91,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     transform.SQLTransform.transform(
       SQLTransform(
         name="SQLTransform", 
+        description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM ${inputView}",
         outputView=outputView,
@@ -103,6 +105,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     transform.SQLTransform.transform(
       SQLTransform(
         name="SQLTransform", 
+        description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM ${inputView}",
         outputView=outputView,
@@ -125,6 +128,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.SQLTransform.transform(
       SQLTransform(
         name="SQLTransform", 
+        description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM ${inputView} WHERE booleanDatum = $${sql_boolean_param}",
         outputView=outputView,
@@ -148,6 +152,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     extract.ParquetExtract.extract(
       ParquetExtract(
         name=inputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=targetFile,
@@ -163,6 +168,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.SQLTransform.transform(
       SQLTransform(
         name="SQLTransform", 
+        description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM ${outputView} WHERE dateDatum = TO_DATE('2016-12-19')",
         outputView=outputView,
@@ -184,6 +190,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.SQLTransform.transform(
       SQLTransform(
         name="SQLTransform", 
+        description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM parquet.`${targetFile}` WHERE booleanDatum = $${sql_boolean_param}",
         outputView=outputView,
@@ -207,6 +214,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     extract.ParquetExtract.extract(
       ParquetExtract(
         name=inputView,
+        description=None,
         cols=Right(Nil),
         outputView=inputView,
         input=targetFile,
@@ -222,6 +230,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.SQLTransform.transform(
       SQLTransform(
         name="SQLTransform", 
+        description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM ${inputView} WHERE DAY(dateDatum) = 19 AND booleanDatum = FALSE",
         outputView=outputView,
@@ -257,6 +266,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.SQLTransform.transform(
       SQLTransform(
         name="SQLTransform", 
+        description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM readstream",
         outputView=outputView,

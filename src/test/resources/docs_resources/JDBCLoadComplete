@@ -1,6 +1,7 @@
 {
   "type": "JDBCLoad",
   "name": "write customer to postgres",
+  "description": "write customer to postgres",
   "environments": [
     "production",
     "test"

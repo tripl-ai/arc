@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.5.0</span></strong>
+          <span class="version">1.6.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -485,6 +485,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>numPartitions</td>
 <td>Integer</td>
 <td>false</td>
@@ -527,6 +534,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;AvroLoad&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer avro extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer avro extract&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -612,6 +620,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>numPartitions</td>
 <td>Integer</td>
 <td>false</td>
@@ -664,6 +679,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;AzureEventHubsLoad&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer to azure event hubs&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer to azure event hubs&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -722,6 +738,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>outputMode</td>
 <td>String</td>
 <td>false</td>
@@ -749,6 +772,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ConsoleLoad&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write a streaming dataset to console&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;write a streaming dataset to console&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -812,6 +836,13 @@
 </tr>
 
 <tr>
+<td>customDelimiter</td>
+<td>String</td>
+<td>true*</td>
+<td>A custom string to use as delimiter. Required if <code>delimiter</code> is set to <code>Custom</code>.</td>
+</tr>
+
+<tr>
 <td>delimiter</td>
 <td>String</td>
 <td>false</td>
@@ -819,10 +850,10 @@
 </tr>
 
 <tr>
-<td>customDelimiter</td>
+<td>description</td>
 <td>String</td>
-<td>true*</td>
-<td>A custom string to use as delimiter. Required if <code>delimiter</code> is set to <code>Custom</code>.</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
 </tr>
 
 <tr>
@@ -882,6 +913,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedLoad&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer as csv&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer as csv&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -950,6 +982,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>headers</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -985,6 +1024,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPLoad&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers to the customer api&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers to the customer api&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -1093,6 +1133,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>isolationLevel</td>
 <td>String</td>
 <td>false</td>
@@ -1154,6 +1201,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCLoad&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer to postgres&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer to postgres&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -1231,6 +1279,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>numPartitions</td>
 <td>Integer</td>
 <td>false</td>
@@ -1273,6 +1328,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONLoad&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer json extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer json extract&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -1358,6 +1414,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>numPartitions</td>
 <td>Integer</td>
 <td>false</td>
@@ -1394,6 +1457,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaLoad&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer to kafka&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer to kafka&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -1462,6 +1526,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>numPartitions</td>
 <td>Integer</td>
 <td>false</td>
@@ -1504,6 +1575,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ORCLoad&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer ORC extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer ORC extract&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -1573,6 +1645,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>numPartitions</td>
 <td>Integer</td>
 <td>false</td>
@@ -1615,6 +1694,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetLoad&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer Parquet extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer Parquet extract&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -1684,6 +1764,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>numPartitions</td>
 <td>Integer</td>
 <td>false</td>
@@ -1726,6 +1813,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLLoad&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer XML extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer XML extract&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>

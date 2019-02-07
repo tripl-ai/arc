@@ -752,8 +752,10 @@ object ConfigUtils {
   def readAvroExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    val description = getOptionalValue[String]("description")
 
     val inputURI = getValue[String]("inputURI")
     val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
@@ -776,13 +778,13 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    (name, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, invalidKeys) match {
-      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(pb), Right(auth), Right(ci), Right(_)) =>
+    (name, description, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, invalidKeys) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(pb), Right(auth), Right(ci), Right(_)) =>
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
-        Right(AvroExtract(n, schema, ov, pg, auth, params, p, np, pb, ci))
+        Right(AvroExtract(n, d, schema, ov, pg, auth, params, p, np, pb, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -792,8 +794,10 @@ object ConfigUtils {
   def readBytesExtract(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "persist" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "persist" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
+
+    val description = getOptionalValue[String]("description")
 
     val inputURI = getOptionalValue[String]("inputURI")
     val parsedGlob: Either[Errors, Option[String]] = inputURI.rightFlatMap {
@@ -811,8 +815,8 @@ object ConfigUtils {
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
     val inputView = getOptionalValue[String]("inputView")
 
-    (name, parsedGlob, inputView, outputView, persist, numPartitions, authentication, contiguousIndex, invalidKeys) match {
-      case (Right(n), Right(pg), Right(iv), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(_)) =>
+    (name, description, parsedGlob, inputView, outputView, persist, numPartitions, authentication, contiguousIndex, invalidKeys) match {
+      case (Right(n), Right(d), Right(pg), Right(iv), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(_)) =>
 
         val validInput = (pg, iv) match {
           case (Some(_), None) => true
@@ -823,7 +827,7 @@ object ConfigUtils {
         if (validInput) {
           val input = if(c.hasPath("inputView")) Left(iv.get) else Right(pg.get)
 
-          Right(BytesExtract(n, ov, input, auth, params, p, np, ci))
+          Right(BytesExtract(n, d, ov, input, auth, params, p, np, ci))
         } else {
           val inputError = ConfigError("inputURI:inputView", Some(c.getValue("inputURI").origin.lineNumber()), "Either inputURI and inputView must be defined but only one can be defined at the same time") :: Nil
           val stageName = stringOrDefault(name, "unnamed stage")
@@ -831,7 +835,7 @@ object ConfigUtils {
           Left(err :: Nil)
         }
       case _ =>
-        val allErrors: Errors = List(name, inputURI, inputView, outputView, persist, numPartitions, authentication, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, inputView, outputView, persist, numPartitions, authentication, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -843,8 +847,10 @@ object ConfigUtils {
     import ConfigReader._
     import au.com.agl.arc.extract.DelimitedExtract._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    val description = getOptionalValue[String]("description")
 
     val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
     val parsedGlob = if (!c.hasPath("inputView")) {
@@ -882,14 +888,14 @@ object ConfigUtils {
       case _ => Right("")
     }
 
-    (name, input, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter) match {
-      case (Right(n), Right(in), Right(pg), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(pb), Right(head), Right(auth), Right(ci), Right(delim), Right(q), Right(_), Right(cd)) =>
+    (name, description, input, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter) match {
+      case (Right(n), Right(d), Right(in), Right(pg), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(pb), Right(head), Right(auth), Right(ci), Right(delim), Right(q), Right(_), Right(cd)) =>
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        val extract = DelimitedExtract(n, schema, ov, input, Delimited(header=head, sep=delim, quote=q, customDelimiter=cd), auth, params, p, np, pb, ci)
+        val extract = DelimitedExtract(n, d, schema, ov, input, Delimited(header=head, sep=delim, quote=q, customDelimiter=cd), auth, params, p, np, pb, ci)
         Right(extract)
       case _ =>
-        val allErrors: Errors = List(name, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -899,8 +905,10 @@ object ConfigUtils {
   def readHTTPExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "body" :: "headers" :: "method" :: "numPartitions" :: "partitionBy" :: "persist" :: "validStatusCodes" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "body" :: "headers" :: "method" :: "numPartitions" :: "partitionBy" :: "persist" :: "validStatusCodes" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    val description = getOptionalValue[String]("description")
 
     val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
     val parsedURI = if (!c.hasPath("inputView")) {
@@ -922,12 +930,12 @@ object ConfigUtils {
 
     val body = getOptionalValue[String]("body")
 
-    (name, input, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys) match {
-      case (Right(n), Right(in), Right(pu), Right(ov), Right(p), Right(np), Right(m), Right(b), Right(pb), Right(vsc), Right(_)) => 
+    (name, description, input, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys) match {
+      case (Right(n), Right(d), Right(in), Right(pu), Right(ov), Right(p), Right(np), Right(m), Right(b), Right(pb), Right(vsc), Right(_)) => 
         val inp = if(c.hasPath("inputView")) Left(in) else Right(pu)
-        Right(HTTPExtract(n, inp, m, headers, b, vsc, ov, params, p, np, pb))
+        Right(HTTPExtract(n, d, inp, m, headers, b, vsc, ov, params, p, np, pb))
       case _ =>
-        val allErrors: Errors = List(name, input, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, input, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -937,8 +945,10 @@ object ConfigUtils {
   def readImageExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "dropInvalid" :: "numPartitions" :: "partitionBy" :: "persist" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "dropInvalid" :: "numPartitions" :: "partitionBy" :: "persist" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
+
+    val description = getOptionalValue[String]("description")
 
     val inputURI = getValue[String]("inputURI")
     val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
@@ -949,11 +959,11 @@ object ConfigUtils {
     val authentication = readAuthentication("authentication")
     val dropInvalid = getValue[Boolean]("dropInvalid", default = Some(true))
 
-    (name, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, invalidKeys) match {
-      case (Right(n), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(di), Right(_)) => 
-        Right(ImageExtract(n, ov, pg, auth, params, p, np, partitionBy, di))
+    (name, description, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, invalidKeys) match {
+      case (Right(n), Right(d), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(di), Right(_)) => 
+        Right(ImageExtract(n, d, ov, pg, auth, params, p, np, partitionBy, di))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -963,8 +973,10 @@ object ConfigUtils {
   def readJDBCExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "jdbcURL" :: "tableName" :: "outputView" :: "authentication" :: "contiguousIndex" :: "fetchsize" :: "numPartitions" :: "params" :: "partitionBy" :: "partitionColumn" :: "persist" :: "predicates" :: "schemaURI" :: "schemaView" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "jdbcURL" :: "tableName" :: "outputView" :: "authentication" :: "contiguousIndex" :: "fetchsize" :: "numPartitions" :: "params" :: "partitionBy" :: "partitionColumn" :: "persist" :: "predicates" :: "schemaURI" :: "schemaView" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
@@ -990,12 +1002,12 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    (name, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, partitionColumn, partitionBy, invalidKeys) match {
-      case (Right(n), Right(cols), Right(sv), Right(ov), Right(p), Right(ju), Right(d), Right(tn), Right(np), Right(fs), Right(cs), Right(pc), Right(pb), Right(_)) => 
+    (name, description, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, partitionColumn, partitionBy, invalidKeys) match {
+      case (Right(n), Right(desc), Right(cols), Right(sv), Right(ov), Right(p), Right(ju), Right(d), Right(tn), Right(np), Right(fs), Right(cs), Right(pc), Right(pb), Right(_)) => 
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        Right(JDBCExtract(n, schema, ov, ju, tn, np, fs, cs, d, pc, params, p, pb, predicates))
+        Right(JDBCExtract(n, desc, schema, ov, ju, tn, np, fs, cs, d, pc, params, p, pb, predicates))
       case _ =>
-        val allErrors: Errors = List(name, outputView, schemaView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, extractColumns, partitionColumn, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, outputView, schemaView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, extractColumns, partitionColumn, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1005,8 +1017,10 @@ object ConfigUtils {
   def readJSONExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
+
+    val description = getOptionalValue[String]("description")
 
     val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
     val parsedGlob = if (!c.hasPath("inputView")) {
@@ -1035,8 +1049,8 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    (name, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, invalidKeys) match {
-      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci), Right(pb), Right(_)) => 
+    (name, description, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci), Right(pb), Right(_)) => 
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
@@ -1045,9 +1059,9 @@ object ConfigUtils {
           case Some(b: Boolean) => b
           case _ => json.multiLine
         }
-        Right(JSONExtract(n, schema, ov, input, JSON(multiLine=multiLine), auth, params, p, np, pb, ci))
+        Right(JSONExtract(n, d, schema, ov, input, JSON(multiLine=multiLine), auth, params, p, np, pb, ci))
       case _ =>
-        val allErrors: Errors = List(name, input, schemaView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, input, schemaView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1057,8 +1071,10 @@ object ConfigUtils {
   def readKafkaExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "outputView" :: "bootstrapServers" :: "topic" :: "groupID" :: "autoCommit" :: "maxPollRecords" :: "numPartitions" :: "partitionBy" :: "persist" :: "timeout" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "outputView" :: "bootstrapServers" :: "topic" :: "groupID" :: "autoCommit" :: "maxPollRecords" :: "numPartitions" :: "partitionBy" :: "persist" :: "timeout" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
+
+    val description = getOptionalValue[String]("description")
 
     val outputView = getValue[String]("outputView")
     val topic = getValue[String]("topic")
@@ -1073,11 +1089,11 @@ object ConfigUtils {
     val timeout = getValue[Long]("timeout", default = Some(10000L))
     val autoCommit = getValue[Boolean]("autoCommit", default = Some(false))
 
-    (name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit, partitionBy, invalidKeys) match {
-      case (Right(n), Right(ov), Right(t), Right(bs), Right(g), Right(p), Right(np), Right(mpr), Right(time), Right(ac), Right(pb), Right(_)) => 
-        Right(KafkaExtract(n, ov, t, bs, g, mpr, time, ac, params, p, np, pb))
+    (name, description, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(ov), Right(t), Right(bs), Right(g), Right(p), Right(np), Right(mpr), Right(time), Right(ac), Right(pb), Right(_)) => 
+        Right(KafkaExtract(n, d, ov, t, bs, g, mpr, time, ac, params, p, np, pb))
       case _ =>
-        val allErrors: Errors = List(name, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1087,8 +1103,10 @@ object ConfigUtils {
   def readORCExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    val description = getOptionalValue[String]("description")
 
     val inputURI = getValue[String]("inputURI")
     val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
@@ -1110,12 +1128,12 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    (name, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, invalidKeys, partitionBy) match {
-      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(_), Right(pb)) => 
+    (name, description, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, invalidKeys, partitionBy) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(_), Right(pb)) => 
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        Right(ORCExtract(n, schema, ov, pg, auth, params, p, np, pb, ci))
+        Right(ORCExtract(n, d, schema, ov, pg, auth, params, p, np, pb, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, invalidKeys, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, invalidKeys, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1125,8 +1143,10 @@ object ConfigUtils {
   def readParquetExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    val description = getOptionalValue[String]("description")
 
     val inputURI = getValue[String]("inputURI")
     val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
@@ -1148,12 +1168,12 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")  
 
-    (name, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys) match {
-      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(pb), Right(_)) => 
+    (name, description, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(pb), Right(_)) => 
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        Right(ParquetExtract(n, schema, ov, pg, auth, params, p, np, pb, ci))
+        Right(ParquetExtract(n, d, schema, ov, pg, auth, params, p, np, pb, ci))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1163,19 +1183,21 @@ object ConfigUtils {
   def readRateExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "outputView" :: "rowsPerSecond" :: "rampUpTime" :: "numPartitions" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "outputView" :: "rowsPerSecond" :: "rampUpTime" :: "numPartitions" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    val description = getOptionalValue[String]("description")
 
     val outputView = getValue[String]("outputView")
     val rowsPerSecond = getValue[Int]("rowsPerSecond", default = Some(1))
     val rampUpTime = getValue[Int]("rampUpTime", default = Some(1))
     val numPartitions = getValue[Int]("numPartitions", default = Some(spark.sparkContext.defaultParallelism))
 
-    (name, outputView, rowsPerSecond, rampUpTime, numPartitions) match {
-      case (Right(n), Right(ov), Right(rps), Right(rut), Right(np)) => 
-        Right(RateExtract(n, ov, params, rps, rut, np))
+    (name, description, outputView, rowsPerSecond, rampUpTime, numPartitions) match {
+      case (Right(n), Right(d), Right(ov), Right(rps), Right(rut), Right(np)) => 
+        Right(RateExtract(n, d, ov, params, rps, rut, np))
       case _ =>
-        val allErrors: Errors = List(name, outputView, rowsPerSecond, rampUpTime, numPartitions).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, outputView, rowsPerSecond, rampUpTime, numPartitions).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1185,8 +1207,10 @@ object ConfigUtils {
   def readTextExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    val description = getOptionalValue[String]("description")
 
     val input = getValue[String]("inputURI")
     val parsedGlob = input.rightFlatMap(glob => parseGlob("inputURI", glob))
@@ -1209,11 +1233,11 @@ object ConfigUtils {
 
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
 
-    (name, extractColumns, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, invalidKeys) match {
-      case (Right(n), Right(cols), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci), Right(_)) => 
-        Right(TextExtract(n, Right(cols), ov, in, auth, params, p, np, ci, ml))
+    (name, description, extractColumns, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, invalidKeys) match {
+      case (Right(n), Right(d), Right(cols), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci), Right(_)) => 
+        Right(TextExtract(n, d, Right(cols), ov, in, auth, params, p, np, ci, ml))
       case _ =>
-        val allErrors: Errors = List(name, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1223,8 +1247,10 @@ object ConfigUtils {
   def readXMLExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    val description = getOptionalValue[String]("description")
 
     val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
     val parsedGlob = if (!c.hasPath("inputView")) {
@@ -1251,14 +1277,14 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")  
 
-    (name, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys) match {
-      case (Right(n), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(pb), Right(_)) => 
+    (name, description, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(pb), Right(_)) => 
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
-        Right(XMLExtract(n, schema, ov, input, auth, params, p, np, pb, ci))
+        Right(XMLExtract(n, d, schema, ov, input, auth, params, p, np, pb, ci))
       case _ =>
-        val allErrors: Errors = List(name, input, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, input, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1270,8 +1296,10 @@ object ConfigUtils {
   def readDiffTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputLeftView" :: "inputRightView" :: "outputIntersectionView" :: "outputLeftView" :: "outputRightView" :: "persist" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputLeftView" :: "inputRightView" :: "outputIntersectionView" :: "outputLeftView" :: "outputRightView" :: "persist" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
+
+    val description = getOptionalValue[String]("description")
 
     val inputLeftView = getValue[String]("inputLeftView")
     val inputRightView = getValue[String]("inputRightView")
@@ -1280,11 +1308,11 @@ object ConfigUtils {
     val outputRightView = getOptionalValue[String]("outputRightView")
     val persist = getValue[Boolean]("persist", default = Some(false))
 
-    (name, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys) match {
-      case (Right(n), Right(ilv), Right(irv), Right(oiv), Right(olv), Right(orv), Right(p), Right(_)) => 
-        Right(DiffTransform(n, ilv, irv, oiv, olv, orv, params, p))
+    (name, description, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys) match {
+      case (Right(n), Right(d), Right(ilv), Right(irv), Right(oiv), Right(olv), Right(orv), Right(p), Right(_)) => 
+        Right(DiffTransform(n, d, ilv, irv, oiv, olv, orv, params, p))
       case _ =>
-        val allErrors: Errors = List(name, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1294,8 +1322,10 @@ object ConfigUtils {
   def readHTTPTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputView" :: "uri" :: "headers" :: "inputField" :: "persist" :: "validStatusCodes" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "uri" :: "headers" :: "inputField" :: "persist" :: "validStatusCodes" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
+
+    val description = getOptionalValue[String]("description")
 
     val httpUriKey = "uri"
     val inputURI = getValue[String](httpUriKey)
@@ -1307,11 +1337,11 @@ object ConfigUtils {
     val persist = getValue[Boolean]("persist", default = Some(false))
     val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
 
-    (name, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys) match {
-      case (Right(n), Right(iv), Right(ov), Right(uri), Right(p), Right(ifld), Right(vsc), Right(_)) => 
-        Right(HTTPTransform(n, uri, headers, vsc, iv, ov, ifld, params, p))
+    (name, description, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(ov), Right(uri), Right(p), Right(ifld), Right(vsc), Right(_)) => 
+        Right(HTTPTransform(n, d, uri, headers, vsc, iv, ov, ifld, params, p))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1321,18 +1351,20 @@ object ConfigUtils {
   def readJSONTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputView" :: "persist" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "persist" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
 
-    (name, inputView, outputView, persist, invalidKeys) match {
-      case (Right(n), Right(iv), Right(ov), Right(p), Right(_)) => 
-        Right(JSONTransform(n, iv, ov, params, p))
+    (name, description, inputView, outputView, persist, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(ov), Right(p), Right(_)) => 
+        Right(JSONTransform(n, d, iv, ov, params, p))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1342,8 +1374,10 @@ object ConfigUtils {
   def readMetadataFilterTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val uriKey = "inputURI"
     val inputURI = getValue[String](uriKey)
@@ -1363,11 +1397,11 @@ object ConfigUtils {
       validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams))
     }
 
-    (name, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys) match {
-      case (Right(n), Right(uri), Right(isql), Right(vsql), Right(iv), Right(ov), Right(p), Right(_)) => 
-        Right(MetadataFilterTransform(n, iv, uri, vsql, ov, params, sqlParams, p))
+    (name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys) match {
+      case (Right(n), Right(d), Right(uri), Right(isql), Right(vsql), Right(iv), Right(ov), Right(p), Right(_)) => 
+        Right(MetadataFilterTransform(n, d, iv, uri, vsql, ov, params, sqlParams, p))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1377,8 +1411,10 @@ object ConfigUtils {
   def readMLTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "persist" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "persist" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val uriKey = "inputURI"
     val inputURI = getValue[String](uriKey)
@@ -1394,12 +1430,12 @@ object ConfigUtils {
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
 
-    (name, inputURI, inputModel, inputView, outputView, persist, invalidKeys) match {
-      case (Right(n), Right(in), Right(mod), Right(iv), Right(ov), Right(p), Right(_)) => 
+    (name, description, inputURI, inputModel, inputView, outputView, persist, invalidKeys) match {
+      case (Right(n), Right(d), Right(in), Right(mod), Right(iv), Right(ov), Right(p), Right(_)) => 
         val uri = new URI(in)
-        Right(MLTransform(n, uri, mod, iv, ov, params, p))
+        Right(MLTransform(n, d, uri, mod, iv, ov, params, p))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, parsedURI, inputModel, inputView, outputView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, parsedURI, inputModel, inputView, outputView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1409,8 +1445,10 @@ object ConfigUtils {
   def readSQLTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val uriKey = "inputURI"
     val inputURI = getValue[String](uriKey)
@@ -1426,8 +1464,8 @@ object ConfigUtils {
       validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams))
     }
 
-    (name, parsedURI, inputSQL, validSQL, outputView, persist, invalidKeys) match {
-      case (Right(n), Right(uri), Right(isql), Right(vsql), Right(ov), Right(p), Right(_)) => 
+    (name, description, parsedURI, inputSQL, validSQL, outputView, persist, invalidKeys) match {
+      case (Right(n), Right(d), Right(uri), Right(isql), Right(vsql), Right(ov), Right(p), Right(_)) => 
 
         if (vsql.toLowerCase() contains "now") {
           logger.warn()
@@ -1456,9 +1494,9 @@ object ConfigUtils {
             .log()   
         }        
 
-        Right(SQLTransform(n, uri, vsql, ov, params, sqlParams, p))
+        Right(SQLTransform(n, d, uri, vsql, ov, params, sqlParams, p))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, parsedURI, inputSQL, validSQL, outputView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, parsedURI, inputSQL, validSQL, outputView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1468,8 +1506,10 @@ object ConfigUtils {
   def readTensorFlowServingTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputView" :: "uri" :: "batchSize" :: "inputField" :: "params"  :: "persist" :: "responseType" :: "signatureName" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "uri" :: "batchSize" :: "inputField" :: "params"  :: "persist" :: "responseType" :: "signatureName" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
@@ -1481,11 +1521,11 @@ object ConfigUtils {
     val persist = getValue[Boolean]("persist", default = Some(false))
     val responseType = getValue[String]("responseType", default = Some("object"), validValues = "integer" :: "double" :: "object" :: Nil) |> parseResponseType("responseType") _
 
-    (name, inputView, outputView, inputURI, parsedURI, signatureName, responseType, batchSize, persist, inputField, invalidKeys) match {
-      case (Right(n), Right(iv), Right(ov), Right(uri), Right(puri), Right(sn), Right(rt), Right(bs), Right(p), Right(ifld), Right(_)) => 
-        Right(TensorFlowServingTransform(n, iv, ov, puri, sn, rt, bs, ifld, params, p))
+    (name, description, inputView, outputView, inputURI, parsedURI, signatureName, responseType, batchSize, persist, inputField, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(ov), Right(uri), Right(puri), Right(sn), Right(rt), Right(bs), Right(p), Right(ifld), Right(_)) => 
+        Right(TensorFlowServingTransform(n, d, iv, ov, puri, sn, rt, bs, ifld, params, p))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputView, inputURI, parsedURI, signatureName, responseType, batchSize, persist, inputField, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputView, inputURI, parsedURI, signatureName, responseType, batchSize, persist, inputField, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1495,8 +1535,10 @@ object ConfigUtils {
   def readTypingTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "failMode" :: "persist" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "failMode" :: "persist" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val uriKey = "inputURI"
     val inputURI = getValue[String](uriKey)
@@ -1512,13 +1554,13 @@ object ConfigUtils {
 
     val failMode = getValue[String]("failMode", default = Some("permissive"), validValues = "permissive" :: "failfast" :: Nil) |> parseFailMode("failMode") _
 
-    (name, extractColumns, schemaView, inputView, outputView, persist, failMode, invalidKeys) match {
-      case (Right(n), Right(cols), Right(sv), Right(iv), Right(ov), Right(p), Right(fm), Right(_)) => 
+    (name, description, extractColumns, schemaView, inputView, outputView, persist, failMode, invalidKeys) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(iv), Right(ov), Right(p), Right(fm), Right(_)) => 
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
-        Right(TypingTransform(n, schema, iv, ov, params, p, fm))
+        Right(TypingTransform(n, d, schema, iv, ov, params, p, fm))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, parsedURI, extractColumns, schemaView, inputView, outputView, persist, authentication, failMode, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, parsedURI, extractColumns, schemaView, inputView, outputView, persist, authentication, failMode, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1530,8 +1572,10 @@ object ConfigUtils {
   def readAvroLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI")
@@ -1540,12 +1584,12 @@ object ConfigUtils {
     val authentication = readAuthentication("authentication")  
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
 
-    (name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
-      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb), Right(_)) => 
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb), Right(_)) => 
         val uri = new URI(out)
-        Right(AvroLoad(n, iv, uri, pb, np, auth, sm, params))
+        Right(AvroLoad(n, d, iv, uri, pb, np, auth, sm, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1555,8 +1599,10 @@ object ConfigUtils {
   def readAzureEventHubsLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "namespaceName" :: "eventHubName" :: "sharedAccessSignatureKeyName" :: "sharedAccessSignatureKey" :: "numPartitions" :: "retryCount" :: "retryMaxBackoff" :: "retryMinBackoff" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "namespaceName" :: "eventHubName" :: "sharedAccessSignatureKeyName" :: "sharedAccessSignatureKey" :: "numPartitions" :: "retryCount" :: "retryMaxBackoff" :: "retryMinBackoff" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val namespaceName = getValue[String]("namespaceName")
@@ -1568,11 +1614,11 @@ object ConfigUtils {
     val retryMaxBackoff = getValue[Long]("retryMaxBackoff", default = Some(30)) // DEFAULT_RETRY_MAX_BACKOFF = 30
     val retryCount = getValue[Int]("retryCount", default = Some(10)) // DEFAULT_MAX_RETRY_COUNT = 10
 
-    (name, inputView, namespaceName, eventHubName, sharedAccessSignatureKeyName, sharedAccessSignatureKey, numPartitions, retryMinBackoff, retryMaxBackoff, retryCount, invalidKeys) match {
-      case (Right(n), Right(iv), Right(nn), Right(ehn), Right(saskn), Right(sask), Right(np), Right(rmin), Right(rmax), Right(rcount), Right(_)) => 
-        Right(AzureEventHubsLoad(n, iv, nn, ehn, saskn, sask, np, rmin, rmax, rcount, params))
+    (name, description, inputView, namespaceName, eventHubName, sharedAccessSignatureKeyName, sharedAccessSignatureKey, numPartitions, retryMinBackoff, retryMaxBackoff, retryCount, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(nn), Right(ehn), Right(saskn), Right(sask), Right(np), Right(rmin), Right(rmax), Right(rcount), Right(_)) => 
+        Right(AzureEventHubsLoad(n, d, iv, nn, ehn, saskn, sask, np, rmin, rmax, rcount, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, namespaceName, eventHubName, sharedAccessSignatureKeyName, sharedAccessSignatureKey, numPartitions, retryMinBackoff, retryMaxBackoff, retryCount, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, namespaceName, eventHubName, sharedAccessSignatureKeyName, sharedAccessSignatureKey, numPartitions, retryMinBackoff, retryMaxBackoff, retryCount, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1582,17 +1628,19 @@ object ConfigUtils {
   def readConsoleLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputMode" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputMode" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val outputMode = getValue[String]("outputMode", default = Some("Append"), validValues = "Append" :: "Complete" :: "Update" :: Nil) |> parseOutputModeType("outputMode") _
 
-    (name, inputView, outputMode, invalidKeys) match {
-      case (Right(n), Right(iv), Right(om), Right(_)) => 
-        Right(ConsoleLoad(n, iv, om, params))
+    (name, description, inputView, outputMode, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(om), Right(_)) => 
+        Right(ConsoleLoad(n, d, iv, om, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputMode, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputMode, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1602,8 +1650,10 @@ object ConfigUtils {
   def readDelimitedLoad(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "delimiter" :: "header" :: "numPartitions" :: "partitionBy" :: "quote" :: "saveMode" :: "params"  :: "customDelimiter" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "delimiter" :: "header" :: "numPartitions" :: "partitionBy" :: "quote" :: "saveMode" :: "params"  :: "customDelimiter" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI")
@@ -1623,13 +1673,13 @@ object ConfigUtils {
       case _ => Right("")
     }     
 
-    (name, inputView, outputURI, numPartitions, authentication, saveMode, delimiter, quote, header, invalidKeys, customDelimiter) match {
-      case (Right(n), Right(in), Right(out),  Right(np), Right(auth), Right(sm), Right(d), Right(q), Right(h), Right(_), Right(cd)) => 
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, delimiter, quote, header, invalidKeys, customDelimiter) match {
+      case (Right(n), Right(desc), Right(in), Right(out),  Right(np), Right(auth), Right(sm), Right(d), Right(q), Right(h), Right(_), Right(cd)) => 
         val uri = new URI(out)
-        val load = DelimitedLoad(n, in, uri, Delimited(header=h, sep=d, quote=q, customDelimiter=cd), partitionBy, np, auth, sm, params)
+        val load = DelimitedLoad(n, desc, in, uri, Delimited(header=h, sep=d, quote=q, customDelimiter=cd), partitionBy, np, auth, sm, params)
         Right(load)
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, authentication, numPartitions, saveMode, delimiter, quote, header, invalidKeys, customDelimiter).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputURI, authentication, numPartitions, saveMode, delimiter, quote, header, invalidKeys, customDelimiter).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1639,8 +1689,10 @@ object ConfigUtils {
   def readHTTPLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputURI" :: "headers" :: "validStatusCodes" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "headers" :: "validStatusCodes" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)     
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val inputURI = getValue[String]("outputURI")
@@ -1648,11 +1700,11 @@ object ConfigUtils {
     val headers = readMap("headers", c)
     val validStatusCodes = if (c.hasPath("validStatusCodes")) Some(c.getIntList("validStatusCodes").asScala.map(f => f.toInt).toList) else None
 
-    (name, parsedURI, inputView, invalidKeys) match {
-      case (Right(n), Right(uri), Right(iv), Right(_)) => 
-        Right(HTTPLoad(n, iv, uri, headers, validStatusCodes, params))
+    (name, description, parsedURI, inputView, invalidKeys) match {
+      case (Right(n), Right(d), Right(uri), Right(iv), Right(_)) => 
+        Right(HTTPLoad(n, d, iv, uri, headers, validStatusCodes, params))
       case _ =>
-        val allErrors: Errors = List(name, parsedURI, inputView, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, inputView, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1662,8 +1714,10 @@ object ConfigUtils {
   def readJDBCLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "jdbcURL" :: "tableName" :: "params" :: "batchsize" :: "bulkload" :: "createTableColumnTypes" :: "createTableOptions" :: "isolationLevel" :: "numPartitions" :: "saveMode" :: "tablock" :: "truncate" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "jdbcURL" :: "tableName" :: "params" :: "batchsize" :: "bulkload" :: "createTableColumnTypes" :: "createTableOptions" :: "isolationLevel" :: "numPartitions" :: "saveMode" :: "tablock" :: "truncate" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)     
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val jdbcURL = getValue[String]("jdbcURL")
@@ -1680,11 +1734,11 @@ object ConfigUtils {
     val bulkload = getValue[Boolean]("bulkload", default = Some(false))
     val tablock = getValue[Boolean]("tablock", default = Some(true))
 
-    (name, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock, partitionBy, invalidKeys) match {
-      case (Right(n), Right(iv), Right(ju), Right(d), Right(tn), Right(np), Right(il), Right(bs), Right(t), Right(cto), Right(ctct), Right(sm), Right(bl), Right(tl), Right(pb), Right(_)) => 
-        Right(JDBCLoad(n, iv, ju, tn, pb, np, il, bs, t, cto, ctct, sm, d, bl, tl, params))
+    (name, description, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock, partitionBy, invalidKeys) match {
+      case (Right(n), Right(desc), Right(iv), Right(ju), Right(d), Right(tn), Right(np), Right(il), Right(bs), Right(t), Right(cto), Right(ctct), Right(sm), Right(bl), Right(tl), Right(pb), Right(_)) => 
+        Right(JDBCLoad(n, desc, iv, ju, tn, pb, np, il, bs, t, cto, ctct, sm, d, bl, tl, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1694,8 +1748,10 @@ object ConfigUtils {
   def readJSONLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)      
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI")
@@ -1704,12 +1760,12 @@ object ConfigUtils {
     val authentication = readAuthentication("authentication")  
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
 
-    (name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
-      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb), Right(_)) => 
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb), Right(_)) => 
         val uri = new URI(out)
-        Right(JSONLoad(n, iv, uri, pb, np, auth, sm, params))
+        Right(JSONLoad(n, d, iv, uri, pb, np, auth, sm, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1719,8 +1775,10 @@ object ConfigUtils {
   def readKafkaLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "bootstrapServers" :: "topic" :: "acks" :: "batchSize" :: "numPartitions" :: "retries" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "bootstrapServers" :: "topic" :: "acks" :: "batchSize" :: "numPartitions" :: "retries" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)     
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val bootstrapServers = getValue[String]("bootstrapServers")
@@ -1731,11 +1789,11 @@ object ConfigUtils {
 
     val numPartitions = getOptionalValue[Int]("numPartitions")
 
-    (name, inputView, topic, bootstrapServers, acks, retries, batchSize, numPartitions, invalidKeys) match {
-      case (Right(n), Right(iv), Right(t), Right(bss), Right(a), Right(r), Right(bs), Right(np), Right(_)) => 
-        Right(KafkaLoad(n, iv, t, bss, a, np, r, bs, params))
+    (name, description, inputView, topic, bootstrapServers, acks, retries, batchSize, numPartitions, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(t), Right(bss), Right(a), Right(r), Right(bs), Right(np), Right(_)) => 
+        Right(KafkaLoad(n, d, iv, t, bss, a, np, r, bs, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, topic, bootstrapServers, acks, retries, batchSize, numPartitions, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, topic, bootstrapServers, acks, retries, batchSize, numPartitions, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1745,8 +1803,10 @@ object ConfigUtils {
   def readORCLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)     
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI")
@@ -1755,12 +1815,12 @@ object ConfigUtils {
     val authentication = readAuthentication("authentication")  
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
 
-    (name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
-      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb), Right(_)) => 
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb), Right(_)) => 
         val uri = new URI(out)
-        Right(ORCLoad(n, iv, uri, pb, np, auth, sm, params))
+        Right(ORCLoad(n, d, iv, uri, pb, np, auth, sm, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1770,8 +1830,10 @@ object ConfigUtils {
   def readParquetLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI")
@@ -1780,12 +1842,12 @@ object ConfigUtils {
     val authentication = readAuthentication("authentication")  
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
 
-    (name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
-      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb), Right(_)) => 
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb), Right(_)) => 
         val uri = new URI(out)
-        Right(ParquetLoad(n, iv, uri, pb, np, auth, sm, params))
+        Right(ParquetLoad(n, d, iv, uri, pb, np, auth, sm, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1795,8 +1857,10 @@ object ConfigUtils {
   def readXMLLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI")
@@ -1805,12 +1869,12 @@ object ConfigUtils {
     val authentication = readAuthentication("authentication")  
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
 
-    (name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
-      case (Right(n), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb), Right(_)) => 
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb), Right(_)) => 
         val uri = new URI(out)
-        Right(XMLLoad(n, iv, uri, pb, np, auth, sm, params))
+        Right(XMLLoad(n, d, iv, uri, pb, np, auth, sm, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1822,20 +1886,22 @@ object ConfigUtils {
   def readHTTPExecute(name: StringConfigValue, params: Map[String, String])(implicit logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "uri" :: "headers" :: "payloads" :: "validStatusCodes" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "uri" :: "headers" :: "payloads" :: "validStatusCodes" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val uri = getValue[String]("uri")
     val headers = readMap("headers", c)
     val payloads = readMap("payloads", c)
     val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
 
-    (name, uri, validStatusCodes, invalidKeys) match {
-      case (Right(n), Right(u), Right(vsc), Right(_)) => 
+    (name, description, uri, validStatusCodes, invalidKeys) match {
+      case (Right(n), Right(d), Right(u), Right(vsc), Right(_)) => 
         val uri = new URI(u)
-        Right(HTTPExecute(n, uri, headers, payloads, vsc, params))
+        Right(HTTPExecute(n, d, uri, headers, payloads, vsc, params))
       case _ =>
-        val allErrors: Errors = List(uri, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(uri, description, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1845,8 +1911,10 @@ object ConfigUtils {
   def readJDBCExecute(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputURI" :: "jdbcURL" :: "authentication" :: "params" :: "password" :: "sqlParams" :: "user" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "jdbcURL" :: "authentication" :: "params" :: "password" :: "sqlParams" :: "user" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val authentication = readAuthentication("authentication")  
 
@@ -1865,13 +1933,13 @@ object ConfigUtils {
 
     val sqlParams = readMap("sqlParams", c)    
 
-    (name, inputURI, inputSQL, jdbcURL, user, password, driver, invalidKeys) match {
-      case (Right(n), Right(in), Right(sql), Right(url), Right(u), Right(p), Right(d), Right(_)) => 
+    (name, description, inputURI, inputSQL, jdbcURL, user, password, driver, invalidKeys) match {
+      case (Right(n), Right(desc), Right(in), Right(sql), Right(url), Right(u), Right(p), Right(d), Right(_)) => 
         val sqlFileUri = new URI(in)
         
-        Right(JDBCExecute(n, sqlFileUri, url, u, p, sql, sqlParams, params))
+        Right(JDBCExecute(n, desc, sqlFileUri, url, u, p, sql, sqlParams, params))
       case _ =>
-        val allErrors: Errors = List(name, inputURI, parsedURI, inputSQL, jdbcURL, user, password, driver, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, parsedURI, inputSQL, jdbcURL, user, password, driver, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1881,18 +1949,20 @@ object ConfigUtils {
   def readKafkaCommitExecute(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputView" :: "bootstrapServers" :: "groupID" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "bootstrapServers" :: "groupID" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
 
     val inputView = getValue[String]("inputView")
     val bootstrapServers = getValue[String]("bootstrapServers")
     val groupID = getValue[String]("groupID")
 
-    (name, inputView, bootstrapServers, groupID, invalidKeys) match {
-      case (Right(n), Right(iv), Right(bs), Right(g), Right(_)) => 
-        Right(KafkaCommitExecute(n, iv, bs, g, params))
+    (name, description, inputView, bootstrapServers, groupID, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(bs), Right(g), Right(_)) => 
+        Right(KafkaCommitExecute(n, d, iv, bs, g, params))
       case _ =>
-        val allErrors: Errors = List(name, inputView, bootstrapServers, groupID, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, bootstrapServers, groupID, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1902,26 +1972,28 @@ object ConfigUtils {
   def readPipelineExecute(name: StringConfigValue, params: Map[String, String], argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "uri" :: "authentication" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "uri" :: "authentication" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)      
+
+    val description = getOptionalValue[String]("description")
 
     val uri = getValue[String]("uri")
     val authentication = readAuthentication("authentication")  
     authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))    
 
-    (name, uri, invalidKeys) match {
-      case (Right(n), Right(u), Right(_)) => 
+    (name, description, uri, invalidKeys) match {
+      case (Right(n), Right(d), Right(u), Right(_)) => 
         val uri = new URI(u)
         val subPipeline = parseConfig(uri, argsMap, arcContext)
         subPipeline match {
-          case Right(etl) => Right(PipelineExecute(n, uri, etl))
+          case Right(etl) => Right(PipelineExecute(n, d, uri, etl))
           case Left(errors) => {
             val stageErrors = errors.collect { case s: StageError => s }
             Left(stageErrors)
           }
         }
       case _ =>
-        val allErrors: Errors = List(uri, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(uri, description, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1933,17 +2005,19 @@ object ConfigUtils {
   def readEqualityValidate(name: StringConfigValue, params: Map[String, String])(implicit logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "leftView" :: "rightView" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "leftView" :: "rightView" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
+
+    val description = getOptionalValue[String]("description")
 
     val leftView = getValue[String]("leftView")
     val rightView = getValue[String]("rightView")
 
-    (name, leftView, rightView, invalidKeys) match {
-      case (Right(n), Right(l), Right(r), Right(_)) => 
-        Right(EqualityValidate(n, l, r, params))
+    (name, description, leftView, rightView, invalidKeys) match {
+      case (Right(n), Right(d), Right(l), Right(r), Right(_)) => 
+        Right(EqualityValidate(n, d, l, r, params))
       case _ =>
-        val allErrors: Errors = List(name, leftView, rightView, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, leftView, rightView, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1953,8 +2027,10 @@ object ConfigUtils {
   def readSQLValidate(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "environments" :: "inputURI" :: "authentication" :: "sqlParams" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "authentication" :: "sqlParams" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
+
+    val description = getOptionalValue[String]("description")
 
     val authentication = readAuthentication("authentication")  
 
@@ -1970,11 +2046,11 @@ object ConfigUtils {
       validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams))
     }    
 
-    (name, parsedURI, inputSQL, validSQL, invalidKeys) match {
-      case (Right(n), Right(uri), Right(sql), Right(vsql), Right(_)) => 
-        Right(SQLValidate(n, uri, sql, sqlParams, params))
+    (name, description, parsedURI, inputSQL, validSQL, invalidKeys) match {
+      case (Right(n), Right(d), Right(uri), Right(sql), Right(vsql), Right(_)) => 
+        Right(SQLValidate(n, d, uri, sql, sqlParams, params))
       case _ =>
-        val allErrors: Errors = List(name, parsedURI, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -2112,7 +2188,7 @@ object ConfigUtils {
 
     val (stages, errors) = pipelineStages.foldLeft[(List[PipelineStage], List[StageError])]( (Nil, Nil) ) { case ( (stages, errs), stageOrError ) =>
       stageOrError match {
-        case Right(PipelineExecute(_, _, subPipeline)) => (subPipeline.stages.reverse ::: stages, errs)
+        case Right(PipelineExecute(_, _, _, subPipeline)) => (subPipeline.stages.reverse ::: stages, errs)
         case Right(s) => (s :: stages, errs)
         case Left(stageErrors) => (stages, stageErrors ::: errs)
       }

@@ -1,6 +1,7 @@
 {
   "type": "KafkaLoad",
   "name": "write customer to kafka",
+  "description": "write customer to kafka",
   "environments": [
     "production",
     "test"

@@ -70,6 +70,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=Right(targetFileGlob),
@@ -119,6 +120,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -137,6 +139,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -177,6 +180,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.DelimitedExtract.extract(
         DelimitedExtract(
           name=outputView,
+          description=None,
           cols=Right(Nil),
           outputView=outputView,
           input=Right(emptyWildcardDirectory),
@@ -197,6 +201,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.DelimitedExtract.extract(
         DelimitedExtract(
           name=outputView,
+          description=None,
           cols=Right(Nil),
           outputView=outputView,
           input=Right(emptyDirectory),
@@ -216,6 +221,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(cols),
         outputView=outputView,
         input=Right(emptyDirectory),
@@ -253,6 +259,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     var dataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -283,6 +290,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     var dataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(customDelimiterTargetFile),
@@ -325,6 +333,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     var dataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -354,6 +363,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     var dataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -386,6 +396,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=Right(targetFileGlob),

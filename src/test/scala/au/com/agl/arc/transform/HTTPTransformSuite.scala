@@ -114,6 +114,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.HTTPTransform.transform(
       HTTPTransform(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/${echo}/"),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -154,6 +155,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.HTTPTransform.transform(
       HTTPTransform(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/${echo}/"),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -183,6 +185,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = transform.HTTPTransform.transform(
       HTTPTransform(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/${empty}/"),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -210,6 +213,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransform.transform(
         HTTPTransform(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/fail/"),
           headers=Map.empty,
           validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -237,6 +241,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransform.transform(
         HTTPTransform(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/${empty}/"),
           headers=Map.empty,
           validStatusCodes=201 :: Nil,
@@ -271,6 +276,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.HTTPTransform.transform(
       HTTPTransform(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/${echo}/"),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -308,6 +314,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       val transformDataset = transform.HTTPTransform.transform(
         HTTPTransform(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/${echo}/"),
           headers=Map.empty,
           validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -342,6 +349,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       val transformDataset = transform.HTTPTransform.transform(
         HTTPTransform(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/${echo}/"),
           headers=Map.empty,
           validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -378,6 +386,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       val transformDataset = transform.HTTPTransform.transform(
         HTTPTransform(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/${echo}/"),
           headers=Map.empty,
           validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -416,6 +425,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.HTTPTransform.transform(
       HTTPTransform(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/${echo}/"),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,

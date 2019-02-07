@@ -67,6 +67,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.ORCExtract.extract(
       ORCExtract(
         name=outputView,
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=targetFileGlob,
@@ -103,6 +104,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ORCExtract.extract(
       ORCExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=targetFile,
@@ -121,6 +123,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ORCExtract.extract(
       ORCExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=targetFile,
@@ -160,6 +163,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.ORCExtract.extract(
         ORCExtract(
           name=outputView,
+          description=None,
           cols=Right(Nil),
           outputView=outputView,
           input=emptyWildcardDirectory,
@@ -179,6 +183,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.ORCExtract.extract(
         ORCExtract(
           name=outputView,
+          description=None,
           cols=Right(Nil),
           outputView=outputView,
           input=emptyDirectory,
@@ -197,6 +202,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.ORCExtract.extract(
       ORCExtract(
         name=outputView,
+        description=None,
         cols=Right(cols),
         outputView=outputView,
         input=emptyDirectory,
@@ -229,6 +235,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.ORCExtract.extract(
       ORCExtract(
         name=outputView,
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=targetFileGlob,

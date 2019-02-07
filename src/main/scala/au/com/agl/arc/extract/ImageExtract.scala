@@ -22,6 +22,9 @@ object ImageExtract {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
+    for (description <- extract.description) {
+      stageDetail.put("description", description)    
+    }     
     stageDetail.put("input", extract.input)  
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))

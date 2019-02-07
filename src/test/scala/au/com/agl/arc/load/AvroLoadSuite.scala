@@ -54,14 +54,15 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
 
     load.AvroLoad.load(
       AvroLoad(
-          name=outputView, 
-          inputView=outputView, 
-          outputURI=new URI(targetFile), 
-          partitionBy=Nil, 
-          numPartitions=None, 
-          authentication=None,
-          saveMode=SaveMode.Overwrite, 
-          params=Map.empty
+        name=outputView, 
+        description=None,
+        inputView=outputView, 
+        outputURI=new URI(targetFile), 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        authentication=None,
+        saveMode=SaveMode.Overwrite, 
+        params=Map.empty
       )
     )
 
@@ -86,6 +87,7 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
     load.AvroLoad.load(
       AvroLoad(
         name=outputView, 
+        description=None,
         inputView=outputView, 
         outputURI=new URI(targetFile), 
         partitionBy="booleanDatum" :: Nil, 

@@ -1,6 +1,7 @@
 {
   "type": "HTTPTransform",
   "name": "look up customer retention score",
+  "description": "look up customer retention score",
   "environments": [
     "production",
     "test"

@@ -25,6 +25,7 @@ The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avr
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputURI|URI|true|URI of the Avro file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -55,6 +56,7 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 |eventHubName|String|true|{{< readfile file="/content/partials/fields/eventHubName.md" markdown="true" >}}|
 |sharedAccessSignatureKeyName|String|true|{{< readfile file="/content/partials/fields/sharedAccessSignatureKeyName.md" markdown="true" >}}|
 |sharedAccessSignatureKey|String|true|{{< readfile file="/content/partials/fields/sharedAccessSignatureKey.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} Azure EventHubs will throw a `ServerBusyException` if too many executors write to a target in parallel which can be decreased by reducing the number of partitions.|
 |retryCount|Integer|false|The maximum number of retries for the exponential backoff algorithm.<br><br>Default: 10.|
 |retryMaxBackoff|Long|false|The maximum time (in seconds) for the exponential backoff algorithm to wait between retries.<br><br>Default: 30.|
@@ -83,6 +85,7 @@ This stage has been included for testing Structured Streaming jobs as it can be 
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |outputMode|String|false|The output mode of the console writer. Allowed values `Append`, `Complete`, `Update`. See [Output Modes](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#output-modes) for full details.<br><br>Default: `Append`|
 
 ### Examples
@@ -108,8 +111,9 @@ The `DelimitedLoad` writes an input `DataFrame` to a target delimited file.
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputURI|URI|true|URI of the Delimited file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|delimiter|String|false|{{< readfile file="/content/partials/fields/delimiter.md" markdown="true" >}}|
 |customDelimiter|String|true*|{{< readfile file="/content/partials/fields/customDelimiter.md" markdown="true" >}}|
+|delimiter|String|false|{{< readfile file="/content/partials/fields/delimiter.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |header|Boolean|false|Whether to write a header row.<br><br>Default: `false`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -140,6 +144,7 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputURI|URI|true|URI of the HTTP server.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
 |validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}} Note: all request response codes must be contained in this list for the stage to be successful.|
 
@@ -173,6 +178,7 @@ Whilst it is possible to use `JDBCLoad` to create tables directly in the target 
 |bulkload|Boolean|false|{{< readfile file="/content/partials/fields/bulkload.md" markdown="true" >}}|
 |createTableColumnTypes|String|false|{{< readfile file="/content/partials/fields/createTableColumnTypes.md" markdown="true" >}}|
 |createTableOptions|String|false|{{< readfile file="/content/partials/fields/createTableOptions.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |isolationLevel|String|false|{{< readfile file="/content/partials/fields/isolationLevel.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -202,6 +208,7 @@ The `JSONLoad` writes an input `DataFrame` to a target JSON file.
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputURI|URI|true|URI of the Delimited file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -234,6 +241,7 @@ In the future additional Transform stages (like `ProtoBufTransform`) may be adde
 |topic|String|true|{{< readfile file="/content/partials/fields/topic.md" markdown="true" >}}|
 |acks|Integer|false|{{< readfile file="/content/partials/fields/acks.md" markdown="true" >}}<br><br>Default: `1`.|
 |batchSize|Integer|false|Number of records to send in single requet to reduce number of requests to Kafka.<br><br>Default: `16384`.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |retries|Integer|false|How many times to try to resend any record whose send fails with a potentially transient error.<br><br>Default: `0`.|
 
@@ -260,6 +268,7 @@ The `ORCLoad` writes an input `DataFrame` to a target [Apache ORC](https://orc.a
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputURI|URI|true|URI of the ORC file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -287,6 +296,7 @@ The `ParquetLoad` writes an input `DataFrame` to a target [Apache Parquet](https
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputURI|URI|true|URI of the Parquet file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -314,6 +324,7 @@ The `XMLLoad` writes an input `DataFrame` to a target XML file.
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputURI|URI|true|URI of the XML file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|

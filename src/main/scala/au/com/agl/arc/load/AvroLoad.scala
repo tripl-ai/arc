@@ -18,6 +18,9 @@ object AvroLoad {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
     stageDetail.put("name", load.name)
+    for (description <- load.description) {
+      stageDetail.put("description", description)    
+    }
     stageDetail.put("inputView", load.inputView)  
     stageDetail.put("outputURI", load.outputURI.toString)  
     stageDetail.put("partitionBy", load.partitionBy.asJava)

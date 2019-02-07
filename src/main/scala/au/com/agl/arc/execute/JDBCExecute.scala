@@ -25,6 +25,9 @@ object JDBCExecute {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", exec.getType)
     stageDetail.put("name", exec.name)
+    for (description <- exec.description) {
+      stageDetail.put("description", description)    
+    }    
     stageDetail.put("inputURI", exec.inputURI.toString)     
     stageDetail.put("sqlParams", exec.sqlParams.asJava)
 

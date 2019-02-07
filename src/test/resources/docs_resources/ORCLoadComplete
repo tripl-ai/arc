@@ -1,6 +1,7 @@
 {
   "type": "ORCLoad",
   "name": "write customer ORC extract",
+  "description": "write customer ORC extract",
   "environments": [
     "production",
     "test"

@@ -80,6 +80,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.JSONExtract.extract(
       JSONExtract(
         name=outputView,
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=Right(targetFileGlob),
@@ -126,6 +127,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     extract.JSONExtract.extract(
       JSONExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -144,6 +146,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     extract.JSONExtract.extract(
       JSONExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -184,6 +187,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.JSONExtract.extract(
         JSONExtract(
           name=outputView,
+          description=None,
           cols=Right(Nil),
           outputView=outputView,
           input=Right(emptyWildcardDirectory),
@@ -205,6 +209,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.JSONExtract.extract(
         JSONExtract(
           name=outputView,
+          description=None,
           cols=Right(Nil),
           outputView=outputView,
           input=Right(emptyDirectory),
@@ -225,6 +230,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.JSONExtract.extract(
       JSONExtract(
         name=outputView,
+        description=None,
         cols=Right(cols),
         outputView=outputView,
         input=Right(emptyDirectory),
@@ -257,6 +263,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val actual0 = extract.JSONExtract.extract(
       JSONExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(multiLineMatcher),
@@ -273,6 +280,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val actual1 = extract.JSONExtract.extract(
       JSONExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(multiLineMatcher),
@@ -330,6 +338,7 @@ test("JSONExtract: Input Schema") {
     val extractDataset = extract.JSONExtract.extract(
       JSONExtract(
         name=outputView,
+        description=None,
         cols=Right(cols),
         outputView=outputView,
         input=Right(targetFile),
@@ -362,6 +371,7 @@ test("JSONExtract: Input Schema") {
     val extractDataset = extract.JSONExtract.extract(
       JSONExtract(
         name=outputView,
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=Right(multiLineBase),

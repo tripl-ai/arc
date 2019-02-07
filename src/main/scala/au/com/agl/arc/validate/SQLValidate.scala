@@ -18,6 +18,9 @@ object SQLValidate {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", validate.getType)
     stageDetail.put("name", validate.name)
+    for (description <- validate.description) {
+      stageDetail.put("description", description)    
+    }    
     stageDetail.put("sqlParams", validate.sqlParams.asJava)
 
     val signature = "SQLValidate requires query to return 1 row with [outcome: boolean, message: string] signature."

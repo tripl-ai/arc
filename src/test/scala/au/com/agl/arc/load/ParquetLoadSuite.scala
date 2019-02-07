@@ -55,14 +55,15 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
 
     load.ParquetLoad.load(
       ParquetLoad(
-          name=outputView, 
-          inputView=outputView, 
-          outputURI=new URI(targetFile), 
-          partitionBy=Nil, 
-          numPartitions=None, 
-          authentication=None, 
-          saveMode=SaveMode.Overwrite, 
-          params=Map.empty
+        name=outputView, 
+        description=None,
+        inputView=outputView, 
+        outputURI=new URI(targetFile), 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        authentication=None, 
+        saveMode=SaveMode.Overwrite, 
+        params=Map.empty
       )
     )
 
@@ -84,6 +85,7 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
     load.ParquetLoad.load(
       ParquetLoad(
         name=outputView, 
+        description=None,
         inputView=outputView, 
         outputURI=new URI(targetFile), 
         partitionBy="booleanDatum" :: Nil, 
@@ -114,14 +116,15 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
 
     load.ParquetLoad.load(
       ParquetLoad(
-          name=outputView, 
-          inputView=outputView, 
-          outputURI=new URI(targetFile), 
-          partitionBy=Nil, 
-          numPartitions=None, 
-          authentication=None, 
-          saveMode=SaveMode.Overwrite, 
-          params=Map.empty
+        name=outputView, 
+        description=None,
+        inputView=outputView, 
+        outputURI=new URI(targetFile), 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        authentication=None, 
+        saveMode=SaveMode.Overwrite, 
+        params=Map.empty
       )
     )
 

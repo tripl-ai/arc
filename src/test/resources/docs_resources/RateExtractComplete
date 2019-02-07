@@ -1,6 +1,7 @@
 {
   "type": "RateExtract",
   "name": "create a streaming source",
+  "description": "create a streaming source",
   "environments": [
     "production",
     "test"

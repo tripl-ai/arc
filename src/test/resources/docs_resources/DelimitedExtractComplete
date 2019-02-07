@@ -1,6 +1,7 @@
 {
   "type": "DelimitedExtract",
   "name": "load customer csv extract",
+  "description": "load customer csv extract",
   "environments": [
     "production",
     "test"

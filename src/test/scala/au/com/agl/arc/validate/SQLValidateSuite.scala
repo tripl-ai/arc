@@ -48,6 +48,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     validate.SQLValidate.validate(
       SQLValidate(
         name=testName, 
+        description=None,
         inputURI=new URI(testURI),
         sql="SELECT true, null",
         sqlParams=Map.empty,
@@ -64,6 +65,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     validate.SQLValidate.validate(
       SQLValidate(
         name=testName, 
+        description=None,
         inputURI=new URI(testURI),
         sql="SELECT true, 'message'",
         sqlParams=Map.empty,
@@ -80,6 +82,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     validate.SQLValidate.validate(
       SQLValidate(
         name=testName, 
+        description=None,
         inputURI=new URI(testURI),
         sql="""SELECT true, '{"stringKey": "stringValue", "numKey": 123}'""",
         sqlParams=Map.empty,
@@ -97,6 +100,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidate.validate(
         SQLValidate(
           name=testName, 
+          description=None,
           inputURI=new URI(testURI),
           sql="SELECT false, null",
           sqlParams=Map.empty,
@@ -116,6 +120,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidate.validate(
         SQLValidate(
           name=testName, 
+          description=None,
           inputURI=new URI(testURI),
           sql="SELECT false, 'this is my message'",
           sqlParams=Map.empty,
@@ -135,6 +140,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidate.validate(
         SQLValidate(
           name=testName, 
+          description=None,
           inputURI=new URI(testURI),
           sql="""SELECT false, TO_JSON(NAMED_STRUCT('stringKey', 'stringValue', 'numKey', 123))""",
           sqlParams=Map.empty,
@@ -155,6 +161,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidate.validate(
         SQLValidate(
           name=testName, 
+          description=None,
           inputURI=new URI(testURI),
           sql="SELECT 'string', true",
           sqlParams=Map.empty,
@@ -174,6 +181,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidate.validate(
         SQLValidate(
           name=testName, 
+          description=None,
           inputURI=new URI(testURI),
           sql="SELECT true, 'message' WHERE false",
           sqlParams=Map.empty,
@@ -187,6 +195,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidate.validate(
         SQLValidate(
           name=testName, 
+          description=None,
           inputURI=new URI(testURI),
           sql="SELECT true, 'message' UNION ALL SELECT true, 'message'",
           sqlParams=Map.empty,
@@ -206,6 +215,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidate.validate(
         SQLValidate(
           name=testName, 
+          description=None,
           inputURI=new URI(testURI),
           sql="SELECT true",
           sqlParams=Map.empty,
@@ -219,6 +229,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidate.validate(
         SQLValidate(
           name=testName, 
+          description=None,
           inputURI=new URI(testURI),
           sql="SELECT true, 'message', true",
           sqlParams=Map.empty,
@@ -237,6 +248,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     validate.SQLValidate.validate(
       SQLValidate(
         name=testName, 
+        description=None,
         inputURI=new URI(testURI),
         sql="""SELECT 0.1 > ${threshold}, 'message'""",
         sqlParams=Map("threshold" -> "0.05"),
@@ -248,6 +260,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidate.validate(
         SQLValidate(
           name=testName, 
+          description=None,
           inputURI=new URI(testURI),
           sql="""SELECT 0.01 > ${threshold}, 'message'""",
           sqlParams=Map("threshold" -> "0.05"),
@@ -267,6 +280,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidate.validate(
         SQLValidate(
           name=testName, 
+          description=None,
           inputURI=new URI(testURI),
           sql="SELECT CAST(NULL AS BOOLEAN), CAST(NULL AS STRING)",
           sqlParams=Map.empty,

@@ -50,6 +50,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.ImageExtract.extract(
       ImageExtract(
         name=outputView,
+        description=None,
         outputView=outputView,
         input=targetFile,
         authentication=None,
@@ -78,6 +79,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ImageExtract.extract(
       ImageExtract(
         name=outputView,
+        description=None,
         outputView=outputView,
         input=targetFile,
         authentication=None,
@@ -94,6 +96,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ImageExtract.extract(
       ImageExtract(
         name=outputView,
+        description=None,
         outputView=outputView,
         input=targetFile,
         authentication=None,
@@ -116,6 +119,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     val imageExtract = extract.ImageExtract.extract(
       ImageExtract(
         name=outputView,
+        description=None,
         outputView=outputView,
         input=emptyDirectory,
         authentication=None,
@@ -139,6 +143,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.ImageExtract.extract(
       ImageExtract(
         name=outputView,
+        description=None,
         outputView=outputView,
         input=targetFile.replace("puppy.jpg", "*.jpg"),
         authentication=None,

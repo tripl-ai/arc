@@ -1,6 +1,7 @@
 {
   "type": "SQLTransform",
   "name": "standardise customer fields",
+  "description": "standardise customer fields",
   "environments": [
     "production",
     "test"

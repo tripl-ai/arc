@@ -49,6 +49,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val stage = DelimitedExtract(
       name = "file extract",
+      description=None,
       cols = Right(Nil),
       outputView = "green_tripdata0_raw",
       input = Right("/data/green_tripdata/0/*.csv"),
@@ -63,6 +64,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val subDelimitedExtractStage = DelimitedExtract(
       name = "extract data from green_tripdata/1",
+      description=None,
       cols = Right(Nil),
       outputView = "green_tripdata1_raw",
       input = Right("/data/green_tripdata/1/*.csv"),
@@ -103,6 +105,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val subTypingTransformStage = TypingTransform(
       name = "apply green_tripdata/1 data types",
+      description=None,
       cols = Right(schema),
       inputView = "green_tripdata1_raw",
       outputView = "green_tripdata1",
@@ -113,6 +116,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val subSQLValidateStage = SQLValidate(
       name = "ensure no errors exist after data typing",
+      description=None,
       inputURI = URI.create("classpath://conf/sql/sqlvalidate_errors.sql"),
       sql =
         """|SELECT
@@ -408,6 +412,7 @@ hdfs://test/{ab,c{de, fg}
     val expected = ETLPipeline(      
       DelimitedExtract(
         name="file extract",
+        description=None,
         cols=Right(Nil),
         outputView="output",
         input=Left("input"),

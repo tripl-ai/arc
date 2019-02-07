@@ -56,14 +56,15 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
 
     load.JSONLoad.load(
       JSONLoad(
-          name=outputView, 
-          inputView=outputView, 
-          outputURI=new URI(targetFile), 
-          partitionBy=Nil, 
-          numPartitions=None, 
-          authentication=None, 
-          saveMode=SaveMode.Overwrite, 
-          params=Map.empty
+        name=outputView, 
+        description=None,
+        inputView=outputView, 
+        outputURI=new URI(targetFile), 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        authentication=None, 
+        saveMode=SaveMode.Overwrite, 
+        params=Map.empty
       )
     )
 
@@ -89,6 +90,7 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
     load.JSONLoad.load(
       JSONLoad(
         name=outputView, 
+        description=None,
         inputView=outputView, 
         outputURI=new URI(targetFile), 
         partitionBy="booleanDatum" :: Nil, 
@@ -120,6 +122,7 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
     load.JSONLoad.load(
       JSONLoad(
         name=outputView, 
+        description=None,
         inputView=outputView, 
         outputURI=new URI(targetFile), 
         partitionBy=Nil, 

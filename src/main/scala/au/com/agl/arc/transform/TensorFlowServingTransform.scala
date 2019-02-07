@@ -34,6 +34,9 @@ object TensorFlowServingTransform {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
+    for (description <- transform.description) {
+      stageDetail.put("description", description)    
+    }    
     stageDetail.put("inputView", transform.inputView)  
     stageDetail.put("inputField", transform.inputField)  
     stageDetail.put("outputView", transform.outputView)  

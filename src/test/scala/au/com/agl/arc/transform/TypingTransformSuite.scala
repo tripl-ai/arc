@@ -64,6 +64,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=inputView,
+        description=None,
         cols=Right(Nil),
         outputView=inputView,
         input=Right(targetFile),
@@ -83,6 +84,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = transform.TypingTransform.transform(
       TypingTransform(
         name="dataset",
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)), 
         inputView=inputView,
         outputView=outputView, 
@@ -145,6 +147,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
       val actual = transform.TypingTransform.transform(
         TypingTransform(
           name="dataset",
+          description=None,
           cols=Right(cols.right.getOrElse(Nil)), 
           inputView=inputView,
           outputView=outputView, 
@@ -390,6 +393,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.TypingTransform.transform(
       TypingTransform(
         name="dataset",
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)), 
         inputView=inputView,
         outputView=outputView, 
@@ -446,6 +450,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = transform.TypingTransform.transform(
       TypingTransform(
         name="dataset",
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)), 
         inputView=inputView,
         outputView=outputView, 

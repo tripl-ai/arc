@@ -53,6 +53,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.BytesExtract.extract(
       BytesExtract(
         name="dataset",
+        description=None,
         outputView=outputView, 
         input=Right(targetFile),
         authentication=None,
@@ -79,6 +80,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.BytesExtract.extract(
       BytesExtract(
         name="dataset",
+        description=None,
         outputView=outputView, 
         input=Left(pathView),
         authentication=None,

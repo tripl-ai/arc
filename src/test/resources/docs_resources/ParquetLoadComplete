@@ -1,6 +1,7 @@
 {
   "type": "ParquetLoad",
   "name": "write customer Parquet extract",
+  "description": "write customer Parquet extract",
   "environments": [
     "production",
     "test"

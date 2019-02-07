@@ -1,6 +1,7 @@
 {
   "type": "TypingTransform",
   "name": "apply data types to customer records",
+  "description": "apply data types to customer records",
   "environments": [
     "production",
     "test"

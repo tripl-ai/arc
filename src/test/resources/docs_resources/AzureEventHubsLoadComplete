@@ -1,6 +1,7 @@
 {
   "type": "AzureEventHubsLoad",
   "name": "write customer to azure event hubs",
+  "description": "write customer to azure event hubs",
   "environments": [
     "production",
     "test"

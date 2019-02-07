@@ -38,6 +38,9 @@ object KafkaExtract {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
+    for (description <- extract.description) {
+      stageDetail.put("description", description)    
+    }     
     stageDetail.put("outputView", extract.outputView)
     stageDetail.put("bootstrapServers", extract.bootstrapServers)
     stageDetail.put("groupID", extract.groupID)

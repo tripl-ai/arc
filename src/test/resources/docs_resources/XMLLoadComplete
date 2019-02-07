@@ -1,6 +1,7 @@
 {
   "type": "XMLLoad",
   "name": "write customer XML extract",
+  "description": "write customer XML extract",
   "environments": [
     "production",
     "test"

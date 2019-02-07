@@ -1,6 +1,7 @@
 {
   "type": "DiffTransform",
   "name": "calculate the difference between the yesterday and today datasets",
+  "description": "calculate the difference between the yesterday and today datasets",
   "environments": [
     "production",
     "test"

@@ -1,6 +1,7 @@
 {
   "type": "TextExtract",
   "name": "load customers",
+  "description": "load customers",
   "environments": [
     "production",
     "test"

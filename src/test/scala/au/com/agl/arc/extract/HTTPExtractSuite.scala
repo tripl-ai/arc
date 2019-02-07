@@ -144,6 +144,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.HTTPExtract.extract(
       HTTPExtract(
         name=outputView,
+        description=None,
         input=Right(new URI(s"${uri}/${get}/")),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -180,6 +181,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.HTTPExtract.extract(
       HTTPExtract(
         name=outputView,
+        description=None,
         input=Right(new URI(s"${uri}/${post}/")),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -215,6 +217,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.HTTPExtract.extract(
       HTTPExtract(
         name=outputView,
+        description=None,
         input=Right(new URI(s"${uri}/${payload}/")),
         headers=Map.empty,
         validStatusCodes=200 :: Nil,
@@ -240,6 +243,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.HTTPExtract.extract(
       HTTPExtract(
         name=outputView,
+        description=None,
         input=Right(new URI(s"${uri}/${empty}/")),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -268,6 +272,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       extract.HTTPExtract.extract(
         HTTPExtract(
           name=outputView,
+          description=None,
           input=Right(new URI(s"${uri}/fail/")),
           validStatusCodes=200 :: 201 :: 202 :: Nil,
           headers=Map.empty,
@@ -293,6 +298,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       extract.HTTPExtract.extract(
         HTTPExtract(
           name=outputView,
+          description=None,
           input=Right(new URI(s"${uri}/${empty}/")),
           headers=Map.empty,
           validStatusCodes=201 :: Nil,
@@ -318,6 +324,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       extract.HTTPExtract.extract(
         HTTPExtract(
           name=outputView,
+          description=None,
           input=Right(new URI(badUri)),
           headers=Map.empty,
           validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -345,6 +352,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.HTTPExtract.extract(
       HTTPExtract(
         name=outputView,
+        description=None,
         input=Left(inputView),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,

@@ -58,13 +58,14 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
 
     val pipeline = ETLPipeline(
         SQLTransform(
-            name="SQLTransformName", 
-            inputURI=new URI(targetFile),
-            sql=s"SELECT * FROM ${inputView} WHERE booleanDatum = fasdf",
-            outputView=outputView,
-            persist=false,
-            sqlParams=Map.empty,
-            params=Map.empty
+          name="SQLTransformName", 
+          description=None,
+          inputURI=new URI(targetFile),
+          sql=s"SELECT * FROM ${inputView} WHERE booleanDatum = fasdf",
+          outputView=outputView,
+          persist=false,
+          sqlParams=Map.empty,
+          params=Map.empty
         ) :: Nil
     )
 

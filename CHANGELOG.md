@@ -6,6 +6,7 @@
 - changed `DynamicConfiguration` plugins to be HOCON `object` rather than a `string` allowing parameters to be passed in.
 - added `logger` object to `DynamicConfiguration` plugins.
 - added `customDelimiter` attribute to `DelimitedExtract` and `DelimitedLoad` to be used in conjunction with `delimiter` equal to `Custom`.
+- added optional `description` attribute to all stages.
 
 # 1.5.0
 

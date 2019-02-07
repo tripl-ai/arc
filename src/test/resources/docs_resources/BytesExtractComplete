@@ -1,6 +1,7 @@
 {
   "type": "BytesExtract",
   "name": "load images from the customer vehicle photos directory",
+  "description": "load images from the customer vehicle photos directory",
   "environments": [
     "production",
     "test"

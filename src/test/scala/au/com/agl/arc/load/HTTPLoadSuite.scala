@@ -118,12 +118,13 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
 
     load.HTTPLoad.load(
       HTTPLoad(
-          name=outputView, 
-          inputView=outputView, 
-          outputURI=new URI(s"${uri}/success/"), // ensure trailing slash to avoid 302 redirect
-          headers=Map.empty,
-          validStatusCodes=None,
-          params=Map.empty
+        name=outputView, 
+        description=None,
+        inputView=outputView, 
+        outputURI=new URI(s"${uri}/success/"), // ensure trailing slash to avoid 302 redirect
+        headers=Map.empty,
+        validStatusCodes=None,
+        params=Map.empty
       )
     )
   }
@@ -139,12 +140,13 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     val thrown = intercept[Exception] {
       load.HTTPLoad.load(
         HTTPLoad(
-            name=outputView, 
-            inputView=outputView, 
-            outputURI=new URI(s"${uri}/failure/"), // ensure trailing slash to avoid 302 redirect
-            headers=Map.empty,
-            validStatusCodes=None,
-            params=Map.empty
+          name=outputView, 
+          description=None,
+          inputView=outputView, 
+          outputURI=new URI(s"${uri}/failure/"), // ensure trailing slash to avoid 302 redirect
+          headers=Map.empty,
+          validStatusCodes=None,
+          params=Map.empty
         )
       )
     }
@@ -162,6 +164,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoad.load(
       HTTPLoad(
         name=outputView, 
+        description=None,
         inputView=outputView, 
         outputURI=new URI(s"${uri}/failure/"), // ensure trailing slash to avoid 302 redirect
         headers=Map(key -> value),
@@ -182,6 +185,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoad.load(
       HTTPLoad(
         name=outputView, 
+        description=None,
         inputView=outputView, 
         outputURI=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
         headers=Map(key -> value),
@@ -203,6 +207,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
       load.HTTPLoad.load(
         HTTPLoad(
           name=outputView, 
+          description=None,
           inputView=outputView, 
           outputURI=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
           headers=Map(key -> "wrong"),
@@ -226,6 +231,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
       load.HTTPLoad.load(
         HTTPLoad(
           name=outputView, 
+          description=None,
           inputView=outputView, 
           outputURI=new URI(s"${uri}/success/"), // ensure trailing slash to avoid 302 redirect
           headers=Map.empty,

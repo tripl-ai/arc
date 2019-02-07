@@ -15,6 +15,9 @@ object EqualityValidate {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", validate.getType)
     stageDetail.put("name", validate.name)
+    for (description <- validate.description) {
+      stageDetail.put("description", description)    
+    }    
     stageDetail.put("leftView", validate.leftView)      
     stageDetail.put("rightView", validate.rightView) 
 

@@ -56,14 +56,15 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
 
     load.ORCLoad.load(
       ORCLoad(
-          name=outputView, 
-          inputView=outputView, 
-          outputURI=new URI(targetFile), 
-          partitionBy=Nil, 
-          numPartitions=None, 
-          authentication=None, 
-          saveMode=SaveMode.Overwrite, 
-          params=Map.empty
+        name=outputView, 
+        description=None,
+        inputView=outputView, 
+        outputURI=new URI(targetFile), 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        authentication=None, 
+        saveMode=SaveMode.Overwrite, 
+        params=Map.empty
       )
     )
 
@@ -85,6 +86,7 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     load.ORCLoad.load(
       ORCLoad(
         name=outputView, 
+        description=None,
         inputView=outputView, 
         outputURI=new URI(targetFile), 
         partitionBy="booleanDatum" :: Nil, 
@@ -115,14 +117,15 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
 
     load.ORCLoad.load(
       ORCLoad(
-          name=outputView, 
-          inputView=outputView, 
-          outputURI=new URI(targetFile), 
-          partitionBy=Nil, 
-          numPartitions=None, 
-          authentication=None, 
-          saveMode=SaveMode.Overwrite, 
-          params=Map.empty
+        name=outputView, 
+        description=None,
+        inputView=outputView, 
+        outputURI=new URI(targetFile), 
+        partitionBy=Nil, 
+        numPartitions=None, 
+        authentication=None, 
+        saveMode=SaveMode.Overwrite, 
+        params=Map.empty
       )
     )
 

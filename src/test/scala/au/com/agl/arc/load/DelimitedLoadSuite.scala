@@ -55,15 +55,16 @@ class DelimitedLoadSuite extends FunSuite with BeforeAndAfter {
 
     load.DelimitedLoad.load(
       DelimitedLoad(
-          name=outputView, 
-          inputView=outputView, 
-          outputURI=new URI(targetFile), 
-          settings=new Delimited(header=true, sep=Delimiter.Comma),
-          partitionBy=Nil, 
-          numPartitions=None, 
-          authentication=None, 
-          saveMode=SaveMode.Overwrite, 
-          params=Map.empty
+        name=outputView, 
+        description=None,
+        inputView=outputView, 
+        outputURI=new URI(targetFile), 
+        settings=new Delimited(header=true, sep=Delimiter.Comma),
+        partitionBy=Nil, 
+        numPartitions=None, 
+        authentication=None, 
+        saveMode=SaveMode.Overwrite, 
+        params=Map.empty
       )
     )
 
@@ -95,6 +96,7 @@ class DelimitedLoadSuite extends FunSuite with BeforeAndAfter {
     load.DelimitedLoad.load(
       DelimitedLoad(
         name=outputView, 
+        description=None,
         inputView=outputView, 
         outputURI=new URI(targetFile), 
         settings=new Delimited(header=true, sep=Delimiter.Comma),
@@ -126,15 +128,16 @@ class DelimitedLoadSuite extends FunSuite with BeforeAndAfter {
 
     load.DelimitedLoad.load(
       DelimitedLoad(
-          name=outputView, 
-          inputView=outputView, 
-          outputURI=new URI(targetFile), 
-          settings=new Delimited(header=true, sep=Delimiter.Comma),
-          partitionBy=Nil, 
-          numPartitions=None, 
-          authentication=None, 
-          saveMode=SaveMode.Overwrite, 
-          params=Map.empty
+        name=outputView, 
+        description=None,
+        inputView=outputView, 
+        outputURI=new URI(targetFile), 
+        settings=new Delimited(header=true, sep=Delimiter.Comma),
+        partitionBy=Nil, 
+        numPartitions=None, 
+        authentication=None, 
+        saveMode=SaveMode.Overwrite, 
+        params=Map.empty
       )
     )
 

@@ -1,6 +1,7 @@
 {
   "type": "JDBCExtract",
   "name": "load active customers from postgresql",
+  "description": "load active customers from postgresql",
   "environments": [
     "production",
     "test"

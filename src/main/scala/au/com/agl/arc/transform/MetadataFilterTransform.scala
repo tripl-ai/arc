@@ -16,6 +16,9 @@ object MetadataFilterTransform {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
+    for (description <- transform.description) {
+      stageDetail.put("description", description)    
+    }    
 
     // inject sql parameters
     val stmt = SQLUtils.injectParameters(transform.sql, transform.sqlParams)

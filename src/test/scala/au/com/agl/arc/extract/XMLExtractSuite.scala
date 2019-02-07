@@ -71,6 +71,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=Right(targetFileGlob),
@@ -109,6 +110,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -126,6 +128,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -164,6 +167,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.XMLExtract.extract(
         XMLExtract(
           name=outputView,
+          description=None,
           cols=Right(Nil),
           outputView=outputView,
           input=Right(emptyWildcardDirectory),
@@ -183,6 +187,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.XMLExtract.extract(
         XMLExtract(
           name=outputView,
+          description=None,
           cols=Right(Nil),
           outputView=outputView,
           input=Right(emptyDirectory),
@@ -201,6 +206,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
+        description=None,
         cols=Right(cols),
         outputView=outputView,
         input=Right(emptyDirectory),
@@ -229,6 +235,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(zipSingleRecord),
@@ -254,6 +261,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(zipMultipleRecord),
@@ -287,6 +295,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.XMLExtract.extract(
       XMLExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Left(inputView),

@@ -98,6 +98,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     au.com.agl.arc.execute.HTTPExecute.execute(
       HTTPExecute(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
         headers=Map(key -> value),
         payloads=Map.empty,
@@ -116,6 +117,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
       au.com.agl.arc.execute.HTTPExecute.execute(
         HTTPExecute(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
           headers=Map.empty,
           payloads=Map.empty,
@@ -135,6 +137,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     au.com.agl.arc.execute.HTTPExecute.execute(
       HTTPExecute(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
         headers=Map.empty,
         payloads=Map(key -> value),
@@ -153,6 +156,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
       au.com.agl.arc.execute.HTTPExecute.execute(
         HTTPExecute(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
           headers=Map.empty,
           payloads=Map.empty,
@@ -173,6 +177,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
       au.com.agl.arc.execute.HTTPExecute.execute(
         HTTPExecute(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
           headers=Map.empty,
           payloads=Map.empty,
@@ -192,6 +197,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     au.com.agl.arc.execute.HTTPExecute.execute(
       HTTPExecute(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
         headers=Map.empty,
         payloads=Map.empty,

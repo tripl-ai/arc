@@ -1,6 +1,7 @@
 {
   "type": "TensorFlowServingTransform",
   "name": "call the customer segmentation model",
+  "description": "call the customer segmentation model",
   "environments": [
     "production",
     "test"

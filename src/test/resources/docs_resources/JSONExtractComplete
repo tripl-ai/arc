@@ -1,6 +1,7 @@
 {
   "type": "JSONExtract",
   "name": "load customers",
+  "description": "load customers",
   "environments": [
     "production",
     "test"

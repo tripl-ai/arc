@@ -76,6 +76,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     au.com.agl.arc.execute.JDBCExecute.execute(
       JDBCExecute(
         name=outputView, 
+        description=None,
         inputURI=new URI(testURI), 
         jdbcURL = url,
         user = None,
@@ -105,6 +106,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     au.com.agl.arc.execute.JDBCExecute.execute(
       JDBCExecute(
         name=outputView, 
+        description=None,
         inputURI=new URI(testURI), 
         jdbcURL = url,
         user = None,
@@ -135,6 +137,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       au.com.agl.arc.execute.JDBCExecute.execute(
         JDBCExecute(
           name=outputView, 
+          description=None,
           inputURI=new URI(testURI), 
           jdbcURL = "jdbc:derby:invalid",
           user = None,
@@ -157,6 +160,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       au.com.agl.arc.execute.JDBCExecute.execute(
         JDBCExecute(
           name=outputView, 
+          description=None,
           inputURI=new URI(testURI), 
           jdbcURL = "0.0.0.0",
           user = None,
@@ -179,6 +183,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       au.com.agl.arc.execute.JDBCExecute.execute(
         JDBCExecute(
           name=outputView, 
+          description=None,
           inputURI=new URI(testURI), 
           jdbcURL = "",
           user = None,

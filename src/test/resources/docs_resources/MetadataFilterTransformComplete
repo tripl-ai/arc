@@ -1,6 +1,7 @@
 {
   "type": "MetadataFilterTransform",
   "name": "filter out Personally identifiable information (pii) fields",
+  "description": "filter out Personally identifiable information (pii) fields",
   "environments": [
     "production",
     "test"

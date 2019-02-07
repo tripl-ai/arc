@@ -1,6 +1,7 @@
 {
   "type": "DelimitedLoad",
   "name": "write customer as csv",
+  "description": "write customer as csv",
   "environments": [
     "production",
     "test"
