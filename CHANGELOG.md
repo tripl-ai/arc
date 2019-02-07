@@ -1,5 +1,11 @@
 ## Change Log
 
+# 1.6.0
+
+- fixed defect in `*Extract` where Arc would recalculate metadata columns (`_filename`, `_index` or `_monotonically_increasing_id`) if both `_index` or `_monotonically_increasing_id` missing ignoring `_filename` presence.
+- changed `DynamicConfiguration` plugins to be a HOCON `object` rather than a `string` allowing parameters to be passed in.
+- added `logger` object to `DynamicConfiguration` plugins.
+
 # 1.5.0
 
 - changed `delimiter` for `DelimitedExtract` and `DelimitedLoad` from `DefaultHive` to `Comma`.

@@ -40,12 +40,14 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
       case Right(ETLPipeline(CustomStage(name, params, stage) :: Nil)) =>
         assert(name === "custom plugin")
         val configParms = Map[String, String](
-          "foo" -> "baz"
+          "foo" -> "baz",
+          "bar" -> "paramValue"
         )
         assert(params === configParms)
         assert(stage.getClass.getName === "au.com.agl.arc.plugins.ArcCustomPipelineStage")
       case _ => fail("expected CustomStage")
     }
+    
   }
 
 }

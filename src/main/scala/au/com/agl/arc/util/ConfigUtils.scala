@@ -3,6 +3,7 @@ package au.com.agl.arc.util
 import java.net.URI
 import java.sql.DriverManager
 import java.util.ServiceLoader
+import java.util.{ServiceLoader, Map => JMap}
 
 import scala.collection.JavaConverters._
 import scala.util.Properties._
@@ -153,7 +154,10 @@ object ConfigUtils {
     etlConfString.rightFlatMap { str =>
       val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
-      val pluginConfs: List[Config] = configPlugins(etlConf).map( c => ConfigFactory.parseMap(c.values()) )
+      // try to read objects in the plugins.config path
+      val resolvedConfigPlugins = resolveConfigPlugins(etlConf)
+      
+      val pluginConfs: List[Config] = resolvedConfigPlugins.map( c => ConfigFactory.parseMap(c) )
 
       val config = etlConf.withFallback(base)
 
@@ -171,13 +175,21 @@ object ConfigUtils {
     }
   }
 
-  def configPlugins(c: Config): List[DynamicConfigurationPlugin] = {
+  def resolveConfigPlugins(c: Config)(implicit logger: au.com.agl.arc.util.log.logger.Logger): List[JMap[String, Object]] = {
     if (c.hasPath("plugins.config")) {
       val plugins =
-        (for (p <- c.getStringList("plugins.config").asScala) yield {
-          DynamicConfigurationPlugin.pluginForName(p).map(_ :: Nil)
+        (for (p <- c.getObjectList("plugins.config").asScala) yield {
+          val plugin = p.toConfig
+          
+          if (plugin.hasPath("type")) {
+            val name = plugin.getString("type")
+            val params = readMap("params", plugin)
+            DynamicConfigurationPlugin.resolveAndExecutePlugin(name, params).map(_ :: Nil)
+          } else {
+            None
+          }
         }).toList
-      plugins.flatMap( p => p.getOrElse(Nil))
+      plugins.flatMap( p => p.getOrElse(Nil) )
     } else {
       Nil
     }
