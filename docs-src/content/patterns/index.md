@@ -26,6 +26,93 @@ Each of the main SQL databases behaves slighly different and has slighty differe
 
 Note that this method will require some cleanup activity to be performed or the number of tables will grow with each execution. A second `JDBCExecute` stage could be added to clean up older verions of the underlying `customers_` tables after successful 'rollover' execution.
 
+## Delta Processing
+
+A common pattern is to reduce the amount of computation by processing only new files thereby reducing the amount of processing (and therefore cost) of expensive operations like the [TypingTransform](../transform/#typingtransform).
+
+A simple way to do this is to use the `glob` capabilities of Spark to [extract](../extract) a subset of files and then use a [SQLTransform](../transform/#sqltransform) to select the most recent version of a record by primary key after unioning the data to a previous state stored in something like Parquet. It is suggested to have a large overlap with the state dataset to avoid missed data. Be careful with this pattern as it assumes that the previous state is correct/complete and that no input files are late arriving.
+
+Assuming an input file structure like:
+
+```bash
+hdfs://datalake/input/customer/customers_2019-02-01.csv
+hdfs://datalake/input/customer/customers_2019-02-02.csv
+hdfs://datalake/input/customer/customers_2019-02-03.csv
+hdfs://datalake/input/customer/customers_2019-02-04.csv
+hdfs://datalake/input/customer/customers_2019-02-05.csv
+hdfs://datalake/input/customer/customers_2019-02-06.csv
+hdfs://datalake/input/customer/customers_2019-02-07.csv
+```
+
+Add an additional environment variable to the `docker run` command which will calculate the delta processing period. By using GNU [date](https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html) the date maths of crossing month boundaries is easy and the formatting can be changed to suit your file naming convention.
+
+```bash
+-e ETL_CONF_DELTA_PERIOD="$(date --date='3 days ago' +%Y-%m-%d),$(date --date='2 days ago' +%Y-%m-%d),$(date --date='1 days ago' +%Y-%m-%d),$(date +%Y-%m-%d),$(date --date='1 days' +%Y-%m-%d)"
+```
+
+Which will expose and environment variable that looks like `ETL_CONF_DELTA_PERIOD=2019-02-04,2019-02-05,2019-02-06,2019-02-07,2019-02-08`. 
+
+This can then be used to read just the files which match the `glob` pattern like:
+
+```json
+{
+  "type": "DelimitedExtract",
+  "name": "load customer extract deltas",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/input/customer/customers_{"${ETL_CONF_DELTA_PERIOD}"}.csv",
+  "outputView": "customer_delta"
+},
+{
+  "type": "ParquetExtract",
+  "name": "load customer snapshot",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/output/customer/customers.parquet",
+  "outputView": "customer_snapshot"
+},
+{
+  "type": "SQLTransform",
+  "name": "merge the two datasets",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/select_most_recent_customer.sql",
+  "outputView": "customer"
+}
+```
+
+In this case the files for dates `2019-02-01,2019-02-02,2019-02-03` will not be read as they are not in the `${ETL_CONF_DELTA_PERIOD}` input array.
+
+A SQL `WINDOW` can then be used to find the most recent record:
+
+```sql
+-- select only the most recent update record for each 'customer_id'
+SELECT *
+FROM (
+     -- rank the dataset by the 'last_updated' timestamp for each primary keys of the table ('customer_id')
+    SELECT
+         *
+        ,ROW_NUMBER() OVER (PARTITION BY 'customer_id' ORDER BY COALESCE('last_updated', CAST('1970-01-01 00:00:00' AS TIMESTAMP)) DESC) AS row_number
+    FROM (
+        SELECT * 
+        FROM customer_snapshot
+
+        UNION ALL
+
+        SELECT *
+        FROM customer_delta
+    ) customers
+) customers
+WHERE row_number = 1
+```
+
+
 ## Duplicate Keys
 
 To find duplicate keys and stop the job so any issues are not propogated can be done using a `SQLValidate` stage which will fail with a list of invalid `customer_id`s if more than one are found:

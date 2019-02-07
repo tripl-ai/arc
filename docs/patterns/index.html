@@ -474,6 +474,88 @@ SELECT * FROM customers_${JOB_RUN_DATE}
 
 <p>Note that this method will require some cleanup activity to be performed or the number of tables will grow with each execution. A second <code>JDBCExecute</code> stage could be added to clean up older verions of the underlying <code>customers_</code> tables after successful &lsquo;rollover&rsquo; execution.</p>
 
+<h2 id="delta-processing">Delta Processing</h2>
+
+<p>A common pattern is to reduce the amount of computation by processing only new files thereby reducing the amount of processing (and therefore cost) of expensive operations like the <a href="../transform/#typingtransform">TypingTransform</a>.</p>
+
+<p>A simple way to do this is to use the <code>glob</code> capabilities of Spark to <a href="../extract">extract</a> a subset of files and then use a <a href="../transform/#sqltransform">SQLTransform</a> to select the most recent version of a record by primary key after unioning the data to a previous state stored in something like Parquet. It is suggested to have a large overlap with the state dataset to avoid missed data. Be careful with this pattern as it assumes that the previous state is correct/complete and that no input files are late arriving.</p>
+
+<p>Assuming an input file structure like:</p>
+
+<pre><code class="language-bash">hdfs://datalake/input/customer/customers_2019-02-01.csv
+hdfs://datalake/input/customer/customers_2019-02-02.csv
+hdfs://datalake/input/customer/customers_2019-02-03.csv
+hdfs://datalake/input/customer/customers_2019-02-04.csv
+hdfs://datalake/input/customer/customers_2019-02-05.csv
+hdfs://datalake/input/customer/customers_2019-02-06.csv
+hdfs://datalake/input/customer/customers_2019-02-07.csv
+</code></pre>
+
+<p>Add an additional environment variable to the <code>docker run</code> command which will calculate the delta processing period. By using GNU <a href="https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html">date</a> the date maths of crossing month boundaries is easy and the formatting can be changed to suit your file naming convention.</p>
+
+<pre><code class="language-bash">-e ETL_CONF_DELTA_PERIOD=&quot;$(date --date='3 days ago' +%Y-%m-%d),$(date --date='2 days ago' +%Y-%m-%d),$(date --date='1 days ago' +%Y-%m-%d),$(date +%Y-%m-%d),$(date --date='1 days' +%Y-%m-%d)&quot;
+</code></pre>
+
+<p>Which will expose and environment variable that looks like <code>ETL_CONF_DELTA_PERIOD=2019-02-04,2019-02-05,2019-02-06,2019-02-07,2019-02-08</code>.</p>
+
+<p>This can then be used to read just the files which match the <code>glob</code> pattern like:</p>
+
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;DelimitedExtract&quot;,
+  &quot;name&quot;: &quot;load customer extract deltas&quot;,
+  &quot;environments&quot;: [
+    &quot;production&quot;,
+    &quot;test&quot;
+  ],
+  &quot;inputURI&quot;: &quot;hdfs://datalake/input/customer/customers_{&quot;${ETL_CONF_DELTA_PERIOD}&quot;}.csv&quot;,
+  &quot;outputView&quot;: &quot;customer_delta&quot;
+},
+{
+  &quot;type&quot;: &quot;ParquetExtract&quot;,
+  &quot;name&quot;: &quot;load customer snapshot&quot;,
+  &quot;environments&quot;: [
+    &quot;production&quot;,
+    &quot;test&quot;
+  ],
+  &quot;inputURI&quot;: &quot;hdfs://datalake/output/customer/customers.parquet&quot;,
+  &quot;outputView&quot;: &quot;customer_snapshot&quot;
+},
+{
+  &quot;type&quot;: &quot;SQLTransform&quot;,
+  &quot;name&quot;: &quot;merge the two datasets&quot;,
+  &quot;environments&quot;: [
+    &quot;production&quot;,
+    &quot;test&quot;
+  ],
+  &quot;inputURI&quot;: &quot;hdfs://datalake/sql/select_most_recent_customer.sql&quot;,
+  &quot;outputView&quot;: &quot;customer&quot;
+}
+</code></pre>
+
+<p>In this case the files for dates <code>2019-02-01,2019-02-02,2019-02-03</code> will not be read as they are not in the <code>${ETL_CONF_DELTA_PERIOD}</code> input array.</p>
+
+<p>A SQL <code>WINDOW</code> can then be used to find the most recent record:</p>
+
+<pre><code class="language-sql">-- select only the most recent update record for each 'customer_id'
+SELECT *
+FROM (
+     -- rank the dataset by the 'last_updated' timestamp for each primary keys of the table ('customer_id')
+    SELECT
+         *
+        ,ROW_NUMBER() OVER (PARTITION BY 'customer_id' ORDER BY COALESCE('last_updated', CAST('1970-01-01 00:00:00' AS TIMESTAMP)) DESC) AS row_number
+    FROM (
+        SELECT * 
+        FROM customer_snapshot
+
+        UNION ALL
+
+        SELECT *
+        FROM customer_delta
+    ) customers
+) customers
+WHERE row_number = 1
+</code></pre>
+
 <h2 id="duplicate-keys">Duplicate Keys</h2>
 
 <p>To find duplicate keys and stop the job so any issues are not propogated can be done using a <code>SQLValidate</code> stage which will fail with a list of invalid <code>customer_id</code>s if more than one are found:</p>

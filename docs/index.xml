@@ -41,7 +41,7 @@ It is a great dataset as it has a lot of the attributes of real-world data we wa
       <guid>https://aglenergy.github.io/arc/transform/</guid>
       <description>*Transform stages apply a single transformation to one or more incoming datasets.
 Transformers should meet this criteria:
- Be pure. Perform only a single function. Utilise Spark internal functionality where possible.  DiffTransform Since: 1.0.8 - Supports Streaming: False The DiffTransform stage calculates the difference between two input datasets and produces three datasets:
+ Be logically pure. Perform only a single function. Utilise Spark internal functionality where possible.  DiffTransform Since: 1.0.8 - Supports Streaming: False The DiffTransform stage calculates the difference between two input datasets and produces three datasets:
  A dataset of the intersection of the two datasets - or rows that exist and are the same in both datasets.</description>
     </item>
     
