@@ -512,6 +512,17 @@ hdfs://datalake/input/customer/customers_2019-02-07.csv
     &quot;test&quot;
   ],
   &quot;inputURI&quot;: &quot;hdfs://datalake/input/customer/customers_{&quot;${ETL_CONF_DELTA_PERIOD}&quot;}.csv&quot;,
+  &quot;outputView&quot;: &quot;customer_delta_untyped&quot;
+},
+{
+  &quot;type&quot;: &quot;TypingTransform&quot;,
+  &quot;name&quot;: &quot;apply data types to only the delta records&quot;,
+  &quot;environments&quot;: [
+    &quot;production&quot;,
+    &quot;test&quot;
+  ],
+  &quot;inputURI&quot;: &quot;hdfs://datalake/metadata/customer.json&quot;,
+  &quot;inputView&quot;: &quot;customer_delta_untyped&quot;,
   &quot;outputView&quot;: &quot;customer_delta&quot;
 },
 {

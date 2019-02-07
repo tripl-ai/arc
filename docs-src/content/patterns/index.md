@@ -67,6 +67,17 @@ This can then be used to read just the files which match the `glob` pattern like
     "test"
   ],
   "inputURI": "hdfs://datalake/input/customer/customers_{"${ETL_CONF_DELTA_PERIOD}"}.csv",
+  "outputView": "customer_delta_untyped"
+},
+{
+  "type": "TypingTransform",
+  "name": "apply data types to only the delta records",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/metadata/customer.json",
+  "inputView": "customer_delta_untyped",
   "outputView": "customer_delta"
 },
 {
