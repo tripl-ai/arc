@@ -7,6 +7,7 @@
 - added `logger` object to `DynamicConfiguration` plugins.
 - added `customDelimiter` attribute to `DelimitedExtract` and `DelimitedLoad` to be used in conjunction with `delimiter` equal to `Custom`.
 - added optional `description` attribute to all stages.
+- bump to Alpine 3.9 in `Dockerfile`.
 
 # 1.5.0
 

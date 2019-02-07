@@ -1,5 +1,4 @@
-FROM alpine:3.8
-
+FROM alpine:3.9
 # A few reasons for installing distribution-provided OpenJDK:
 #
 #  1. Oracle.  Licensing prevents us from redistributing the official JDK.
