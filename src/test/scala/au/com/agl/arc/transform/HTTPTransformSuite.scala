@@ -26,6 +26,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   class PostEchoHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
       if (HttpConnection.getCurrentConnection.getRequest.getMethod == "POST") {
+        requests += 1
         response.setContentType("text/html")
         response.setStatus(HttpServletResponse.SC_OK)
         response.getWriter().println(Source.fromInputStream(request.getInputStream).mkString)
@@ -56,6 +57,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   val empty = "empty"
   val body = "testpayload"
   val delimiter = "\n"
+
+  var requests = 0
 
   before {
     implicit val spark = SparkSession
@@ -180,6 +183,89 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
     assert(TestDataUtils.datasetEquality(expected, actual))
   }    
+
+  test("HTTPTransform: Can echo post data: batchSize 1") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    requests = 0
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(inputView)
+    var payloadDataset = spark.sql(s"""
+      SELECT *, TO_JSON(NAMED_STRUCT('dateDatum', dateDatum)) AS inputField FROM ${inputView}
+    """).repartition(1)
+    val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
+    inputDataset.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.HTTPTransform.transform(
+      HTTPTransform(
+        name=outputView,
+        description=None,
+        uri=new URI(s"${uri}/${echo}/"),
+        headers=Map.empty,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
+        inputView=inputView,
+        outputView=outputView,
+        params=Map.empty,
+        persist=true,
+        inputField="inputField",
+        batchSize=1,
+        delimiter=delimiter
+      )
+    ).get
+
+    val expected = transformDataset.select(col("inputField")).withColumnRenamed("inputField", "value")
+    val actual = transformDataset.select(col("body")).withColumnRenamed("body", "value")
+
+    assert(TestDataUtils.datasetEquality(expected, actual))
+    assert(requests == 2)
+  }     
+
+  test("HTTPTransform: Can echo post data: batchSize >1") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    requests = 0
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(inputView)
+    var payloadDataset = spark.sql(s"""
+      SELECT *, TO_JSON(NAMED_STRUCT('dateDatum', dateDatum)) AS inputField FROM ${inputView}
+    """).repartition(1)
+    val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
+    inputDataset.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.HTTPTransform.transform(
+      HTTPTransform(
+        name=outputView,
+        description=None,
+        uri=new URI(s"${uri}/${echo}/"),
+        headers=Map.empty,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
+        inputView=inputView,
+        outputView=outputView,
+        params=Map.empty,
+        persist=true,
+        inputField="inputField",
+        batchSize=5,
+        delimiter=delimiter
+      )
+    ).get
+
+    val expected = transformDataset.select(col("inputField")).withColumnRenamed("inputField", "value")
+    val actual = transformDataset.select(col("body")).withColumnRenamed("body", "value")
+
+    assert(TestDataUtils.datasetEquality(expected, actual))
+    assert(requests == 1)
+  }     
+
 
   test("HTTPTransform: Can handle empty response") {
     implicit val spark = session
