@@ -139,8 +139,8 @@ This stage would typically be used with a `JSONExtract` stage by specifying `inp
 |inputView|String|true*|Name of the incoming Spark dataset containing the list of URIs in `value` field. If not present `inputURI` is requred.|
 |inputURI|URI|true*|URI of the HTTP server. If not present `inputView` is requred.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |body|String|false|The request body/entity that is sent with a `POST` request.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
 |method|String|false|The request type with valid values `GET` or `POST`.<br><br>Default: `GET`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|

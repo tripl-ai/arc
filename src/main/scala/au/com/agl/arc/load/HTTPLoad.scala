@@ -96,6 +96,11 @@ object HTTPLoad {
             // send the request
             val response = httpClient.execute(post)
             
+            // verify status code is correct
+            if (!load.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+              throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${load.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
+            }
+
             // read and close response
             val responseEntity = response.getEntity.getContent
             val body = Source.fromInputStream(responseEntity).mkString
@@ -113,44 +118,12 @@ object HTTPLoad {
       }
     }
 
-    val distinctReponses = responses
-      .groupBy($"statusCode", $"reasonPhrase")
-      .agg(collect_list($"body").as("body"), count("*").as("count"))
-
-    // execute the requests and return a new dataset of distinct response codes
-    distinctReponses.cache.count
-
-    // response logging 
-    // limited to 50 top response codes (by count descending) to protect against log flooding
-    val responseMap = new java.util.HashMap[String, Object]()      
-    distinctReponses.sort($"count".desc).limit(50).collect.foreach( response => {
-      val colMap = new java.util.HashMap[String, Object]()
-      colMap.put("body", response.getList(2).toArray.slice(0, 10).distinct)
-      colMap.put("reasonPhrase", response.getString(1))
-      colMap.put("count", Long.valueOf(response.getLong(3)))
-      responseMap.put(response.getInt(0).toString, colMap)
-    })
-    stageDetail.put("responses", responseMap)    
-
-    // verify status code is correct
-    val validStatusCodes = load.validStatusCodes match {
-      case Some(value) => value
-      case None => 200 :: 201 :: 202 :: Nil
-    }
-    if (!(distinctReponses.map(d => d.getInt(0)).collect forall (validStatusCodes contains _))) {
-      val responseMessages = distinctReponses.map(response => s"${response.getLong(3)} reponses ${response.getInt(0)} (${response.getString(1)})").collect.mkString(", ")
-
-      throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${validStatusCodes.mkString(", ")}] but server responded with [${responseMessages}].""") with DetailException {
-        override val detail = stageDetail          
-      }
-    }    
-
     logger.info()
       .field("event", "exit")
       .field("duration", System.currentTimeMillis() - startTime)
       .map("stage", stageDetail)      
       .log()
 
-    Option(df)
+    Option(responses.toDF)
   }
 }

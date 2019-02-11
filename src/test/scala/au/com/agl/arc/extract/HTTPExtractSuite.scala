@@ -284,10 +284,10 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           method="GET",
           body=None   
         )
-      )
+      ).get.count
     }
 
-    assert(thrown.getMessage == "HTTPExtract expects all response StatusCode(s) in [200, 201, 202] but server responded with [1 reponses 404 (Not Found)].")    
+    assert(thrown.getMessage.contains("HTTPExtract expects all response StatusCode(s) in [200, 201, 202] but server responded with 404 (Not Found)."))
   }
 
   test("HTTPExtract: validStatusCodes") {
@@ -310,10 +310,10 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           method="GET",
           body=None   
         )
-      )
+      ).get.count
     }
 
-    assert(thrown.getMessage == "HTTPExtract expects all response StatusCode(s) in [201] but server responded with [1 reponses 200 (OK)].")    
+    assert(thrown.getMessage.contains("HTTPExtract expects all response StatusCode(s) in [201] but server responded with 200 (OK)."))
   }  
 
   test("HTTPExtract: broken url throws exception") {
@@ -336,7 +336,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           method="GET",
           body=None   
         )
-      )
+      ).get.count
     }
     assert(thrown.getMessage.contains("Connection refused"))      
   }

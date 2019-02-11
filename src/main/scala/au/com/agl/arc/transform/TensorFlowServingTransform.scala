@@ -43,6 +43,9 @@ object TensorFlowServingTransform {
     stageDetail.put("uri", transform.uri.toString)
     stageDetail.put("batchSize", Integer.valueOf(transform.batchSize))
     stageDetail.put("responseType", transform.responseType.sparkString)
+    for (signatureName <- transform.signatureName) {
+      stageDetail.put("signature_name", signatureName)
+    }    
 
     logger.info()
       .field("event", "enter")
@@ -103,7 +106,6 @@ object TensorFlowServingTransform {
           // optionally set signature_name
           for (signatureName <- transform.signatureName) {
             node.put("signature_name", signatureName)
-            stageDetail.put("signature_name", signatureName)
           }
           val instancesArray = node.putArray("instances")
 

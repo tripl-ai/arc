@@ -1322,7 +1322,7 @@ object ConfigUtils {
   def readHTTPTransform(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "uri" :: "headers" :: "inputField" :: "persist" :: "validStatusCodes" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "uri" :: "headers" :: "inputField" :: "persist" :: "validStatusCodes" :: "params" :: "batchSize" :: "delimiter" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
 
     val description = getOptionalValue[String]("description")
@@ -1336,12 +1336,14 @@ object ConfigUtils {
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
+    val batchSize = getValue[Int]("batchSize", default = Some(1))
+    val delimiter = getValue[String]("delimiter", default = Some("\n"))
 
-    (name, description, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys) match {
-      case (Right(n), Right(d), Right(iv), Right(ov), Right(uri), Right(p), Right(ifld), Right(vsc), Right(_)) => 
-        Right(HTTPTransform(n, d, uri, headers, vsc, iv, ov, ifld, params, p))
+    (name, description, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys, batchSize, delimiter) match {
+      case (Right(n), Right(d), Right(iv), Right(ov), Right(uri), Right(p), Right(ifld), Right(vsc), Right(_), Right(bs), Right(delim)) => 
+        Right(HTTPTransform(n, d, uri, headers, vsc, iv, ov, ifld, params, p, bs, delim))
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys, batchSize, delimiter).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1698,13 +1700,13 @@ object ConfigUtils {
     val inputURI = getValue[String]("outputURI")
     val parsedURI = inputURI.rightFlatMap(uri => parseURI("outputURI", uri))
     val headers = readMap("headers", c)
-    val validStatusCodes = if (c.hasPath("validStatusCodes")) Some(c.getIntList("validStatusCodes").asScala.map(f => f.toInt).toList) else None
+    val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
 
-    (name, description, parsedURI, inputView, invalidKeys) match {
-      case (Right(n), Right(d), Right(uri), Right(iv), Right(_)) => 
-        Right(HTTPLoad(n, d, iv, uri, headers, validStatusCodes, params))
+    (name, description, parsedURI, inputView, invalidKeys, validStatusCodes) match {
+      case (Right(n), Right(d), Right(uri), Right(iv), Right(_), Right(vsc)) => 
+        Right(HTTPLoad(n, d, iv, uri, headers, vsc, params))
       case _ =>
-        val allErrors: Errors = List(name, description, parsedURI, inputView, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, inputView, invalidKeys, validStatusCodes).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

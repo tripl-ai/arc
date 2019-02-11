@@ -42,6 +42,8 @@ object HTTPTransform {
     stageDetail.put("headers", maskedHeaders.asJava)
     stageDetail.put("persist", Boolean.valueOf(transform.persist))
     stageDetail.put("validStatusCodes", transform.validStatusCodes.asJava)
+    stageDetail.put("batchSize", Integer.valueOf(transform.batchSize))
+    stageDetail.put("delimiter", transform.delimiter)
 
     logger.info()
       .field("event", "enter")
@@ -70,7 +72,7 @@ object HTTPTransform {
     }
 
     val typedSchema = StructType(
-      df.schema.fields.toList ::: List(new StructField("statusCode", IntegerType, false), new StructField("reasonPhrase", StringType, false), new StructField("contentType", StringType, false), new StructField("body", StringType, false))
+      df.schema.fields.toList ::: List(new StructField("body", StringType, false))
     )
 
     /** Create a dynamic RowEncoder from the provided schema. We use the phantom
@@ -78,7 +80,7 @@ object HTTPTransform {
       */
     implicit val typedEncoder: Encoder[TypedRow] = org.apache.spark.sql.catalyst.encoders.RowEncoder(typedSchema)
     
-    val responses = try {
+    var transformedDF = try {
       df.mapPartitions[TypedRow] { partition: Iterator[Row] => 
         val poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager()
         poolingHttpClientConnectionManager.setMaxTotal(50)
@@ -100,7 +102,10 @@ object HTTPTransform {
           case false => NullType
         }
 
-        bufferedPartition.map[TypedRow] { row: Row =>
+        // group so we can send multiple rows per request
+        val groupedPartition = bufferedPartition.grouped(transform.batchSize)
+
+        groupedPartition.flatMap[TypedRow] { groupedRow => 
           val post = new HttpPost(uri)
 
           // add headers
@@ -110,8 +115,13 @@ object HTTPTransform {
 
           // add payload
           val entity = dataType match {
-            case _: StringType => new StringEntity(row.getString(fieldIndex))
-            case _: BinaryType => new ByteArrayEntity(row.get(fieldIndex).asInstanceOf[Array[scala.Byte]])
+            case _: StringType => {
+              new StringEntity(groupedRow.map(row => row.getString(fieldIndex)).mkString(transform.delimiter))
+            }
+            case _: BinaryType => {
+              val delimiter = transform.delimiter.getBytes
+              new ByteArrayEntity(groupedRow.map(row => row.get(fieldIndex).asInstanceOf[Array[scala.Byte]]).reduce(_ ++ delimiter ++ _))
+            }
           }
           post.setEntity(entity)
           
@@ -119,22 +129,24 @@ object HTTPTransform {
             // send the request
             val response = httpClient.execute(post)
             
+            // verify status code is correct
+            if (!transform.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+              throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${transform.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
+            }
+
             // read and close response
             val content = response.getEntity.getContent
-            val body = Source.fromInputStream(content).mkString.replace("\n", "")
+            val body = Source.fromInputStream(content).mkString.split(transform.delimiter)
             response.close 
 
-            // throw early exception if in streaming mode and bad response code
-            if (arcContext.isStreaming) {
-              // verify status code is correct
-              if (!transform.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
-                throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${transform.validStatusCodes.mkString(", ")}] but server responded with [${response.getStatusLine.getStatusCode}].""")
-              }
+            if (body.length != groupedRow.length) {
+              throw new Exception(s"""HTTPTransform expects the response to contain same number of results as 'batchSize' (${transform.batchSize}) but server responded with ${body.length}.""")
             }
 
             // cast to a TypedRow to fit the Dataset map method requirements
-            val result = row.toSeq ++ Seq(response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, response.getEntity.getContentType.toString, body)
-            Row.fromSeq(result).asInstanceOf[TypedRow]
+            groupedRow.zipWithIndex.map { case (row, index) => {
+              Row.fromSeq(row.toSeq ++ Seq(body(index))).asInstanceOf[TypedRow]
+            }}
 
           } finally {
             post.releaseConnection
@@ -147,48 +159,13 @@ object HTTPTransform {
       }
     } 
 
-    // if not streaming get 
-    var transformedDF = if (!responses.isStreaming) {
-      val distinctReponses = responses
-        .groupBy(col("statusCode"), col("reasonPhrase"))
-        .agg(collect_list(col("body")).as("body"), count("*").as("count"))
-
-      // execute the requests and return a new dataset of distinct response codes
-      distinctReponses.cache.count
-
-      // response logging 
-      // limited to 50 top response codes (by count descending) to protect against log flooding
-      val responseMap = new java.util.HashMap[String, Object]()      
-      distinctReponses.sort(col("count").desc).limit(50).collect.foreach( response => {
-        val colMap = new java.util.HashMap[String, Object]()
-        colMap.put("body", response.getList(2).toArray.slice(0, 10).distinct)
-        colMap.put("reasonPhrase", response.getString(1))
-        colMap.put("count", Long.valueOf(response.getLong(3)))
-        responseMap.put(response.getInt(0).toString, colMap)
-      })
-      stageDetail.put("responses", responseMap)    
-
-      // verify status code is correct
-      if (!(distinctReponses.map(d => d.getInt(0)).collect forall (transform.validStatusCodes contains _))) {
-        val responseMessages = distinctReponses.map(response => s"${response.getLong(3)} reponses ${response.getInt(0)} (${response.getString(1)})").collect.mkString(", ")
-
-        throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${transform.validStatusCodes.mkString(", ")}] but server responded with [${responseMessages}].""") with DetailException {
-          override val detail = stageDetail          
-        }
-      }     
-
-      responses.drop(col("statusCode")).drop(col("reasonPhrase"))
-    } else {
-      responses.drop(col("statusCode")).drop(col("reasonPhrase"))
-    }
-
     // re-attach metadata to result
     df.schema.fields.foreach(field => {
       transformedDF = transformedDF.withColumn(field.name, col(field.name).as(field.name, field.metadata))
     })
 
     transformedDF.createOrReplaceTempView(transform.outputView)
-
+    
     if (transform.persist && !transformedDF.isStreaming) {
       transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
       stageDetail.put("records", Long.valueOf(transformedDF.count)) 

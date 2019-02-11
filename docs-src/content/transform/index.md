@@ -62,6 +62,8 @@ The `HTTPTransform` stage transforms the incoming dataset by `POST`ing the value
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |uri|URI|true|URI of the HTTP server.|
+|batchSize|Integer|false|The number of records to send in each HTTP request to reduce the cost of HTTP overhead.<br><br>Default: `1`.|
+|delimiter|String|false|When using a `batchSize` greater than one this option allows the specification of a delimiter so that the receiving HTTP service can split the request body into records and Arc can split the response body back into records.<br><br>Default: `\n` (newline).|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
 |inputField|String|false|The field to pass to the endpoint. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|

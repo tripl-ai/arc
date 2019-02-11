@@ -9,6 +9,8 @@
   "inputView": "customer",
   "outputView": "customer_enriched",
   "uri": "http://internalserver/api/customer_retention",
+  "batchSize": 10,
+  "delimiter": ",",
   "headers": {
     "Authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
     "custom-header": "payload"

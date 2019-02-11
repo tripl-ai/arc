@@ -615,6 +615,20 @@
 </tr>
 
 <tr>
+<td>batchSize</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of records to send in each HTTP request to reduce the cost of HTTP overhead.<br><br>Default: <code>1</code>.</td>
+</tr>
+
+<tr>
+<td>delimiter</td>
+<td>String</td>
+<td>false</td>
+<td>When using a <code>batchSize</code> greater than one this option allows the specification of a delimiter so that the receiving HTTP service can split the request body into records and Arc can split the response body back into records.<br><br>Default: <code>\n</code> (newline).</td>
+</tr>
+
+<tr>
 <td>description</td>
 <td>String</td>
 <td>false</td>
@@ -680,6 +694,8 @@
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_enriched&#34;</span><span class="p">,</span>
   <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer_retention&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;batchSize&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;delimiter&#34;</span><span class="p">:</span> <span class="s2">&#34;,&#34;</span><span class="p">,</span>
   <span class="nt">&#34;headers&#34;</span><span class="p">:</span> <span class="p">{</span>
     <span class="nt">&#34;Authorization&#34;</span><span class="p">:</span> <span class="s2">&#34;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&#34;</span><span class="p">,</span>
     <span class="nt">&#34;custom-header&#34;</span><span class="p">:</span> <span class="s2">&#34;payload&#34;</span>
