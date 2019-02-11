@@ -313,6 +313,61 @@ FROM (
 
 The threshold parameter could be easily passed in as a sqlParam parameter and referenced as `${CUSTOMER_CHURN_PROBABILITY_THRESHOLD}` in the SQL code.
 
+## Nested Data
+
+Because the SQL language wasn't really designed with nested data like Spark allows it can be difficult to convert nested data into normal table structures. The [EXPLODE](https://spark.apache.org/docs/latest/api/sql/index.html#explode) and [POSEXPLODE](https://spark.apache.org/docs/latest/api/sql/index.html#posexplode) SQL functions are very useful for this conversion:
+
+### Example
+
+Assuming a nested input structure like a JSON response that has been parsed via `JSONExtract`:
+
+```json
+{
+  "result": "success",
+  "data": [
+    {
+      "customerId": 1,
+      "active": true
+    },
+    {
+      "customerId": 2,
+      "active": false
+    },
+    {
+      "customerId": 3,
+      "active": true
+    }
+  ]
+}
+```
+
+To flatten the `data` array use a SQL subquery and a [POSEXPLODE](https://spark.apache.org/docs/latest/api/sql/index.html#posexplode) to extract the data. `EXPLODE` and `POSEXPLODE` will both produce a field called `col` which can be used from the parent query. `POSEXPLODE` will include an additional field `pos` to indicate the index of the value in the input array (which can be useful if array order is important for business logic).
+
+```sql
+SELECT 
+  result
+  ,pos
+  ,col.*
+FROM (
+  SELECT
+    result
+    ,POSEXPLODE(data)
+  FROM result
+) result
+```
+
+To produce:
+
+```bash
++-------+---+------+----------+
+|result |pos|active|customerId|
++-------+---+------+----------+
+|success|0  |true  |1         |
+|success|1  |false |2         |
+|success|2  |true  |3         |
++-------+---+------+----------+
+```
+
 ## Testing with Parquet
 
 If you want to manually create test data to compare against a Spark DataFrame a good option is to use the [Apache Arrow](https://arrow.apache.org/) library and the Python API to create a correctly typed [Parquet](https://parquet.apache.org/). This file can then be loaded and compared with the `EqualityValidate` stage.

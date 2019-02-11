@@ -939,11 +939,63 @@ FROM (
 
 <p>The threshold parameter could be easily passed in as a sqlParam parameter and referenced as <code>${CUSTOMER_CHURN_PROBABILITY_THRESHOLD}</code> in the SQL code.</p>
 
+<h2 id="nested-data">Nested Data</h2>
+
+<p>Because the SQL language wasn&rsquo;t really designed with nested data like Spark allows it can be difficult to convert nested data into normal table structures. The <a href="https://spark.apache.org/docs/latest/api/sql/index.html#explode">EXPLODE</a> and <a href="https://spark.apache.org/docs/latest/api/sql/index.html#posexplode">POSEXPLODE</a> SQL functions are very useful for this conversion:</p>
+
+<h3 id="example-7">Example</h3>
+
+<p>Assuming a nested input structure like a JSON response that has been parsed via <code>JSONExtract</code>:</p>
+
+<pre><code class="language-json">{
+  &quot;result&quot;: &quot;success&quot;,
+  &quot;data&quot;: [
+    {
+      &quot;customerId&quot;: 1,
+      &quot;active&quot;: true
+    },
+    {
+      &quot;customerId&quot;: 2,
+      &quot;active&quot;: false
+    },
+    {
+      &quot;customerId&quot;: 3,
+      &quot;active&quot;: true
+    }
+  ]
+}
+</code></pre>
+
+<p>To flatten the <code>data</code> array use a SQL subquery and a <a href="https://spark.apache.org/docs/latest/api/sql/index.html#posexplode">POSEXPLODE</a> to extract the data. <code>EXPLODE</code> and <code>POSEXPLODE</code> will both produce a field called <code>col</code> which can be used from the parent query. <code>POSEXPLODE</code> will include an additional field <code>pos</code> to indicate the index of the value in the input array (which can be useful if array order is important for business logic).</p>
+
+<pre><code class="language-sql">SELECT 
+  result
+  ,pos
+  ,col.*
+FROM (
+  SELECT
+    result
+    ,POSEXPLODE(data)
+  FROM result
+) result
+</code></pre>
+
+<p>To produce:</p>
+
+<pre><code class="language-bash">+-------+---+------+----------+
+|result |pos|active|customerId|
++-------+---+------+----------+
+|success|0  |true  |1         |
+|success|1  |false |2         |
+|success|2  |true  |3         |
++-------+---+------+----------+
+</code></pre>
+
 <h2 id="testing-with-parquet">Testing with Parquet</h2>
 
 <p>If you want to manually create test data to compare against a Spark DataFrame a good option is to use the <a href="https://arrow.apache.org/">Apache Arrow</a> library and the Python API to create a correctly typed <a href="https://parquet.apache.org/">Parquet</a>. This file can then be loaded and compared with the <code>EqualityValidate</code> stage.</p>
 
-<h3 id="example-7">Example</h3>
+<h3 id="example-8">Example</h3>
 
 <p>Using the publicly available <a href="https://www.docker.com/">Docker</a> <a href="https://conda.io">Conda</a> image:</p>
 
