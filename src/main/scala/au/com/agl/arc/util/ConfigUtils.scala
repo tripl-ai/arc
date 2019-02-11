@@ -847,7 +847,7 @@ object ConfigUtils {
     import ConfigReader._
     import au.com.agl.arc.extract.DelimitedExtract._
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: "inputField":: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     val description = getOptionalValue[String]("description")
@@ -888,14 +888,16 @@ object ConfigUtils {
       case _ => Right("")
     }
 
-    (name, description, input, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter) match {
-      case (Right(n), Right(d), Right(in), Right(pg), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(pb), Right(head), Right(auth), Right(ci), Right(delim), Right(q), Right(_), Right(cd)) =>
+    val inputField = getOptionalValue[String]("inputField")
+
+    (name, description, input, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField) match {
+      case (Right(n), Right(d), Right(in), Right(pg), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(pb), Right(head), Right(auth), Right(ci), Right(delim), Right(q), Right(_), Right(cd), Right(ipf)) =>
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        val extract = DelimitedExtract(n, d, schema, ov, input, Delimited(header=head, sep=delim, quote=q, customDelimiter=cd), auth, params, p, np, pb, ci)
+        val extract = DelimitedExtract(n, d, schema, ov, input, Delimited(header=head, sep=delim, quote=q, customDelimiter=cd), auth, params, p, np, pb, ci, ipf)
         Right(extract)
       case _ =>
-        val allErrors: Errors = List(name, description, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1017,7 +1019,7 @@ object ConfigUtils {
   def readJSONExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "inputField" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
 
     val description = getOptionalValue[String]("description")
@@ -1049,8 +1051,10 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
 
-    (name, description, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, invalidKeys) match {
-      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci), Right(pb), Right(_)) => 
+    val inputField = getOptionalValue[String]("inputField")
+
+    (name, description, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, invalidKeys, inputField) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(ml), Right(auth), Right(ci), Right(pb), Right(_), Right(ipf)) => 
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
@@ -1059,9 +1063,9 @@ object ConfigUtils {
           case Some(b: Boolean) => b
           case _ => json.multiLine
         }
-        Right(JSONExtract(n, d, schema, ov, input, JSON(multiLine=multiLine), auth, params, p, np, pb, ci))
+        Right(JSONExtract(n, d, schema, ov, input, JSON(multiLine=multiLine), auth, params, p, np, pb, ci, ipf))
       case _ =>
-        val allErrors: Errors = List(name, description, input, schemaView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, input, schemaView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys, inputField).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

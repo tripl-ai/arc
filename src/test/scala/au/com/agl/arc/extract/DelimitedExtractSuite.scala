@@ -25,7 +25,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.csv" 
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.csv" 
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.csv.gz" 
-  val outputView = "dataset"
+  val inputView = "inputView"
+  val outputView = "outputView"
 
   before {
     implicit val spark = SparkSession
@@ -80,7 +81,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -110,6 +112,45 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     assert(timestampDatumMetadata.getLong("securityLevel") == 7)    
   }  
 
+  test("DelimitedExtract inputView") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+ 
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView("dataset")
+    var payloadDataset = spark.sql(s"""
+      SELECT NULL AS nullDatum, "field0|field1" AS inputField
+      UNION ALL
+      SELECT nullDatum, CONCAT(stringDatum, "|", stringDatum) AS inputField
+      FROM dataset
+    """).repartition(1)
+
+    payloadDataset.createOrReplaceTempView(inputView)
+
+    val extractDataset = extract.DelimitedExtract.extract(
+      DelimitedExtract(
+        name=outputView,
+        description=None,
+        cols=Right(Nil),
+        outputView=outputView,
+        input=Left(inputView),
+        settings=new Delimited(header=true, sep=Delimiter.Pipe),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        inputField=Option("inputField")
+      )
+    ).get
+
+    assert(extractDataset.count === 2)
+    assert(extractDataset.columns.length === 4)
+  }    
+
   test("DelimitedExtract Caching") {
     implicit val spark = session
     import spark.implicits._
@@ -130,7 +171,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -149,7 +191,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -190,7 +233,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=true
+          contiguousIndex=true,
+          inputField=None
         )
       )
     }
@@ -211,7 +255,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=true
+          contiguousIndex=true,
+          inputField=None
         )
       )
     }
@@ -231,7 +276,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -269,7 +315,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -300,7 +347,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -343,7 +391,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -373,7 +422,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -406,7 +456,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 

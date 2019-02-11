@@ -10,6 +10,7 @@
   "outputView": "customer",
   "authentication": {},
   "contiguousIndex": true,
+  "inputField": "jsondata",
   "multiLine": false,
   "numPartitions": 10,
   "partitionBy": [

@@ -78,7 +78,13 @@ object DelimitedExtract {
                 spark.emptyDataFrame
               case e: Exception => throw e
             }
-          case Left(view) => spark.read.options(options).csv(spark.table(view).as[String])
+            
+          case Left(view) => {
+            extract.inputField match {
+              case Some(inputField) => spark.read.options(options).csv(spark.table(view).select(col(inputField).as("value")).as[String])
+              case None => spark.read.options(options).csv(spark.table(view).as[String])
+            }
+          }
         }   
       }      
     } catch { 

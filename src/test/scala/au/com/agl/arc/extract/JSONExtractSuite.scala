@@ -24,7 +24,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
   val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.json" 
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.json" 
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.json.gz" 
-  val outputView = "dataset"
+  val inputView = "inputView"
+  val outputView = "outputView"
 
   val multiLineBase = FileUtils.getTempDirectoryPath() + "multiline/"
   val multiLineFile0 = multiLineBase + "multiLine0.json" 
@@ -90,7 +91,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -117,6 +119,41 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     assert(timeDatumMetadata.getLong("securityLevel") == 8)        
   }  
 
+  test("JSONExtract inputView") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+ 
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(inputView)
+    var payloadDataset = spark.sql(s"""
+      SELECT stringDatum, TO_JSON(NAMED_STRUCT('dateDatum', dateDatum)) AS inputField FROM ${inputView}
+    """).repartition(1)
+    payloadDataset.createOrReplaceTempView(inputView)
+
+    val extractDataset = extract.JSONExtract.extract(
+      JSONExtract(
+        name=outputView,
+        description=None,
+        cols=Right(Nil),
+        outputView=outputView,
+        input=Left(inputView),
+        settings=new JSON(multiLine=false),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        inputField=Option("inputField")
+      )
+    ).get
+
+    assert(extractDataset.count === 2)
+    assert(extractDataset.columns.length === 3)
+  }  
+
   test("JSONExtract: Caching") {
     implicit val spark = session
     import spark.implicits._
@@ -137,7 +174,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -156,7 +194,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)
@@ -197,7 +236,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=true
+          contiguousIndex=true,
+          inputField=None
         )
       )
     }
@@ -219,7 +259,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=true
+          contiguousIndex=true,
+          inputField=None
         )
       )
     }
@@ -240,7 +281,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -273,7 +315,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -290,7 +333,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -348,7 +392,8 @@ test("JSONExtract: Input Schema") {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -381,7 +426,8 @@ test("JSONExtract: Input Schema") {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 

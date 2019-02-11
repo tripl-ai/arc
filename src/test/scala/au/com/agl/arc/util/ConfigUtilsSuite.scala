@@ -59,7 +59,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       persist = false,
       numPartitions = None,
       partitionBy = Nil,
-      contiguousIndex = true
+      contiguousIndex = true,
+      inputField = None
     )
 
     val subDelimitedExtractStage = DelimitedExtract(
@@ -74,7 +75,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       persist = false,
       numPartitions = None,
       partitionBy = Nil,
-      contiguousIndex = true
+      contiguousIndex = true,
+      inputField = None
     )
 
     val schema =
@@ -422,7 +424,8 @@ hdfs://test/{ab,c{de, fg}
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       ) :: Nil)
 
 

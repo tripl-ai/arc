@@ -836,13 +836,6 @@
 </tr>
 
 <tr>
-<td>description</td>
-<td>String</td>
-<td>false</td>
-<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
-</tr>
-
-<tr>
 <td>customDelimiter</td>
 <td>String</td>
 <td>true*</td>
@@ -850,10 +843,24 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>header</td>
 <td>Boolean</td>
 <td>false</td>
 <td>Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named <code>_col1</code>, <code>_col2</code> &hellip; <code>_colN</code>.<br><br>Default: <code>false</code>.</td>
+</tr>
+
+<tr>
+<td>inputField</td>
+<td>String</td>
+<td>false</td>
+<td>If using <code>inputView</code> this option allows you to specify the name of the field which contains the delimited data.</td>
 </tr>
 
 <tr>
@@ -939,6 +946,7 @@
   <span class="nt">&#34;delimiter&#34;</span><span class="p">:</span> <span class="s2">&#34;Custom&#34;</span><span class="p">,</span>
   <span class="nt">&#34;customDelimiter&#34;</span><span class="p">:</span> <span class="s2">&#34;#&#34;</span><span class="p">,</span>
   <span class="nt">&#34;header&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;inputField&#34;</span><span class="p">:</span> <span class="s2">&#34;csvdata&#34;</span><span class="p">,</span>
   <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
   <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;country&#34;</span>
@@ -1561,6 +1569,13 @@
 </tr>
 
 <tr>
+<td>inputField</td>
+<td>String</td>
+<td>false</td>
+<td>If using <code>inputView</code> this option allows you to specify the name of the field which contains the delimited data.</td>
+</tr>
+
+<tr>
 <td>multiLine</td>
 <td>Boolean</td>
 <td>false</td>
@@ -1640,6 +1655,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
   <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;inputField&#34;</span><span class="p">:</span> <span class="s2">&#34;jsondata&#34;</span><span class="p">,</span>
   <span class="nt">&#34;multiLine&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
   <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
