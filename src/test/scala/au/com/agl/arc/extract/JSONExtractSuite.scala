@@ -32,6 +32,30 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
   val multiLineFile1 = multiLineBase + "multiLine1.json" 
   val multiLineMatcher = multiLineBase + "multiLine*.json"
 
+  val singleArrayBase = FileUtils.getTempDirectoryPath() + "singlearray/"
+  val multiArrayBase = FileUtils.getTempDirectoryPath() + "multiarray/"
+  val arrayFile0 = singleArrayBase + "array0.json" 
+  val arrayFile1 = multiArrayBase + "array1.json" 
+  val arrayFile2 = multiArrayBase + "array2.json" 
+  val arrayFileMatcher = multiArrayBase + "array*.json"
+
+  val arrayFileContents = """
+  [
+    {
+      "customerId": 1,
+      "active": true
+    },
+    {
+      "customerId": 2,
+      "active": true
+    },
+    {
+      "customerId": 3,
+      "active": true
+    }
+  ]
+  """
+
   before {
     implicit val spark = SparkSession
                   .builder()
@@ -56,6 +80,11 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     FileUtils.forceMkdir(new java.io.File(multiLineBase))
     Some(new PrintWriter(multiLineFile0)).foreach{f => f.write(TestDataUtils.knownDatasetPrettyJSON(0)); f.close}
     Some(new PrintWriter(multiLineFile1)).foreach{f => f.write(TestDataUtils.knownDatasetPrettyJSON(1)); f.close}
+    FileUtils.forceMkdir(new java.io.File(singleArrayBase))
+    Some(new PrintWriter(arrayFile0)).foreach{f => f.write("""[{"customerId":1,"active":true},{"customerId":2,"active":false},{"customerId":3,"active":true}]"""); f.close}
+    FileUtils.forceMkdir(new java.io.File(multiArrayBase))
+    Some(new PrintWriter(arrayFile1)).foreach{f => f.write(arrayFileContents); f.close}
+    Some(new PrintWriter(arrayFile2)).foreach{f => f.write(arrayFileContents); f.close}
   }
 
   after {
@@ -67,6 +96,11 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(multiLineFile1))       
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory))     
     FileUtils.deleteQuietly(new java.io.File(multiLineBase))     
+    FileUtils.deleteQuietly(new java.io.File(arrayFile2))     
+    FileUtils.deleteQuietly(new java.io.File(arrayFile1))     
+    FileUtils.deleteQuietly(new java.io.File(multiArrayBase))         
+    FileUtils.deleteQuietly(new java.io.File(arrayFile0))     
+    FileUtils.deleteQuietly(new java.io.File(singleArrayBase))         
   }
 
   test("JSONExtract") {
@@ -300,8 +334,6 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
 
-    spark.sparkContext.textFile(targetFile).take(10)
-
     val actual0 = extract.JSONExtract.extract(
       JSONExtract(
         name=outputView,
@@ -348,7 +380,91 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     assert(actual0.count > actual1.count)
   }   
 
-test("JSONExtract: Input Schema") {
+  test("JSONExtract: singleLine Array") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+
+    val actual0 = extract.JSONExtract.extract(
+      JSONExtract(
+        name=outputView,
+        description=None,
+        cols=Right(Nil),
+        outputView=outputView,
+        input=Right(arrayFile0),
+        settings=new JSON(multiLine=false),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        inputField=None
+      )
+    ).get
+
+    // check the filenames are both present
+    assert(actual0.filter($"_filename".contains(arrayFile0)).count == 3)
+
+    // check all fields parsed
+    assert(!actual0.schema.map(_.name).contains("_corrupt_record"))
+  } 
+
+  test("JSONExtract: multiLine Array") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+
+    val actual0 = extract.JSONExtract.extract(
+      JSONExtract(
+        name=outputView,
+        description=None,
+        cols=Right(Nil),
+        outputView=outputView,
+        input=Right(arrayFileMatcher),
+        settings=new JSON(multiLine=false),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        inputField=None
+      )
+    ).get
+
+    val actual1 = extract.JSONExtract.extract(
+      JSONExtract(
+        name=outputView,
+        description=None,
+        cols=Right(Nil),
+        outputView=outputView,
+        input=Right(arrayFileMatcher),
+        settings=new JSON(multiLine=true),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        inputField=None
+      )
+    ).get
+
+    // check all fields parsed
+    assert(actual0.schema.map(_.name).contains("_corrupt_record"))
+    assert(!actual1.schema.map(_.name).contains("_corrupt_record"))
+
+    // check the filenames are both present
+    assert(actual1.filter($"_filename".contains(arrayFile1)).count == 3)    
+    assert(actual1.filter($"_filename".contains(arrayFile2)).count == 3)        
+  }   
+
+  test("JSONExtract: Input Schema") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
