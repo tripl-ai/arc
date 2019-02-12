@@ -86,7 +86,7 @@ object ConfigUtils {
 
         val accountName = azureAccountName match {
           case Some(value) => value
-          case None => throw new IllegalArgumentException(s"Azure Account Name not provided for: ${uri}. Set etl.config.fs.azure.account.nameproperty or ETL_CONF_AZURE_ACCOUNT_NAME environment variable.")
+          case None => throw new IllegalArgumentException(s"Azure Account Name not provided for: ${uri}. Set etl.config.fs.azure.account.name property or ETL_CONF_AZURE_ACCOUNT_NAME environment variable.")
         }
         val accountKey = azureAccountKey match {
           case Some(value) => value
