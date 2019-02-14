@@ -167,7 +167,10 @@ object ConfigUtils {
         case _ =>
           val pluginConf = pluginConfs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
           val pluginValues = pluginConf.root().unwrapped()
-          logger.info().message("Found additional config values from plugins").field("pluginConf", pluginValues).log()
+          logger.debug()
+            .message("Found additional config values from plugins")
+            .field("pluginConf", pluginValues)
+            .log()                
           config.resolveWith(pluginConf).resolve()
       }
 

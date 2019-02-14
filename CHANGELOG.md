@@ -1,5 +1,10 @@
 ## Change Log
 
+# 1.6.1
+
+- **FIX** fixed exit process when executing within a [Databricks Runtime](https://databricks.com/product/databricks-runtime) environment so the job reports success/failure correctly. [Source](https://docs.databricks.com/user-guide/jobs.html#jar-job-tips).
+- **FIX** changed log level for `DynamicConfiguration` return values to `DEBUG` to prevent spilling secrets unless opt-in.
+
 # 1.6.0
 
 - **FIX** fixed defect in `*Extract` where Arc would recalculate metadata columns (`_filename`, `_index` or `_monotonically_increasing_id`) if both `_index` or `_monotonically_increasing_id` missing ignoring `_filename` presence.
