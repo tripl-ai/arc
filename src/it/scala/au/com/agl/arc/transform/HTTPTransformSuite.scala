@@ -73,6 +73,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
     val transformDataset = transform.HTTPTransform.transform(
       HTTPTransform(
+        description=None,
         name=outputView,
         uri=new URI(uri),
         headers=Map.empty,
@@ -81,7 +82,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField="value"
+        inputField="value",
+        batchSize=1,
+        delimiter="\n\n"     
       )
     ).get
 
@@ -112,6 +115,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
     val transformDataset = transform.HTTPTransform.transform(
       HTTPTransform(
+        description=None,
         name=outputView,
         uri=new URI(uri),
         headers=Map.empty,
@@ -120,7 +124,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField="input"
+        inputField="input",
+        batchSize=1,
+        delimiter="\n\n"      
       )
     ).get
 

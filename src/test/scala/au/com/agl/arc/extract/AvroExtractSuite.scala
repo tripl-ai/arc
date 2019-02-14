@@ -64,6 +64,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.AvroExtract.extract(
       AvroExtract(
         name=outputView,
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=targetFileGlob,
@@ -101,6 +102,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     extract.AvroExtract.extract(
       AvroExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=targetFile,
@@ -118,6 +120,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     extract.AvroExtract.extract(
       AvroExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=targetFile,
@@ -156,6 +159,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.AvroExtract.extract(
         AvroExtract(
           name=outputView,
+          description=None,
           cols=Right(Nil),
           outputView=outputView,
           input=emptyWildcardDirectory,
@@ -175,6 +179,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.AvroExtract.extract(
         AvroExtract(
           name=outputView,
+          description=None,
           cols=Right(Nil),
           outputView=outputView,
           input=emptyDirectory,
@@ -193,6 +198,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.AvroExtract.extract(
       AvroExtract(
         name=outputView,
+        description=None,
         cols=Right(cols),
         outputView=outputView,
         input=emptyDirectory,

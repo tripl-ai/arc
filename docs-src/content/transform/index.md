@@ -33,6 +33,7 @@ This stage performs this 'diffing' operation in a single pass so if multiple of 
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputLeftView|String|true|Name of first incoming Spark dataset.|
 |inputRightView|String|true|Name of second incoming Spark dataset.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |outputIntersectionView|String|false|Name of output `intersection` view.|
 |outputLeftView|String|false|Name of output `left` view.|
 |outputRightView|String|false|Name of output `right` view.|
@@ -61,6 +62,9 @@ The `HTTPTransform` stage transforms the incoming dataset by `POST`ing the value
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |uri|URI|true|URI of the HTTP server.|
+|batchSize|Integer|false|The number of records to send in each HTTP request to reduce the cost of HTTP overhead.<br><br>Default: `1`.|
+|delimiter|String|false|When using a `batchSize` greater than one this option allows the specification of a delimiter so that the receiving HTTP service can split the request body into records and Arc can split the response body back into records.<br><br>Default: `\n` (newline).|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
 |inputField|String|false|The field to pass to the endpoint. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -88,6 +92,7 @@ The `JSONTransform` stage transforms the incoming dataset to rows of `json` stri
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 
 ### Examples
@@ -159,6 +164,7 @@ The `inputView` and `outputView` can be set to the same name so that downstream 
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
 
 ### Examples
@@ -186,6 +192,7 @@ The `MLTransform` stage transforms the incoming dataset with a pretrained Spark 
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}} MLTransform will also log percentiles of prediction probabilities for classification models if this option is enabled.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 
 ### Examples
 
@@ -220,6 +227,7 @@ Whilst SQL is capable of converting data types using the `CAST` function (e.g. `
 |inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}<br><br>For example if the sqlParams contains parameter `current_timestamp` of value `2018-11-24 14:48:56` then this statement would execute in a deterministic way: `SELECT * FROM customer WHERE expiry > FROM_UNIXTIME(UNIX_TIMESTAMP('${current_timestamp}', 'uuuu-MM-dd HH:mm:ss'))` (so would be testable).|
 
@@ -267,6 +275,7 @@ The `TensorFlowServingTransform` stage transforms the incoming dataset by callin
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |uri|String|true|The `URI` of the TensorFlow Serving REST end point.|
 |batchSize|Int|false|The number of records to sent to TensorFlow Serving in each call. A higher number will decrease the number of calls to TensorFlow Serving which may be more efficient.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |inputField|String|false|The field to pass to the model. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -299,6 +308,7 @@ The logical process that is applied to perform the typing on a field-by-field ba
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |failMode|String|false|Either `permissive` or `failfast`:<br><br>`permissive` will process all rows in the dataset and collect any errors for each row in the `_errors` column. Rules can then be applied in a [SQLValidate](validate/#sqlvalidate) stage if required.<br><br>`failfast` will fail the Arc job on the first row containing at least one error.<br><br>Default: `permissive`.|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 

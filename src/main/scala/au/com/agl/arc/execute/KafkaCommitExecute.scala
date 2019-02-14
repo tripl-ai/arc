@@ -23,6 +23,9 @@ object KafkaCommitExecute {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", exec.getType)
     stageDetail.put("name", exec.name)
+    for (description <- exec.description) {
+      stageDetail.put("description", description)    
+    }    
     stageDetail.put("inputView", exec.inputView)  
     stageDetail.put("bootstrapServers", exec.bootstrapServers)
 

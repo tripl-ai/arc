@@ -1,1 +1,1 @@
-A description of the field which will be embedded in the dataset metadata (and persisted in formats like Parquet/ORC).
+An optional stage description to help document job files and print to job logs to assist debugging.

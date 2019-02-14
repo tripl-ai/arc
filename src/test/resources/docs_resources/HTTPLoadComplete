@@ -1,6 +1,7 @@
 {
   "type": "HTTPLoad",
   "name": "load customers to the customer api",
+  "description": "load customers to the customer api",
   "environments": [
     "production",
     "test"

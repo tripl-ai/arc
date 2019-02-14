@@ -22,6 +22,9 @@ object DelimitedExtract {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
+    for (description <- extract.description) {
+      stageDetail.put("description", description)    
+    }     
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
     stageDetail.put("outputView", extract.outputView)
     stageDetail.put("contiguousIndex", Boolean.valueOf(extract.contiguousIndex))
@@ -75,7 +78,13 @@ object DelimitedExtract {
                 spark.emptyDataFrame
               case e: Exception => throw e
             }
-          case Left(view) => spark.read.options(options).csv(spark.table(view).as[String])
+            
+          case Left(view) => {
+            extract.inputField match {
+              case Some(inputField) => spark.read.options(options).csv(spark.table(view).select(col(inputField).as("value")).as[String])
+              case None => spark.read.options(options).csv(spark.table(view).as[String])
+            }
+          }
         }   
       }      
     } catch { 

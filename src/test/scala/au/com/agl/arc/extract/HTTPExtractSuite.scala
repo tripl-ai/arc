@@ -144,6 +144,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.HTTPExtract.extract(
       HTTPExtract(
         name=outputView,
+        description=None,
         input=Right(new URI(s"${uri}/${get}/")),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -180,6 +181,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.HTTPExtract.extract(
       HTTPExtract(
         name=outputView,
+        description=None,
         input=Right(new URI(s"${uri}/${post}/")),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -215,6 +217,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.HTTPExtract.extract(
       HTTPExtract(
         name=outputView,
+        description=None,
         input=Right(new URI(s"${uri}/${payload}/")),
         headers=Map.empty,
         validStatusCodes=200 :: Nil,
@@ -240,6 +243,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.HTTPExtract.extract(
       HTTPExtract(
         name=outputView,
+        description=None,
         input=Right(new URI(s"${uri}/${empty}/")),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -268,6 +272,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       extract.HTTPExtract.extract(
         HTTPExtract(
           name=outputView,
+          description=None,
           input=Right(new URI(s"${uri}/fail/")),
           validStatusCodes=200 :: 201 :: 202 :: Nil,
           headers=Map.empty,
@@ -279,10 +284,10 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           method="GET",
           body=None   
         )
-      )
+      ).get.count
     }
 
-    assert(thrown.getMessage == "HTTPExtract expects all response StatusCode(s) in [200, 201, 202] but server responded with [1 reponses 404 (Not Found)].")    
+    assert(thrown.getMessage.contains("HTTPExtract expects all response StatusCode(s) in [200, 201, 202] but server responded with 404 (Not Found)."))
   }
 
   test("HTTPExtract: validStatusCodes") {
@@ -293,6 +298,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       extract.HTTPExtract.extract(
         HTTPExtract(
           name=outputView,
+          description=None,
           input=Right(new URI(s"${uri}/${empty}/")),
           headers=Map.empty,
           validStatusCodes=201 :: Nil,
@@ -304,10 +310,10 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           method="GET",
           body=None   
         )
-      )
+      ).get.count
     }
 
-    assert(thrown.getMessage == "HTTPExtract expects all response StatusCode(s) in [201] but server responded with [1 reponses 200 (OK)].")    
+    assert(thrown.getMessage.contains("HTTPExtract expects all response StatusCode(s) in [201] but server responded with 200 (OK)."))
   }  
 
   test("HTTPExtract: broken url throws exception") {
@@ -318,6 +324,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       extract.HTTPExtract.extract(
         HTTPExtract(
           name=outputView,
+          description=None,
           input=Right(new URI(badUri)),
           headers=Map.empty,
           validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -329,7 +336,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           method="GET",
           body=None   
         )
-      )
+      ).get.count
     }
     assert(thrown.getMessage.contains("Connection refused"))      
   }
@@ -345,6 +352,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.HTTPExtract.extract(
       HTTPExtract(
         name=outputView,
+        description=None,
         input=Left(inputView),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,

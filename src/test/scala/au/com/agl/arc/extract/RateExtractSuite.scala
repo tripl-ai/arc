@@ -51,6 +51,7 @@ class RateExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.RateExtract.extract(
       RateExtract(
         name="dataset",
+        description=None,
         outputView=outputView, 
         rowsPerSecond=10,
         rampUpTime=0,

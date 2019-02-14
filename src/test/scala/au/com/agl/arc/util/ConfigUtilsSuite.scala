@@ -49,6 +49,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val stage = DelimitedExtract(
       name = "file extract",
+      description=None,
       cols = Right(Nil),
       outputView = "green_tripdata0_raw",
       input = Right("/data/green_tripdata/0/*.csv"),
@@ -58,11 +59,13 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       persist = false,
       numPartitions = None,
       partitionBy = Nil,
-      contiguousIndex = true
+      contiguousIndex = true,
+      inputField = None
     )
 
     val subDelimitedExtractStage = DelimitedExtract(
       name = "extract data from green_tripdata/1",
+      description=None,
       cols = Right(Nil),
       outputView = "green_tripdata1_raw",
       input = Right("/data/green_tripdata/1/*.csv"),
@@ -72,7 +75,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       persist = false,
       numPartitions = None,
       partitionBy = Nil,
-      contiguousIndex = true
+      contiguousIndex = true,
+      inputField = None
     )
 
     val schema =
@@ -103,6 +107,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val subTypingTransformStage = TypingTransform(
       name = "apply green_tripdata/1 data types",
+      description=None,
       cols = Right(schema),
       inputView = "green_tripdata1_raw",
       outputView = "green_tripdata1",
@@ -113,6 +118,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val subSQLValidateStage = SQLValidate(
       name = "ensure no errors exist after data typing",
+      description=None,
       inputURI = URI.create("classpath://conf/sql/sqlvalidate_errors.sql"),
       sql =
         """|SELECT
@@ -335,9 +341,94 @@ hdfs://test/{ab,c{de, fg}
 
     pipeline match {
       case Left(stageError) => {
-        assert(stageError == StageError("file extract",3,List(ConfigError("delimiter", Some(12), "Invalid value. Valid values are ['Comma','Pipe','DefaultHive']."))) :: Nil)
+        assert(stageError == StageError("file extract",3,List(ConfigError("delimiter", Some(12), "Invalid value. Valid values are ['Comma','Pipe','DefaultHive','Custom']."))) :: Nil)
       }
       case Right(_) => assert(false)
     }
   }  
+
+  test("Test read custom delimiter") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val conf = """{
+      "stages": [       
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "input",
+          "outputView": "output",
+          "delimiter": "Custom"
+        }
+      ]
+    }"""
+
+    val base = ConfigFactory.load()
+    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+    val config = etlConf.withFallback(base)
+    var argsMap = collection.mutable.Map[String, String]()
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+
+    pipeline match {
+      case Left(stageError) => {
+        assert(stageError == StageError("file extract",3,List(ConfigError("customDelimiter", None, "Missing required attribute 'customDelimiter'."))) :: Nil)
+      }
+      case Right(_) => assert(false)
+    }
+  }    
+
+  test("Test read custom delimiter success") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val conf = """{
+      "stages": [       
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "input",
+          "outputView": "output",
+          "delimiter": "Custom",
+          "customDelimiter": "%"
+        }
+      ]
+    }"""
+
+    val base = ConfigFactory.load()
+    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+    val config = etlConf.withFallback(base)
+    var argsMap = collection.mutable.Map[String, String]()
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+
+
+    val expected = ETLPipeline(      
+      DelimitedExtract(
+        name="file extract",
+        description=None,
+        cols=Right(Nil),
+        outputView="output",
+        input=Left("input"),
+        settings=new Delimited(header=false, sep=Delimiter.Custom, inferSchema=false, customDelimiter="%"),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        inputField=None
+      ) :: Nil)
+
+
+    assert(pipeline === Right(expected))
+  }    
 }

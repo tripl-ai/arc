@@ -1,6 +1,7 @@
 {
   "type": "MLTransform",
   "name": "apply machine learning model",
+  "description": "apply machine learning model",
   "environments": [
     "production",
     "test"

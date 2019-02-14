@@ -16,6 +16,9 @@ object SQLTransform {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
+    for (description <- transform.description) {
+      stageDetail.put("description", description)    
+    }    
     stageDetail.put("inputURI", transform.inputURI.toString)  
     stageDetail.put("outputView", transform.outputView)   
     stageDetail.put("sqlParams", transform.sqlParams.asJava)   

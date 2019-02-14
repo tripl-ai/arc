@@ -1,6 +1,7 @@
 {
   "type": "HTTPExtract",
   "name": "load customer extract from api",
+  "description": "load customer extract from api",
   "environments": [
     "production",
     "test"

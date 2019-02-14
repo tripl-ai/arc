@@ -72,6 +72,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.TensorFlowServingTransform.transform(
       TensorFlowServingTransform(
         name=outputView,
+        description=None,
         uri=new URI(uri),
         inputView=inputView,
         outputView=outputView,
@@ -106,6 +107,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.TensorFlowServingTransform.transform(
       TensorFlowServingTransform(
         name=outputView,
+        description=None,
         uri=new URI(uri),
         inputView=inputView,
         outputView=outputView,
@@ -140,6 +142,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.TensorFlowServingTransform.transform(
       TensorFlowServingTransform(
         name=outputView,
+        description=None,
         uri=new URI(uri),
         inputView=inputView,
         outputView=outputView,
@@ -174,6 +177,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
       transform.TensorFlowServingTransform.transform(
         TensorFlowServingTransform(
           name=outputView,
+          description=None,
           uri=new URI(uri),
           inputView=inputView,
           outputView=outputView,
@@ -191,6 +195,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.TensorFlowServingTransform.transform(
       TensorFlowServingTransform(
         name=outputView,
+        description=None,
         uri=new URI(uri),
         inputView=inputView,
         outputView=outputView,
@@ -222,6 +227,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.TensorFlowServingTransform.transform(
       TensorFlowServingTransform(
         name=outputView,
+        description=None,
         uri=new URI(uri),
         inputView=inputView,
         outputView=outputView,

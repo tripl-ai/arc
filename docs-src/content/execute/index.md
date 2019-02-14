@@ -18,6 +18,7 @@ The `HTTPExecute` takes an input `Map[String, String]` from the configuration an
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |uri|URI|true|URI of the HTTP server.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
 |payloads|Map[String, String]|false|{{< readfile file="/content/partials/fields/payloads.md" markdown="true" >}}|
 |validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}}|
@@ -45,6 +46,7 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
 |inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}|
 |jdbcURL|String|true|{{< readfile file="/content/partials/fields/jdbcURL.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} All parameters will be added to the Connection Properties.|
 |password|String|false|Database password for the given user. Optional, can also be in the url or params.|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
@@ -75,6 +77,7 @@ For example, if a job reads from a Kafka topic and writes the results to `parque
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |bootstrapServers|String|true|{{< readfile file="/content/partials/fields/bootstrapServers.md" markdown="true" >}}|
 |groupID|String|true|{{< readfile file="/content/partials/fields/groupID.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 
 ### Examples
 
@@ -96,6 +99,7 @@ An example use case could be a `pipeline` which defines how your organisation de
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |uri|String|true|URI of the input file containing the definition of the `pipeline` to include.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 
 ### Examples
 

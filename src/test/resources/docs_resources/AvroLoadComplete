@@ -1,6 +1,7 @@
 {
   "type": "AvroLoad",
   "name": "write customer avro extract",
+  "description": "write customer avro extract",
   "environments": [
     "production",
     "test"

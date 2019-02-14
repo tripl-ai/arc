@@ -118,12 +118,13 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
 
     load.HTTPLoad.load(
       HTTPLoad(
-          name=outputView, 
-          inputView=outputView, 
-          outputURI=new URI(s"${uri}/success/"), // ensure trailing slash to avoid 302 redirect
-          headers=Map.empty,
-          validStatusCodes=None,
-          params=Map.empty
+        name=outputView, 
+        description=None,
+        inputView=outputView, 
+        outputURI=new URI(s"${uri}/success/"), // ensure trailing slash to avoid 302 redirect
+        headers=Map.empty,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
+        params=Map.empty
       )
     )
   }
@@ -139,16 +140,17 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     val thrown = intercept[Exception] {
       load.HTTPLoad.load(
         HTTPLoad(
-            name=outputView, 
-            inputView=outputView, 
-            outputURI=new URI(s"${uri}/failure/"), // ensure trailing slash to avoid 302 redirect
-            headers=Map.empty,
-            validStatusCodes=None,
-            params=Map.empty
+          name=outputView, 
+          description=None,
+          inputView=outputView, 
+          outputURI=new URI(s"${uri}/failure/"), // ensure trailing slash to avoid 302 redirect
+          headers=Map.empty,
+          validStatusCodes=200 :: 201 :: 202 :: Nil,
+          params=Map.empty
         )
-      )
+      ).get.count
     }
-    assert(thrown.getMessage == "HTTPLoad expects all response StatusCode(s) in [200, 201, 202] but server responded with [1 reponses 200 (OK), 1 reponses 401 (Unauthorized)].")        
+    assert(thrown.getMessage.contains("HTTPLoad expects all response StatusCode(s) in [200, 201, 202] but server responded with 401 (Unauthorized)."))
   }
 
   test("HTTPLoad: validStatusCodes") {
@@ -162,10 +164,11 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoad.load(
       HTTPLoad(
         name=outputView, 
+        description=None,
         inputView=outputView, 
         outputURI=new URI(s"${uri}/failure/"), // ensure trailing slash to avoid 302 redirect
         headers=Map(key -> value),
-        validStatusCodes=Option(List(200,401)),
+        validStatusCodes=200 :: 401 :: Nil,
         params=Map.empty
       )
     )
@@ -182,10 +185,11 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoad.load(
       HTTPLoad(
         name=outputView, 
+        description=None,
         inputView=outputView, 
         outputURI=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
         headers=Map(key -> value),
-        validStatusCodes=Option(List(200)),
+        validStatusCodes=200 :: Nil,
         params=Map.empty
       )
     )
@@ -203,15 +207,16 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
       load.HTTPLoad.load(
         HTTPLoad(
           name=outputView, 
+          description=None,
           inputView=outputView, 
           outputURI=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
           headers=Map(key -> "wrong"),
-          validStatusCodes=Option(List(200)),
+          validStatusCodes=200 :: Nil,
           params=Map.empty
         )
-      )
+      ).get.count
     }
-    assert(thrown.getMessage == "HTTPLoad expects all response StatusCode(s) in [200] but server responded with [2 reponses 401 (Unauthorized)].")            
+    assert(thrown.getMessage.contains("HTTPLoad expects all response StatusCode(s) in [200] but server responded with 401 (Unauthorized)."))      
   } 
 
   test("HTTPLoad: invalid inputView") {
@@ -226,10 +231,11 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
       load.HTTPLoad.load(
         HTTPLoad(
           name=outputView, 
+          description=None,
           inputView=outputView, 
           outputURI=new URI(s"${uri}/success/"), // ensure trailing slash to avoid 302 redirect
           headers=Map.empty,
-          validStatusCodes=None,
+          validStatusCodes=200 :: 201 :: 202 :: Nil,
           params=Map.empty
         )
       )

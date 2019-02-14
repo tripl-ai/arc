@@ -67,6 +67,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     transform.TypingTransform.transform(
       TypingTransform(
         name="TypingTransform",
+        description=None,
         cols=Right(cols.right.getOrElse(null)), 
         inputView=inputView,
         outputView=outputView, 
@@ -79,6 +80,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.MetadataFilterTransform.transform(
       MetadataFilterTransform(
         name="MetadataFilterTransform", 
+        description=None,
         inputView=outputView,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM metadata WHERE metadata.private=false",
@@ -110,6 +112,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     transform.TypingTransform.transform(
       TypingTransform(
         name="TypingTransform",
+        description=None,
         cols=Right(cols.right.getOrElse(null)), 
         inputView=inputView,
         outputView=outputView, 
@@ -122,6 +125,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.MetadataFilterTransform.transform(
       MetadataFilterTransform(
         name="MetadataFilterTransform", 
+        description=None,
         inputView=outputView,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM metadata WHERE metadata.securityLevel <= 4",
@@ -169,6 +173,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.TypingTransform.transform(
       TypingTransform(
         name="dataset",
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)), 
         inputView=inputView,
         outputView=outputView, 
@@ -181,6 +186,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.MetadataFilterTransform.transform(
       MetadataFilterTransform(
         name="MetadataFilterTransform", 
+        description=None,
         inputView=outputView,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM metadata WHERE metadata.securityLevel <= 4",

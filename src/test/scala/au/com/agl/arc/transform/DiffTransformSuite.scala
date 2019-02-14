@@ -62,6 +62,7 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.DiffTransform.transform(
       DiffTransform(
         name="DiffTransform", 
+        description=None,
         inputLeftView=inputLeftView,
         inputRightView=inputRightView,
         outputIntersectionView=Option(outputIntersectionView),

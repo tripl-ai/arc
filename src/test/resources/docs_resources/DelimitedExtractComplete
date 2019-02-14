@@ -1,6 +1,7 @@
 {
   "type": "DelimitedExtract",
   "name": "load customer csv extract",
+  "description": "load customer csv extract",
   "environments": [
     "production",
     "test"
@@ -9,8 +10,10 @@
   "outputView": "customer",
   "authentication": {},
   "contiguousIndex": true,
-  "delimiter": "Comma",
+  "delimiter": "Custom",
+  "customDelimiter": "#",
   "header": false,
+  "inputField": "csvdata",
   "numPartitions": 10,
   "partitionBy": [
     "country"

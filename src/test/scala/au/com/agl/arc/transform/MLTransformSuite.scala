@@ -106,6 +106,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.MLTransform.transform(
       MLTransform(
         name="MLTransform", 
+        description=None,
         inputURI=new URI(pipelineModelTargetFile),
         model=Left(PipelineModel.load(pipelineModelTargetFile)),
         inputView=inputView,
@@ -137,6 +138,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.MLTransform.transform(
       MLTransform(
         name="MLTransform", 
+        description=None,
         inputURI=new URI(crossValidatorModelTargetFile),
         model=Right(CrossValidatorModel.load(crossValidatorModelTargetFile)),
         inputView=inputView,
@@ -177,6 +179,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.MLTransform.transform(
       MLTransform(
         name="MLTransform", 
+        description=None,
         inputURI=new URI(crossValidatorModelTargetFile),
         model=Right(CrossValidatorModel.load(crossValidatorModelTargetFile)),
         inputView=inputView,

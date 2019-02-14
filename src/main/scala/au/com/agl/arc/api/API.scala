@@ -190,93 +190,93 @@ object API {
     }
   }
 
-  case class AvroExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean) extends ColumnarExtract { val getType = "AvroExtract" }  
+  case class AvroExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean) extends ColumnarExtract { val getType = "AvroExtract" }  
 
-  case class BytesExtract(name: String, outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Boolean) extends Extract { val getType = "BytesExtract" }
+  case class BytesExtract(name: String, description: Option[String], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Boolean) extends Extract { val getType = "BytesExtract" }
 
-  case class DelimitedExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], settings: Delimited, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean) extends ColumnarExtract { val getType = "DelimitedExtract" }
+  case class DelimitedExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], settings: Delimited, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, inputField: Option[String]) extends ColumnarExtract { val getType = "DelimitedExtract" }
 
-  case class HTTPExtract(name: String, input: Either[String, URI], method: String, headers: Map[String, String], body: Option[String], validStatusCodes: List[Int], outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "HTTPExtract" }
+  case class HTTPExtract(name: String, description: Option[String], input: Either[String, URI], method: String, headers: Map[String, String], body: Option[String], validStatusCodes: List[Int], outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "HTTPExtract" }
 
-  case class ImageExtract(name: String, outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], dropInvalid: Boolean) extends Extract { val getType = "ImageExtract" }
+  case class ImageExtract(name: String, description: Option[String], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], dropInvalid: Boolean) extends Extract { val getType = "ImageExtract" }
 
-  case class JDBCExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, jdbcURL: String, tableName: String, numPartitions: Option[Int], fetchsize: Option[Int], customSchema: Option[String], driver: java.sql.Driver, partitionColumn: Option[String], params: Map[String, String], persist: Boolean, partitionBy: List[String], predicates: List[String]) extends Extract { val getType = "JDBCExtract" }
+  case class JDBCExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, jdbcURL: String, tableName: String, numPartitions: Option[Int], fetchsize: Option[Int], customSchema: Option[String], driver: java.sql.Driver, partitionColumn: Option[String], params: Map[String, String], persist: Boolean, partitionBy: List[String], predicates: List[String]) extends Extract { val getType = "JDBCExtract" }
 
-  case class JSONExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], settings: JSON, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean) extends ColumnarExtract { val getType = "JSONExtract" }
+  case class JSONExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], settings: JSON, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, inputField: Option[String]) extends ColumnarExtract { val getType = "JSONExtract" }
 
-  case class KafkaExtract(name: String, outputView: String, topic: String, bootstrapServers: String, groupID: String, maxPollRecords: Int, timeout: Long, autoCommit: Boolean, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "KafkaExtract" }
+  case class KafkaExtract(name: String, description: Option[String], outputView: String, topic: String, bootstrapServers: String, groupID: String, maxPollRecords: Int, timeout: Long, autoCommit: Boolean, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "KafkaExtract" }
 
-  case class ORCExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean) extends ColumnarExtract { val getType = "ORCExtract" }
+  case class ORCExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean) extends ColumnarExtract { val getType = "ORCExtract" }
 
-  case class ParquetExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean) extends ColumnarExtract { val getType = "ParquetExtract" }
+  case class ParquetExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean) extends ColumnarExtract { val getType = "ParquetExtract" }
 
-  case class RateExtract(name: String,  outputView: String, params: Map[String, String], rowsPerSecond: Int, rampUpTime: Int, numPartitions: Int) extends Extract { val getType = "RateExtract" }
+  case class RateExtract(name: String,  description: Option[String], outputView: String, params: Map[String, String], rowsPerSecond: Int, rampUpTime: Int, numPartitions: Int) extends Extract { val getType = "RateExtract" }
 
-  case class TextExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Boolean, multiLine: Boolean) extends ColumnarExtract { val getType = "TextExtract" }
+  case class TextExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Boolean, multiLine: Boolean) extends ColumnarExtract { val getType = "TextExtract" }
 
-  case class XMLExtract(name: String, cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean) extends Extract { val getType = "XMLExtract" }
+  case class XMLExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean) extends Extract { val getType = "XMLExtract" }
 
 
   sealed trait Transform extends PipelineStage
 
-  case class DiffTransform(name: String, inputLeftView: String, inputRightView: String, outputIntersectionView: Option[String], outputLeftView: Option[String], outputRightView: Option[String], params: Map[String, String], persist: Boolean) extends Transform { val getType = "DiffTransform" }
+  case class DiffTransform(name: String, description: Option[String], inputLeftView: String, inputRightView: String, outputIntersectionView: Option[String], outputLeftView: Option[String], outputRightView: Option[String], params: Map[String, String], persist: Boolean) extends Transform { val getType = "DiffTransform" }
 
-  case class HTTPTransform(name: String, uri: URI, headers: Map[String, String], validStatusCodes: List[Int], inputView: String, outputView: String, inputField: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "HTTPTransform" }  
+  case class HTTPTransform(name: String, description: Option[String], uri: URI, headers: Map[String, String], validStatusCodes: List[Int], inputView: String, outputView: String, inputField: String, params: Map[String, String], persist: Boolean, batchSize: Int, delimiter: String) extends Transform { val getType = "HTTPTransform" }  
   
-  case class JSONTransform(name: String, inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "JSONTransform" }
+  case class JSONTransform(name: String, description: Option[String], inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "JSONTransform" }
 
-  case class MetadataFilterTransform(name: String, inputView: String, inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean) extends Transform { val getType = "MetadataFilterTransform" }
+  case class MetadataFilterTransform(name: String, description: Option[String], inputView: String, inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean) extends Transform { val getType = "MetadataFilterTransform" }
 
-  case class MLTransform(name: String, inputURI: URI, model: Either[PipelineModel, CrossValidatorModel], inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "MLTransform" }
+  case class MLTransform(name: String, description: Option[String], inputURI: URI, model: Either[PipelineModel, CrossValidatorModel], inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "MLTransform" }
 
-  case class SQLTransform(name: String, inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean) extends Transform { val getType = "SQLTransform" }
+  case class SQLTransform(name: String, description: Option[String], inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean) extends Transform { val getType = "SQLTransform" }
 
-  case class TensorFlowServingTransform(name: String, inputView: String, outputView: String, uri: URI, signatureName: Option[String], responseType: ResponseType, batchSize: Int, inputField: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "TensorFlowServingTransform" }
+  case class TensorFlowServingTransform(name: String, description: Option[String], inputView: String, outputView: String, uri: URI, signatureName: Option[String], responseType: ResponseType, batchSize: Int, inputField: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "TensorFlowServingTransform" }
 
-  case class TypingTransform(name: String, cols: Either[String, List[ExtractColumn]], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, failMode: FailModeType) extends Transform with ColumnarExtract { val getType = "TypingTransform" }
+  case class TypingTransform(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, failMode: FailModeType) extends Transform with ColumnarExtract { val getType = "TypingTransform" }
 
 
   sealed trait Load extends PipelineStage
 
-  case class AvroLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "AvroLoad" }
+  case class AvroLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "AvroLoad" }
 
-  case class AzureEventHubsLoad(name: String, inputView: String, namespaceName: String, eventHubName: String, sharedAccessSignatureKeyName: String, sharedAccessSignatureKey: String, numPartitions: Option[Int], retryMinBackoff: Long, retryMaxBackoff: Long, retryCount: Int, params: Map[String, String]) extends Load { val getType = "AzureEventHubsLoad" }
+  case class AzureEventHubsLoad(name: String, description: Option[String], inputView: String, namespaceName: String, eventHubName: String, sharedAccessSignatureKeyName: String, sharedAccessSignatureKey: String, numPartitions: Option[Int], retryMinBackoff: Long, retryMaxBackoff: Long, retryCount: Int, params: Map[String, String]) extends Load { val getType = "AzureEventHubsLoad" }
 
-  case class ConsoleLoad(name: String, inputView: String, outputMode: OutputModeType, params: Map[String, String]) extends Load { val getType = "ConsoleLoad" }
+  case class ConsoleLoad(name: String, description: Option[String], inputView: String, outputMode: OutputModeType, params: Map[String, String]) extends Load { val getType = "ConsoleLoad" }
 
-  case class DelimitedLoad(name: String, inputView: String, outputURI: URI, settings: Delimited, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "DelimitedLoad" }
+  case class DelimitedLoad(name: String, description: Option[String], inputView: String, outputURI: URI, settings: Delimited, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "DelimitedLoad" }
 
-  case class HTTPLoad(name: String, inputView: String, outputURI: URI, headers: Map[String, String], validStatusCodes: Option[List[Int]], params: Map[String, String]) extends Load { val getType = "HTTPLoad" }
+  case class HTTPLoad(name: String, description: Option[String], inputView: String, outputURI: URI, headers: Map[String, String], validStatusCodes: List[Int], params: Map[String, String]) extends Load { val getType = "HTTPLoad" }
 
-  case class JDBCLoad(name: String, inputView: String, jdbcURL: String, tableName: String, partitionBy: List[String], numPartitions: Option[Int], isolationLevel: IsolationLevelType, batchsize: Int, truncate: Boolean, createTableOptions: Option[String], createTableColumnTypes: Option[String], saveMode: SaveMode, driver: java.sql.Driver, bulkload: Boolean, tablock: Boolean, params: Map[String, String]) extends Load { val getType = "JDBCLoad" }
+  case class JDBCLoad(name: String, description: Option[String], inputView: String, jdbcURL: String, tableName: String, partitionBy: List[String], numPartitions: Option[Int], isolationLevel: IsolationLevelType, batchsize: Int, truncate: Boolean, createTableOptions: Option[String], createTableColumnTypes: Option[String], saveMode: SaveMode, driver: java.sql.Driver, bulkload: Boolean, tablock: Boolean, params: Map[String, String]) extends Load { val getType = "JDBCLoad" }
 
-  case class JSONLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "JSONLoad" }
+  case class JSONLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "JSONLoad" }
 
-  case class KafkaLoad(name: String, inputView: String, topic: String, bootstrapServers: String, acks: Int, numPartitions: Option[Int], retries: Int, batchSize: Int, params: Map[String, String]) extends Load { val getType = "KafkaLoad" }
+  case class KafkaLoad(name: String, description: Option[String], inputView: String, topic: String, bootstrapServers: String, acks: Int, numPartitions: Option[Int], retries: Int, batchSize: Int, params: Map[String, String]) extends Load { val getType = "KafkaLoad" }
   
-  case class ORCLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ORCLoad" }
+  case class ORCLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ORCLoad" }
 
-  case class ParquetLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ParquetLoad" }
+  case class ParquetLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ParquetLoad" }
 
-  case class XMLLoad(name: String, inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "XMLLoad" }
+  case class XMLLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "XMLLoad" }
 
 
   sealed trait Execute extends PipelineStage
 
-  case class JDBCExecute(name: String, inputURI: URI, jdbcURL: String, user: Option[String], password: Option[String], sql: String, sqlParams: Map[String, String], params: Map[String, String]) extends Execute { val getType = "JDBCExecute" }
+  case class JDBCExecute(name: String, description: Option[String], inputURI: URI, jdbcURL: String, user: Option[String], password: Option[String], sql: String, sqlParams: Map[String, String], params: Map[String, String]) extends Execute { val getType = "JDBCExecute" }
 
-  case class HTTPExecute(name: String, uri: URI, headers: Map[String, String], payloads: Map[String, String], validStatusCodes: List[Int], params: Map[String, String]) extends Execute  { val getType = "HTTPExecute" }
+  case class HTTPExecute(name: String, description: Option[String], uri: URI, headers: Map[String, String], payloads: Map[String, String], validStatusCodes: List[Int], params: Map[String, String]) extends Execute  { val getType = "HTTPExecute" }
 
-  case class KafkaCommitExecute(name: String, inputView: String, bootstrapServers: String, groupID: String, params: Map[String, String]) extends Execute  { val getType = "KafkaCommitExecute" }
+  case class KafkaCommitExecute(name: String, description: Option[String], inputView: String, bootstrapServers: String, groupID: String, params: Map[String, String]) extends Execute  { val getType = "KafkaCommitExecute" }
 
-  case class PipelineExecute(name: String, uri: URI, pipeline: ETLPipeline) extends Execute  { val getType = "PipelineExecute" }
+  case class PipelineExecute(name: String, description: Option[String], uri: URI, pipeline: ETLPipeline) extends Execute  { val getType = "PipelineExecute" }
 
 
   sealed trait Validate extends PipelineStage
 
-  case class EqualityValidate(name: String, leftView: String, rightView: String, params: Map[String, String]) extends Validate { val getType = "EqualityValidate" }
+  case class EqualityValidate(name: String, description: Option[String], leftView: String, rightView: String, params: Map[String, String]) extends Validate { val getType = "EqualityValidate" }
 
-  case class SQLValidate(name: String, inputURI: URI, sql: String, sqlParams: Map[String, String], params: Map[String, String]) extends Validate { val getType = "SQLValidate" }
+  case class SQLValidate(name: String, description: Option[String], inputURI: URI, sql: String, sqlParams: Map[String, String], params: Map[String, String]) extends Validate { val getType = "SQLValidate" }
 
 
   sealed trait FailModeType {
@@ -365,6 +365,9 @@ object Delimiter {
   case object Pipe extends Delimiter {
     val value = "|"
   }
+  case object Custom extends Delimiter {
+    val value = ""
+  }  
 }
 
 sealed trait QuoteCharacter {
@@ -403,7 +406,8 @@ case class Delimited(
   sep: Delimiter = Delimiter.DefaultHive, 
   quote: QuoteCharacter = QuoteCharacter.DoubleQuote,
   header: Boolean = false,
-  inferSchema: Boolean = false
+  inferSchema: Boolean = false,
+  customDelimiter: String = ""
 ) extends SourceType {
   val getDescription = "Delimited"
 }
@@ -411,12 +415,25 @@ case class Delimited(
 object Delimited {
   def toSparkOptions(delimited: Delimited): Map[String, String] = {
     import delimited._
-    Map(
-      "sep" -> sep.value,
-      "quote" -> quote.value,
-      "header" -> header.toString,
-      "inferSchema" -> inferSchema.toString
-    )
+
+    delimited.sep match {
+      case Delimiter.Custom => {
+        Map(
+          "sep" -> customDelimiter,
+          "quote" -> quote.value,
+          "header" -> header.toString,
+          "inferSchema" -> inferSchema.toString
+        )
+      }
+      case _ => {
+        Map(
+          "sep" -> sep.value,
+          "quote" -> quote.value,
+          "header" -> header.toString,
+          "inferSchema" -> inferSchema.toString
+        )
+      }
+    }
   }
 }
 

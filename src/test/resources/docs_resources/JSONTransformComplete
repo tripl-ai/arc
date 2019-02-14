@@ -1,6 +1,7 @@
 {
   "type": "JSONTransform",
   "name": "convert customer to json for sending to eternal api",
+  "description": "convert customer to json for sending to eternal api",
   "environments": [
     "production",
     "test"

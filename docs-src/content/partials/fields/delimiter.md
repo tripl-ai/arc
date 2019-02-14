@@ -1,0 +1,1 @@
+The type of delimiter in the file. Supported values: `Comma`, `Pipe`, `DefaultHive`. `DefaultHive` is  ASCII character 1, the default delimiter for Apache Hive extracts.<br><br>Default: `Comma`.

@@ -1,6 +1,7 @@
 {
   "type": "JSONLoad",
   "name": "write customer json extract",
+  "description": "write customer json extract",
   "environments": [
     "production",
     "test"

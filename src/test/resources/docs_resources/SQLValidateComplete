@@ -1,6 +1,7 @@
 {
   "type": "SQLValidate",
   "name": "apply data integrity rules",
+  "description": "apply data integrity rules",
   "environments": [
     "production",
     "test"

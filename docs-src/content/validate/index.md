@@ -26,6 +26,7 @@ This stage will validate:
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |leftView|String|true|Name of first incoming Spark dataset.|
 |rightView|String|true|Name of second incoming Spark dataset.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 
 ### Examples
 
@@ -52,6 +53,7 @@ See [patterns](../patterns/) for more examples.
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
 
 ### Examples

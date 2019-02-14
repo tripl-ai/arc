@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.5.0</span></strong>
+          <span class="version">1.6.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -490,6 +490,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>outputIntersectionView</td>
 <td>String</td>
 <td>false</td>
@@ -540,6 +547,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DiffTransform&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;calculate the difference between the yesterday and today datasets&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;calculate the difference between the yesterday and today datasets&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -607,6 +615,27 @@
 </tr>
 
 <tr>
+<td>batchSize</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of records to send in each HTTP request to reduce the cost of HTTP overhead.<br><br>Default: <code>1</code>.</td>
+</tr>
+
+<tr>
+<td>delimiter</td>
+<td>String</td>
+<td>false</td>
+<td>When using a <code>batchSize</code> greater than one this option allows the specification of a delimiter so that the receiving HTTP service can split the request body into records and Arc can split the response body back into records.<br><br>Default: <code>\n</code> (newline).</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>headers</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -657,6 +686,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPTransform&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;look up customer retention score&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;look up customer retention score&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -664,6 +694,8 @@
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_enriched&#34;</span><span class="p">,</span>
   <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer_retention&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;batchSize&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;delimiter&#34;</span><span class="p">:</span> <span class="s2">&#34;,&#34;</span><span class="p">,</span>
   <span class="nt">&#34;headers&#34;</span><span class="p">:</span> <span class="p">{</span>
     <span class="nt">&#34;Authorization&#34;</span><span class="p">:</span> <span class="s2">&#34;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&#34;</span><span class="p">,</span>
     <span class="nt">&#34;custom-header&#34;</span><span class="p">:</span> <span class="s2">&#34;payload&#34;</span>
@@ -724,6 +756,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
@@ -752,6 +791,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONTransform&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;convert customer to json for sending to eternal api&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;convert customer to json for sending to eternal api&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -894,6 +934,13 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>sqlParams</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -923,6 +970,7 @@ WHERE metadata.pii = (
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataFilterTransform&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;filter out Personally identifiable information (pii) fields&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;filter out Personally identifiable information (pii) fields&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -1004,6 +1052,13 @@ WHERE metadata.pii = (
 <td>true</td>
 <td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>. MLTransform will also log percentiles of prediction probabilities for classification models if this option is enabled.</td>
 </tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
 </tbody>
 </table>
 
@@ -1028,6 +1083,7 @@ WHERE metadata.pii = (
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MLTransform&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply machine learning model&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;apply machine learning model&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -1106,6 +1162,13 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
@@ -1153,6 +1216,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;standardise customer fields&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;standardise customer fields&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -1239,6 +1303,13 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>inputField</td>
 <td>String</td>
 <td>false</td>
@@ -1296,6 +1367,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TensorFlowServingTransform&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;call the customer segmentation model&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;call the customer segmentation model&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -1373,6 +1445,13 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>failMode</td>
 <td>String</td>
 <td>false</td>
@@ -1409,6 +1488,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply data types to customer records&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;apply data types to customer records&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>

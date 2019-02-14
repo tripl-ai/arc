@@ -25,6 +25,9 @@ object JDBCExecute {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", exec.getType)
     stageDetail.put("name", exec.name)
+    for (description <- exec.description) {
+      stageDetail.put("description", description)    
+    }    
     stageDetail.put("inputURI", exec.inputURI.toString)     
     stageDetail.put("sqlParams", exec.sqlParams.asJava)
 
@@ -67,22 +70,21 @@ object JDBCExecute {
     val _user = user.orElse(params.get("user"))
     val _password = password.orElse(params.get("password"))
 
+
+    val props = new Properties()
+
     (_user, _password) match {
       case (Some(u), Some(p)) =>
-        if (params.isEmpty) {
-          DriverManager.getConnection(url, u, p)
-        } else {
-          val props = new Properties()
-          props.setProperty("user", u)
-          props.setProperty("password", p)
-          for ( (k,v) <- params) {
-            props.setProperty(k, v)
-          }
-          DriverManager.getConnection(url, props)
-        }
+        props.setProperty("user", u)
+        props.setProperty("password", p)
       case _ =>
-        DriverManager.getConnection(url)
     }
+
+    for ( (k,v) <- params) {
+      props.setProperty(k, v)
+    }
+    
+    DriverManager.getConnection(url, props)
   }
 
 }

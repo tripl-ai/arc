@@ -1,6 +1,7 @@
 {
   "type": "JDBCExecute",
   "name": "execute the load date table",
+  "description": "execute the load date table",
   "environments": [
     "production",
     "test"

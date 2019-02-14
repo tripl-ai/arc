@@ -26,6 +26,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   class PostEchoHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
       if (HttpConnection.getCurrentConnection.getRequest.getMethod == "POST") {
+        requests += 1
         response.setContentType("text/html")
         response.setStatus(HttpServletResponse.SC_OK)
         response.getWriter().println(Source.fromInputStream(request.getInputStream).mkString)
@@ -55,6 +56,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   val binary = "binary"
   val empty = "empty"
   val body = "testpayload"
+  val delimiter = "\n"
+
+  var requests = 0
 
   before {
     implicit val spark = SparkSession
@@ -107,13 +111,15 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     dataset.createOrReplaceTempView(inputView)
     var payloadDataset = spark.sql(s"""
       SELECT *, TO_JSON(NAMED_STRUCT('dateDatum', dateDatum)) AS value FROM ${inputView}
-    """)
+    """).repartition(1)
     val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
     inputDataset.createOrReplaceTempView(inputView)
+
 
     val transformDataset = transform.HTTPTransform.transform(
       HTTPTransform(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/${echo}/"),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -121,9 +127,13 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField="value"
+        inputField="value",
+        batchSize=2,
+        delimiter=delimiter
       )
     ).get
+
+    transformDataset.cache.count
 
     val expected = transformDataset.select(col("value"))
     val actual = transformDataset.select(col("body")).withColumnRenamed("body", "value")
@@ -147,13 +157,14 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     dataset.createOrReplaceTempView(inputView)
     var payloadDataset = spark.sql(s"""
       SELECT *, TO_JSON(NAMED_STRUCT('dateDatum', dateDatum)) AS inputField FROM ${inputView}
-    """)
+    """).repartition(1)
     val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
     inputDataset.createOrReplaceTempView(inputView)
 
     val transformDataset = transform.HTTPTransform.transform(
       HTTPTransform(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/${echo}/"),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -161,7 +172,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField="inputField"
+        inputField="inputField",
+        batchSize=2,
+        delimiter=delimiter
       )
     ).get
 
@@ -171,18 +184,102 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     assert(TestDataUtils.datasetEquality(expected, actual))
   }    
 
+  test("HTTPTransform: Can echo post data: batchSize 1") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    requests = 0
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(inputView)
+    var payloadDataset = spark.sql(s"""
+      SELECT *, TO_JSON(NAMED_STRUCT('dateDatum', dateDatum)) AS inputField FROM ${inputView}
+    """).repartition(1)
+    val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
+    inputDataset.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.HTTPTransform.transform(
+      HTTPTransform(
+        name=outputView,
+        description=None,
+        uri=new URI(s"${uri}/${echo}/"),
+        headers=Map.empty,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
+        inputView=inputView,
+        outputView=outputView,
+        params=Map.empty,
+        persist=true,
+        inputField="inputField",
+        batchSize=1,
+        delimiter=delimiter
+      )
+    ).get
+
+    val expected = transformDataset.select(col("inputField")).withColumnRenamed("inputField", "value")
+    val actual = transformDataset.select(col("body")).withColumnRenamed("body", "value")
+
+    assert(TestDataUtils.datasetEquality(expected, actual))
+    assert(requests == 2)
+  }     
+
+  test("HTTPTransform: Can echo post data: batchSize >1") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    requests = 0
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView(inputView)
+    var payloadDataset = spark.sql(s"""
+      SELECT *, TO_JSON(NAMED_STRUCT('dateDatum', dateDatum)) AS inputField FROM ${inputView}
+    """).repartition(1)
+    val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
+    inputDataset.createOrReplaceTempView(inputView)
+
+    val transformDataset = transform.HTTPTransform.transform(
+      HTTPTransform(
+        name=outputView,
+        description=None,
+        uri=new URI(s"${uri}/${echo}/"),
+        headers=Map.empty,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
+        inputView=inputView,
+        outputView=outputView,
+        params=Map.empty,
+        persist=true,
+        inputField="inputField",
+        batchSize=5,
+        delimiter=delimiter
+      )
+    ).get
+
+    val expected = transformDataset.select(col("inputField")).withColumnRenamed("inputField", "value")
+    val actual = transformDataset.select(col("body")).withColumnRenamed("body", "value")
+
+    assert(TestDataUtils.datasetEquality(expected, actual))
+    assert(requests == 1)
+  }     
+
+
   test("HTTPTransform: Can handle empty response") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
 
-    val dataset = TestDataUtils.getKnownDataset.toJSON.toDF
+    val dataset = TestDataUtils.getKnownDataset.toJSON.toDF.repartition(1)
     dataset.createOrReplaceTempView(inputView)
 
     val actual = transform.HTTPTransform.transform(
       HTTPTransform(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/${empty}/"),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -190,7 +287,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField="value"
+        inputField="value",
+        batchSize=1,
+        delimiter=delimiter
       )
     ).get
 
@@ -203,13 +302,14 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
 
-    val dataset = TestDataUtils.getKnownDataset.toJSON.toDF
+    val dataset = TestDataUtils.getKnownDataset.toJSON.toDF.repartition(1)
     dataset.createOrReplaceTempView(inputView)
 
     val thrown = intercept[Exception with DetailException] {
       transform.HTTPTransform.transform(
         HTTPTransform(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/fail/"),
           headers=Map.empty,
           validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -217,12 +317,14 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          inputField="value"
+          inputField="value",
+          batchSize=1,
+          delimiter=delimiter
         )
-      ).get
+      ).get.count
     }
 
-    assert(thrown.getMessage == "HTTPTransform expects all response StatusCode(s) in [200, 201, 202] but server responded with [2 reponses 404 (Not Found)].")    
+    assert(thrown.getMessage.contains("HTTPTransform expects all response StatusCode(s) in [200, 201, 202] but server responded with 404 (Not Found)"))
   }
 
   test("HTTPTransform: validStatusCodes") {
@@ -237,6 +339,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransform.transform(
         HTTPTransform(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/${empty}/"),
           headers=Map.empty,
           validStatusCodes=201 :: Nil,
@@ -244,12 +347,14 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          inputField="value"
+          inputField="value",
+          batchSize=1,
+          delimiter=delimiter
         )
-      ).get
+      ).get.count
     }
 
-    assert(thrown.getMessage == "HTTPTransform expects all response StatusCode(s) in [201] but server responded with [2 reponses 200 (OK)].")    
+    assert(thrown.getMessage.contains("HTTPTransform expects all response StatusCode(s) in [201] but server responded with 200 (OK)."))
   }     
 
   test("HTTPTransform: Can echo post data - binary") {
@@ -264,13 +369,14 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     dataset.createOrReplaceTempView(inputView)
     var payloadDataset = spark.sql(s"""
       SELECT *, BINARY(stringDatum) AS value FROM ${inputView}
-    """)
+    """).repartition(1)
     val inputDataset = MetadataUtils.setMetadata(payloadDataset, Extract.toStructType(cols.right.getOrElse(Nil)))
     inputDataset.createOrReplaceTempView(inputView)
 
     val transformDataset = transform.HTTPTransform.transform(
       HTTPTransform(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/${echo}/"),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -278,9 +384,13 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField="value"
+        inputField="value",
+        batchSize=2,
+        delimiter=delimiter
       )
     ).get
+
+    transformDataset.cache.count
 
     val expected = transformDataset.select(col("stringDatum")).withColumnRenamed("stringDatum", "value")
     val actual = transformDataset.select(col("body")).withColumnRenamed("body", "value")
@@ -308,6 +418,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       val transformDataset = transform.HTTPTransform.transform(
         HTTPTransform(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/${echo}/"),
           headers=Map.empty,
           validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -315,7 +426,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          inputField="value"
+          inputField="value",
+          batchSize=1,
+          delimiter=delimiter
         )
       ).get
     }
@@ -342,6 +455,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       val transformDataset = transform.HTTPTransform.transform(
         HTTPTransform(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/${echo}/"),
           headers=Map.empty,
           validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -349,7 +463,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          inputField="value"
+          inputField="value",
+          batchSize=1,
+          delimiter=delimiter
         )
       ).get
     }
@@ -378,6 +494,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       val transformDataset = transform.HTTPTransform.transform(
         HTTPTransform(
           name=outputView,
+          description=None,
           uri=new URI(s"${uri}/${echo}/"),
           headers=Map.empty,
           validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -385,7 +502,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          inputField=inputField
+          inputField=inputField,
+          batchSize=1,
+          delimiter=delimiter
         )
       ).get
     }
@@ -416,6 +535,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.HTTPTransform.transform(
       HTTPTransform(
         name=outputView,
+        description=None,
         uri=new URI(s"${uri}/${echo}/"),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -423,7 +543,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField="value"
+        inputField="value",
+        batchSize=1,
+        delimiter=delimiter
       )
     ).get
 
@@ -437,66 +559,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
     try {
       Thread.sleep(2000)
-      assert(df.first.getString(2).contains("""{"value":0}"""))
+      assert(df.first.getString(1).contains("""{"value":0}"""))
     } finally {
       writeStream.stop
     }
-  }     
-
-  // cannot catch exception yet?
-  //
-  // test("HTTPTransform: Structured Streaming Fail") {
-  //   val thrown0 = intercept[Exception] {
-  //     implicit val spark = session
-  //     import spark.implicits._
-  //     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-  //     implicit val arcContext = ARCContext(isStreaming=true)      
-
-  //     val readStream = spark
-  //       .readStream
-  //       .format("rate")
-  //       .option("rowsPerSecond", "1")
-  //       .load
-
-  //     readStream.createOrReplaceTempView("readstream")
-
-  //     val input = spark.sql(s"""
-  //     SELECT TO_JSON(NAMED_STRUCT('value', value)) AS value 
-  //     FROM readstream
-  //     """)
-
-  //     input.createOrReplaceTempView(inputView)
-
-  //     val transformDataset = transform.HTTPTransform.transform(
-  //       HTTPTransform(
-  //         name=outputView,
-  //         uri=new URI(s"${uri}/${echo}/"),
-  //         headers=Map.empty,
-  //         validStatusCodes=Option(List(201)),
-  //         inputView=inputView,
-  //         outputView=outputView,
-  //         params=Map.empty,
-  //         persist=false
-  //       )
-  //     ).get
-
-  //     val writeStream = transformDataset
-  //       .writeStream
-  //       .queryName("transformed") 
-  //       .format("memory")
-  //       .start
-
-  //     val df = spark.table("transformed")
-
-  //     try {
-  //       Thread.sleep(2000)
-  //     } catch {
-  //       case e: Exception => println("Here")
-  //     } finally {
-  //       writeStream.stop
-  //     }
-  //   }
-  //   assert(thrown0.getMessage === "HTTPTransform requires a field named 'value' of type 'string' or 'binary'. 'value' is of type: 'date'.")
-
-  // }    
+  }      
 }

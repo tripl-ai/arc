@@ -77,6 +77,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val result = extract.JDBCExtract.extract(
       JDBCExtract(
         name=outputView, 
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=dbtable, 
         jdbcURL=url,
@@ -112,6 +113,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val result = extract.JDBCExtract.extract(
       JDBCExtract(
         name=outputView, 
+        description=None,
         cols=Right(Nil),
         outputView=dbtable, 
         jdbcURL=url, 
@@ -143,6 +145,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val result = extract.JDBCExtract.extract(
       JDBCExtract(
         name=outputView, 
+        description=None,
         cols=Right(Nil),
         outputView=dbtable, 
         jdbcURL=url, 

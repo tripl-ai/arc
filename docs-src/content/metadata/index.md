@@ -20,8 +20,8 @@ It is designed to:
 |-----------|------|----------|-------------|
 |id|String|true|{{< readfile file="/content/partials/fields/id.md" markdown="true" >}}|
 |name|String|true|{{< readfile file="/content/partials/fields/fieldName.md" markdown="true" >}}|
-|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
-|type|String|true|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|description|String|false|A description of the field which will be embedded in the dataset metadata (and persisted in formats like Parquet/ORC).|
+|type|String|true|{{< readfile file="/content/partials/fields/type.md" markdown="true" >}}|
 |trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
 |nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
 |nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|

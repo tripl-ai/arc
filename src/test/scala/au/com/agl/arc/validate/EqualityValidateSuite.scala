@@ -56,6 +56,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       validate.EqualityValidate.validate(
         EqualityValidate(
           name=testName, 
+          description=None,
           leftView=leftView,
           rightView=rightView,
           params=Map.empty
@@ -79,6 +80,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       validate.EqualityValidate.validate(
         EqualityValidate(
           name=testName, 
+          description=None,
           leftView=leftView,
           rightView=rightView,
           params=Map.empty
@@ -102,6 +104,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       validate.EqualityValidate.validate(
         EqualityValidate(
           name=testName, 
+          description=None,
           leftView=leftView,
           rightView=rightView,
           params=Map.empty
@@ -125,6 +128,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       validate.EqualityValidate.validate(
         EqualityValidate(
           name=testName, 
+          description=None,
           leftView=leftView,
           rightView=rightView,
           params=Map.empty

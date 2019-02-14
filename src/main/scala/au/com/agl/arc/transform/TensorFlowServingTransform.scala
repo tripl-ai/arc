@@ -34,12 +34,18 @@ object TensorFlowServingTransform {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", transform.getType)
     stageDetail.put("name", transform.name)
+    for (description <- transform.description) {
+      stageDetail.put("description", description)    
+    }    
     stageDetail.put("inputView", transform.inputView)  
     stageDetail.put("inputField", transform.inputField)  
     stageDetail.put("outputView", transform.outputView)  
     stageDetail.put("uri", transform.uri.toString)
     stageDetail.put("batchSize", Integer.valueOf(transform.batchSize))
     stageDetail.put("responseType", transform.responseType.sparkString)
+    for (signatureName <- transform.signatureName) {
+      stageDetail.put("signature_name", signatureName)
+    }    
 
     logger.info()
       .field("event", "enter")
@@ -100,7 +106,6 @@ object TensorFlowServingTransform {
           // optionally set signature_name
           for (signatureName <- transform.signatureName) {
             node.put("signature_name", signatureName)
-            stageDetail.put("signature_name", signatureName)
           }
           val instancesArray = node.putArray("instances")
 

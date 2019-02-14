@@ -22,6 +22,9 @@ object JSONExtract {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
+    for (description <- extract.description) {
+      stageDetail.put("description", description)    
+    }     
     stageDetail.put("input", extract.input)  
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
@@ -113,7 +116,12 @@ object JSONExtract {
               }
               case e: Exception => throw e
             }
-          case Left(view) => spark.read.options(options).json(spark.table(view).as[String])
+          case Left(view) => {
+            extract.inputField match {
+              case Some(inputField) => spark.read.options(options).json(spark.table(view).select(col(inputField).as("value")).as[String])
+              case None => spark.read.options(options).json(spark.table(view).as[String])
+            }
+          }
         }
       }
     } catch {

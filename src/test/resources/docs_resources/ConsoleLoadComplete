@@ -1,6 +1,7 @@
 {
   "type": "ConsoleLoad",
   "name": "write a streaming dataset to console",
+  "description": "write a streaming dataset to console",
   "environments": [
     "production",
     "test"

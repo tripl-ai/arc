@@ -1,6 +1,7 @@
 {
   "type": "HTTPTransform",
   "name": "look up customer retention score",
+  "description": "look up customer retention score",
   "environments": [
     "production",
     "test"
@@ -8,6 +9,8 @@
   "inputView": "customer",
   "outputView": "customer_enriched",
   "uri": "http://internalserver/api/customer_retention",
+  "batchSize": 10,
+  "delimiter": ",",
   "headers": {
     "Authorization": "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==",
     "custom-header": "payload"

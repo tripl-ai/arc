@@ -1,6 +1,7 @@
 {
   "type": "ImageExtract",
   "name": "load customer images",
+  "description": "load customer images",
   "environments": [
     "production",
     "test"

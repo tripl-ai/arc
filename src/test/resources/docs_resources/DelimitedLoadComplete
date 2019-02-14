@@ -1,6 +1,7 @@
 {
   "type": "DelimitedLoad",
   "name": "write customer as csv",
+  "description": "write customer as csv",
   "environments": [
     "production",
     "test"
@@ -8,7 +9,8 @@
   "inputView": "customer",
   "outputURI": "hdfs://output_data/customer/customer.csv",
   "authentication": {},
-  "delimiter": "Comma",
+  "delimiter": "Custom",
+  "customDelimiter": "#",
   "header": true,
   "numPartitions": 10,
   "partitionBy": [

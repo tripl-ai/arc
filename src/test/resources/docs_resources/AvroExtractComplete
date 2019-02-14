@@ -1,6 +1,7 @@
 {
   "type": "AvroExtract",
   "name": "load customer avro extract",
+  "description": "load customer avro extract",
   "environments": [
     "production",
     "test"

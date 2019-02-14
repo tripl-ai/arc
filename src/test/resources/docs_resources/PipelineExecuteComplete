@@ -1,6 +1,7 @@
 {
   "type": "PipelineExecute",
   "name": "embed the active customer pipeline",
+  "description": "embed the active customer pipeline",
   "environments": [
     "production",
     "test"

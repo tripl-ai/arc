@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.5.0</span></strong>
+          <span class="version">1.6.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -464,6 +464,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>headers</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -505,6 +512,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPExecute&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;notify the customer api of job completion&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;notify the customer api of job completion&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -578,6 +586,13 @@
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
 <td>params</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -627,6 +642,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCExecute&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;execute the load date table&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;execute the load date table&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
@@ -697,6 +713,13 @@
 <td>true</td>
 <td>A string that uniquely identifies the group of consumer processes to which this consumer belongs. This will retain the offset of the job between executions.</td>
 </tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
 </tbody>
 </table>
 
@@ -764,6 +787,13 @@
 <td>false</td>
 <td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
 </tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
 </tbody>
 </table>
 
@@ -786,6 +816,7 @@
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;PipelineExecute&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;embed the active customer pipeline&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;embed the active customer pipeline&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>

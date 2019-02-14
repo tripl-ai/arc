@@ -95,9 +95,5 @@ object Dependencies {
     azureEventHub,
     qpid
 
-    // hikari connection pool
-    // hikaricp
-
-    // gcsConnector
   )
 }

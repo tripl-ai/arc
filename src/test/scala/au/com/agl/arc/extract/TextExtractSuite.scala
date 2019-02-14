@@ -54,6 +54,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.TextExtract.extract(
       TextExtract(
         name="dataset",
+        description=None,
         cols=Right(List.empty),
         outputView=outputView, 
         input=targetFile,
@@ -79,6 +80,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.TextExtract.extract(
       TextExtract(
         name="dataset",
+        description=None,
         cols=Right(List.empty),
         outputView=outputView, 
         input=targetFile,
@@ -106,6 +108,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.TextExtract.extract(
         TextExtract(
           name="dataset",
+          description=None,
           cols=Right(List.empty),
           outputView=outputView, 
           input=emptyDirectory,
@@ -161,6 +164,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.TextExtract.extract(
       TextExtract(
         name="dataset",
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView, 
         input=targetDirectory,

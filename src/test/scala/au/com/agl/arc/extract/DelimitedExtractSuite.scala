@@ -21,10 +21,12 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   // currently assuming local file system
   var session: SparkSession = _  
   val targetFile = FileUtils.getTempDirectoryPath() + "extract.csv" 
+  val customDelimiterTargetFile = FileUtils.getTempDirectoryPath() + "extract_custom.csv" 
   val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.csv" 
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.csv" 
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.csv.gz" 
-  val outputView = "dataset"
+  val inputView = "inputView"
+  val outputView = "outputView"
 
   before {
     implicit val spark = SparkSession
@@ -40,10 +42,12 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
     // recreate test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile)) 
+    FileUtils.deleteQuietly(new java.io.File(customDelimiterTargetFile)) 
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory)) 
     FileUtils.forceMkdir(new java.io.File(emptyDirectory))
     // Delimited does not support writing NullType
     TestDataUtils.getKnownDataset.drop($"nullDatum").write.option("header", true).csv(targetFile)
+    TestDataUtils.getKnownDataset.drop($"nullDatum").write.option("header", true).option("sep", "%").csv(customDelimiterTargetFile)
   }
 
   after {
@@ -51,6 +55,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
     // clean up test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile))     
+    FileUtils.deleteQuietly(new java.io.File(customDelimiterTargetFile))     
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory))     
   }
 
@@ -66,6 +71,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=Right(targetFileGlob),
@@ -75,7 +81,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -105,6 +112,45 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     assert(timestampDatumMetadata.getLong("securityLevel") == 7)    
   }  
 
+  test("DelimitedExtract inputView") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+ 
+    val dataset = TestDataUtils.getKnownDataset
+    dataset.createOrReplaceTempView("dataset")
+    var payloadDataset = spark.sql(s"""
+      SELECT NULL AS nullDatum, "field0|field1" AS inputField
+      UNION ALL
+      SELECT nullDatum, CONCAT(stringDatum, "|", stringDatum) AS inputField
+      FROM dataset
+    """).repartition(1)
+
+    payloadDataset.createOrReplaceTempView(inputView)
+
+    val extractDataset = extract.DelimitedExtract.extract(
+      DelimitedExtract(
+        name=outputView,
+        description=None,
+        cols=Right(Nil),
+        outputView=outputView,
+        input=Left(inputView),
+        settings=new Delimited(header=true, sep=Delimiter.Pipe),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        inputField=Option("inputField")
+      )
+    ).get
+
+    assert(extractDataset.count === 2)
+    assert(extractDataset.columns.length === 4)
+  }    
+
   test("DelimitedExtract Caching") {
     implicit val spark = session
     import spark.implicits._
@@ -115,6 +161,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -124,7 +171,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -133,6 +181,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -142,7 +191,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -173,6 +223,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.DelimitedExtract.extract(
         DelimitedExtract(
           name=outputView,
+          description=None,
           cols=Right(Nil),
           outputView=outputView,
           input=Right(emptyWildcardDirectory),
@@ -182,7 +233,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=true
+          contiguousIndex=true,
+          inputField=None
         )
       )
     }
@@ -193,6 +245,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       val extractDataset = extract.DelimitedExtract.extract(
         DelimitedExtract(
           name=outputView,
+          description=None,
           cols=Right(Nil),
           outputView=outputView,
           input=Right(emptyDirectory),
@@ -202,7 +255,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=true
+          contiguousIndex=true,
+          inputField=None
         )
       )
     }
@@ -212,6 +266,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(cols),
         outputView=outputView,
         input=Right(emptyDirectory),
@@ -221,7 +276,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -249,6 +305,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     var dataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -258,7 +315,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -269,6 +327,50 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     assert(actual.columns.length == 1)
   }  
   
+  test("DelimitedExtract Settings: Custom Delimiter") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    // incorrect delimiter
+    var dataset = extract.DelimitedExtract.extract(
+      DelimitedExtract(
+        name=outputView,
+        description=None,
+        cols=Right(Nil),
+        outputView=outputView,
+        input=Right(customDelimiterTargetFile),
+        settings=new Delimited(header=true, sep=Delimiter.Custom, inferSchema=false, customDelimiter="%"),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        inputField=None
+      )
+    ).get
+
+    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = dataset.drop(internal:_*)
+
+    // Delimited will load everything as StringType
+    // Delimited does not support writing NullType
+    val expected = TestDataUtils.getKnownDataset
+      .withColumn("booleanDatum", $"booleanDatum".cast("string"))
+      .withColumn("dateDatum", $"dateDatum".cast("string"))
+      .withColumn("decimalDatum", $"decimalDatum".cast("string"))
+      .withColumn("doubleDatum", $"doubleDatum".cast("string"))
+      .withColumn("integerDatum", $"integerDatum".cast("string"))
+      .withColumn("longDatum", $"longDatum".cast("string"))
+      .withColumn("timestampDatum", from_unixtime(unix_timestamp($"timestampDatum"), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"))
+      .drop($"nullDatum")
+
+
+    assert(TestDataUtils.datasetEquality(expected, actual))
+  }  
+
   test("DelimitedExtract Settings: Header") {
     implicit val spark = session
     import spark.implicits._
@@ -279,6 +381,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     var dataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -288,7 +391,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -308,6 +412,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     var dataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
@@ -317,7 +422,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 
@@ -340,6 +446,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.DelimitedExtract.extract(
       DelimitedExtract(
         name=outputView,
+        description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
         input=Right(targetFileGlob),
@@ -349,7 +456,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        inputField=None
       )
     ).get
 

@@ -45,6 +45,7 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
     val transformed = transform.JSONTransform.transform(
       JSONTransform(
         name="JSONTransform", 
+        description=None,
         inputView=inputView,
         outputView=outputView,
         persist=false,
@@ -75,6 +76,7 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
     val transformDataset = transform.JSONTransform.transform(
       JSONTransform(
         name="JSONTransform", 
+        description=None,
         inputView=inputView,
         outputView=outputView,
         persist=false,

@@ -63,6 +63,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
     load.KafkaLoad.load(
       KafkaLoad(
         name="df", 
+        description=None,
         inputView=inputView0, 
         topic=topic,
         bootstrapServers=bootstrapServers,
@@ -78,6 +79,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
     val extractDataset0 = extract.KafkaExtract.extract(
       KafkaExtract(
         name="df", 
+        description=None,
         outputView=outputView, 
         topic=topic,
         bootstrapServers=bootstrapServers,
@@ -101,6 +103,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
     val extractDataset1 = extract.KafkaExtract.extract(
       KafkaExtract(
         name="df", 
+        description=None,
         outputView=outputView, 
         topic=topic,
         bootstrapServers=bootstrapServers,
@@ -124,6 +127,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
     au.com.agl.arc.execute.KafkaCommitExecute.execute(
       KafkaCommitExecute(
         name="df", 
+        description=None,
         inputView=outputView, 
         bootstrapServers=bootstrapServers,
         groupID=groupId,
@@ -135,6 +139,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
     val extractDataset2 = extract.KafkaExtract.extract(
       KafkaExtract(
         name="df", 
+        description=None,
         outputView=outputView, 
         topic=topic,
         bootstrapServers=bootstrapServers,
@@ -162,6 +167,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
     load.KafkaLoad.load(
       KafkaLoad(
         name="df", 
+        description=None,
         inputView=inputView1, 
         topic=topic,
         bootstrapServers=bootstrapServers,
@@ -177,6 +183,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
     val extractDataset3 = extract.KafkaExtract.extract(
       KafkaExtract(
         name="df", 
+        description=None,
         outputView=outputView, 
         topic=topic,
         bootstrapServers=bootstrapServers,

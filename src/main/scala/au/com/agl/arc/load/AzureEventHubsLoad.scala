@@ -31,6 +31,9 @@ object AzureEventHubsLoad {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)
     stageDetail.put("name", load.name)
+    for (description <- load.description) {
+      stageDetail.put("description", description)    
+    }    
     stageDetail.put("inputView", load.inputView)  
     stageDetail.put("namespaceName", load.namespaceName)  
     stageDetail.put("eventHubName", load.eventHubName)  

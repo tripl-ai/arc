@@ -44,6 +44,9 @@ object HTTPExtract {
     val stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", extract.getType)
     stageDetail.put("name", extract.name)
+    for (description <- extract.description) {
+      stageDetail.put("description", description)    
+    }     
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
     stageDetail.put("method", extract.method)
@@ -115,6 +118,11 @@ object HTTPExtract {
             // send the request
             val response = httpClient.execute(request)
 
+            // verify status code is correct
+            if (!extract.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+              throw new Exception(s"""HTTPExtract expects all response StatusCode(s) in [${extract.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
+            }
+
             // read and close response
             val body = response.getEntity.getContentLength match {
               case 0 => None
@@ -137,34 +145,6 @@ object HTTPExtract {
     }
 
     val df = responses.toDF
-
-    val distinctReponses = responses
-      .groupBy($"statusCode", $"reasonPhrase")
-      .agg(collect_list($"body").as("body"), count("*").as("count"))
-
-    // execute the requests and return a new dataset of distinct response codes
-    distinctReponses.cache.count
-
-    // response logging 
-    // limited to 50 top response codes (by count descending) to protect against log flooding
-    val responseMap = new java.util.HashMap[String, Object]()      
-    distinctReponses.sort($"count".desc).limit(50).collect.foreach( response => {
-      val colMap = new java.util.HashMap[String, Object]()
-      colMap.put("body", response.getList(2).toArray.slice(0, 10).distinct)
-      colMap.put("reasonPhrase", response.getString(1))
-      colMap.put("count", Long.valueOf(response.getLong(3)))
-      responseMap.put(response.getInt(0).toString, colMap)
-    })
-    stageDetail.put("responses", responseMap)    
-
-    // verify status code is correct
-    if (!(distinctReponses.map(d => d.getInt(0)).collect forall (extract.validStatusCodes contains _))) {
-      val responseMessages = distinctReponses.map(response => s"${response.getLong(3)} reponses ${response.getInt(0)} (${response.getString(1)})").collect.mkString(", ")
-
-      throw new Exception(s"""HTTPExtract expects all response StatusCode(s) in [${extract.validStatusCodes.mkString(", ")}] but server responded with [${responseMessages}].""") with DetailException {
-        override val detail = stageDetail          
-      }
-    }   
     
     // repartition to distribute rows evenly
     val repartitionedDF = extract.partitionBy match {
