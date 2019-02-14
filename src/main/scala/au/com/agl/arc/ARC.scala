@@ -293,16 +293,37 @@ object ARC {
           .log()   
       }
 
-      // silently try to shut down log so that all messages are sent before stopping the spark session
-      try {
-        org.apache.log4j.LogManager.shutdown
-      } catch {
-        case e: Exception => 
-      }
+      if (error) {  
+        // silently try to shut down log so that all messages are sent before stopping the spark session
+        try {
+          org.apache.log4j.LogManager.shutdown
+        } catch {
+          case e: Exception => 
+        }
 
-      // stop spark session and return error code to indicate sucess/failure
-      spark.stop()
-      sys.exit(if (error) 1 else 0)
+        // stop spark session and return error code to indicate sucess/failure
+        spark.stop()
+        sys.exit(1)
+      } else {
+
+        // if running on a databricks cluster do not try to shutdown so that status does not always equal failure
+        // databricks adds custom keys to SparkConf so if any key contains databricks then assume running on their cluster
+        // if there is a better way to detect when running on databricks then please submit PR
+        // https://docs.databricks.com/user-guide/jobs.html#jar-job-tips
+        if (spark.sparkContext.getConf.getAll.filter { case (k,v) => k.contains("databricks") }.length == 0) {
+
+          // silently try to shut down log so that all messages are sent before stopping the spark session
+          try {
+            org.apache.log4j.LogManager.shutdown
+          } catch {
+            case e: Exception => 
+          }
+
+          // stop spark session and return error code to indicate sucess/failure
+          spark.stop()
+          sys.exit(0)   
+        }
+      }
     } else {
       try {
         spark.streams.active(0).awaitTermination
@@ -310,6 +331,7 @@ object ARC {
         case e: Exception => 
       }
     }
+
   }  
 
   /** An ETL Pipeline submits each of its stages in order to Spark.
