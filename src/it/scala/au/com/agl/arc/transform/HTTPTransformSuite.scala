@@ -84,7 +84,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="value",
         batchSize=1,
-        delimiter=""        
+        delimiter="\n\n"     
       )
     ).get
 
@@ -126,7 +126,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="input",
         batchSize=1,
-        delimiter=""        
+        delimiter="\n\n"      
       )
     ).get
 

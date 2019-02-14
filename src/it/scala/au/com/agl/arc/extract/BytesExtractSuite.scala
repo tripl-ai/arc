@@ -64,7 +64,6 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       )
     )
 
-    // rename raw_content to comply with HTTPTransform requirement
     val actual = transform.HTTPTransform.transform(
       HTTPTransform(
         name="transform",
@@ -78,7 +77,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="value",
         batchSize=1,
-        delimiter=""
+        delimiter="\n\n"
       )
     ).get    
 
