@@ -70,6 +70,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
     load.KafkaLoad.load(
       KafkaLoad(
         name="df", 
+        description=None,
         inputView=inputView, 
         topic=topic,
         bootstrapServers=bootstrapServers,
@@ -84,6 +85,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.KafkaExtract.extract(
       KafkaExtract(
         name="df", 
+        description=None,
         outputView=outputView, 
         topic=topic,
         bootstrapServers=bootstrapServers,
@@ -138,6 +140,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
     load.KafkaLoad.load(
       KafkaLoad(
         name="df", 
+        description=None,
         inputView=inputView, 
         topic=topic,
         bootstrapServers=bootstrapServers,
@@ -152,6 +155,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
     val extractDataset = extract.KafkaExtract.extract(
       KafkaExtract(
         name="df", 
+        description=None,
         outputView=outputView, 
         topic=topic,
         bootstrapServers=bootstrapServers,
@@ -214,6 +218,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
     load.KafkaLoad.load(
       KafkaLoad(
         name="df", 
+        description=None,
         inputView=inputView, 
         topic=topic,
         bootstrapServers=bootstrapServers,
@@ -233,6 +238,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.KafkaExtract.extract(
       KafkaExtract(
         name="df", 
+        description=None,
         outputView=outputView, 
         topic=topic,
         bootstrapServers=bootstrapServers,

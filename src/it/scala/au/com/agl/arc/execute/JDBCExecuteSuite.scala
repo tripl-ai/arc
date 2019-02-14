@@ -71,6 +71,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     au.com.agl.arc.execute.JDBCExecute.execute(
       JDBCExecute(
         name=outputView, 
+        description=None,
         inputURI=new URI(testURI), 
         jdbcURL=sqlserverurl,
         user=Option(user),
@@ -111,6 +112,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       au.com.agl.arc.execute.JDBCExecute.execute(
         JDBCExecute(
           name=outputView, 
+          description=None,
           inputURI=new URI(testURI), 
           jdbcURL=sqlserverurl,
           user=Option(user),

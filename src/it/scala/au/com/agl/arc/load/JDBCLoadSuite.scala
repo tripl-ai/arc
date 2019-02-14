@@ -82,6 +82,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoad.load(
       JDBCLoad(
         name="dataset",
+        description=None,
         inputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -148,6 +149,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoad.load(
       JDBCLoad(
         name="dataset",
+        description=None,
         inputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -214,6 +216,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoad.load(
       JDBCLoad(
         name="dataset",
+        description=None,
         inputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -268,6 +271,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       load.JDBCLoad.load(
         JDBCLoad(
           name="dataset",
+          description=None,
           inputView=dbtable, 
           jdbcURL=sqlserverurl, 
           driver=DriverManager.getDriver(sqlserverurl),
@@ -327,6 +331,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       load.JDBCLoad.load(
         JDBCLoad(
           name="dataset",
+          description=None,
           inputView=dbtable, 
           jdbcURL=sqlserverurl, 
           driver=DriverManager.getDriver(sqlserverurl),
@@ -386,6 +391,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       load.JDBCLoad.load(
         JDBCLoad(
           name="dataset",
+          description=None,
           inputView=dbtable, 
           jdbcURL=sqlserverurl, 
           driver=DriverManager.getDriver(sqlserverurl),
@@ -444,6 +450,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoad.load(
       JDBCLoad(
         name="dataset",
+        description=None,
         inputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -465,6 +472,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoad.load(
       JDBCLoad(
         name="dataset",
+        description=None,
         inputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -507,6 +515,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoad.load(
       JDBCLoad(
         name="dataset",
+        description=None,
         inputView=dbtable, 
         jdbcURL=postgresurl, 
         driver=DriverManager.getDriver(postgresurl),
@@ -572,6 +581,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoad.load(
       JDBCLoad(
         name="dataset",
+        description=None,
         inputView=dbtable, 
         jdbcURL=postgresurl, 
         driver=DriverManager.getDriver(postgresurl),

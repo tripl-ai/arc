@@ -53,6 +53,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     extract.BytesExtract.extract(
       BytesExtract(
         name="dataset",
+        description=None,
         outputView=outputView, 
         input=Right(dogImage),
         authentication=None,
@@ -67,6 +68,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = transform.HTTPTransform.transform(
       HTTPTransform(
         name="transform",
+        description=None,
         uri=new URI(uri),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
@@ -74,7 +76,9 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        inputField="value"
+        inputField="value",
+        batchSize=1,
+        delimiter=""
       )
     ).get    
 

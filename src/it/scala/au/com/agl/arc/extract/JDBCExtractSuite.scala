@@ -82,6 +82,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val expected = load.JDBCLoad.load(
       JDBCLoad(
         name="dataset",
+        description=None,
         inputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -103,6 +104,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.JDBCExtract.extract(
       JDBCExtract(
         name="dataset",
+        description=None,
         cols=Right(Nil),
         outputView=dbtable, 
         jdbcURL=sqlserverurl, 
@@ -136,6 +138,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val expected = load.JDBCLoad.load(
       JDBCLoad(
         name="dataset",
+        description=None,
         inputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -157,6 +160,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.JDBCExtract.extract(
       JDBCExtract(
         name="dataset",
+        description=None,
         cols=Right(Nil),
         outputView=dbtable, 
         jdbcURL=sqlserverurl, 
@@ -189,6 +193,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val expected = load.JDBCLoad.load(
       JDBCLoad(
         name="dataset",
+        description=None,
         inputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -210,6 +215,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.JDBCExtract.extract(
       JDBCExtract(
         name="dataset",
+        description=None,
         cols=Right(Nil),
         outputView=dbtable, 
         jdbcURL=sqlserverurl, 
@@ -239,6 +245,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.JDBCExtract.extract(
       JDBCExtract(
         name="meta",
+        description=None,
         cols=Right(Nil),
         outputView="meta", 
         jdbcURL=postgresurl, 
