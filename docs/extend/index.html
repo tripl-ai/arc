@@ -450,12 +450,12 @@ import java.time.{DayOfWeek, LocalDate}
 import java.time.temporal.TemporalAdjusters.lastInMonth
 import java.util
 
-import au.com.agl.arc.plugins
+import au.com.agl.arc.plugins._
 import au.com.agl.arc.util.log.logger.Logger
 
-class MyFakeBusinessLastProcessingDayPlugin extends ConfigPlugin {
+class MyFakeBusinessLastProcessingDayPlugin extends DynamicConfigurationPlugin {
 
-  override def values(params: Map[String, String])(implicit logger: Logger): util.Map[String, Object] = {
+  override def values(params: Map[String, String])(implicit logger: au.com.agl.arc.util.log.logger.Logger): java.util.Map[String, Object] = {
 
     val lastProcessingDay = LocalDate.now.`with`(lastInMonth(DayOfWeek.THURSDAY))
 
