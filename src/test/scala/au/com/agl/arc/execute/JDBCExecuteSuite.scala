@@ -196,4 +196,41 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     }
     assert(thrown.getMessage == "java.sql.SQLException: No suitable driver found for ")
   }    
+
+  test("JDBCExecute: Connection Params") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val thrown = intercept[Exception with DetailException] {
+      au.com.agl.arc.execute.JDBCExecute.execute(
+        JDBCExecute(
+          name=outputView, 
+          description=None,
+          inputURI=new URI(testURI), 
+          jdbcURL = "jdbc:derby:memory:JDBCExecuteSuite/connectionParamsTestDB",
+          user = None,
+          password = None,
+          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
+          params=Map.empty, 
+          sqlParams=Map.empty
+        )
+      )
+    }
+    assert(thrown.getMessage == "java.sql.SQLException: Database 'memory:JDBCExecuteSuite/connectionParamsTestDB' not found.")
+
+    au.com.agl.arc.execute.JDBCExecute.execute(
+      JDBCExecute(
+        name=outputView, 
+        description=None,
+        inputURI=new URI(testURI), 
+        jdbcURL = "jdbc:derby:memory:JDBCExecuteSuite/connectionParamsTestDB",
+        user = None,
+        password = None,
+        sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
+        params=Map("create" -> "true"), 
+        sqlParams=Map.empty
+      )
+    )
+  }    
 }

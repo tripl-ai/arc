@@ -2,14 +2,15 @@
 
 # 1.6.0
 
-- fixed defect in `*Extract` where Arc would recalculate metadata columns (`_filename`, `_index` or `_monotonically_increasing_id`) if both `_index` or `_monotonically_increasing_id` missing ignoring `_filename` presence.
+- **FIX** fixed defect in `*Extract` where Arc would recalculate metadata columns (`_filename`, `_index` or `_monotonically_increasing_id`) if both `_index` or `_monotonically_increasing_id` missing ignoring `_filename` presence.
+- **FIX** `HTTPExtract`, `HTTPTransform` and `HTTPLoad` changed to fail fast and hit HTTP endpoint only once.
+- **FIX** `JDBCExecute` was not setting connection `params` if `user` or `password` were not provided.
 - changed `DynamicConfiguration` plugins to be HOCON `object` rather than a `string` allowing parameters to be passed in.
 - added `logger` object to `DynamicConfiguration` plugins.
 - added `customDelimiter` attribute to `DelimitedExtract` and `DelimitedLoad` to be used in conjunction with `delimiter` equal to `Custom`.
 - added optional `description` attribute to all stages.
 - added `inputField` to `DelimitedExtract` and `JSONExtract` to simplify loading from sources like `HTTPExtract`.
 - added `batchSize` and `delimiter` to `HTTPTransform` to allow batching to reduce cost of HTTP overhead.
-- refactored `HTTPExtract`, `HTTPTransform` and `HTTPLoad` to fail fast and stay more 'pure'.
 - bump to Alpine 3.9 in `Dockerfile`.
 
 # 1.5.0
