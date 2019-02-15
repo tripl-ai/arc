@@ -84,16 +84,34 @@ object MLTransform {
         transformedDF = transformedDF.withColumn(s"${col}", maxProbability(col))
     })
 
-    transformedDF.createOrReplaceTempView(transform.outputView)
+    // repartition to distribute rows evenly
+    val repartitionedDF = transform.partitionBy match {
+      case Nil => { 
+        transform.numPartitions match {
+          case Some(numPartitions) => transformedDF.repartition(numPartitions)
+          case None => transformedDF
+        }   
+      }
+      case partitionBy => {
+        // create a column array for repartitioning
+        val partitionCols = partitionBy.map(col => transformedDF(col))
+        transform.numPartitions match {
+          case Some(numPartitions) => transformedDF.repartition(numPartitions, partitionCols:_*)
+          case None => transformedDF.repartition(partitionCols:_*)
+        }
+      }
+    }
 
-    if (transform.persist && !transformedDF.isStreaming) {
-      transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", Long.valueOf(transformedDF.count))
+    repartitionedDF.createOrReplaceTempView(transform.outputView)    
+
+    if (transform.persist && !repartitionedDF.isStreaming) {
+      repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+      stageDetail.put("records", Long.valueOf(repartitionedDF.count))
 
       // add percentiles to an list for logging
       var approxQuantileMap = new java.util.HashMap[String, Array[Double]]()
       probabilityCols.foreach(col => {
-          approxQuantileMap.put(col.toString, transformedDF.stat.approxQuantile(col.toString, Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0), 0.1).map(col => Double.valueOf(col)))
+          approxQuantileMap.put(col.toString, repartitionedDF.stat.approxQuantile(col.toString, Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0), 0.1).map(col => Double.valueOf(col)))
       })
       if (approxQuantileMap.size > 0) {
         stageDetail.put("percentiles", approxQuantileMap)
@@ -106,6 +124,6 @@ object MLTransform {
       .map("stage", stageDetail)      
       .log()  
 
-    Option(transformedDF)
+    Option(repartitionedDF)
   }
 }

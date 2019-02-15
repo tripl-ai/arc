@@ -8,5 +8,9 @@
   ],
   "inputView": "cutomer",
   "outputView": "customer_json",
+  "numPartitions": 10,
+  "partitionBy": [
+    "customerId"
+  ],
   "persist": false
 }

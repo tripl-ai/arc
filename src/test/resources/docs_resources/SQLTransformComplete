@@ -9,6 +9,10 @@
   "inputURI": "hdfs://datalake/sql/customer_dynamic.sql",
   "outputView": "customer",
   "authentication": {},
+  "numPartitions": 10,
+  "partitionBy": [
+    "customerId"
+  ],
   "persist": false,
   "sqlParams": {
     "current_date": "2018-11-24",

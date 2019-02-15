@@ -41,16 +41,34 @@ object SQLTransform {
       }
     }
 
-    transformedDF.createOrReplaceTempView(transform.outputView)
+    // repartition to distribute rows evenly
+    val repartitionedDF = transform.partitionBy match {
+      case Nil => { 
+        transform.numPartitions match {
+          case Some(numPartitions) => transformedDF.repartition(numPartitions)
+          case None => transformedDF
+        }   
+      }
+      case partitionBy => {
+        // create a column array for repartitioning
+        val partitionCols = partitionBy.map(col => transformedDF(col))
+        transform.numPartitions match {
+          case Some(numPartitions) => transformedDF.repartition(numPartitions, partitionCols:_*)
+          case None => transformedDF.repartition(partitionCols:_*)
+        }
+      }
+    }
+
+    repartitionedDF.createOrReplaceTempView(transform.outputView)    
 
     // add partition and predicate pushdown detail to logs
-    if (!transformedDF.isStreaming) {
-      stageDetail.put("partitionFilters", QueryExecutionUtils.getPartitionFilters(transformedDF.queryExecution.executedPlan).toArray)
-      stageDetail.put("dataFilters", QueryExecutionUtils.getDataFilters(transformedDF.queryExecution.executedPlan).toArray)
+    if (!repartitionedDF.isStreaming) {
+      stageDetail.put("partitionFilters", QueryExecutionUtils.getPartitionFilters(repartitionedDF.queryExecution.executedPlan).toArray)
+      stageDetail.put("dataFilters", QueryExecutionUtils.getDataFilters(repartitionedDF.queryExecution.executedPlan).toArray)
 
       if (transform.persist) {
-        transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stageDetail.put("records", Long.valueOf(transformedDF.count)) 
+        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
       }
     }
 
@@ -60,7 +78,7 @@ object SQLTransform {
       .map("stage", stageDetail)      
       .log()  
 
-    Option(transformedDF)
+    Option(repartitionedDF)
   }
 
 }

@@ -65,7 +65,9 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           persist=false,
           sqlParams=Map.empty,
-          params=Map.empty
+          params=Map.empty,
+          numPartitions=None,
+          partitionBy=Nil             
         ) :: Nil
     )
 

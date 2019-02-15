@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.6.1</span></strong>
+          <span class="version">1.7.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -650,6 +650,20 @@
 </tr>
 
 <tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
@@ -701,6 +715,10 @@
     <span class="nt">&#34;custom-header&#34;</span><span class="p">:</span> <span class="s2">&#34;payload&#34;</span>
   <span class="p">},</span>
   <span class="nt">&#34;inputField&#34;</span><span class="p">:</span> <span class="s2">&#34;value&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;customerId&#34;</span>
+  <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;validStatusCodes&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="mi">200</span><span class="p">,</span>
@@ -763,6 +781,20 @@
 </tr>
 
 <tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
@@ -798,6 +830,10 @@
   <span class="p">],</span>
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;cutomer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;customerId&#34;</span>
+  <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span>
 <span class="p">}</span></code></pre></div>
 
@@ -941,6 +977,20 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
 <td>sqlParams</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -979,6 +1029,10 @@ WHERE metadata.pii = (
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;cutomer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_safe&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;customerId&#34;</span>
+  <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
     <span class="nt">&#34;pii_authorized&#34;</span><span class="p">:</span> <span class="s2">&#34;true&#34;</span>
@@ -1047,6 +1101,20 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
 <td>persist</td>
 <td>Boolean</td>
 <td>true</td>
@@ -1092,6 +1160,10 @@ WHERE metadata.pii = (
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_scored&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;customerId&#34;</span>
+  <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span>
 <span class="p">}</span></code></pre></div>
 
@@ -1169,6 +1241,20 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
@@ -1224,6 +1310,10 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
   <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/customer_dynamic.sql&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;customerId&#34;</span>
+  <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
     <span class="nt">&#34;current_date&#34;</span><span class="p">:</span> <span class="s2">&#34;2018-11-24&#34;</span><span class="p">,</span>
@@ -1317,10 +1407,24 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tr>
 
 <tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
 <td>params</td>
 <td>Map[String, String]</td>
 <td>false</td>
 <td>Map of configuration parameters. Currently unused.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
 </tr>
 
 <tr>
@@ -1377,6 +1481,10 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
   <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict&#34;</span><span class="p">,</span>
   <span class="nt">&#34;signatureName&#34;</span><span class="p">:</span> <span class="s2">&#34;serving_default&#34;</span><span class="p">,</span>
   <span class="nt">&#34;batchSize&#34;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;customerId&#34;</span>
+  <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
   <span class="nt">&#34;responseType&#34;</span><span class="p">:</span> <span class="s2">&#34;integer&#34;</span>
 <span class="p">}</span></code></pre></div>
@@ -1459,6 +1567,20 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tr>
 
 <tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
 <td>persist</td>
 <td>Boolean</td>
 <td>false</td>
@@ -1498,6 +1620,10 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
   <span class="nt">&#34;failMode&#34;</span><span class="p">:</span> <span class="s2">&#34;failfast&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;customerId&#34;</span>
+  <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span>
 <span class="p">}</span></code></pre></div>
 

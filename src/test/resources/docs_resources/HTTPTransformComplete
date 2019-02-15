@@ -16,6 +16,10 @@
     "custom-header": "payload"
   },
   "inputField": "value",
+  "numPartitions": 10,
+  "partitionBy": [
+    "customerId"
+  ],
   "persist": false,
   "validStatusCodes": [
     200,

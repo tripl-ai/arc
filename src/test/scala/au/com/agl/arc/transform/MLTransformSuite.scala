@@ -112,7 +112,9 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         persist=true,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -144,7 +146,9 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         persist=true,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -185,7 +189,9 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         persist=false,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 

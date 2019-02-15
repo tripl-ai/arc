@@ -125,40 +125,4 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     }
     assert(thrown.getMessage.contains("""Invalid object name 'INFORMATION_SCHEMA.DOES_NOT_EXIST'"""))  
   }
-
-  // test("JDBCExecute: sqlserver failure transaction") {
-  //   implicit val spark = session
-  //   import spark.implicits._
-  //   implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-  //   val transaction = s"""
-  //   |BEGIN TRANSACTION
-  //   |BEGIN TRY
-  //   |    CREATE TABLE dbo.TestRethrow (ID INT PRIMARY KEY); 
-  //   |    INSERT dbo.TestRethrow(ID) VALUES(1);  
-  //   |    INSERT dbo.TestRethrow(ID) VALUES(1); 
-  //   |END TRY
-  //   |BEGIN CATCH
-  //   |  IF(@@TRANCOUNT > 0) ROLLBACK TRANSACTION;
-  //   |  THROW;
-  //   |END CATCH;
-  //   |IF (@@TRANCOUNT > 0) COMMIT TRANSACTION;
-  //   """.stripMargin
-
-  //   val thrown = intercept[Exception with DetailException] {
-  //     au.com.agl.arc.execute.JDBCExecute.execute(
-  //       JDBCExecute(
-  //         name=outputView, 
-  //         inputURI=new URI(testURI), 
-  //         url=sqlserverurl,
-  //         user=Option(user),
-  //         password=Option(password),
-  //         sql=transaction, 
-  //         params=Map.empty, 
-  //         sqlParams=Map.empty
-  //       )
-  //     )
-  //   }
-  //   assert(thrown.getMessage.contains("""Invalid object name 'INFORMATION_SCHEMA.DOES_NOT_EXIST'"""))  
-  // }
 }

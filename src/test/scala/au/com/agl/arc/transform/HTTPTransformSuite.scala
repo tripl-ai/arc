@@ -29,7 +29,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         requests += 1
         response.setContentType("text/html")
         response.setStatus(HttpServletResponse.SC_OK)
-        response.getWriter().println(Source.fromInputStream(request.getInputStream).mkString)
+        val sourceBody = Source.fromInputStream(request.getInputStream).mkString
+        response.getWriter().print(sourceBody)
       } else {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN)
       }
@@ -129,7 +130,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="value",
         batchSize=2,
-        delimiter=delimiter
+        delimiter=delimiter,
+        numPartitions=None,
+        partitionBy=Nil    
       )
     ).get
 
@@ -174,7 +177,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="inputField",
         batchSize=2,
-        delimiter=delimiter
+        delimiter=delimiter,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -214,7 +219,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         inputField="inputField",
         batchSize=1,
-        delimiter=delimiter
+        delimiter=delimiter,
+        numPartitions=None,
+        partitionBy=Nil        
       )
     ).get
 
@@ -255,7 +262,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         inputField="inputField",
         batchSize=5,
-        delimiter=delimiter
+        delimiter=delimiter,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -289,7 +298,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="value",
         batchSize=1,
-        delimiter=delimiter
+        delimiter=delimiter,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -319,7 +330,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           inputField="value",
           batchSize=1,
-          delimiter=delimiter
+          delimiter=delimiter,
+          numPartitions=None,
+          partitionBy=Nil             
         )
       ).get.count
     }
@@ -349,7 +362,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           inputField="value",
           batchSize=1,
-          delimiter=delimiter
+          delimiter=delimiter,
+          numPartitions=None,
+          partitionBy=Nil             
         )
       ).get.count
     }
@@ -386,7 +401,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="value",
         batchSize=2,
-        delimiter=delimiter
+        delimiter=delimiter,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -428,7 +445,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           inputField="value",
           batchSize=1,
-          delimiter=delimiter
+          delimiter=delimiter,
+          numPartitions=None,
+          partitionBy=Nil             
         )
       ).get
     }
@@ -465,7 +484,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           inputField="value",
           batchSize=1,
-          delimiter=delimiter
+          delimiter=delimiter,
+          numPartitions=None,
+          partitionBy=Nil             
         )
       ).get
     }
@@ -504,7 +525,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           inputField=inputField,
           batchSize=1,
-          delimiter=delimiter
+          delimiter=delimiter,
+          numPartitions=None,
+          partitionBy=Nil             
         )
       ).get
     }
@@ -545,7 +568,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="value",
         batchSize=1,
-        delimiter=delimiter
+        delimiter=delimiter,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 

@@ -81,7 +81,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         batchSize=10,
         params=Map.empty,
         persist=false,
-        inputField="value"
+        inputField="value",
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -116,7 +118,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         batchSize=10,
         params=Map.empty,
         persist=false,
-        inputField="value"
+        inputField="value",
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -151,7 +155,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         batchSize=10,
         params=Map.empty,
         persist=false,
-        inputField="value"
+        inputField="value",
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -186,7 +192,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
           batchSize=10,
           params=Map.empty,
           persist=false,
-          inputField="value"
+          inputField="value",
+          numPartitions=None,
+          partitionBy=Nil             
         )
       )
     }
@@ -204,7 +212,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         batchSize=10,
         params=Map.empty,
         persist=false,
-        inputField="id"
+        inputField="id",
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -236,7 +246,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         batchSize=10,
         params=Map.empty,
         persist=false,
-        inputField="value"
+        inputField="value",
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 

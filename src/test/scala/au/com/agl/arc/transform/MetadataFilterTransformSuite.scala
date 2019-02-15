@@ -73,7 +73,9 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView, 
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive
+        failMode=FailModeTypePermissive,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     )
 
@@ -87,7 +89,9 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -118,7 +122,9 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView, 
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive
+        failMode=FailModeTypePermissive,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     )
 
@@ -132,7 +138,9 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -179,7 +187,9 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView, 
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive
+        failMode=FailModeTypePermissive,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -193,7 +203,9 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 

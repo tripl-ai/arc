@@ -10,5 +10,9 @@
   "inputView": "customer",
   "outputView": "customer_scored",
   "authentication": {},
+  "numPartitions": 10,
+  "partitionBy": [
+    "customerId"
+  ],
   "persist": false
 }
