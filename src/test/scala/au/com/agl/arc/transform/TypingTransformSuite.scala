@@ -91,7 +91,9 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView, 
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive
+        failMode=FailModeTypePermissive,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -154,7 +156,9 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView, 
           params=Map.empty,
           persist=false,
-          failMode=FailModeTypeFailFast
+          failMode=FailModeTypeFailFast,
+          numPartitions=None,
+          partitionBy=Nil             
         )
       ).get
       actual.count
@@ -400,7 +404,9 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView, 
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive
+        failMode=FailModeTypePermissive,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -457,7 +463,9 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView, 
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive
+        failMode=FailModeTypePermissive,
+        numPartitions=None,
+        partitionBy=Nil   
       )
     ).get
 

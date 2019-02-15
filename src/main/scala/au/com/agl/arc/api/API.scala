@@ -221,19 +221,19 @@ object API {
 
   case class DiffTransform(name: String, description: Option[String], inputLeftView: String, inputRightView: String, outputIntersectionView: Option[String], outputLeftView: Option[String], outputRightView: Option[String], params: Map[String, String], persist: Boolean) extends Transform { val getType = "DiffTransform" }
 
-  case class HTTPTransform(name: String, description: Option[String], uri: URI, headers: Map[String, String], validStatusCodes: List[Int], inputView: String, outputView: String, inputField: String, params: Map[String, String], persist: Boolean, batchSize: Int, delimiter: String) extends Transform { val getType = "HTTPTransform" }  
+  case class HTTPTransform(name: String, description: Option[String], uri: URI, headers: Map[String, String], validStatusCodes: List[Int], inputView: String, outputView: String, inputField: String, params: Map[String, String], persist: Boolean, batchSize: Int, delimiter: String, numPartitions: Option[Int], partitionBy: List[String]) extends Transform { val getType = "HTTPTransform" }  
   
-  case class JSONTransform(name: String, description: Option[String], inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "JSONTransform" }
+  case class JSONTransform(name: String, description: Option[String], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Transform { val getType = "JSONTransform" }
 
-  case class MetadataFilterTransform(name: String, description: Option[String], inputView: String, inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean) extends Transform { val getType = "MetadataFilterTransform" }
+  case class MetadataFilterTransform(name: String, description: Option[String], inputView: String, inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Transform { val getType = "MetadataFilterTransform" }
 
-  case class MLTransform(name: String, description: Option[String], inputURI: URI, model: Either[PipelineModel, CrossValidatorModel], inputView: String, outputView: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "MLTransform" }
+  case class MLTransform(name: String, description: Option[String], inputURI: URI, model: Either[PipelineModel, CrossValidatorModel], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Transform { val getType = "MLTransform" }
 
-  case class SQLTransform(name: String, description: Option[String], inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean) extends Transform { val getType = "SQLTransform" }
+  case class SQLTransform(name: String, description: Option[String], inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Transform { val getType = "SQLTransform" }
 
-  case class TensorFlowServingTransform(name: String, description: Option[String], inputView: String, outputView: String, uri: URI, signatureName: Option[String], responseType: ResponseType, batchSize: Int, inputField: String, params: Map[String, String], persist: Boolean) extends Transform { val getType = "TensorFlowServingTransform" }
+  case class TensorFlowServingTransform(name: String, description: Option[String], inputView: String, outputView: String, uri: URI, signatureName: Option[String], responseType: ResponseType, batchSize: Int, inputField: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Transform { val getType = "TensorFlowServingTransform" }
 
-  case class TypingTransform(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, failMode: FailModeType) extends Transform with ColumnarExtract { val getType = "TypingTransform" }
+  case class TypingTransform(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, failMode: FailModeType, numPartitions: Option[Int], partitionBy: List[String]) extends Transform with ColumnarExtract { val getType = "TypingTransform" }
 
 
   sealed trait Load extends PipelineStage

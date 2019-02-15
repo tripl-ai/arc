@@ -10,6 +10,10 @@
   "inputView": "cutomer",
   "outputView": "customer_safe",
   "authentication": {},
+  "numPartitions": 10,
+  "partitionBy": [
+    "customerId"
+  ],
   "persist": false,
   "sqlParams": {
     "pii_authorized": "true"

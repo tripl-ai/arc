@@ -57,11 +57,30 @@ object MetadataFilterTransform {
 
     // drop fields in the excluded set
     val transformedDF = df.drop(excldueColumns.toList:_*)
-    transformedDF.createOrReplaceTempView(transform.outputView)
 
-    if (transform.persist && !transformedDF.isStreaming) {
-      transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", Long.valueOf(transformedDF.count)) 
+    // repartition to distribute rows evenly
+    val repartitionedDF = transform.partitionBy match {
+      case Nil => { 
+        transform.numPartitions match {
+          case Some(numPartitions) => transformedDF.repartition(numPartitions)
+          case None => transformedDF
+        }   
+      }
+      case partitionBy => {
+        // create a column array for repartitioning
+        val partitionCols = partitionBy.map(col => transformedDF(col))
+        transform.numPartitions match {
+          case Some(numPartitions) => transformedDF.repartition(numPartitions, partitionCols:_*)
+          case None => transformedDF.repartition(partitionCols:_*)
+        }
+      }
+    }
+
+    repartitionedDF.createOrReplaceTempView(transform.outputView)    
+
+    if (transform.persist && !repartitionedDF.isStreaming) {
+      repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+      stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
     }    
 
     logger.info()
@@ -70,7 +89,7 @@ object MetadataFilterTransform {
       .map("stage", stageDetail)      
       .log()  
 
-    Option(transformedDF)
+    Option(repartitionedDF)
   }
 
 }

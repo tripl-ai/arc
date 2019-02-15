@@ -11,5 +11,9 @@
   "outputView": "customer",
   "authentication": {},
   "failMode": "failfast",
+  "numPartitions": 10,
+  "partitionBy": [
+    "customerId"
+  ],
   "persist": false
 }

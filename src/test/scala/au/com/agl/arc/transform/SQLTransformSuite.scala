@@ -70,7 +70,9 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -97,7 +99,9 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -111,7 +115,9 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=true,
         sqlParams=Map.empty,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     )
     assert(spark.catalog.isCached(outputView) === true)    
@@ -134,7 +140,9 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map("sql_boolean_param" -> "FALSE"),
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -174,7 +182,9 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -196,7 +206,9 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map("sql_boolean_param" -> "FALSE"),
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -236,7 +248,9 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -272,7 +286,9 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 

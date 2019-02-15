@@ -11,6 +11,10 @@
   "uri": "http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict",
   "signatureName": "serving_default",
   "batchSize": 100,
+  "numPartitions": 10,
+  "partitionBy": [
+    "customerId"
+  ],
   "persist": true,
   "responseType": "integer"
 }

@@ -1,5 +1,10 @@
 ## Change Log
 
+# 1.7.0
+
+- added `partitionBy` and `numPartitions` to relevant `*Transform` stages to allow finer control of parallelism.
+- changed to only perform `HTTPExtract` split result when `batchSize` is greater than 1.
+
 # 1.6.1
 
 - **FIX** fixed exit process when executing within a [Databricks Runtime](https://databricks.com/product/databricks-runtime) environment so the job reports success/failure correctly. [Source](https://docs.databricks.com/user-guide/jobs.html#jar-job-tips).

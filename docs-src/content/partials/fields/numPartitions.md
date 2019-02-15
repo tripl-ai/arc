@@ -1,1 +1,1 @@
-The maximum number of partitions that can be used for parallelism in table reading and writing.
+The number of partitions that will be used for controlling parallelism.

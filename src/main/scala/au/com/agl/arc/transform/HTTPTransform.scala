@@ -116,10 +116,19 @@ object HTTPTransform {
           // add payload
           val entity = dataType match {
             case _: StringType => {
+              val delimiter = if (transform.batchSize > 1) {
+                transform.delimiter
+              } else {
+                ""
+              }        
               new StringEntity(groupedRow.map(row => row.getString(fieldIndex)).mkString(transform.delimiter))
             }
             case _: BinaryType => {
-              val delimiter = transform.delimiter.getBytes
+              val delimiter = if (transform.batchSize > 1) {
+                transform.delimiter.getBytes
+              } else {
+                "".getBytes
+              }
               new ByteArrayEntity(groupedRow.map(row => row.get(fieldIndex).asInstanceOf[Array[scala.Byte]]).reduce(_ ++ delimiter ++ _))
             }
           }
@@ -136,7 +145,11 @@ object HTTPTransform {
 
             // read and close response
             val content = response.getEntity.getContent
-            val body = Source.fromInputStream(content).mkString.split(transform.delimiter)
+            val body = if (transform.batchSize > 1) {
+              Source.fromInputStream(content).mkString.split(transform.delimiter)
+            } else {
+              Array(Source.fromInputStream(content).mkString)
+            }
             response.close 
 
             if (body.length != groupedRow.length) {
@@ -164,11 +177,29 @@ object HTTPTransform {
       transformedDF = transformedDF.withColumn(field.name, col(field.name).as(field.name, field.metadata))
     })
 
-    transformedDF.createOrReplaceTempView(transform.outputView)
-    
-    if (transform.persist && !transformedDF.isStreaming) {
-      transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", Long.valueOf(transformedDF.count)) 
+    // repartition to distribute rows evenly
+    val repartitionedDF = transform.partitionBy match {
+      case Nil => { 
+        transform.numPartitions match {
+          case Some(numPartitions) => transformedDF.repartition(numPartitions)
+          case None => transformedDF
+        }   
+      }
+      case partitionBy => {
+        // create a column array for repartitioning
+        val partitionCols = partitionBy.map(col => transformedDF(col))
+        transform.numPartitions match {
+          case Some(numPartitions) => transformedDF.repartition(numPartitions, partitionCols:_*)
+          case None => transformedDF.repartition(partitionCols:_*)
+        }
+      }
+    } 
+
+    repartitionedDF.createOrReplaceTempView(transform.outputView)
+
+    if (transform.persist && !repartitionedDF.isStreaming) {
+      repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+      stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
     }    
 
     logger.info()
@@ -177,7 +208,7 @@ object HTTPTransform {
       .map("stage", stageDetail)      
       .log()  
 
-    Option(transformedDF)
+    Option(repartitionedDF)
   }
 
 }

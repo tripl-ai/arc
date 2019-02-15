@@ -49,7 +49,9 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         persist=false,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
@@ -80,7 +82,9 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
         inputView=inputView,
         outputView=outputView,
         persist=false,
-        params=Map.empty
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil           
       )
     ).get
 
