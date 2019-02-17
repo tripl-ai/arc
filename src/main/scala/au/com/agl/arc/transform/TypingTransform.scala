@@ -98,11 +98,16 @@ object TypingTransform {
 
     repartitionedDF.createOrReplaceTempView(transform.outputView)
 
-    if (transform.persist && !repartitionedDF.isStreaming) {
-      repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
-      stageDetail.put("values", Long.valueOf(valueAccumulator.value))
-      stageDetail.put("errors", Long.valueOf(errorAccumulator.value))      
+    if (!repartitionedDF.isStreaming) {
+      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+
+      if (transform.persist) {
+        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stageDetail.put("values", Long.valueOf(valueAccumulator.value))
+        stageDetail.put("errors", Long.valueOf(errorAccumulator.value))            
+      }      
     }    
 
     logger.info()

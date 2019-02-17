@@ -61,15 +61,17 @@ object SQLTransform {
 
     repartitionedDF.createOrReplaceTempView(transform.outputView)    
 
-    // add partition and predicate pushdown detail to logs
     if (!repartitionedDF.isStreaming) {
+      // add partition and predicate pushdown detail to logs
       stageDetail.put("partitionFilters", QueryExecutionUtils.getPartitionFilters(repartitionedDF.queryExecution.executedPlan).toArray)
       stageDetail.put("dataFilters", QueryExecutionUtils.getDataFilters(repartitionedDF.queryExecution.executedPlan).toArray)
+      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (transform.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
         stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
-      }
+      }      
     }
 
     logger.info()

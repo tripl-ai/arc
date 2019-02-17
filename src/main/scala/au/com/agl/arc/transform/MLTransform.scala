@@ -104,19 +104,24 @@ object MLTransform {
 
     repartitionedDF.createOrReplaceTempView(transform.outputView)    
 
-    if (transform.persist && !repartitionedDF.isStreaming) {
-      repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", Long.valueOf(repartitionedDF.count))
+    if (!repartitionedDF.isStreaming) {
+      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
-      // add percentiles to an list for logging
-      var approxQuantileMap = new java.util.HashMap[String, Array[Double]]()
-      probabilityCols.foreach(col => {
-          approxQuantileMap.put(col.toString, repartitionedDF.stat.approxQuantile(col.toString, Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0), 0.1).map(col => Double.valueOf(col)))
-      })
-      if (approxQuantileMap.size > 0) {
-        stageDetail.put("percentiles", approxQuantileMap)
-      }
-    }
+      if (transform.persist) {
+        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+
+        // add percentiles to an list for logging
+        var approxQuantileMap = new java.util.HashMap[String, Array[Double]]()
+        probabilityCols.foreach(col => {
+            approxQuantileMap.put(col.toString, repartitionedDF.stat.approxQuantile(col.toString, Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0), 0.1).map(col => Double.valueOf(col)))
+        })
+        if (approxQuantileMap.size > 0) {
+          stageDetail.put("percentiles", approxQuantileMap)
+        }        
+      }      
+    }    
 
     logger.info()
       .field("event", "exit")
