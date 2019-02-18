@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.7.1
+
+- added additional logging in `*Transform` to better track partition behaviour.
+
 # 1.7.0
 
 - added `partitionBy` and `numPartitions` to relevant `*Transform` stages to allow finer control of parallelism.
