@@ -502,7 +502,9 @@ hdfs://datalake/input/customer/customers_2019-02-07.csv
 
 <p>Which will expose and environment variable that looks like <code>ETL_CONF_DELTA_PERIOD=2019-02-04,2019-02-05,2019-02-06,2019-02-07,2019-02-08</code>.</p>
 
-<p>This can then be used to read just the files which match the <code>glob</code> pattern like:</p>
+<p>Alternatively, a <a href="../extend/#dynamic-configuration-plugins">Dynamic Configuration Plugin</a> could be used to generate a similar list of dates.</p>
+
+<p>This can then be used to read just the files which match the <code>glob</code> pattern:</p>
 
 <pre><code class="language-json">{
   &quot;type&quot;: &quot;DelimitedExtract&quot;,
