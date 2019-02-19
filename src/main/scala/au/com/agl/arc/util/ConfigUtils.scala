@@ -154,6 +154,8 @@ object ConfigUtils {
     etlConfString.rightFlatMap { str =>
       val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
+      val argsMapConf = ConfigFactory.parseMap(argsMap.asJava)
+
       // try to read objects in the plugins.config path
       val resolvedConfigPlugins = resolveConfigPlugins(etlConf, base)
       
@@ -163,7 +165,7 @@ object ConfigUtils {
 
       val c = pluginConfs match {
         case Nil =>
-          config.resolve()
+          config.resolveWith(argsMapConf).resolve()
         case _ =>
           val pluginConf = pluginConfs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
           val pluginValues = pluginConf.root().unwrapped()
@@ -171,7 +173,7 @@ object ConfigUtils {
             .message("Found additional config values from plugins")
             .field("pluginConf", pluginValues)
             .log()                
-          config.resolveWith(pluginConf).resolve()
+          config.resolveWith(argsMapConf.withFallback(pluginConf)).resolve()
       }
 
       readPipeline(c, uri, argsMap, arcContext)
