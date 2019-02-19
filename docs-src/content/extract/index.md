@@ -124,6 +124,39 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 {{< readfile file="/resources/docs_resources/DelimitedExtractComplete" highlight="json" >}} 
 
 
+## DeltaExtract
+##### Since: 1.8.0 - Supports Streaming: True
+
+{{< note title="Experimental" >}}
+The `DeltaExtract` is currently in experimental state whilst the requirements become clearer. 
+
+This means this API is likely to change.
+{{</note>}}
+
+The `DeltaExtract` stage reads one or more [Databricks Delta](https://databricks.com/product/databricks-delta/) files and returns a `DataFrame`. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|true|URI/Glob of the input Databricks Delta files.|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/DeltaExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/DeltaExtractComplete" highlight="json" >}} 
+
+
 ## HTTPExtract
 ##### Since: 1.0.0 - Supports Streaming: False
 

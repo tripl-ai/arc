@@ -390,6 +390,8 @@ object ARC {
         extract.BytesExtract.extract(e)                  
       case e : DelimitedExtract =>
         extract.DelimitedExtract.extract(e)
+      case e : DeltaExtract =>
+        extract.DeltaExtract.extract(e)        
       case e : HTTPExtract =>
         extract.HTTPExtract.extract(e)              
       case e : ImageExtract =>

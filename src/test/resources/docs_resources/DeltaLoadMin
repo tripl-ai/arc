@@ -1,0 +1,10 @@
+{
+  "type": "DeltaLoad",
+  "name": "write customer Delta extract",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputURI": "/delta/customers"
+}

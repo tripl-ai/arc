@@ -129,6 +129,39 @@ The `DelimitedLoad` writes an input `DataFrame` to a target delimited file.
 {{< readfile file="/resources/docs_resources/DelimitedLoadComplete" highlight="json" >}} 
 
 
+## DeltaLoad
+##### Since: 1.8.0 - Supports Streaming: True
+
+{{< note title="Experimental" >}}
+The `DeltaLoad` is currently in experimental state whilst the requirements become clearer. 
+
+This means this API is likely to change.
+{{</note>}}
+
+The `DeltaLoad` writes an input `DataFrame` to a target [Databricks Delta](https://databricks.com/product/databricks-delta/) file. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|outputURI|URI|true|URI of the Delta file to write to.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/DeltaLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/DeltaLoadComplete" highlight="json" >}} 
+
+
 ## HTTPLoad
 ##### Since: 1.0.0 - Supports Streaming: False
 

@@ -1,0 +1,16 @@
+{
+  "type": "DeltaExtract",
+  "name": "load customers",
+  "description": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "/delta/customers",
+  "outputView": "customer",
+  "numPartitions": 10,
+  "partitionBy": [
+    "country"
+  ],
+  "persist": false,
+}
