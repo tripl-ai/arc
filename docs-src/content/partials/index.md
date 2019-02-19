@@ -69,7 +69,7 @@ The `Authentication` map defines the authentication parameters for connecting to
 
 ## Environments
 
-The `Environments` list specifies a list of environments under which the stage will be executed. The environments list must contain the value in the `ETL_CONF_ENV` environment variable for the stage to be executed.
+The `Environments` list specifies a list of environments under which the stage will be executed. The environments list must contain the value in the `ETL_CONF_ENV` environment variable or `etl.config.environment` `spark-submit` argument for the stage to be executed.
 
 ### Examples
 

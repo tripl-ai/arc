@@ -1,5 +1,14 @@
 ## Change Log
 
+# 1.8.0
+
+- added ability to pass job substitution variables via the `spark-submit` command instead of only environment variables. See [Typesafe Config Substitutions](https://github.com/lightbend/config#uses-of-substitutions) for additional information.
+- added the `DatabricksDeltaExtract` and `DatabricksDeltaLoad` stages for when executing in the [Databricks Runtime](https://databricks.com/product/databricks-runtime) environment.
+
+# 1.7.1
+
+- added additional logging in `*Transform` to better track partition behaviour.
+
 # 1.7.0
 
 - added `partitionBy` and `numPartitions` to relevant `*Transform` stages to allow finer control of parallelism.

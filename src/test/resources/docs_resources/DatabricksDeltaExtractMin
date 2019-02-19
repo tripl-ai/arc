@@ -1,0 +1,10 @@
+{
+  "type": "DatabricksDeltaExtract",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "/delta/customers",
+  "outputView": "customer"
+}

@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.7.0</span></strong>
+          <span class="version">1.8.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -442,29 +442,104 @@
 
 <h3 id="examples">Examples</h3>
 
-<p>For example a custom runtime configuration plugin could be used calculate a business specific configuration for a business with a processing day on the last <code>THURSDAY</code> of each month:</p>
+<p>For example a custom runtime configuration plugin could be used calculate a formatted list of dates to be used with an <a href="../extract">Extract</a> stage to read only a subset of documents:</p>
 
-<pre><code class="language-scala">package au.com.myfakebusiness.plugins
+<pre><code class="language-scala">package au.com.agl.arc.plugins.config
 
-import java.time.{DayOfWeek, LocalDate}
-import java.time.temporal.TemporalAdjusters.lastInMonth
-import java.util
+import scala.collection.JavaConverters._
 
 import au.com.agl.arc.plugins._
 import au.com.agl.arc.util.log.logger.Logger
 
-class MyFakeBusinessLastProcessingDayPlugin extends DynamicConfigurationPlugin {
+import java.sql.Date
+import java.time.LocalDate
+import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
+import java.time.format.ResolverStyle
+
+class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
 
   override def values(params: Map[String, String])(implicit logger: au.com.agl.arc.util.log.logger.Logger): java.util.Map[String, Object] = {
+    val startTime = System.currentTimeMillis() 
 
-    val lastProcessingDay = LocalDate.now.`with`(lastInMonth(DayOfWeek.THURSDAY))
+    val stageDetail = new java.util.HashMap[String, Object]()
+    stageDetail.put(&quot;type&quot;, &quot;DeltaPeriodDynamicConfigurationPlugin&quot;)
+    stageDetail.put(&quot;pluginVersion&quot;, BuildInfo.version)
+    stageDetail.put(&quot;params&quot;, params.asJava)
 
+    logger.info()
+      .field(&quot;event&quot;, &quot;enter&quot;)
+      .map(&quot;stage&quot;, stageDetail)      
+      .log()   
+
+    // input validation
+    val returnName = params.get(&quot;returnName&quot;) match {
+        case Some(returnName) =&gt; returnName.trim
+        case None =&gt; throw new Exception(&quot;required parameter 'returnName' not found.&quot;)
+    }
+
+    val lagDays = params.get(&quot;lagDays&quot;) match {
+        case Some(lagDays) =&gt; {
+            try {
+            lagDays.toInt * -1
+            } catch {
+                case e: Exception =&gt; throw new Exception(s&quot;cannot convert lagDays ('${lagDays}') to integer.&quot;)
+            }
+        }
+        case None =&gt; throw new Exception(&quot;required parameter 'lagDays' not found.&quot;)
+    }
+
+    val leadDays = params.get(&quot;leadDays&quot;) match {
+        case Some(leadDays) =&gt; {
+            try {
+            leadDays.toInt
+            } catch {
+                case e: Exception =&gt; throw new Exception(s&quot;cannot convert leadDays ('${leadDays}') to integer.&quot;)
+            }
+        }
+        case None =&gt; throw new Exception(&quot;required parameter 'leadDays' not found.&quot;)
+    }
+
+    val formatter = params.get(&quot;pattern&quot;) match {
+        case Some(pattern) =&gt; {
+            try {
+                DateTimeFormatter.ofPattern(pattern).withResolverStyle(ResolverStyle.SMART)
+            } catch {
+                case e: Exception =&gt; throw new Exception(s&quot;cannot parse pattern ('${pattern}').&quot;)
+            }
+        }
+        case None =&gt; throw new Exception(&quot;required parameter 'pattern' not found.&quot;)
+    }
+
+    val currentDate = params.get(&quot;currentDate&quot;) match {
+        case Some(currentDate) =&gt; {
+            try {
+                LocalDate.parse(currentDate, formatter)
+            } catch {
+                case e: Exception =&gt; throw new Exception(s&quot;&quot;&quot;cannot parse currentDate ('${currentDate}') with formatter '${params.get(&quot;pattern&quot;).getOrElse(&quot;&quot;)}'.&quot;&quot;&quot;)
+            }
+        }
+        case None =&gt; java.time.LocalDate.now
+    }
+
+
+    // calculate the range 
+    // produces a value that looks like &quot;2018-12-31,2019-01-01,2019-01-02,2019-01-03,2019-01-04,2019-01-05,2019-01-06&quot;
+    val res = (lagDays to leadDays).map { v =&gt;
+      formatter.format(currentDate.plusDays(v))
+    }.mkString(&quot;,&quot;)
+
+    // set the return value
     val values = new java.util.HashMap[String, Object]()
-    values.put(&quot;ETL_CONF_LAST_PROCESSING_DAY&quot;, lastProcessingDay.toString)
+    values.put(returnName, res)
+
+    logger.info()
+      .field(&quot;event&quot;, &quot;exit&quot;)
+      .field(&quot;duration&quot;, System.currentTimeMillis() - startTime)
+      .map(&quot;stage&quot;, stageDetail)      
+      .log()  
 
     values
   }
-  
 }
 </code></pre>
 
@@ -478,26 +553,26 @@ class MyFakeBusinessLastProcessingDayPlugin extends DynamicConfigurationPlugin {
   &quot;plugins&quot;: {
     &quot;config&quot;: [
       {
-        &quot;type&quot;: &quot;au.com.myfakebusiness.plugins.MyFakeBusinessLastProcessingDayPlugin&quot;,
+        &quot;type&quot;: &quot;au.com.agl.arc.plugins.config.DeltaPeriodDynamicConfigurationPlugin&quot;,
         &quot;params&quot;: {
-          &quot;key&quot;: &quot;value&quot;
+          &quot;returnName&quot;: &quot;ETL_CONF_DELTA_PERIOD&quot;,
+          &quot;lagDays&quot;: &quot;10&quot;,
+          &quot;leadDays&quot;: &quot;1&quot;,
+          &quot;pattern&quot;: &quot;yyyy-MM-dd&quot;
         }
       }
     ]
   },
   &quot;stages&quot;: [
     {
-      &quot;type&quot;: &quot;SQLTransform&quot;,
-      &quot;name&quot;: &quot;run the end of month report&quot;,
+      &quot;type&quot;: &quot;DelimitedExtract&quot;,
+      &quot;name&quot;: &quot;load customer extract&quot;,
       &quot;environments&quot;: [
         &quot;production&quot;,
         &quot;test&quot;
       ],
-      &quot;inputURI&quot;: &quot;hdfs://datalake/sql/0.0.1/endOfMonthReport.sql&quot;,
-      &quot;outputView&quot;: &quot;endOfMonthReport&quot;,
-      &quot;sqlParams&quot;: {
-        &quot;processing_date&quot;: ${ETL_CONF_LAST_PROCESSING_DAY}
-      }
+      &quot;inputURI&quot;: &quot;hdfs://datalake/input/customer/customers_{&quot;${ETL_CONF_DELTA_PERIOD}&quot;}.csv&quot;,
+      &quot;outputView&quot;: &quot;customer&quot;
     }
   ]
 }

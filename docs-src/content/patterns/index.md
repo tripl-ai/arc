@@ -56,7 +56,9 @@ Add an additional environment variable to the `docker run` command which will ca
 
 Which will expose and environment variable that looks like `ETL_CONF_DELTA_PERIOD=2019-02-04,2019-02-05,2019-02-06,2019-02-07,2019-02-08`. 
 
-This can then be used to read just the files which match the `glob` pattern like:
+Alternatively, a [Dynamic Configuration Plugin](../extend/#dynamic-configuration-plugins) could be used to generate a similar list of dates.
+
+This can then be used to read just the files which match the `glob` pattern:
 
 ```json
 {

@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.7.0</span></strong>
+          <span class="version">1.8.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -781,13 +781,132 @@
   <span class="nt">&#34;outputMode&#34;</span><span class="p">:</span> <span class="s2">&#34;Append&#34;</span>
 <span class="p">}</span></code></pre></div>
 
+<h2 id="databricksdeltaload">DatabricksDeltaLoad</h2>
+
+<h5 id="since-1-8-0-supports-streaming-true">Since: 1.8.0 - Supports Streaming: True</h5>
+
+<div class="admonition note">
+<p class="admonition-title">Experimental</p>
+<p><p>The <code>DatabricksDeltaLoad</code> is currently in experimental state whilst the requirements become clearer.</p>
+
+<p>This means this API is likely to change.</p>
+</p>
+</div>
+
+<p>The <code>DatabricksDeltaLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://databricks.com/product/databricks-delta/">Databricks Delta</a> file.</p>
+
+<h3 id="parameters-3">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the Delta file to write to.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>saveMode</td>
+<td>String</td>
+<td>false</td>
+<td>The mode for writing the output file to describe how errors are handled. Available options are: <code>Append</code>, <code>ErrorIfExists</code>, <code>Ignore</code>, <code>Overwrite</code>. Default is <code>Overwrite</code> if not specified.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-3">Examples</h3>
+
+<h4 id="minimal-3">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DatabricksDeltaLoad&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer Delta extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;/delta/customers&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-3">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DatabricksDeltaLoad&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer Delta extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer Delta extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;/delta/customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;saveMode&#34;</span><span class="p">:</span> <span class="s2">&#34;Overwrite&#34;</span>
+<span class="p">}</span></code></pre></div>
+
 <h2 id="delimitedload">DelimitedLoad</h2>
 
 <h5 id="since-1-0-0-supports-streaming-true">Since: 1.0.0 - Supports Streaming: True</h5>
 
 <p>The <code>DelimitedLoad</code> writes an input <code>DataFrame</code> to a target delimited file.</p>
 
-<h3 id="parameters-3">Parameters</h3>
+<h3 id="parameters-4">Parameters</h3>
 
 <table>
 <thead>
@@ -893,9 +1012,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-3">Examples</h3>
+<h3 id="examples-4">Examples</h3>
 
-<h4 id="minimal-3">Minimal</h4>
+<h4 id="minimal-4">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedLoad&#34;</span><span class="p">,</span>
@@ -908,7 +1027,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.csv&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-3">Complete</h4>
+<h4 id="complete-4">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedLoad&#34;</span><span class="p">,</span>
@@ -940,7 +1059,7 @@
 
 <p>In the future additional Transform stages (like <code>ProtoBufTransform</code>) could be added to prepare binary payloads instead of just <code>json</code> <code>string</code>.</p>
 
-<h3 id="parameters-4">Parameters</h3>
+<h3 id="parameters-5">Parameters</h3>
 
 <table>
 <thead>
@@ -1004,9 +1123,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-4">Examples</h3>
+<h3 id="examples-5">Examples</h3>
 
-<h4 id="minimal-4">Minimal</h4>
+<h4 id="minimal-5">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPLoad&#34;</span><span class="p">,</span>
@@ -1019,7 +1138,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-4">Complete</h4>
+<h4 id="complete-5">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPLoad&#34;</span><span class="p">,</span>
@@ -1049,7 +1168,7 @@
 
 <p>Whilst it is possible to use <code>JDBCLoad</code> to create tables directly in the target database Spark only has a limited knowledge of the schema required in the destination database and so will translate things like <code>StringType</code> internally to a <code>TEXT</code> type in the target database (because internally Spark does not have limited length strings). The recommendation is to use a preceding <a href="../execute/#jdbcexecute">JDBCExecute</a> to execute a <code>CREATE TABLE</code> statement which creates the intended schema then inserting into that table with <code>saveMode</code> set to <code>Append</code>.</p>
 
-<h3 id="parameters-5">Parameters</h3>
+<h3 id="parameters-6">Parameters</h3>
 
 <table>
 <thead>
@@ -1176,9 +1295,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-5">Examples</h3>
+<h3 id="examples-6">Examples</h3>
 
-<h4 id="minimal-5">Minimal</h4>
+<h4 id="minimal-6">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCLoad&#34;</span><span class="p">,</span>
@@ -1196,7 +1315,7 @@
   <span class="p">}</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-5">Complete</h4>
+<h4 id="complete-6">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCLoad&#34;</span><span class="p">,</span>
@@ -1230,7 +1349,7 @@
 
 <p>The <code>JSONLoad</code> writes an input <code>DataFrame</code> to a target JSON file.</p>
 
-<h3 id="parameters-6">Parameters</h3>
+<h3 id="parameters-7">Parameters</h3>
 
 <table>
 <thead>
@@ -1308,9 +1427,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-6">Examples</h3>
+<h3 id="examples-7">Examples</h3>
 
-<h4 id="minimal-6">Minimal</h4>
+<h4 id="minimal-7">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONLoad&#34;</span><span class="p">,</span>
@@ -1323,7 +1442,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.json&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-6">Complete</h4>
+<h4 id="complete-7">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONLoad&#34;</span><span class="p">,</span>
@@ -1351,7 +1470,7 @@
 
 <p>In the future additional Transform stages (like <code>ProtoBufTransform</code>) may be added to prepare binary payloads instead of just <code>json</code> <code>string</code>.</p>
 
-<h3 id="parameters-7">Parameters</h3>
+<h3 id="parameters-8">Parameters</h3>
 
 <table>
 <thead>
@@ -1436,9 +1555,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-7">Examples</h3>
+<h3 id="examples-8">Examples</h3>
 
-<h4 id="minimal-7">Minimal</h4>
+<h4 id="minimal-8">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaLoad&#34;</span><span class="p">,</span>
@@ -1452,7 +1571,7 @@
   <span class="nt">&#34;topic&#34;</span><span class="p">:</span> <span class="s2">&#34;customers&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-7">Complete</h4>
+<h4 id="complete-8">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaLoad&#34;</span><span class="p">,</span>
@@ -1477,7 +1596,7 @@
 
 <p>The <code>ORCLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://orc.apache.org/">Apache ORC</a> file.</p>
 
-<h3 id="parameters-8">Parameters</h3>
+<h3 id="parameters-9">Parameters</h3>
 
 <table>
 <thead>
@@ -1555,9 +1674,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-8">Examples</h3>
+<h3 id="examples-9">Examples</h3>
 
-<h4 id="minimal-8">Minimal</h4>
+<h4 id="minimal-9">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ORCLoad&#34;</span><span class="p">,</span>
@@ -1570,7 +1689,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.orc&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-8">Complete</h4>
+<h4 id="complete-9">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ORCLoad&#34;</span><span class="p">,</span>
@@ -1596,7 +1715,7 @@
 
 <p>The <code>ParquetLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://parquet.apache.org/">Apache Parquet</a> file.</p>
 
-<h3 id="parameters-9">Parameters</h3>
+<h3 id="parameters-10">Parameters</h3>
 
 <table>
 <thead>
@@ -1674,9 +1793,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-9">Examples</h3>
+<h3 id="examples-10">Examples</h3>
 
-<h4 id="minimal-9">Minimal</h4>
+<h4 id="minimal-10">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetLoad&#34;</span><span class="p">,</span>
@@ -1689,7 +1808,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.parquet&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-9">Complete</h4>
+<h4 id="complete-10">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetLoad&#34;</span><span class="p">,</span>
@@ -1715,7 +1834,7 @@
 
 <p>The <code>XMLLoad</code> writes an input <code>DataFrame</code> to a target XML file.</p>
 
-<h3 id="parameters-10">Parameters</h3>
+<h3 id="parameters-11">Parameters</h3>
 
 <table>
 <thead>
@@ -1793,9 +1912,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-10">Examples</h3>
+<h3 id="examples-11">Examples</h3>
 
-<h4 id="minimal-10">Minimal</h4>
+<h4 id="minimal-11">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLLoad&#34;</span><span class="p">,</span>
@@ -1808,7 +1927,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.xml&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-10">Complete</h4>
+<h4 id="complete-11">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLLoad&#34;</span><span class="p">,</span>
