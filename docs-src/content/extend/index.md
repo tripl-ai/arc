@@ -215,6 +215,8 @@ class MyFakeBusinessAddCopyrightStage extends PipelineStagePlugin {
 }
 ```
 
+The plugin then needs to be registered by adding the full plugin name must be listed in your project’s `/resources/META-INF/services/au.com.agl.arc.plugins.PipelineStagePlugin` file.
+
 To execute:
 
 ```json
