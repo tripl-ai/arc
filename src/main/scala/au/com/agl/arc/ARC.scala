@@ -387,11 +387,11 @@ object ARC {
       case e : AvroExtract =>
         extract.AvroExtract.extract(e)  
       case e : BytesExtract =>
-        extract.BytesExtract.extract(e)                  
+        extract.BytesExtract.extract(e)    
+      case e : DatabricksDeltaExtract =>
+        extract.DatabricksDeltaExtract.extract(e)                             
       case e : DelimitedExtract =>
         extract.DelimitedExtract.extract(e)
-      case e : DeltaExtract =>
-        extract.DeltaExtract.extract(e)        
       case e : HTTPExtract =>
         extract.HTTPExtract.extract(e)              
       case e : ImageExtract =>
@@ -436,6 +436,8 @@ object ARC {
         load.AzureEventHubsLoad.load(l)          
       case l : ConsoleLoad =>
         load.ConsoleLoad.load(l)          
+      case l : DatabricksDeltaLoad =>
+        load.DatabricksDeltaLoad.load(l)             
       case l : DelimitedLoad =>
         load.DelimitedLoad.load(l)
       case l : HTTPLoad =>

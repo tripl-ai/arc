@@ -760,13 +760,132 @@
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{}</span>
 <span class="p">}</span></code></pre></div>
 
+<h2 id="databricksdeltaextract">DatabricksDeltaExtract</h2>
+
+<h5 id="since-1-8-0-supports-streaming-true">Since: 1.8.0 - Supports Streaming: True</h5>
+
+<div class="admonition note">
+<p class="admonition-title">Experimental</p>
+<p><p>The <code>DatabricksDeltaExtract</code> is currently in experimental state whilst the requirements become clearer.</p>
+
+<p>This means this API is likely to change.</p>
+</p>
+</div>
+
+<p>The <code>DatabricksDeltaExtract</code> stage reads one or more <a href="https://databricks.com/product/databricks-delta/">Databricks Delta</a> files and returns a <code>DataFrame</code>.</p>
+
+<h3 id="parameters-2">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI/Glob of the input Databricks Delta files.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-2">Examples</h3>
+
+<h4 id="minimal-2">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DatabricksDeltaExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;/delta/customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-2">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DatabricksDeltaExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;/delta/customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+<span class="p">}</span></code></pre></div>
+
 <h2 id="delimitedextract">DelimitedExtract</h2>
 
 <h5 id="since-1-0-0-supports-streaming-true">Since: 1.0.0 - Supports Streaming: True</h5>
 
 <p>The <code>DelimitedExtract</code> stage reads either one or more delimited text files or an input <code>Dataset[String]</code> and returns a <code>DataFrame</code>. <code>DelimitedExtract</code> will always set the underlying Spark configuration option of <code>inferSchema</code> to <code>false</code> to ensure consistent results.</p>
 
-<h3 id="parameters-2">Parameters</h3>
+<h3 id="parameters-3">Parameters</h3>
 
 <table>
 <thead>
@@ -914,9 +1033,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-2">Examples</h3>
+<h3 id="examples-3">Examples</h3>
 
-<h4 id="minimal-2">Minimal</h4>
+<h4 id="minimal-3">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedExtract&#34;</span><span class="p">,</span>
@@ -929,7 +1048,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-2">Complete</h4>
+<h4 id="complete-3">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedExtract&#34;</span><span class="p">,</span>
@@ -955,125 +1074,6 @@
   <span class="nt">&#34;quote&#34;</span><span class="p">:</span> <span class="s2">&#34;DoubleQuote&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
-<span class="p">}</span></code></pre></div>
-
-<h2 id="deltaextract">DeltaExtract</h2>
-
-<h5 id="since-1-8-0-supports-streaming-true">Since: 1.8.0 - Supports Streaming: True</h5>
-
-<div class="admonition note">
-<p class="admonition-title">Experimental</p>
-<p><p>The <code>DeltaExtract</code> is currently in experimental state whilst the requirements become clearer.</p>
-
-<p>This means this API is likely to change.</p>
-</p>
-</div>
-
-<p>The <code>DeltaExtract</code> stage reads one or more <a href="https://databricks.com/product/databricks-delta/">Databricks Delta</a> files and returns a <code>DataFrame</code>.</p>
-
-<h3 id="parameters-3">Parameters</h3>
-
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>name</td>
-<td>String</td>
-<td>true</td>
-<td>Name of the stage for logging.</td>
-</tr>
-
-<tr>
-<td>environments</td>
-<td>Array[String]</td>
-<td>true</td>
-<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
-</tr>
-
-<tr>
-<td>inputURI</td>
-<td>URI</td>
-<td>true</td>
-<td>URI/Glob of the input Databricks Delta files.</td>
-</tr>
-
-<tr>
-<td>outputView</td>
-<td>String</td>
-<td>true</td>
-<td>Name of outgoing Spark dataset after processing.</td>
-</tr>
-
-<tr>
-<td>description</td>
-<td>String</td>
-<td>false</td>
-<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
-<td>false</td>
-<td>The number of partitions that will be used for controlling parallelism.</td>
-</tr>
-
-<tr>
-<td>partitionBy</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>Columns to partition the data by.</td>
-</tr>
-
-<tr>
-<td>persist</td>
-<td>Boolean</td>
-<td>false</td>
-<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
-</tr>
-</tbody>
-</table>
-
-<h3 id="examples-3">Examples</h3>
-
-<h4 id="minimal-3">Minimal</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DeltaExtract&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>
-  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;/delta/customers&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
-<span class="p">}</span></code></pre></div>
-
-<h4 id="complete-3">Complete</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DeltaExtract&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>
-  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;/delta/customers&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;country&#34;</span>
-  <span class="p">],</span>
-  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="httpextract">HTTPExtract</h2>

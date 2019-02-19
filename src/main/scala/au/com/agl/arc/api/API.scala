@@ -194,9 +194,9 @@ object API {
 
   case class BytesExtract(name: String, description: Option[String], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Boolean) extends Extract { val getType = "BytesExtract" }
 
-  case class DelimitedExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], settings: Delimited, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, inputField: Option[String]) extends ColumnarExtract { val getType = "DelimitedExtract" }
+  case class DatabricksDeltaExtract(name: String, description: Option[String], outputView: String, input: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "DeltaExtract" }
 
-  case class DeltaExtract(name: String, description: Option[String], outputView: String, input: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "DeltaExtract" }
+  case class DelimitedExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], settings: Delimited, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, inputField: Option[String]) extends ColumnarExtract { val getType = "DelimitedExtract" }
 
   case class HTTPExtract(name: String, description: Option[String], input: Either[String, URI], method: String, headers: Map[String, String], body: Option[String], validStatusCodes: List[Int], outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "HTTPExtract" }
 
@@ -246,9 +246,9 @@ object API {
 
   case class ConsoleLoad(name: String, description: Option[String], inputView: String, outputMode: OutputModeType, params: Map[String, String]) extends Load { val getType = "ConsoleLoad" }
 
-  case class DelimitedLoad(name: String, description: Option[String], inputView: String, outputURI: URI, settings: Delimited, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "DelimitedLoad" }
+  case class DatabricksDeltaLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ParquetLoad" }
 
-  case class DeltaLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ParquetLoad" }
+  case class DelimitedLoad(name: String, description: Option[String], inputView: String, outputURI: URI, settings: Delimited, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "DelimitedLoad" }
 
   case class HTTPLoad(name: String, description: Option[String], inputView: String, outputURI: URI, headers: Map[String, String], validStatusCodes: List[Int], params: Map[String, String]) extends Load { val getType = "HTTPLoad" }
 

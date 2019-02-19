@@ -9,9 +9,9 @@ import org.apache.spark.sql.types._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util._
 
-object DeltaLoad {
+object DatabricksDeltaLoad {
 
-  def load(load: DeltaLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def load(load: DatabricksDeltaLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
     val startTime = System.currentTimeMillis() 
     var stageDetail = new java.util.HashMap[String, Object]()
     stageDetail.put("type", load.getType)

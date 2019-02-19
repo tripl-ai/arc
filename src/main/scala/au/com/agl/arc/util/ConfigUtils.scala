@@ -845,6 +845,31 @@ object ConfigUtils {
     }
   }
 
+  def readDatabricksDeltaExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
+    import ConfigReader._
+
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "numPartitions" :: "partitionBy" :: "persist" :: "params" :: Nil
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    val description = getOptionalValue[String]("description")
+
+    val inputURI = getValue[String]("inputURI")
+    val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist", default = Some(false))
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
+
+    (name, description, inputURI, parsedGlob, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(pb), Right(_)) => 
+        Right(DatabricksDeltaExtract(n, d, ov, pg, params, p, np, pb))
+      case _ =>
+        val allErrors: Errors = List(name, description, inputURI, parsedGlob, outputView, persist, numPartitions, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }  
 
   def readDelimitedExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
@@ -901,32 +926,6 @@ object ConfigUtils {
         Right(extract)
       case _ =>
         val allErrors: Errors = List(name, description, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField).collect{ case Left(errs) => errs }.flatten
-        val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
-        Left(err :: Nil)
-    }
-  }  
-
-  def readDeltaExtract(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
-    import ConfigReader._
-
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "numPartitions" :: "partitionBy" :: "persist" :: "params" :: Nil
-    val invalidKeys = checkValidKeys(c)(expectedKeys)
-
-    val description = getOptionalValue[String]("description")
-
-    val inputURI = getValue[String]("inputURI")
-    val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
-    val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
-    val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
-
-    (name, description, inputURI, parsedGlob, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
-      case (Right(n), Right(d), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(pb), Right(_)) => 
-        Right(DeltaExtract(n, d, ov, pg, params, p, np, pb))
-      case _ =>
-        val allErrors: Errors = List(name, description, inputURI, parsedGlob, outputView, persist, numPartitions, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -1696,6 +1695,32 @@ object ConfigUtils {
     }
   }    
 
+  def readDatabricksDeltaLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
+    import ConfigReader._
+
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
+    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
+
+    val inputView = getValue[String]("inputView")
+    val outputURI = getValue[String]("outputURI")
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
+
+    (name, description, inputView, outputURI, numPartitions, saveMode, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(out), Right(np), Right(sm), Right(pb), Right(_)) => 
+        val uri = new URI(out)
+        Right(DatabricksDeltaLoad(n, d, iv, uri, pb, np, sm, params))
+      case _ =>
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }   
+
   def readDelimitedLoad(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
@@ -1733,33 +1758,7 @@ object ConfigUtils {
         val err = StageError(stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
     }
-  }    
-
-  def readDeltaLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
-    import ConfigReader._
-
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
-
-    val description = getOptionalValue[String]("description")
-
-    val inputView = getValue[String]("inputView")
-    val outputURI = getValue[String]("outputURI")
-    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
-    val numPartitions = getOptionalValue[Int]("numPartitions")
-    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
-
-    (name, description, inputView, outputURI, numPartitions, saveMode, partitionBy, invalidKeys) match {
-      case (Right(n), Right(d), Right(iv), Right(out), Right(np), Right(sm), Right(pb), Right(_)) => 
-        val uri = new URI(out)
-        Right(DeltaLoad(n, d, iv, uri, pb, np, sm, params))
-      case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
-        val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
-        Left(err :: Nil)
-    }
-  }    
+  }     
   
   def readHTTPLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
@@ -2214,8 +2213,8 @@ object ConfigUtils {
 
             case Right("AvroExtract") => Option(readAvroExtract(name, params))
             case Right("BytesExtract") => Option(readBytesExtract(name, params))
+            case Right("DatabricksDeltaExtract") => Option(readDatabricksDeltaExtract(name, params))
             case Right("DelimitedExtract") => Option(readDelimitedExtract(name, params))
-            case Right("DeltaExtract") => Option(readDeltaExtract(name, params))
             case Right("HTTPExtract") => Option(readHTTPExtract(name, params))
             case Right("ImageExtract") => Option(readImageExtract(name, params))
             case Right("JDBCExtract") => Option(readJDBCExtract(name, params))
@@ -2239,8 +2238,8 @@ object ConfigUtils {
             case Right("AvroLoad") => Option(readAvroLoad(name, params))
             case Right("AzureEventHubsLoad") => Option(readAzureEventHubsLoad(name, params))
             case Right("ConsoleLoad") => Option(readConsoleLoad(name, params))
+            case Right("DatabricksDeltaLoad") => Option(readDatabricksDeltaLoad(name, params))
             case Right("DelimitedLoad") => Option(readDelimitedLoad(name, params))
-            case Right("DeltaLoad") => Option(readDeltaLoad(name, params))
             case Right("HTTPLoad") => Option(readHTTPLoad(name, params))
             case Right("JDBCLoad") => Option(readJDBCLoad(name, params))
             case Right("JSONLoad") => Option(readJSONLoad(name, params))

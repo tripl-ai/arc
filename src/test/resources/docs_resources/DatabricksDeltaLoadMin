@@ -1,5 +1,5 @@
 {
-  "type": "DeltaLoad",
+  "type": "DatabricksDeltaLoad",
   "name": "write customer Delta extract",
   "environments": [
     "production",

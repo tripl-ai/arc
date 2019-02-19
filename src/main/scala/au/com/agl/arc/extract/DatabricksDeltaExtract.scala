@@ -13,9 +13,9 @@ import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util._
 
-object DeltaExtract {
+object DatabricksDeltaExtract {
 
-  def extract(extract: DeltaExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+  def extract(extract: DatabricksDeltaExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val stageDetail = new java.util.HashMap[String, Object]()
@@ -40,7 +40,6 @@ object DeltaExtract {
         override val detail = stageDetail          
       }
     }    
-
 
     // repartition to distribute rows evenly
     val repartitionedDF = extract.partitionBy match {
