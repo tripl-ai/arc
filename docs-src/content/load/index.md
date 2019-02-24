@@ -130,6 +130,41 @@ The `DatabricksDeltaLoad` writes an input `DataFrame` to a target [Databricks De
 {{< readfile file="/resources/docs_resources/DatabricksDeltaLoadComplete" highlight="json" >}} 
 
 
+## DatabricksSQLDWLoad
+##### Since: 1.8.1 - Supports Streaming: False
+
+{{< note title="Experimental" >}}
+The `DatabricksSQLDWLoad` is currently in experimental state whilst the requirements become clearer. 
+
+This means this API is likely to change.
+{{</note>}}
+
+The `DatabricksSQLDWLoad` writes an input `DataFrame` to a target [Azure SQL Data Warehouse](https://azure.microsoft.com/en-au/services/sql-data-warehouse/) file using the proprietary driver within a Databricks Runtime Environment. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|jdbcURL|URI|true|URI of the Delta file to write to.|
+|dbTable|String|true|The table to create in SQL DW.|
+|tempDir|URI|true|A Azure Blob Storage path to temporarily hold the data before executing the SQLDW load.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|forwardSparkAzureStorageCredentials|Boolean|false|If true, the library automatically discovers the credentials that Spark is using to connect to the Blob Storage container and forwards those credentials to SQL DW over JDBC.<br><br>Default: `true`.|
+|tableOptions|String|false|Used to specify table options when creating the SQL DW table.|
+|maxStrLength|Integer|false|The default length of `String`/`NVARCHAR` columns when creating the table in SQLDW.<br><br>Default: `256`.|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/DatabricksSQLDWLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/DatabricksSQLDWLoadComplete" highlight="json" >}} 
+
+
 ## DelimitedLoad
 ##### Since: 1.0.0 - Supports Streaming: True
 

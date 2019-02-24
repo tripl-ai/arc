@@ -1,0 +1,15 @@
+{
+  "type": "DatabricksSQLDWLoad",
+  "name": "write customer extract",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "jdbcURL": "jdbc:sqlserver://localhost;user=MyUserName;password=*****",
+  "dbTable": "customer",
+  "tempDir": "wasbs://<your-container-name>@<your-storage-account-name>.blob.core.windows.net/<your-directory-name>",
+  "forwardSparkAzureStorageCredentials": true, 
+  "tableOptions": "CLUSTERED COLUMNSTORE INDEX, DISTRIBUTION = ROUND_ROBIN", 
+  "maxStrLength": 1024
+}

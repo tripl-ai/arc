@@ -1723,6 +1723,35 @@ object ConfigUtils {
     }
   }   
 
+  def readDatabricksSQLDWLoad(name: StringConfigValue, params: Map[String, String])(implicit c: Config): Either[List[StageError], PipelineStage] = {
+    import ConfigReader._
+
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "jdbcURL" :: "tempDir" :: "dbTable" :: "query" :: "forwardSparkAzureStorageCredentials" :: "tableOptions" :: "maxStrLength" :: "authentication" :: "params" :: Nil
+    val invalidKeys = checkValidKeys(c)(expectedKeys)     
+
+    val description = getOptionalValue[String]("description")
+
+    val inputView = getValue[String]("inputView")
+    val jdbcURL = getValue[String]("jdbcURL")
+    val driver = jdbcURL.rightFlatMap(uri => getJDBCDriver("jdbcURL", uri))
+    val tempDir = getValue[String]("tempDir")
+    val dbTable = getValue[String]("dbTable")
+    val forwardSparkAzureStorageCredentials = getValue[Boolean]("forwardSparkAzureStorageCredentials", default = Some(true))
+    val tableOptions = getOptionalValue[String]("tableOptions")
+    val maxStrLength = getValue[Int]("maxStrLength", default = Some(256))
+    val authentication = readAuthentication("authentication")
+
+    (name, description, inputView, jdbcURL, driver, tempDir, dbTable, forwardSparkAzureStorageCredentials, tableOptions, maxStrLength, authentication, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(jdbcURL), Right(driver), Right(tempDir), Right(dbTable), Right(forwardSparkAzureStorageCredentials), Right(tableOptions), Right(maxStrLength), Right(authentication), Right(invalidKeys)) => 
+        Right(DatabricksSQLDWLoad(name, description, inputView, jdbcURL, driver, tempDir, dbTable, forwardSparkAzureStorageCredentials, tableOptions, maxStrLength, authentication, params))
+      case _ =>
+        val allErrors: Errors = List(name, description, inputView, jdbcURL, driver, tempDir, dbTable, forwardSparkAzureStorageCredentials, tableOptions, maxStrLength, authentication, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }   
+
   def readDelimitedLoad(name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): Either[List[StageError], PipelineStage] = {
     import ConfigReader._
 
@@ -2241,6 +2270,7 @@ object ConfigUtils {
             case Right("AzureEventHubsLoad") => Option(readAzureEventHubsLoad(name, params))
             case Right("ConsoleLoad") => Option(readConsoleLoad(name, params))
             case Right("DatabricksDeltaLoad") => Option(readDatabricksDeltaLoad(name, params))
+            case Right("DatabricksSQLDWLoad") => Option(readDatabricksSQLDWLoad(name, params))
             case Right("DelimitedLoad") => Option(readDelimitedLoad(name, params))
             case Right("HTTPLoad") => Option(readHTTPLoad(name, params))
             case Right("JDBCLoad") => Option(readJDBCLoad(name, params))

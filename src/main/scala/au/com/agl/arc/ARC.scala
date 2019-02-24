@@ -437,7 +437,9 @@ object ARC {
       case l : ConsoleLoad =>
         load.ConsoleLoad.load(l)          
       case l : DatabricksDeltaLoad =>
-        load.DatabricksDeltaLoad.load(l)             
+        load.DatabricksDeltaLoad.load(l)        
+      case l : DatabricksSQLDWLoad =>
+        load.DatabricksSQLDWLoad.load(l)              
       case l : DelimitedLoad =>
         load.DelimitedLoad.load(l)
       case l : HTTPLoad =>

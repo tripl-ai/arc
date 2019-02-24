@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.9.0
+
+- added `DatabricksSQLDWLoad` stage for bulk loading Azure SQLDW when executing in the [Databricks Runtime](https://databricks.com/product/databricks-runtime) environment.
+
 # 1.8.0
 
 - added ability to pass job substitution variables via the `spark-submit` command instead of only environment variables. See [Typesafe Config Substitutions](https://github.com/lightbend/config#uses-of-substitutions) for additional information.
