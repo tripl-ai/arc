@@ -43,9 +43,29 @@ object DatabricksSQLDWLoad {
     // for this stage these credentials are sent to the sql server see: forwardSparkAzureStorageCredentials
     CloudUtils.setHadoopConfiguration(load.authentication)
 
+
+    val dropMap = new java.util.HashMap[String, Object]()
+
+    // many jdbc targets cannot handle a column of ArrayType
+    // drop these columns before write
+    val arrays = df.schema.filter( _.dataType.typeName == "array").map(_.name)
+    if (!arrays.isEmpty) {
+      dropMap.put("ArrayType", arrays.asJava)
+    }
+
+    // JDBC cannot handle a column of NullType
+    val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
+    if (!nulls.isEmpty) {
+      dropMap.put("NullType", nulls.asJava)
+    }
+
+    stageDetail.put("drop", dropMap)    
+    
+    val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)       
+
     // try to write the inputView
     val outputDF = try {
-      val writer = df.write
+      val writer = nonNullDF.write
         .format("com.databricks.spark.sqldw")
         .option("url", load.jdbcURL)
         .option("forwardSparkAzureStorageCredentials", load.forwardSparkAzureStorageCredentials.toString)
@@ -65,7 +85,7 @@ object DatabricksSQLDWLoad {
       }          
 
       writer.save()    
-      df    
+      nonNullDF    
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail
