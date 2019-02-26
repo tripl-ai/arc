@@ -37,7 +37,7 @@ object ConfigUtils {
       params.filter{ case (k,v) => options.contains(k) }
   }
 
-  def parsePipeline(configUri: Option[String], argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
+  def parsePipeline(configUri: Option[String], argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph[(Int, String), String])] = {
     configUri match {
       case Some(uri) => parseConfig(new URI(uri), argsMap, arcContext)
       case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
@@ -152,7 +152,7 @@ object ConfigUtils {
     }
   }
 
-  def parseConfig(uri: URI, argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
+  def parseConfig(uri: URI, argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph[(Int, String), String])] = {
     val base = ConfigFactory.load()
 
     val etlConfString = getConfigString(uri, argsMap, arcContext)
@@ -680,9 +680,9 @@ object ConfigUtils {
       val possibleKeys = levenshteinDistance(vertices, vertex)(4)
 
       if (!possibleKeys.isEmpty) {
-        Left(ConfigError(path, Option(c.getValue(path).origin.lineNumber()), s"""${path} '${vertex}' does not exist by this stage of the job. Perhaps you meant one of: ${possibleKeys.map(field => s"'${field}'").mkString("[",", ","]")}.""") :: Nil)
+        Left(ConfigError(path, Option(c.getValue(path).origin.lineNumber()), s"""view '${vertex}' does not exist by this stage of the job. Perhaps you meant one of: ${possibleKeys.map(field => s"'${field}'").mkString("[",", ","]")}.""") :: Nil)
       } else {
-        Left(ConfigError(path, Option(c.getValue(path).origin.lineNumber()), s"""${path} '${vertex}' does not exist by this stage of the job.""") :: Nil)
+        Left(ConfigError(path, Option(c.getValue(path).origin.lineNumber()), s"""view '${vertex}' does not exist by this stage of the job.""") :: Nil)
       }      
     }
   }    
@@ -938,7 +938,8 @@ object ConfigUtils {
 
     val description = getOptionalValue[String]("description")
 
-    val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
+
+    val input = if(c.hasPath("inputView")) getValue[String]("inputView") |> vertexExists("inputView", graph) _ else getValue[String]("inputURI")
     val parsedGlob = if (!c.hasPath("inputView")) {
       input.rightFlatMap(glob => parseGlob("inputURI", glob))
     } else {
@@ -978,13 +979,19 @@ object ConfigUtils {
 
     (name, description, input, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField) match {
       case (Right(n), Right(d), Right(in), Right(pg), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(pb), Right(head), Right(auth), Right(ci), Right(delim), Right(q), Right(_), Right(cd), Right(ipf)) =>
-        val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
+        var outputGraph = addVertex(graph, idx, ov)
+
+        val input = if(c.hasPath("inputView")) {
+          outputGraph = addEdge(outputGraph, in, ov)
+          Left(in) 
+        } else {
+          Right(pg)
+        }
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        val graph0 = addVertex(graph, idx, ov)
         val extract = DelimitedExtract(n, d, schema, ov, input, Delimited(header=head, sep=delim, quote=q, customDelimiter=cd), auth, params, p, np, pb, ci, ipf)
-        (Right(extract), graph0)
+        (Right(extract), outputGraph)
       case _ =>
-        val allErrors: Errors = List(name, description, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, input, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
@@ -2293,7 +2300,7 @@ object ConfigUtils {
         val uri = new URI(u)
         val subPipeline = parseConfig(uri, argsMap, arcContext)
         subPipeline match {
-          case Right(etl) => (Right(PipelineExecute(n, d, uri, etl)), graph)
+          case Right(etl) => (Right(PipelineExecute(n, d, uri, etl._1)), graph)
           case Left(errors) => {
             val stageErrors = errors.collect { case s: StageError => s }
             (Left(stageErrors), graph)
@@ -2385,7 +2392,7 @@ object ConfigUtils {
     }
   }
 
-  def readPipeline(c: Config, uri: URI, argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], ETLPipeline] = {
+  def readPipeline(c: Config, uri: URI, argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph[(Int, String), String])] = {
     import ConfigReader._
 
     val startTime = System.currentTimeMillis() 
@@ -2401,7 +2408,7 @@ object ConfigUtils {
     val emptyEdges: RDD[Edge[String]] = spark.sparkContext.emptyRDD
     val emptyGraph: Graph[(Int, String), String] = Graph(emptyVertices, emptyEdges)
 
-    val (stages, errors, idx, graph) = configStages.asScala.foldLeft[(List[PipelineStage], List[StageError], Int, Graph[(Int, String), String])]( (Nil, Nil, 0, emptyGraph) ) { case ( (stages, errs, idx, graph), stage ) =>
+    val (stages, errors, idx, dependencyGraph) = configStages.asScala.foldLeft[(List[PipelineStage], List[StageError], Int, Graph[(Int, String), String])]( (Nil, Nil, 0, emptyGraph) ) { case ( (stages, errs, idx, graph), stage ) =>
 
       implicit val s = stage.toConfig
       val name: StringConfigValue = getValue[String]("name")
@@ -2512,8 +2519,8 @@ object ConfigUtils {
         val stagesReversed = stages.reverse
 
         // print optimisation opportunity messages
-        val vertices = graph.vertices.collect
-        val edges = graph.edges.collect
+        val vertices = dependencyGraph.vertices.collect
+        val edges = dependencyGraph.edges.collect
 
         vertices.foreach { case (vertexId, (stageIdx, vertexName)) =>
           val edgesFrom = edges.filter { case Edge(src, _, _) => src == vertexId }
@@ -2544,7 +2551,7 @@ object ConfigUtils {
           }
         }
 
-        Right(ETLPipeline(stagesReversed))
+        Right(ETLPipeline(stagesReversed), dependencyGraph)
       }
       case _ => Left(errors.reverse)
     }

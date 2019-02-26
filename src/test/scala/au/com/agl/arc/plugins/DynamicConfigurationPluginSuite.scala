@@ -37,7 +37,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), argsMap, arcContext)
 
     pipeline match {
-      case Right(ETLPipeline(CustomStage(name, params, stage) :: Nil)) =>
+      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), graph) ) =>
         assert(name === "custom plugin")
         val configParms = Map[String, String](
           "foo" -> "baz",

@@ -223,7 +223,7 @@ object ARC {
     }
 
     val error: Boolean = pipelineConfig match {
-      case Right(pipeline) =>
+      case Right( (pipeline, _) ) =>
         try {
           UDF.registerUDFs(spark.sqlContext)
           ARC.run(pipeline)(spark, logger, arcContext)
