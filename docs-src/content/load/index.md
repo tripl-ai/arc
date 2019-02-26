@@ -151,6 +151,7 @@ The `DatabricksSQLDWLoad` writes an input `DataFrame` to a target [Azure SQL Dat
 |jdbcURL|URI|true|URI of the Delta file to write to.|
 |dbTable|String|true|The table to create in SQL DW.|
 |tempDir|URI|true|A Azure Blob Storage path to temporarily hold the data before executing the SQLDW load.|
+|authentication|Map[String, String]|true|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}. Note this stage only works with the `AzureSharedKey` [authentication](../partials/#authentication) method.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |forwardSparkAzureStorageCredentials|Boolean|false|If true, the library automatically discovers the credentials that Spark is using to connect to the Blob Storage container and forwards those credentials to SQL DW over JDBC.<br><br>Default: `true`.|
 |tableOptions|String|false|Used to specify table options when creating the SQL DW table.|

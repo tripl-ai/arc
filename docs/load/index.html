@@ -481,7 +481,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -970,6 +970,13 @@
 </tr>
 
 <tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>true</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.. Note this stage only works with the <code>AzureSharedKey</code> <a href="../partials/#authentication">authentication</a> method.</td>
+</tr>
+
+<tr>
 <td>description</td>
 <td>String</td>
 <td>false</td>
@@ -1011,6 +1018,11 @@
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;method&#34;</span><span class="p">:</span> <span class="s2">&#34;AzureSharedKey&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;accountName&#34;</span><span class="p">:</span> <span class="s2">&#34;myaccount&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;signature&#34;</span><span class="p">:</span> <span class="s2">&#34;ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=&#34;</span>
+  <span class="p">},</span>
   <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:sqlserver://localhost;user=MyUserName;password=*****&#34;</span><span class="p">,</span>
   <span class="nt">&#34;dbTable&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;tempDir&#34;</span><span class="p">:</span> <span class="s2">&#34;wasbs://&lt;your-container-name&gt;@&lt;your-storage-account-name&gt;.blob.core.windows.net/&lt;your-directory-name&gt;&#34;</span>
@@ -1026,6 +1038,11 @@
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;method&#34;</span><span class="p">:</span> <span class="s2">&#34;AzureSharedKey&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;accountName&#34;</span><span class="p">:</span> <span class="s2">&#34;myaccount&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;signature&#34;</span><span class="p">:</span> <span class="s2">&#34;ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=&#34;</span>
+  <span class="p">},</span>  
   <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:sqlserver://localhost;user=MyUserName;password=*****&#34;</span><span class="p">,</span>
   <span class="nt">&#34;dbTable&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;tempDir&#34;</span><span class="p">:</span> <span class="s2">&#34;wasbs://&lt;your-container-name&gt;@&lt;your-storage-account-name&gt;.blob.core.windows.net/&lt;your-directory-name&gt;&#34;</span><span class="p">,</span>
@@ -1085,7 +1102,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1528,7 +1545,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1775,7 +1792,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1894,7 +1911,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -2013,7 +2030,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service prior to extract execution. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
