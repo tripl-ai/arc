@@ -18,6 +18,8 @@ import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.unsafe.types.UTF8String
 import org.apache.spark.sql._
+import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
+
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, PipelineStagePlugin}
@@ -381,8 +383,8 @@ object ConfigUtils {
 
     def errToString(err: Error): String = {
       err match {
-        case StageError(stage, lineNumber, configErrors) => {
-          s"""Stage '${stage}' (Line ${lineNumber}):\n${configErrors.map(e => "  - " + errToString(e)).mkString("\n")}"""
+        case StageError(idx, stage, lineNumber, configErrors) => {
+          s"""Stage: $idx '${stage}' (starting on line ${lineNumber}):\n${configErrors.map(e => "  - " + errToString(e)).mkString("\n")}"""
         }
           
         case ConfigError(attribute, lineNumber, message) => {
@@ -396,7 +398,7 @@ object ConfigUtils {
 
     def errToSimpleString(err: Error): String = {
       err match {
-        case StageError(stage, lineNumber, configErrors) => {
+        case StageError(_, stage, lineNumber, configErrors) => {
           s"""${configErrors.map(e => "- " + errToSimpleString(e)).mkString("\n")}"""
         }
           
@@ -412,8 +414,9 @@ object ConfigUtils {
 
     def errorsToJSON(err: Error): java.util.HashMap[String, Object] = {
       err match {
-        case StageError(stage, lineNumber, configErrors) => {  
+        case StageError(idx, stage, lineNumber, configErrors) => {  
           val stageErrorMap = new java.util.HashMap[String, Object]()
+          stageErrorMap.put("stageIndex", Integer.valueOf(idx))
           stageErrorMap.put("stage", stage)
           stageErrorMap.put("lineNumber", Integer.valueOf(lineNumber))
           stageErrorMap.put("errors", configErrors.map(configError => errorsToJSON(configError)).asJava)
@@ -455,7 +458,7 @@ object ConfigUtils {
 
   case class ConfigError(path: String, lineNumber: Option[Int], message: String) extends Error
 
-  case class StageError(stage: String, lineNumber: Int, errors: Errors) extends Error
+  case class StageError(idx: Int, stage: String, lineNumber: Int, errors: Errors) extends Error
 
   object ConfigError {
 
@@ -647,7 +650,7 @@ object ConfigUtils {
     val vertices = graph.vertices.collect
 
     // only add if vertex does not exist
-    if (vertices.filter { case (id, (name)) => name == vertex }.length == 0) {
+    if (vertices.filter { case (_, (_, name)) => name == vertex }.length == 0) {
       val newVertices = vertices ++ Array((vertices.length.toLong, (stageId, vertex)))
       Graph(spark.sparkContext.parallelize(newVertices), graph.edges)
     } else {
@@ -798,7 +801,6 @@ object ConfigUtils {
     }
   }  
 
-
   // extract
   def readAvroExtract(idx: Int, graph: Graph[(Int, String), String], name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph[(Int, String), String]) = {
     import ConfigReader._
@@ -840,7 +842,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -888,13 +890,13 @@ object ConfigUtils {
         } else {
           val inputError = ConfigError("inputURI:inputView", Some(c.getValue("inputURI").origin.lineNumber()), "Either inputURI and inputView must be defined but only one can be defined at the same time") :: Nil
           val stageName = stringOrDefault(name, "unnamed stage")
-          val err = StageError(stageName, c.origin.lineNumber, inputError)
+          val err = StageError(idx, stageName, c.origin.lineNumber, inputError)
           (Left(err :: Nil), graph)
         }
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, inputView, outputView, persist, numPartitions, authentication, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }
@@ -922,7 +924,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, parsedGlob, outputView, persist, numPartitions, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -984,7 +986,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -1025,7 +1027,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, input, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   } 
@@ -1054,7 +1056,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }   
@@ -1099,7 +1101,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, outputView, schemaView, persist, jdbcURL, driver, tableName, numPartitions, fetchsize, customSchema, extractColumns, partitionColumn, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }   
@@ -1156,7 +1158,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, input, schemaView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys, inputField).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }
@@ -1189,7 +1191,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -1230,7 +1232,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, invalidKeys, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -1271,7 +1273,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }
@@ -1296,7 +1298,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, outputView, rowsPerSecond, rampUpTime, numPartitions).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -1337,7 +1339,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, input, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, extractColumns, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }
@@ -1385,7 +1387,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, input, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }
@@ -1418,7 +1420,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   } 
@@ -1456,7 +1458,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys, batchSize, delimiter, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -1486,7 +1488,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -1530,7 +1532,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }   
@@ -1572,7 +1574,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, parsedURI, inputModel, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }
@@ -1601,8 +1603,30 @@ object ConfigUtils {
       validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams))
     }
 
-    (name, description, parsedURI, inputSQL, validSQL, outputView, persist, invalidKeys, numPartitions, partitionBy) match {
-      case (Right(n), Right(d), Right(uri), Right(isql), Right(vsql), Right(ov), Right(p), Right(_), Right(np), Right(pb)) => 
+    // tables exist
+    val tableExistence: Either[Errors, String] = validSQL.rightFlatMap { sql =>
+      val parser = spark.sessionState.sqlParser
+      val plan = parser.parsePlan(sql)
+      val tables = plan.collect { case r: UnresolvedRelation => r.tableName }
+
+      val (errors, _) = tables.map { table => 
+        vertexExists("inputURI", graph)(table)
+      }
+      .foldLeft[(Errors, String)]( (Nil, "") ){ case ( (errs, ret), table ) => 
+        table match {
+          case Left(err) => (err ::: errs, "")
+          case _ => (errs, "")
+        }
+      }
+
+      errors match {
+        case Nil => Right("")
+        case _ => Left(errors.reverse)
+      }
+    }
+
+    (name, description, parsedURI, inputSQL, validSQL, outputView, persist, invalidKeys, numPartitions, partitionBy, tableExistence) match {
+      case (Right(n), Right(d), Right(uri), Right(isql), Right(vsql), Right(ov), Right(p), Right(_), Right(np), Right(pb), Right(te)) => 
 
         if (vsql.toLowerCase() contains "now") {
           logger.warn()
@@ -1631,13 +1655,21 @@ object ConfigUtils {
             .log()   
         }        
 
-        val graph0 = addVertex(graph, idx, ov)
+        // add output node
+        var outputGraph = addVertex(graph, idx, ov)
 
-        (Right(SQLTransform(n, d, uri, vsql, ov, params, sqlParams, p, np, pb)), graph0)
+        // add input/output edges by resolving dependent tables
+        val parser = spark.sessionState.sqlParser
+        val plan = parser.parsePlan(vsql)        
+        plan.collect { case r: UnresolvedRelation => r.tableName }.toList.foreach { iv =>
+          outputGraph = addEdge(outputGraph, iv, ov)
+        }
+
+        (Right(SQLTransform(n, d, uri, vsql, ov, params, sqlParams, p, np, pb)), outputGraph)
       case _ =>
-        val allErrors: Errors = List(name, description, inputURI, parsedURI, inputSQL, validSQL, outputView, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, parsedURI, inputSQL, validSQL, outputView, persist, invalidKeys, numPartitions, partitionBy, tableExistence).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   } 
@@ -1673,7 +1705,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, outputView, inputURI, parsedURI, signatureName, responseType, batchSize, persist, inputField, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }
@@ -1715,7 +1747,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, parsedURI, extractColumns, schemaView, inputView, outputView, persist, authentication, failMode, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }   
@@ -1740,17 +1772,19 @@ object ConfigUtils {
     (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
       case (Right(n), Right(d), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb), Right(_)) => 
         val uri = new URI(out)
+        val load = AvroLoad(n, d, iv, uri, pb, np, auth, sm, params)
 
+        val vertex = s"$idx:${load.getType}"
         // add the vertices
-        val graph0 = addVertex(graph, idx, out)
+        val graph0 = addVertex(graph, idx, vertex)
         // add the edges
-        val graph1 = addEdge(graph0, iv, out)
+        val graph1 = addEdge(graph0, iv, vertex)
 
-        (Right(AvroLoad(n, d, iv, uri, pb, np, auth, sm, params)), graph1)
+        (Right(load), graph1)
       case _ =>
         val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }    
@@ -1784,7 +1818,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, namespaceName, eventHubName, sharedAccessSignatureKeyName, sharedAccessSignatureKey, numPartitions, retryMinBackoff, retryMaxBackoff, retryCount, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }    
@@ -1806,7 +1840,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, outputMode, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }    
@@ -1838,7 +1872,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }   
@@ -1867,7 +1901,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, jdbcURL, driver, tempDir, dbTable, forwardSparkAzureStorageCredentials, tableOptions, maxStrLength, authentication, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }   
@@ -1912,7 +1946,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, outputURI, authentication, numPartitions, saveMode, delimiter, quote, header, invalidKeys, customDelimiter).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }     
@@ -1943,7 +1977,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, parsedURI, inputView, invalidKeys, validStatusCodes).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -1983,7 +2017,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }      
@@ -2016,7 +2050,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }
@@ -2050,7 +2084,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, topic, bootstrapServers, acks, retries, batchSize, numPartitions, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }   
@@ -2083,7 +2117,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -2116,7 +2150,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -2149,7 +2183,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -2176,7 +2210,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(uri, description, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }
@@ -2214,7 +2248,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, parsedURI, inputSQL, jdbcURL, user, password, driver, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }
@@ -2237,7 +2271,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, inputView, bootstrapServers, groupID, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }    
@@ -2268,7 +2302,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(uri, description, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }
@@ -2292,7 +2326,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, leftView, rightView, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
@@ -2325,7 +2359,7 @@ object ConfigUtils {
       case _ =>
         val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(stageName, c.origin.lineNumber, allErrors)
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }
@@ -2343,11 +2377,11 @@ object ConfigUtils {
           case Right(n) =>
             (Right(CustomStage(n, params, cs)), graph)
           case Left(e) =>
-            val err = StageError(s"unnamed stage: $stageType", c.origin.lineNumber, e)
+            val err = StageError(idx, s"unnamed stage: $stageType", c.origin.lineNumber, e)
             (Left(err :: Nil), graph)
         }
       case None =>
-        (Left(StageError("unknown", c.origin.lineNumber, ConfigError("stages", Some(c.origin.lineNumber), s"Unknown stage type: '${stageType}'") :: Nil) :: Nil), graph)
+        (Left(StageError(idx, "unknown", c.origin.lineNumber, ConfigError("stages", Some(c.origin.lineNumber), s"Unknown stage type: '${stageType}'") :: Nil) :: Nil), graph)
     }
   }
 
@@ -2462,7 +2496,7 @@ object ConfigUtils {
           case Right("SQLValidate") => readSQLValidate(idx, graph, name, params)
 
           case Right(stageType) => readCustomStage(idx, graph, stageType, name, params)
-          case _ => (Left(StageError("unknown", s.origin.lineNumber, ConfigError("stages", Some(c.origin.lineNumber), s"Unknown stage type: '${_type}'") :: Nil) :: Nil), graph)
+          case _ => (Left(StageError(idx, "unknown", s.origin.lineNumber, ConfigError("stages", Some(c.origin.lineNumber), s"Unknown stage type: '${_type}'") :: Nil) :: Nil), graph)
         }
 
         stageOrError match {
@@ -2473,31 +2507,54 @@ object ConfigUtils {
       }
     }
 
-    // collect to throw warnings
-    val vertices = graph.vertices.collect
-    val edges = graph.edges.collect
+    val errorsOrPipeline = errors match {
+      case Nil => {
+        val stagesReversed = stages.reverse
+
+        // print optimisation opportunity messages
+        val vertices = graph.vertices.collect
+        val edges = graph.edges.collect
+
+        vertices.foreach { case (vertexId, (stageIdx, vertexName)) =>
+          val edgesFrom = edges.filter { case Edge(src, _, _) => src == vertexId }
+          if (edgesFrom.length > 1) {
+            val stage = stagesReversed(stageIdx)
+
+            stage match {
+              case s: PersistableExtract => {
+                if (!s.persist) {
+                  logger.info()
+                    .field("event", "validateConfig")
+                    .field("type", "optimization")
+                    .field("message", s"output of stage ${stageIdx} '${s.name}' used in multiple (${edgesFrom.length}) downstream stages and 'persist' is false. consider setting 'persist' to true to improve job performance")
+                    .log()
+                }
+              }
+              case s: PersistableTransform => {
+                if (!s.persist) {
+                  logger.info()
+                    .field("event", "validateConfig")
+                    .field("type", "optimization")
+                    .field("message", s"output of stage ${stageIdx} '${s.name}' used in multiple (${edgesFrom.length}) downstream stages and 'persist' is false. consider setting 'persist' to true to improve job performance")
+                    .log()
+                }
+              }
+              case _ =>
+            }
+          }
+        }
+
+        Right(ETLPipeline(stagesReversed))
+      }
+      case _ => Left(errors.reverse)
+    }
 
     logger.info()
       .field("event", "exit")
       .field("type", "readPipeline")        
       .field("duration", System.currentTimeMillis() - startTime)
-      .log()      
+      .log()  
 
-    errors match {
-      case Nil => {
-
-        vertices.foreach { case (vertexId, (stageIdx, vertexName)) =>
-          if (edges.filter { case Edge(src, _, _) => src == vertexId}.length > 1) {
-            println(stageIdx)
-            // val stage = stages[stageIdx]
-            println(stages)
-          }
-        }
-
-        Right(ETLPipeline(stages.reverse))
-      }
-      case _ => Left(errors.reverse)
-    }
+    errorsOrPipeline
   }
-
 }

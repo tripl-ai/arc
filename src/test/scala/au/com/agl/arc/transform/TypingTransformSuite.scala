@@ -202,7 +202,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
     cols match {
       case Left(stageError) => {
-        assert(stageError == StageError("booleanDatum",2,List(ConfigError("booleanArrayMeta", Some(20), "Metadata attribute 'booleanArrayMeta' cannot contain arrays of different types."))) :: Nil)
+        assert(stageError == StageError(0, "booleanDatum",2,List(ConfigError("booleanArrayMeta", Some(20), "Metadata attribute 'booleanArrayMeta' cannot contain arrays of different types."))) :: Nil)
       }
       case Right(_) => assert(false)
     }  
@@ -242,7 +242,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
     cols match {
       case Left(stageError) => {
-        assert(stageError == StageError("booleanDatum",2,List(ConfigError("booleanArrayMeta", Some(20), "Metadata attribute 'booleanArrayMeta' cannot contain nested `objects`."))) :: Nil)
+        assert(stageError == StageError(0, "booleanDatum",2,List(ConfigError("booleanArrayMeta", Some(20), "Metadata attribute 'booleanArrayMeta' cannot contain nested `objects`."))) :: Nil)
       }
       case Right(_) => assert(false)
     }      
@@ -320,7 +320,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
     cols match {
       case Left(stageError) => {
-        assert(stageError == StageError("booleanDatum",2,List(ConfigError("booleanDatum",Some(21),"Metadata attribute 'booleanDatum' cannot be the same name as column."))) :: Nil)
+        assert(stageError == StageError(0, "booleanDatum",2,List(ConfigError("booleanDatum",Some(21),"Metadata attribute 'booleanDatum' cannot be the same name as column."))) :: Nil)
       }
       case Right(_) => assert(false)
     }  
@@ -361,7 +361,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
     cols match {
       case Left(stageError) => {
-        assert(stageError == StageError("booleanDatum",2,List(ConfigError("badArray", Some(20),"Metadata attribute 'badArray' cannot contain `number` arrays of different types (all values must be `integers` or all values must be `doubles`)."))) :: Nil)
+        assert(stageError == StageError(0, "booleanDatum",2,List(ConfigError("badArray", Some(20),"Metadata attribute 'badArray' cannot contain `number` arrays of different types (all values must be `integers` or all values must be `doubles`)."))) :: Nil)
       }
       case Right(_) => assert(false)
     }  

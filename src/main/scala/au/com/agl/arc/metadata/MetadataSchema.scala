@@ -33,7 +33,7 @@ object MetadataSchema {
     val config = etlConf.withFallback(base)
     val metas = config.resolve().getObjectList("meta").asScala.map(_.toConfig).toList
 
-    val cols = metas.map(meta => {
+    val cols = metas.zipWithIndex.map { case(meta, idx) => 
       import ConfigReader._
       implicit var c = meta
 
@@ -92,7 +92,7 @@ object MetadataSchema {
                 case _ => {
                   val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, trueValues, falseValues, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
-                  val err = StageError(metaName, c.origin.lineNumber, allErrors)
+                  val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
               }  
@@ -115,7 +115,7 @@ object MetadataSchema {
                 case _ => {
                   val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
-                  val err = StageError(metaName, c.origin.lineNumber, allErrors)
+                  val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
               }  
@@ -137,7 +137,7 @@ object MetadataSchema {
                 case _ => {
                   val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, precision, scale, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
-                  val err = StageError(metaName, c.origin.lineNumber, allErrors)
+                  val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
               }  
@@ -157,7 +157,7 @@ object MetadataSchema {
                 case _ => {
                   val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
-                  val err = StageError(metaName, c.origin.lineNumber, allErrors)
+                  val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
               }  
@@ -177,7 +177,7 @@ object MetadataSchema {
                 case _ => {
                   val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
-                  val err = StageError(metaName, c.origin.lineNumber, allErrors)
+                  val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
               }  
@@ -197,7 +197,7 @@ object MetadataSchema {
                 case _ => {
                   val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
-                  val err = StageError(metaName, c.origin.lineNumber, allErrors)
+                  val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
               }  
@@ -218,7 +218,7 @@ object MetadataSchema {
                 case _ => {
                   val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
-                  val err = StageError(metaName, c.origin.lineNumber, allErrors)
+                  val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
               }  
@@ -238,7 +238,7 @@ object MetadataSchema {
                 case _ => {
                   val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
-                  val err = StageError(metaName, c.origin.lineNumber, allErrors)
+                  val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
               }  
@@ -284,7 +284,7 @@ object MetadataSchema {
                 case _ => {
                   val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, timezoneId, time, invalidKeys).collect{ case Left(errs) => errs }.flatten
                   val metaName = stringOrDefault(name, "unnamed meta")
-                  val err = StageError(metaName, c.origin.lineNumber, allErrors)
+                  val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
               }  
@@ -294,11 +294,11 @@ object MetadataSchema {
         case _ => {
           val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues).collect{ case Left(errs) => errs }.flatten
           val metaName = stringOrDefault(name, "unnamed meta")
-          val err = StageError(metaName, c.origin.lineNumber, allErrors)
+          val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
           Left(err :: Nil)
         }
       }
-    })
+    }
 
     val (schema, errors) = cols.foldLeft[(List[ExtractColumn], List[StageError])]( (Nil, Nil) ) { case ( (columns, errs), metaOrError ) =>
       metaOrError match {
