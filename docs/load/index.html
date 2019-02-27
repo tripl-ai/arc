@@ -914,6 +914,12 @@
 
 <p>The <code>DatabricksSQLDWLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://azure.microsoft.com/en-au/services/sql-data-warehouse/">Azure SQL Data Warehouse</a> file using the proprietary driver within a Databricks Runtime Environment.</p>
 
+<p>Known limitations:</p>
+
+<ul>
+<li>SQL Server date fields can only be between range <code>1753-01-01</code> to <code>9999-12-31</code>.</li>
+</ul>
+
 <h3 id="parameters-4">Parameters</h3>
 
 <table>

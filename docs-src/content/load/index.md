@@ -141,6 +141,10 @@ This means this API is likely to change.
 
 The `DatabricksSQLDWLoad` writes an input `DataFrame` to a target [Azure SQL Data Warehouse](https://azure.microsoft.com/en-au/services/sql-data-warehouse/) file using the proprietary driver within a Databricks Runtime Environment. 
 
+Known limitations:
+
+- SQL Server date fields can only be between range `1753-01-01` to `9999-12-31`.
+
 ### Parameters
 
 | Attribute | Type | Required | Description |
