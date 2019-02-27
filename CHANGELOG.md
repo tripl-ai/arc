@@ -3,6 +3,7 @@
 # 1.9.0
 
 - added `DatabricksSQLDWLoad` stage for bulk loading Azure SQLDW when executing in the [Databricks Runtime](https://databricks.com/product/databricks-runtime) environment.
+- added additional checks for table dependencies when validating the job config.
 
 # 1.8.0
 

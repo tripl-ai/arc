@@ -45,7 +45,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/simple.conf"), argsMap, arcContext)
+    val pipelineEither = ConfigUtils.parsePipeline(Option("classpath://conf/simple.conf"), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)
 
     val stage = DelimitedExtract(
       name = "file extract",
@@ -140,7 +140,12 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val expected = ETLPipeline(stage :: subDelimitedExtractStage :: subTypingTransformStage :: subSQLValidateStage :: Nil)
 
-    assert(pipeline === Right(expected))
+    pipelineEither match {
+      case Left(errors) => assert(false)
+      case Right( (pipeline, graph) ) => {
+        assert(pipeline === expected)
+      }
+    }    
   }
 
   // This test loops through the /src/test/resources/docs_resources directory and tries to parse each file as a config
@@ -154,8 +159,13 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val resourcesDir = getClass.getResource("/docs_resources/").getPath
 
+    // this is used to test that vertexExists works with predfefined tables like from a hive metastore
+    val emptyDF = spark.emptyDataFrame
+    emptyDF.createOrReplaceTempView("customer")
+
     for (filename <- TestDataUtils.getListOfFiles(resourcesDir)) {
       val fileContents = Source.fromFile(filename).mkString
+      // inject a stage to register the 'customer' view to stop downstream stages breaking
       val conf = s"""{"stages": [${fileContents.trim}]}"""
 
       // replace sql directory with config so that the examples read correctly but have resource to validate
@@ -173,7 +183,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       var argsMap = collection.mutable.Map[String, String]()
 
       val environmentVariables = ConfigFactory.parseMap(Map("JOB_RUN_DATE" -> "0", "ETL_CONF_BASE_URL" -> "").asJava)
-      val pipelineEither = ConfigUtils.readPipeline(config.resolveWith(environmentVariables).resolve(), new URI(""), argsMap, arcContext)
+      val initialGraph =  Graph(Vertex(0,"customer_20180501") :: Vertex(0,"customer_20180502") :: Nil, Nil)
+      val pipelineEither = ConfigUtils.readPipeline(config.resolveWith(environmentVariables).resolve(), new URI(""), argsMap, initialGraph, arcContext)
 
       pipelineEither match {
         case Left(errors) => {
@@ -208,12 +219,12 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
         assert(stageError == 
-        StageError("file extract",3,List(
+        StageError(0, "file extract",3,List(
             ConfigError("inputURI", None, "Missing required attribute 'inputURI'.")
             ,ConfigError("outputView", None, "Missing required attribute 'outputView'.")
           )
@@ -247,12 +258,12 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
         assert(stageError == 
-        StageError("file extract",3,List(
+        StageError(0, "file extract",3,List(
             ConfigError("inputURI", Some(10), """Unclosed group near index 25
 hdfs://test/{ab,c{de, fg}
                          ^""")
@@ -277,7 +288,7 @@ hdfs://test/{ab,c{de, fg}
             "production",
             "test"
           ],
-          "inputView": "input",
+          "inputURI": "/tmp/test.csv",
           "outputView": "output",
         },        
         {
@@ -287,7 +298,7 @@ hdfs://test/{ab,c{de, fg}
             "production",
             "test"
           ],
-          "inputView": "input",
+          "inputURI": "/tmp/test.csv",
           "outputVew": "output",
           "nothinglikeanything": false
         }
@@ -298,12 +309,12 @@ hdfs://test/{ab,c{de, fg}
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
         assert(stageError == 
-        StageError("file extract 1",13,List(
+        StageError(1, "file extract 1",13,List(
             ConfigError("outputView", None, "Missing required attribute 'outputView'.")
             ,ConfigError("nothinglikeanything", Some(22), "Invalid attribute 'nothinglikeanything'.")
             ,ConfigError("outputVew", Some(21), "Invalid attribute 'outputVew'. Perhaps you meant one of: ['outputView'].")
@@ -328,7 +339,7 @@ hdfs://test/{ab,c{de, fg}
             "production",
             "test"
           ],
-          "inputView": "input",
+          "inputURI": "/tmp/test.csv",
           "outputView": "output",
           "delimiter": "abc"
         }
@@ -339,11 +350,11 @@ hdfs://test/{ab,c{de, fg}
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
-        assert(stageError == StageError("file extract",3,List(ConfigError("delimiter", Some(12), "Invalid value. Valid values are ['Comma','Pipe','DefaultHive','Custom']."))) :: Nil)
+        assert(stageError == StageError(0, "file extract",3,List(ConfigError("delimiter", Some(12), "Invalid value. Valid values are ['Comma','Pipe','DefaultHive','Custom']."))) :: Nil)
       }
       case Right(_) => assert(false)
     }
@@ -363,7 +374,7 @@ hdfs://test/{ab,c{de, fg}
             "production",
             "test"
           ],
-          "inputView": "input",
+          "inputURI": "/tmp/test.csv",
           "outputView": "output",
           "delimiter": "Custom"
         }
@@ -374,11 +385,11 @@ hdfs://test/{ab,c{de, fg}
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
-        assert(stageError == StageError("file extract",3,List(ConfigError("customDelimiter", None, "Missing required attribute 'customDelimiter'."))) :: Nil)
+        assert(stageError == StageError(0, "file extract",3,List(ConfigError("customDelimiter", None, "Missing required attribute 'customDelimiter'."))) :: Nil)
       }
       case Right(_) => assert(false)
     }
@@ -398,7 +409,7 @@ hdfs://test/{ab,c{de, fg}
             "production",
             "test"
           ],
-          "inputView": "input",
+          "inputURI": "/tmp/test.csv",
           "outputView": "output",
           "delimiter": "Custom",
           "customDelimiter": "%"
@@ -410,8 +421,7 @@ hdfs://test/{ab,c{de, fg}
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
-
+    val pipelineEither = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)    
 
     val expected = ETLPipeline(      
       DelimitedExtract(
@@ -419,7 +429,7 @@ hdfs://test/{ab,c{de, fg}
         description=None,
         cols=Right(Nil),
         outputView="output",
-        input=Left("input"),
+        input=Right("/tmp/test.csv"),
         settings=new Delimited(header=false, sep=Delimiter.Custom, inferSchema=false, customDelimiter="%"),
         authentication=None,
         params=Map.empty,
@@ -430,7 +440,12 @@ hdfs://test/{ab,c{de, fg}
         inputField=None
       ) :: Nil)
 
-
-    assert(pipeline === Right(expected))
+    pipelineEither match {
+      case Left(errors) => assert(false)
+      case Right( (pipeline, graph) ) => {
+        assert(pipeline === expected)
+      }
+    }  
   }    
+
 }

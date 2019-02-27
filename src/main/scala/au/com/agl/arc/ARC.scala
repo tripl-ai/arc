@@ -190,7 +190,8 @@ object ARC {
 
     // try to parse config
     val pipelineConfig = try {
-      ConfigUtils.parsePipeline(configUri, argsMap, arcContext)(spark, logger)
+      val dependencyGraph = ConfigUtils.Graph(Nil, Nil)
+      ConfigUtils.parsePipeline(configUri, argsMap, dependencyGraph, arcContext)(spark, logger)
     } catch {
       case e: Exception => 
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
@@ -223,7 +224,7 @@ object ARC {
     }
 
     val error: Boolean = pipelineConfig match {
-      case Right(pipeline) =>
+      case Right( (pipeline, _) ) =>
         try {
           UDF.registerUDFs(spark.sqlContext)
           ARC.run(pipeline)(spark, logger, arcContext)

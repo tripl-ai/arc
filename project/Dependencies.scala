@@ -38,7 +38,7 @@ object Dependencies {
   val azureKeyVault = "com.microsoft.azure" % "azure-keyvault" % "1.0.0" % "provided"
 
   // SQL Server
-  val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "6.4.0.jre8" % "provided"
+  val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "7.2.1.jre8" % "it,test,provided"
   val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.2" % "it,test,provided"
 
   // geospark
