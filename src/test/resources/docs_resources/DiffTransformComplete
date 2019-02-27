@@ -6,8 +6,8 @@
     "production",
     "test"
   ],
-  "inputLeftView": "cutomer_20180501",
-  "inputRightView": "cutomer_20180502",
+  "inputLeftView": "customer_20180501",
+  "inputRightView": "customer_20180502",
   "outputIntersectionView": "customer_unchanged",
   "outputLeftView": "customer_removed",
   "outputRightView": "customer_added",

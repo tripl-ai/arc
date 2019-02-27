@@ -9,8 +9,6 @@ import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
 import org.apache.spark.sql._
-import org.apache.spark.graphx._
-import org.apache.spark.rdd.RDD
 
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.api.{Delimited, Delimiter, QuoteCharacter}
@@ -38,29 +36,48 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
+  // to help debug
+  // println(s"""nodes: ${graph.vertices.map { vertex => s"${vertex.stageId}: ${vertex.name}" }.mkString("['","', '","']")}""")
+  // println(s"""edges: ${graph.edges.map { case Edge(src, dst) => s"${src.stageId}: ${src.name} -> ${dst.stageId}: ${dst.name}" }.mkString("['","', '","']")}""")
 
-  // test("Test addVertex") { 
-  //   implicit val spark = session
-  //   implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-  //   implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
 
-  //   // make empty graph
-  //   val emptyVertices: RDD[(VertexId, (Int, String))] = spark.sparkContext.emptyRDD
-  //   val emptyEdges: RDD[Edge[String]] = spark.sparkContext.emptyRDD
-  //   val emptyGraph: Graph[(Int, String), String] = Graph(emptyVertices, emptyEdges)
+  test("Test addVertex") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
 
-  //   var outputGraph = emptyGraph
+    // make empty graph
+    var outputGraph = Graph(Nil,Nil)
     
-  //   outputGraph = ConfigUtils.addVertex(outputGraph, 0, "testVertex0")
-  //   outputGraph = ConfigUtils.addVertex(outputGraph, 1, "testVertex0")
+    outputGraph = outputGraph.addVertex(Vertex(0, "testVertex0"))
+    outputGraph = outputGraph.addVertex(Vertex(0, "testVertex0"))
 
-  //   assert(outputGraph.vertices.collect.length == 1)
+    assert(outputGraph.vertices.length == 1)
 
-  //   outputGraph = ConfigUtils.addVertex(outputGraph, 2, "testVertex1")
+    outputGraph = outputGraph.addVertex(Vertex(2, "testVertex1"))
 
-  //   assert(outputGraph.vertices.collect.length == 2)
-  // } 
+    assert(outputGraph.vertices.length == 2)
+  } 
 
+  test("Test addEdge") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    // make empty graph
+    var outputGraph = Graph(Nil,Nil)
+    
+    outputGraph = outputGraph.addVertex(Vertex(0, "testVertex0"))
+
+    outputGraph = outputGraph.addEdge("testVertex0", "testVertex1")
+
+    assert(outputGraph.edges.length == 0)
+
+    outputGraph = outputGraph.addVertex(Vertex(1, "testVertex1"))
+    outputGraph = outputGraph.addEdge("testVertex0", "testVertex1")
+
+    assert(outputGraph.edges.length == 1)
+  }   
 
   test("Test vertexExists: false") { 
     implicit val spark = session
@@ -87,7 +104,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
@@ -132,13 +149,11 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)    
 
     pipeline match {
       case Left(_) => assert(false)
       case Right( (pipeline, graph) ) => {
-        // println(s"""nodes: ${graph.vertices.collect.map { case (id, (stageId, name)) => s"$stageId: $name" }.mkString("['","', '","']")}""")
-        // println(s"""edges: ${graph.edges.collect.map { case Edge(src, dst, _) => s"$src -> $dst" }.mkString("['","', '","']")}""")
         assert(true)
       }
     }
@@ -169,7 +184,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
@@ -214,11 +229,14 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)    
 
     pipeline match {
       case Left(_) => assert(false)
-      case Right( (pipeline, graph) ) => assert(true)
+      case Right( (pipeline, graph) ) => {
+        assert(graph.vertices == Vertex(0, "customer") :: Vertex(1, "outputView") :: Nil)
+        assert(graph.edges == Edge(Vertex(0, "customer"), Vertex(1, "outputView")) :: Nil)
+      }
     }
   } 
 
@@ -238,7 +256,27 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
           ],
           "inputURI": "/tmp/in.csv",
           "outputView": "customer"
-        },               
+        },          
+        {
+          "type": "SQLTransform",
+          "name": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${getClass.getResource("/conf/sql/").toString}/customer.sql",
+          "outputView": "outputView0"          
+        },             
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "/tmp/in.csv",
+          "outputView": "customer"
+        },                  
         {
           "type": "SQLTransform",
           "name": "test",
@@ -267,60 +305,15 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)    
 
     pipeline match {
       case Left(_) => assert(false)
-      case Right( (pipeline, graph) ) => {
-        println(s"""nodes: ${graph.vertices.collect.map { case (id, (stageId, name)) => s"$stageId: $name" }.mkString("['","', '","']")}""")
-        println(s"""edges: ${graph.edges.collect.map { case Edge(src, dst, _) => s"$src -> $dst" }.mkString("['","', '","']")}""")
-        assert(true)
+      case Right( (_, graph) ) => {
+        assert(graph.vertices == Vertex(0, "customer") :: Vertex(1, "outputView0") :: Vertex(2, "customer") :: Vertex(3, "outputView0") :: Vertex(4, "outputView1") :: Nil)
+        assert(graph.edges == Edge(Vertex(0, "customer"),Vertex(1, "outputView0")) :: Edge(Vertex(2,"customer"),Vertex(3,"outputView0")) :: Edge(Vertex(2,"customer"),Vertex(4,"outputView1")) :: Nil)
       }
     }
   } 
 
-
-  // test("Test basic ") { 
-  //   implicit val spark = session
-  //   implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-  //   implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
-
-  //   val conf = """{
-  //     "stages": [       
-  //       {
-  //         "type": "DelimitedExtract",
-  //         "name": "extract",
-  //         "environments": [
-  //           "production",
-  //           "test"
-  //         ],
-  //         "inputURI": "/tmp/fake.csv",
-  //         "outputView": "output"
-  //       },
-  //       {
-  //         "type": "DelimitedLoad",
-  //         "name": "extract",
-  //         "environments": [
-  //           "production",
-  //           "test"
-  //         ],
-  //         "inputView": "output0",
-  //         "outputURI": "/tmp/fake.csv",
-  //       }        
-  //     ]
-  //   }"""
-
-  //   val base = ConfigFactory.load()
-  //   val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-  //   val config = etlConf.withFallback(base)
-  //   var argsMap = collection.mutable.Map[String, String]()
-  //   val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, arcContext)    
-
-  //   pipeline match {
-  //     case Left(stageError) => {
-  //       assert(stageError == StageError("file extract",3,List(ConfigError("customDelimiter", None, "Missing required attribute 'customDelimiter'."))) :: Nil)
-  //     }
-  //     case Right(_) => assert(false)
-  //   }
-  // }    
 }
