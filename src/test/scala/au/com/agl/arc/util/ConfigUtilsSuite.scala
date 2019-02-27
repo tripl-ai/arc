@@ -159,6 +159,10 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     val resourcesDir = getClass.getResource("/docs_resources/").getPath
 
+    // this is used to test that vertexExists works with predfefined tables like from a hive metastore
+    val emptyDF = spark.emptyDataFrame
+    emptyDF.createOrReplaceTempView("customer")
+
     for (filename <- TestDataUtils.getListOfFiles(resourcesDir)) {
       val fileContents = Source.fromFile(filename).mkString
       // inject a stage to register the 'customer' view to stop downstream stages breaking
@@ -179,7 +183,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       var argsMap = collection.mutable.Map[String, String]()
 
       val environmentVariables = ConfigFactory.parseMap(Map("JOB_RUN_DATE" -> "0", "ETL_CONF_BASE_URL" -> "").asJava)
-      val initialGraph =  Graph(Vertex(0,"customer") :: Vertex(0,"customer_20180501") :: Vertex(0,"customer_20180502") :: Nil, Nil)
+      val initialGraph =  Graph(Vertex(0,"customer_20180501") :: Vertex(0,"customer_20180502") :: Nil, Nil)
       val pipelineEither = ConfigUtils.readPipeline(config.resolveWith(environmentVariables).resolve(), new URI(""), argsMap, initialGraph, arcContext)
 
       pipelineEither match {
