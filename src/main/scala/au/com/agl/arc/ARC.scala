@@ -2,11 +2,13 @@ package au.com.agl.arc
 
 import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.udf.UDF
+import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, PipelineStagePlugin, UDFPlugin}
 
 object ARC {
 
   import java.lang._
   import java.util.UUID
+  import java.util.ServiceLoader
   import org.apache.commons.lang3.exception.ExceptionUtils
   import scala.collection.JavaConverters._
 
@@ -143,12 +145,21 @@ object ARC {
 
     val arcContext = ARCContext(jobId, jobName, env, envId, configUri, isStreaming, ignoreEnvironments)    
 
+    // log available plugins
+    val loader = Utils.getContextOrSparkClassLoader
+    val dynamicConfigurationPlugins = ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
+    val pipelineStagePlugins = ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
+    val udfPlugins = ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
+
     logger.info()
       .field("event", "enter")
       .field("config", sparkConf)
       .field("sparkVersion", spark.version)
       .field("frameworkVersion", frameworkVersion)
       .field("environment", env)
+      .field("dynamicConfigurationPlugins", dynamicConfigurationPlugins)
+      .field("pipelineStagePlugins", pipelineStagePlugins)
+      .field("udfPlugins", udfPlugins)
       .log()   
 
     // add spark listeners
