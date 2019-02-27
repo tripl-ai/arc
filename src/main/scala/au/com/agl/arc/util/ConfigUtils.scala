@@ -640,9 +640,9 @@ object ConfigUtils {
       }
     }
 
-    def vertexExists(path: String)(vertexName: String)(implicit c: Config): Either[Errors, String] = {
-      // 
-      if (vertices.exists {v => v.name == vertexName }) {
+    def vertexExists(path: String)(vertexName: String)(implicit spark: SparkSession, c: Config): Either[Errors, String] = {
+      // either the vertex was added by previous stage or has been already been registered in a hive metastore
+      if (vertices.exists {v => v.name == vertexName } || spark.catalog.tableExists(vertexName)) {
         Right(vertexName)
       } else {
         val possibleKeys = levenshteinDistance(vertices.map(_.name), vertexName)(4)
