@@ -3,7 +3,7 @@ package au.com.agl.arc.util
 import java.net.URI
 import java.sql.DriverManager
 import java.util.ServiceLoader
-import java.util.{ServiceLoader, Map => JMap}
+import java.util.{Map => JMap}
 
 import scala.collection.JavaConverters._
 import scala.util.Properties._
