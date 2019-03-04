@@ -201,7 +201,7 @@ object ARC {
 
     // try to parse config
     val pipelineConfig = try {
-      val dependencyGraph = ConfigUtils.Graph(Nil, Nil)
+      val dependencyGraph = ConfigUtils.Graph(Nil, Nil, false)
       ConfigUtils.parsePipeline(configUri, argsMap, dependencyGraph, arcContext)(spark, logger)
     } catch {
       case e: Exception => 

@@ -616,12 +616,12 @@ object ConfigUtils {
 
   case class Edge(source: Vertex, target: Vertex)
 
-  case class Graph(vertices: List[Vertex], edges: List[Edge]) {
+  case class Graph(vertices: List[Vertex], edges: List[Edge], containsPipelineStagePlugin: Boolean) {
 
     def addVertex(vertex: Vertex): Graph = {
       // a node is a distinct combination of (stageId,name)
       if (!vertices.exists { v => v.stageId == vertex.stageId && v.name == vertex.name }) {
-        Graph(vertex :: vertices, edges)
+        Graph(vertex :: vertices, edges, containsPipelineStagePlugin)
       } else {
         this
       }
@@ -634,24 +634,29 @@ object ConfigUtils {
         val sourceStageId = vertices.filter { v => v.name == source }.map(_.stageId).reduce(_ max _)
         val targetStageId = vertices.filter { v => v.name == target }.map(_.stageId).reduce(_ max _)
 
-        Graph(vertices, Edge(Vertex(sourceStageId, source), Vertex(targetStageId, target)) :: edges)
+        Graph(vertices, Edge(Vertex(sourceStageId, source), Vertex(targetStageId, target)) :: edges, containsPipelineStagePlugin)
       } else {
         this
       }
     }
 
     def vertexExists(path: String)(vertexName: String)(implicit spark: SparkSession, c: Config): Either[Errors, String] = {
-      // either the vertex was added by previous stage or has been already been registered in a hive metastore
-      if (vertices.exists {v => v.name == vertexName } || spark.catalog.tableExists(vertexName)) {
+      // if at least one PipelineStagePlugin exists in the job then disable vertexExists check due to opaque nature of code in plugins
+      if (containsPipelineStagePlugin) {
         Right(vertexName)
       } else {
-        val possibleKeys = levenshteinDistance(vertices.map(_.name), vertexName)(4)
-
-        if (!possibleKeys.isEmpty) {
-          Left(ConfigError(path, Option(c.getValue(path).origin.lineNumber()), s"""view '${vertexName}' does not exist by this stage of the job. Perhaps you meant one of: ${possibleKeys.map(field => s"'${field}'").mkString("[",", ","]")}.""") :: Nil)
+        // either the vertex was added by previous stage or has been already been registered in a hive metastore
+        if (vertices.exists {v => v.name == vertexName } || spark.catalog.tableExists(vertexName)) {
+          Right(vertexName)
         } else {
-          Left(ConfigError(path, Option(c.getValue(path).origin.lineNumber()), s"""view '${vertexName}' does not exist by this stage of the job.""") :: Nil)
-        }      
+          val possibleKeys = levenshteinDistance(vertices.map(_.name), vertexName)(4)
+
+          if (!possibleKeys.isEmpty) {
+            Left(ConfigError(path, Option(c.getValue(path).origin.lineNumber()), s"""view '${vertexName}' does not exist by this stage of the job. Perhaps you meant one of: ${possibleKeys.map(field => s"'${field}'").mkString("[",", ","]")}.""") :: Nil)
+          } else {
+            Left(ConfigError(path, Option(c.getValue(path).origin.lineNumber()), s"""view '${vertexName}' does not exist by this stage of the job.""") :: Nil)
+          }      
+        }
       }
     }
 
@@ -2437,12 +2442,15 @@ object ConfigUtils {
 
     val customStage = serviceLoader.iterator().asScala.find( _.getClass.getName == stageType)
 
+    // set containsPipelineStagePlugin true
+    var outputGraph = Graph(graph.vertices, graph.edges, true)
+
     customStage match {
       case Some(cs) =>
         // validate stage
         name match {
           case Right(n) =>
-            (Right(CustomStage(n, params, cs)), graph)
+            (Right(CustomStage(n, params, cs)), outputGraph)
           case Left(e) =>
             val err = StageError(idx, s"unnamed stage: $stageType", c.origin.lineNumber, e)
             (Left(err :: Nil), graph)
@@ -2572,7 +2580,7 @@ object ConfigUtils {
     val errorsOrPipeline = errors match {
       case Nil => {
         val stagesReversed = stages.reverse
-        val dependencyGraphReversed = Graph(dependencyGraph.vertices.reverse, dependencyGraph.edges.reverse)
+        val dependencyGraphReversed = Graph(dependencyGraph.vertices.reverse, dependencyGraph.edges.reverse, dependencyGraph.containsPipelineStagePlugin)
 
         // print optimisation opportunity messages
         dependencyGraphReversed.vertices.foreach { case (vertex) =>

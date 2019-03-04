@@ -34,7 +34,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin.conf"), argsMap, ConfigUtils.Graph(Nil, Nil), arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
 
     pipeline match {
       case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), graph) ) =>
