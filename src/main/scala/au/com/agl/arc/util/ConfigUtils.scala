@@ -1012,6 +1012,32 @@ object ConfigUtils {
     }
   }  
 
+  def readElasticsearchExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
+    import ConfigReader._
+
+    val expectedKeys = "type" :: "name" :: "description" :: "environments"  :: "input" :: "outputView"  :: "numPartitions" :: "partitionBy" :: "persist" :: "params" :: Nil
+    val invalidKeys = checkValidKeys(c)(expectedKeys)    
+
+    val description = getOptionalValue[String]("description")
+
+    val input = getValue[String]("input")
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist", default = Some(false))
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
+
+    (name, description, input, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(in), Right(ov), Right(p), Right(np), Right(pb), Right(_)) => 
+        var outputGraph = graph.addVertex(Vertex(idx, ov))
+        (Right(ElasticsearchExtract(n, d, in, ov, params, p, np, pb)), outputGraph)
+      case _ =>
+        val allErrors: Errors = List(name, description, input, outputView, persist, numPartitions, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
+        (Left(err :: Nil), graph)
+    }
+  }   
+
   def readHTTPExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
@@ -2007,7 +2033,42 @@ object ConfigUtils {
         val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
-  }     
+  }    
+
+  def readElasticsearchLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
+    import ConfigReader._
+
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "output" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
+    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    val description = getOptionalValue[String]("description")
+
+    val inputView = getValue[String]("inputView")
+    val output = getValue[String]("output")
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val authentication = readAuthentication("authentication")  
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
+
+    (name, description, inputView, output, numPartitions, saveMode, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(iv), Right(out), Right(np), Right(sm), Right(pb), Right(_)) => 
+        val load = ElasticsearchLoad(n, d, iv, out, pb, np, sm, params)
+
+        val ov = s"$idx:${load.getType}"
+        var outputGraph = graph
+        // add the vertices
+        outputGraph = outputGraph.addVertex(Vertex(idx, ov))
+        // add the edges
+        outputGraph = outputGraph.addEdge(iv, ov)
+
+        (Right(load), outputGraph)
+      case _ =>
+        val allErrors: Errors = List(name, description, inputView, output, numPartitions, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
+        (Left(err :: Nil), graph)
+    }
+  }      
   
   def readHTTPLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
@@ -2523,6 +2584,7 @@ object ConfigUtils {
           case Right("BytesExtract") => readBytesExtract(idx, graph, name, params)
           case Right("DatabricksDeltaExtract") => readDatabricksDeltaExtract(idx, graph, name, params)
           case Right("DelimitedExtract") => readDelimitedExtract(idx, graph, name, params)
+          case Right("ElasticsearchExtract") => readElasticsearchExtract(idx, graph, name, params)
           case Right("HTTPExtract") => readHTTPExtract(idx, graph, name, params)
           case Right("ImageExtract") => readImageExtract(idx, graph, name, params)
           case Right("JDBCExtract") => readJDBCExtract(idx, graph, name, params)
@@ -2549,6 +2611,7 @@ object ConfigUtils {
           case Right("DatabricksDeltaLoad") => readDatabricksDeltaLoad(idx, graph, name, params)
           case Right("DatabricksSQLDWLoad") => readDatabricksSQLDWLoad(idx, graph, name, params)
           case Right("DelimitedLoad") => readDelimitedLoad(idx, graph, name, params)
+          case Right("ElasticsearchLoad") => readElasticsearchLoad(idx, graph, name, params)
           case Right("HTTPLoad") => readHTTPLoad(idx, graph, name, params)
           case Right("JDBCLoad") => readJDBCLoad(idx, graph, name, params)
           case Right("JSONLoad") => readJSONLoad(idx, graph, name, params)

@@ -54,8 +54,8 @@ object Dependencies {
   val scala_graph_dot = "org.scala-graph" %% "graph-dot" % "1.11.5"
   val scala_graph_json = "org.scala-graph" %% "graph-json" % "1.11.0"
 
-  // hikari connection pool
-  // val hikaricp = "com.zaxxer" % "HikariCP" % "3.2.0"
+  // elasticsearch
+  val elasticsearch = "org.elasticsearch" % "elasticsearch-hadoop" % "6.6.1" % "provided"
 
   // Project
   val etlDeps = Seq(
@@ -93,7 +93,10 @@ object Dependencies {
 
     // Azure EventHubs
     azureEventHub,
-    qpid
+    qpid,
+
+    // elasticsearch
+    elasticsearch
 
   )
 }

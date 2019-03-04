@@ -404,6 +404,8 @@ object ARC {
         extract.DatabricksDeltaExtract.extract(e)                             
       case e : DelimitedExtract =>
         extract.DelimitedExtract.extract(e)
+      case e : ElasticsearchExtract =>
+        extract.ElasticsearchExtract.extract(e)        
       case e : HTTPExtract =>
         extract.HTTPExtract.extract(e)              
       case e : ImageExtract =>
@@ -454,6 +456,8 @@ object ARC {
         load.DatabricksSQLDWLoad.load(l)              
       case l : DelimitedLoad =>
         load.DelimitedLoad.load(l)
+      case l : ElasticsearchLoad =>
+        load.ElasticsearchLoad.load(l)        
       case l : HTTPLoad =>
         load.HTTPLoad.load(l)             
       case l : JDBCLoad =>

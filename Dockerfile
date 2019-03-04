@@ -98,7 +98,9 @@ RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/sp
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/datasyslab/geospark/1.1.3/geospark-1.1.3.jar && \       
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/datasyslab/geospark-sql_2.3/1.1.3/geospark-sql_2.3-1.1.3.jar && \
   # google cloud
-  wget -P ${SPARK_JARS} http://central.maven.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop2-1.9.5/gcs-connector-hadoop2-1.9.5.jar
+  wget -P ${SPARK_JARS} http://central.maven.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop2-1.9.5/gcs-connector-hadoop2-1.9.5.jar \ 
+  # elasticsearch
+  wget -P ${SPARK_JARS} http://central.maven.org/maven2/org/elasticsearch/elasticsearch-hadoop/6.6.1/elasticsearch-hadoop-6.6.1.jar
 
 # copy in tutorial
 COPY tutorial /opt/tutorial

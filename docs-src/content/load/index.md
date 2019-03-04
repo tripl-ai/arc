@@ -202,6 +202,39 @@ The `DelimitedLoad` writes an input `DataFrame` to a target delimited file.
 {{< readfile file="/resources/docs_resources/DelimitedLoadComplete" highlight="json" >}} 
 
 
+## ElasticsearchLoad
+##### Since: 1.9.0 - Supports Streaming: False
+
+{{< note title="Experimental" >}}
+The `ElasticsearchLoad` is currently in experimental state whilst the requirements become clearer. 
+
+This means this API is likely to change.
+{{</note>}}
+
+The `ElasticsearchLoad` writes an input `DataFrame` to a target [Elasticsearch](https://www.elastic.co/products/elasticsearch) cluster. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|output|String|true|The name of the target Elasticsearch index.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Parameters for connecting to the [Elasticsearch](https://www.elastic.co/products/elasticsearch) cluster are detailed [here](https://www.elastic.co/guide/en/elasticsearch/hadoop/master/configuration.html).|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/ElasticsearchLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/ElasticsearchLoadComplete" highlight="json" >}} 
+
+
 ## HTTPLoad
 ##### Since: 1.0.0 - Supports Streaming: False
 

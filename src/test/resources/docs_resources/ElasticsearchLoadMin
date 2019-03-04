@@ -1,0 +1,16 @@
+{
+  "type": "ElasticsearchLoad",
+  "name": "write customer",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "output": "index/customer",
+  "inputView": "customer",
+  "params": {
+    "es.nodes": "<my>.elasticsearch.com",
+    "es.port": "443",
+    "es.nodes.wan.only": "true",
+    "es.net.ssl": "true"
+  }
+}
