@@ -50,4 +50,24 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     
   }
 
+  test("Test argsMap precedence") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val argsMap = collection.mutable.HashMap[String, String]("ARGS_MAP_VALUE" -> "before\"${arc.paramvalue}\"after")
+
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin_precendence.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
+
+    pipeline match {
+      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), graph) ) =>
+        assert(name === "custom plugin")
+        val configParms = Map[String, String](
+          "foo" -> "beforeparamValueafter"
+        )
+        assert(params === configParms)
+        assert(stage.getClass.getName === "au.com.agl.arc.plugins.ArcCustomPipelineStage")
+      case _ => fail("expected CustomStage")
+    } 
+  }     
 }

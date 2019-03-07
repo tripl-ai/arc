@@ -5,6 +5,8 @@ import java.sql.DriverManager
 import java.util.ServiceLoader
 import java.util.{Map => JMap}
 
+import com.fasterxml.jackson.databind.ObjectMapper
+
 import scala.collection.JavaConverters._
 import scala.util.Properties._
 import com.typesafe.config._
@@ -158,7 +160,9 @@ object ConfigUtils {
     etlConfString.rightFlatMap { str =>
       val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
-      val argsMapConf = ConfigFactory.parseMap(argsMap.asJava)
+      // convert to json string so that parameters can be correctly parsed
+      val argsMapJson = new ObjectMapper().writeValueAsString(argsMap.asJava).replace("\\\"", "\"")
+      val argsMapConf = ConfigFactory.parseString(argsMapJson, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
       // try to read objects in the plugins.config path
       val resolvedConfigPlugins = resolveConfigPlugins(etlConf, base)
@@ -176,7 +180,7 @@ object ConfigUtils {
           logger.debug()
             .message("Found additional config values from plugins")
             .field("pluginConf", pluginValues)
-            .log()                
+            .log()           
           config.resolveWith(argsMapConf.withFallback(pluginConf)).resolve()
       }
 

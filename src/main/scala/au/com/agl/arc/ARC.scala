@@ -37,7 +37,7 @@ object ARC {
     }
     opts.map { x =>
       // regex split on only single = signs not at start or end of line
-      val pair = x.split("=(?!=)(?!$)")
+      val pair = x.split("=(?!=)(?!$)", 2)
       if (pair.length == 2) {
         argsMap += (pair(0).split("-{1,2}")(1) -> pair(1))
       }
