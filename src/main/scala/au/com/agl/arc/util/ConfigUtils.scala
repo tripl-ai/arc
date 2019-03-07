@@ -161,7 +161,7 @@ object ConfigUtils {
       val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
       // convert to json string so that parameters can be correctly parsed
-      val argsMapJson = new ObjectMapper().writeValueAsString(argsMap.asJava).replace("\\\"", "\"")
+      val argsMapJson = new ObjectMapper().writeValueAsString(argsMap.asJava).replace("\\", "")
       val argsMapConf = ConfigFactory.parseString(argsMapJson, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
       // try to read objects in the plugins.config path
