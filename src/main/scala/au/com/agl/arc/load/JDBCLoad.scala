@@ -168,7 +168,7 @@ object JDBCLoad {
             // switch to custom jdbc actions based on driver
             val resultDF = load.driver match {
               // switch to custom sqlserver bulkloader
-              case _: com.microsoft.sqlserver.jdbc.SQLServerDriver if (load.bulkload) => {              
+              case _: com.microsoft.sqlserver.jdbc.SQLServerDriver if (load.bulkload) => {
 
                 // ensure schemas align after dropping invalid columns
                 using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>

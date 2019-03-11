@@ -1,5 +1,13 @@
 ## Change Log
 
+# 1.9.0
+
+- *FIX* fixed command line arguments which contain equals sign not being parsed correctly
+- added `DatabricksSQLDWLoad` stage for bulk loading Azure SQLDW when executing in the [Databricks Runtime](https://databricks.com/product/databricks-runtime) environment.
+- added `ElasticsearchExtract` and `ElasticsearchLoad` stages for connecting to [Elasticsearch](https://www.elastic.co/products/elasticsearch) clusters.
+- added additional checks for table dependencies when validating the job config.
+- added `TextLoad` which supports both `singleFile` and standard partitioned output formats.
+
 # 1.8.0
 
 - added ability to pass job substitution variables via the `spark-submit` command instead of only environment variables. See [Typesafe Config Substitutions](https://github.com/lightbend/config#uses-of-substitutions) for additional information.

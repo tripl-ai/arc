@@ -11,6 +11,8 @@ import com.fasterxml.jackson.core._
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
+import org.apache.spark.graphx._
+import org.apache.spark.rdd.RDD
 
 case class KnownData(
     booleanDatum: Boolean, 
@@ -289,5 +291,11 @@ object TestDataUtils {
     ]
     """
     }
+
+    def emptyGraph()(implicit spark: SparkSession): Graph[(Int, String), String] = {
+        val emptyVertices: RDD[(VertexId, (Int, String))] = spark.sparkContext.emptyRDD
+        val emptyEdges: RDD[Edge[String]] = spark.sparkContext.emptyRDD
+        Graph(emptyVertices, emptyEdges)
+    }    
 }
 

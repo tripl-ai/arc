@@ -23,7 +23,7 @@ object HTTPTransform {
 
   /** Phantom Type to enable compiler to find the encoder we want
     */
-  type TypedRow = Row  
+  type TransformedRow = Row  
 
   def transform(transform: HTTPTransform)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
@@ -78,10 +78,10 @@ object HTTPTransform {
     /** Create a dynamic RowEncoder from the provided schema. We use the phantom
       * TypeRow type to enable implicit resolution to find our encoder.
       */
-    implicit val typedEncoder: Encoder[TypedRow] = org.apache.spark.sql.catalyst.encoders.RowEncoder(typedSchema)
+    implicit val typedEncoder: Encoder[TransformedRow] = org.apache.spark.sql.catalyst.encoders.RowEncoder(typedSchema)
     
     var transformedDF = try {
-      df.mapPartitions[TypedRow] { partition: Iterator[Row] => 
+      df.mapPartitions[TransformedRow] { partition: Iterator[Row] => 
         val poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager()
         poolingHttpClientConnectionManager.setMaxTotal(50)
         val httpClient = HttpClients.custom()
@@ -105,7 +105,7 @@ object HTTPTransform {
         // group so we can send multiple rows per request
         val groupedPartition = bufferedPartition.grouped(transform.batchSize)
 
-        groupedPartition.flatMap[TypedRow] { groupedRow => 
+        groupedPartition.flatMap[TransformedRow] { groupedRow => 
           val post = new HttpPost(uri)
 
           // add headers
@@ -156,9 +156,9 @@ object HTTPTransform {
               throw new Exception(s"""HTTPTransform expects the response to contain same number of results as 'batchSize' (${transform.batchSize}) but server responded with ${body.length}.""")
             }
 
-            // cast to a TypedRow to fit the Dataset map method requirements
+            // cast to a TransformedRow to fit the Dataset map method requirements
             groupedRow.zipWithIndex.map { case (row, index) => {
-              Row.fromSeq(row.toSeq ++ Seq(body(index))).asInstanceOf[TypedRow]
+              Row.fromSeq(row.toSeq ++ Seq(body(index))).asInstanceOf[TransformedRow]
             }}
 
           } finally {

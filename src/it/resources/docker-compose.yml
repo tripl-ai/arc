@@ -8,7 +8,7 @@ networks:
 
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:5.0.2
     networks:
       - arc-integration
     ports: 
@@ -18,7 +18,7 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:5.0.2
     networks:
       - arc-integration
     ports:
@@ -36,7 +36,7 @@ services:
       KAFKA_NUM_PARTITIONS: 10
   
   kafka-rest:
-    image: confluentinc/cp-kafka-rest:latest
+    image: confluentinc/cp-kafka-rest:5.0.2
     networks:
       - arc-integration
     ports:
@@ -88,3 +88,14 @@ services:
     build: flask_serving/.
     ports:
       - 5000:5000
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.6.1
+    networks:
+      - arc-integration    
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      discovery.type: single-node  
+  

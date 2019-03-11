@@ -1,0 +1,16 @@
+{
+  "type": "ElasticsearchExtract",
+  "name": "load customer extract",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "input": "index/customer",
+  "outputView": "customer",
+  "params": {
+    "es.nodes": "<my>.elasticsearch.com",
+    "es.port": "443",
+    "es.nodes.wan.only": "true",
+    "es.net.ssl": "true"
+  }
+}

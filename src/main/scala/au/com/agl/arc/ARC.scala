@@ -2,11 +2,13 @@ package au.com.agl.arc
 
 import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.udf.UDF
+import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, PipelineStagePlugin, UDFPlugin}
 
 object ARC {
 
   import java.lang._
   import java.util.UUID
+  import java.util.ServiceLoader
   import org.apache.commons.lang3.exception.ExceptionUtils
   import scala.collection.JavaConverters._
 
@@ -35,7 +37,7 @@ object ARC {
     }
     opts.map { x =>
       // regex split on only single = signs not at start or end of line
-      val pair = x.split("=(?!=)(?!$)")
+      val pair = x.split("=(?!=)(?!$)", 2)
       if (pair.length == 2) {
         argsMap += (pair(0).split("-{1,2}")(1) -> pair(1))
       }
@@ -143,12 +145,21 @@ object ARC {
 
     val arcContext = ARCContext(jobId, jobName, env, envId, configUri, isStreaming, ignoreEnvironments)    
 
+    // log available plugins
+    val loader = Utils.getContextOrSparkClassLoader
+    val dynamicConfigurationPlugins = ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
+    val pipelineStagePlugins = ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
+    val udfPlugins = ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
+
     logger.info()
       .field("event", "enter")
       .field("config", sparkConf)
       .field("sparkVersion", spark.version)
       .field("frameworkVersion", frameworkVersion)
       .field("environment", env)
+      .field("dynamicConfigurationPlugins", dynamicConfigurationPlugins)
+      .field("pipelineStagePlugins", pipelineStagePlugins)
+      .field("udfPlugins", udfPlugins)
       .log()   
 
     // add spark listeners
@@ -190,7 +201,8 @@ object ARC {
 
     // try to parse config
     val pipelineConfig = try {
-      ConfigUtils.parsePipeline(configUri, argsMap, arcContext)(spark, logger)
+      val dependencyGraph = ConfigUtils.Graph(Nil, Nil, false)
+      ConfigUtils.parsePipeline(configUri, argsMap, dependencyGraph, arcContext)(spark, logger)
     } catch {
       case e: Exception => 
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
@@ -223,7 +235,7 @@ object ARC {
     }
 
     val error: Boolean = pipelineConfig match {
-      case Right(pipeline) =>
+      case Right( (pipeline, _) ) =>
         try {
           UDF.registerUDFs(spark.sqlContext)
           ARC.run(pipeline)(spark, logger, arcContext)
@@ -392,6 +404,8 @@ object ARC {
         extract.DatabricksDeltaExtract.extract(e)                             
       case e : DelimitedExtract =>
         extract.DelimitedExtract.extract(e)
+      case e : ElasticsearchExtract =>
+        extract.ElasticsearchExtract.extract(e)        
       case e : HTTPExtract =>
         extract.HTTPExtract.extract(e)              
       case e : ImageExtract =>
@@ -437,9 +451,13 @@ object ARC {
       case l : ConsoleLoad =>
         load.ConsoleLoad.load(l)          
       case l : DatabricksDeltaLoad =>
-        load.DatabricksDeltaLoad.load(l)             
+        load.DatabricksDeltaLoad.load(l)        
+      case l : DatabricksSQLDWLoad =>
+        load.DatabricksSQLDWLoad.load(l)              
       case l : DelimitedLoad =>
         load.DelimitedLoad.load(l)
+      case l : ElasticsearchLoad =>
+        load.ElasticsearchLoad.load(l)        
       case l : HTTPLoad =>
         load.HTTPLoad.load(l)             
       case l : JDBCLoad =>
@@ -452,6 +470,8 @@ object ARC {
         load.ORCLoad.load(l)             
       case l : ParquetLoad =>
         load.ParquetLoad.load(l)   
+      case l : TextLoad =>
+        load.TextLoad.load(l)    
       case l : XMLLoad =>
         load.XMLLoad.load(l)            
 

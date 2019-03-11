@@ -157,6 +157,40 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 {{< readfile file="/resources/docs_resources/DelimitedExtractComplete" highlight="json" >}} 
 
 
+## ElasticsearchExtract
+##### Since: 1.9.0 - Supports Streaming: False
+
+{{< note title="Experimental" >}}
+The `ElasticsearchExtract` is currently in experimental state whilst the requirements become clearer. 
+
+This means this API is likely to change.
+{{</note>}}
+
+The `ElasticsearchExtract` stage reads from an [Elasticsearch](https://www.elastic.co/products/elasticsearch) cluster and returns a `DataFrame`. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|input|String|true|The name of the source Elasticsearch index.|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Parameters for connecting to the [Elasticsearch](https://www.elastic.co/products/elasticsearch) cluster are detailed [here](https://www.elastic.co/guide/en/elasticsearch/hadoop/master/configuration.html).|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/ElasticsearchExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/ElasticsearchExtractComplete" highlight="json" >}} 
+
+
 ## HTTPExtract
 ##### Since: 1.0.0 - Supports Streaming: False
 
@@ -254,7 +288,7 @@ The `JDBCExtract` reads directly from a JDBC Database and returns a `DataFrame`.
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |fetchsize|Integer|false|{{< readfile file="/content/partials/fields/fetchsize.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Currently requires `user` and `password` to be set here - see example below.|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently requires `user` and `password` to be set here - see example below.|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |partitionColumn|String|false|The name of a numeric column from the table in question which defines how to partition the table when reading in parallel from multiple workers. If set `numPartitions` must also be set.|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
