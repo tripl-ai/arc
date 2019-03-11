@@ -276,6 +276,8 @@ object API {
 
   case class ParquetLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ParquetLoad" }
 
+  case class TextLoad(name: String, description: Option[String], inputView: String, outputURI: URI, numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String], singleFile: Boolean, prefix: String, separator: String, suffix: String) extends Load { val getType = "TextLoad" }
+
   case class XMLLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "XMLLoad" }
 
 

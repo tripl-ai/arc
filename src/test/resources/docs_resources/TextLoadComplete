@@ -1,0 +1,18 @@
+{
+  "type": "TextLoad",
+  "name": "write customer Text extract",
+  "description": "write customer text extract",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputURI": "hdfs://output_data/customer/customer.text",
+  "authentication": {},
+  "numPartitions": 10,
+  "saveMode": "Overwrite",
+  "singleFile": true,
+  "prefix": "[",
+  "separator": ",\n",
+  "suffix": "]"
+}

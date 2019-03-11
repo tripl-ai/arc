@@ -470,6 +470,8 @@ object ARC {
         load.ORCLoad.load(l)             
       case l : ParquetLoad =>
         load.ParquetLoad.load(l)   
+      case l : TextLoad =>
+        load.TextLoad.load(l)    
       case l : XMLLoad =>
         load.XMLLoad.load(l)            
 

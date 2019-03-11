@@ -416,6 +416,38 @@ The `ParquetLoad` writes an input `DataFrame` to a target [Apache Parquet](https
 {{< readfile file="/resources/docs_resources/ParquetLoadComplete" highlight="json" >}} 
 
 
+## TextLoad
+##### Since: 1.9.0 - Supports Streaming: False
+
+The `TextLoad` writes an input `DataFrame` to a target text file. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|outputURI|URI|true|URI of the Parquet file to write to.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
+|singleFile|Boolean|false|Write to a single text file instead of a directory containing one or more partitions. Warning: this will pull the entire dataset to memory on the driver process so will not work for large datasets unless the driver has a sufficiently large memory allocation.|
+|prefix|String|false|A string to append before the row data when in `singleFile` mode.|
+|separator|String|false|A separator string to append between the row data when in `singleFile` mode.|
+|suffix|String|false|A string to append after the row data when in `singleFile` mode.|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/TextLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/TextLoadComplete" highlight="json" >}} 
+
+
 ## XMLLoad
 ##### Since: 1.0.0 - Supports Streaming: False
 
