@@ -39,7 +39,7 @@ object Dependencies {
 
   // SQL Server
   val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "7.2.1.jre8" % "it,test,provided"
-  val azureSQLDB = "com.microsoft.azure" % "azure-sqldb-spark" % "1.0.2"
+  val azureSQLDB = "com.microsoft.azure" % "azure-sqldb-spark" % "1.0.2" % "provided"
   val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.2" % "it,test,provided"
 
   // geospark
