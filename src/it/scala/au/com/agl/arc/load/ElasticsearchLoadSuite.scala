@@ -63,7 +63,6 @@ class ElasticsearchLoadSuite extends FunSuite with BeforeAndAfter {
     val client = HttpClientBuilder.create.build
     val delete = new HttpDelete(s"http://${esURL}:9200/index")
     val response = client.execute(delete)
-    assert(response.getStatusLine.getStatusCode == 200)
     response.close 
 
     load.ElasticsearchLoad.load(

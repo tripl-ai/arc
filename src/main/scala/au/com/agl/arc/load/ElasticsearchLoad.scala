@@ -40,24 +40,13 @@ object ElasticsearchLoad {
       .map("stage", stageDetail)      
       .log()
 
-    val dropMap = new java.util.HashMap[String, Object]()
-
-    // Avro cannot handle a column of NullType
-    val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
-    if (!nulls.isEmpty) {
-      dropMap.put("NullType", nulls.asJava)
-    }
-
-    stageDetail.put("drop", dropMap) 
-
     val listener = ListenerUtils.addStageCompletedListener(stageDetail)
 
-    // Avro will convert date and times to epoch milliseconds
+    // Elasticsearch will convert date and times to epoch milliseconds
     val outputDF = try {
-      val nonNullDF = df.drop(nulls:_*)
       load.partitionBy match {
         case Nil =>
-          val dfToWrite = load.numPartitions.map(nonNullDF.repartition(_)).getOrElse(nonNullDF)
+          val dfToWrite = load.numPartitions.map(df.repartition(_)).getOrElse(df)
           dfToWrite.write.options(load.params).mode(load.saveMode).format("org.elasticsearch.spark.sql").save(load.output)
           dfToWrite
         case partitionBy => {
@@ -65,11 +54,11 @@ object ElasticsearchLoad {
           val partitionCols = partitionBy.map(col => df(col))
           load.numPartitions match {
             case Some(n) =>
-              val dfToWrite = nonNullDF.repartition(n, partitionCols:_*)
+              val dfToWrite = df.repartition(n, partitionCols:_*)
               dfToWrite.write.options(load.params).partitionBy(partitionBy:_*).mode(load.saveMode).format("org.elasticsearch.spark.sql").save(load.output)
               dfToWrite
             case None =>
-              val dfToWrite = nonNullDF.repartition(partitionCols:_*)
+              val dfToWrite = df.repartition(partitionCols:_*)
               dfToWrite.write.options(load.params).partitionBy(partitionBy:_*).mode(load.saveMode).format("org.elasticsearch.spark.sql").save(load.output)
               dfToWrite
           }
