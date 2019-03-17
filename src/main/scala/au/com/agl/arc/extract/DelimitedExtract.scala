@@ -29,7 +29,10 @@ object DelimitedExtract {
     stageDetail.put("outputView", extract.outputView)
     stageDetail.put("contiguousIndex", Boolean.valueOf(extract.contiguousIndex))
 
-    val options: Map[String, String] = Delimited.toSparkOptions(extract.settings)
+    val options: Map[String, String] = extract.basePath match {
+      case Some(basePath) => Delimited.toSparkOptions(extract.settings) + ("basePath" -> basePath)
+      case None => Delimited.toSparkOptions(extract.settings)
+    }
 
     val inputValue = extract.input match {
       case Left(view) => view

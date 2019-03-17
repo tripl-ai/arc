@@ -14,5 +14,6 @@
   "numPartitions": 10,
   "persist": false,
   "schemaURI": "hdfs://input_data/schema/customer.json",
-  "schemaView": "customer_schema"
+  "schemaView": "customer_schema",
+  "basePath": "hdfs://input_data/customer/"
 }

@@ -11,7 +11,10 @@
     "accountName": "myaccount",
     "signature": "ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08="
   },
-  "jdbcURL": "jdbc:sqlserver://localhost;user=MyUserName;password=*****",
+  "jdbcURL": "jdbc:sqlserver://localhost;user=MyUserName",
   "dbTable": "customer",
-  "tempDir": "wasbs://<your-container-name>@<your-storage-account-name>.blob.core.windows.net/<your-directory-name>"
+  "tempDir": "wasbs://<your-container-name>@<your-storage-account-name>.blob.core.windows.net/<your-directory-name>",
+  "params": {
+    "password": "notlogged"
+  }
 }

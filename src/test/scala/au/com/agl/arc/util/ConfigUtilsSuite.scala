@@ -60,6 +60,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       numPartitions = None,
       partitionBy = Nil,
       contiguousIndex = true,
+      basePath = None,
       inputField = None
     )
 
@@ -76,6 +77,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       numPartitions = None,
       partitionBy = Nil,
       contiguousIndex = true,
+      basePath = None,
       inputField = None
     )
 
@@ -437,6 +439,7 @@ hdfs://test/{ab,c{de, fg}
         numPartitions=None,
         partitionBy=Nil,
         contiguousIndex=true,
+        basePath=None,
         inputField=None
       ) :: Nil)
 

@@ -80,6 +80,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     ).get
@@ -119,6 +120,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     )
@@ -137,6 +139,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     )
@@ -176,6 +179,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
+          basePath=None,
           contiguousIndex=true
         )
       )
@@ -196,6 +200,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
+          basePath=None,
           contiguousIndex=true
         )
       )
@@ -215,6 +220,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     ).get
@@ -244,6 +250,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     ).get
@@ -270,6 +277,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     ).get
@@ -304,6 +312,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     ).get

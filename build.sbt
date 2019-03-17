@@ -12,7 +12,7 @@ lazy val root = (project in file(".")).
     parallelExecution in Test := false,
     parallelExecution in IntegrationTest := false,
     buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion),
-    buildInfoPackage := "au.com.agl.arc",
+    buildInfoPackage := "au.com.agl.arc.ArcBuildInfo",
     Defaults.itSettings
   )
 

@@ -75,6 +75,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         contiguousIndex=true,
+        basePath=None,
         inputField = None
       )
     ).get 

@@ -30,7 +30,10 @@ object JSONExtract {
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
     stageDetail.put("contiguousIndex", Boolean.valueOf(extract.contiguousIndex))
 
-    val options: Map[String, String] = JSON.toSparkOptions(extract.settings)
+    val options: Map[String, String] = extract.basePath match {
+      case Some(basePath) => JSON.toSparkOptions(extract.settings) + ("basePath" -> basePath)
+      case None => JSON.toSparkOptions(extract.settings)
+    }    
 
     val inputValue = extract.input match {
       case Left(view) => view

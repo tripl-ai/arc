@@ -169,6 +169,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     )    
@@ -235,6 +236,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     )

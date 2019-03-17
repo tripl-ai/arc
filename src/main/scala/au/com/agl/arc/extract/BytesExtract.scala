@@ -54,7 +54,6 @@ object BytesExtract {
 
           schema.fields(fieldIndex).dataType match {
             case _: StringType =>
-            case _: BinaryType =>
             case _ => throw new Exception(s"""${signature} 'value' is of type: '${schema.fields(fieldIndex).dataType.simpleString}'.""") with DetailException {
               override val detail = stageDetail
             }
@@ -84,6 +83,7 @@ object BytesExtract {
 
     stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
     stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+    stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (extract.persist && !repartitionedDF.isStreaming) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)

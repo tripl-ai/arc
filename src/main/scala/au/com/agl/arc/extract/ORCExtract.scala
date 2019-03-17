@@ -52,8 +52,11 @@ object ORCExtract {
           case Some(schema) => spark.readStream.option("mergeSchema", "true").schema(schema).orc(extract.input)
           case None => throw new Exception("ORCExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
         }       
-      } else {      
-        spark.read.option("mergeSchema", "true").orc(extract.input)   
+      } else {    
+        extract.basePath match {
+          case Some(basePath) => spark.read.option("mergeSchema", "true").option("basePath", basePath).orc(extract.input)
+          case None => spark.read.option("mergeSchema", "true").orc(extract.input)   
+        }          
       }
     } catch {
         case e: AnalysisException if (e.getMessage == "Unable to infer schema for ORC. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) => 

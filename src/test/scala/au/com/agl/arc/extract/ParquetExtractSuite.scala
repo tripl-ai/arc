@@ -75,6 +75,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     ).get
@@ -112,6 +113,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     )
@@ -130,6 +132,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     )
@@ -170,6 +173,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
+          basePath=None,
           contiguousIndex=true
         )
       )
@@ -190,6 +194,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
+          basePath=None,
           contiguousIndex=true
         )
       )
@@ -209,6 +214,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     ).get
@@ -242,6 +248,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     ).get
