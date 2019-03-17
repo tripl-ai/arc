@@ -224,7 +224,7 @@ object API {
 
   case class TextExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Boolean, multiLine: Boolean, basePath: Option[String]) extends ColumnarExtract { val getType = "TextExtract" }
 
-  case class XMLExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, basePath: Option[String]) extends Extract { val getType = "XMLExtract" }
+  case class XMLExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean) extends Extract { val getType = "XMLExtract" }
 
 
   sealed trait PersistableTransform extends PipelineStage {

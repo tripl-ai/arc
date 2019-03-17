@@ -1,5 +1,10 @@
 ## Change Log
 
+# 1.10.0
+
+- added `basePath` to relevant `*Extract` do aid with partition discovery.
+- added check to ensure no parameters are remaining after `sqlParams` string replacement (i.e. missing `sqlParams`).
+
 # 1.9.0
 
 - *FIX* fixed command line arguments which contain equals sign not being parsed correctly

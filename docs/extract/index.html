@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.9.0</span></strong>
+          <span class="version">1.10.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -541,6 +541,13 @@
 </tr>
 
 <tr>
+<td>basePath</td>
+<td>URI</td>
+<td>false</td>
+<td>The base path that partition discovery should start with.</td>
+</tr>
+
+<tr>
 <td>contiguousIndex</td>
 <td>Boolean</td>
 <td>false</td>
@@ -633,7 +640,8 @@
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.avro&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="bytesextract">BytesExtract</h2>
@@ -941,6 +949,13 @@
 </tr>
 
 <tr>
+<td>basePath</td>
+<td>URI</td>
+<td>false</td>
+<td>The base path that partition discovery should start with.</td>
+</tr>
+
+<tr>
 <td>contiguousIndex</td>
 <td>Boolean</td>
 <td>false</td>
@@ -1073,7 +1088,8 @@
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;quote&#34;</span><span class="p">:</span> <span class="s2">&#34;DoubleQuote&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="elasticsearchextract">ElasticsearchExtract</h2>
@@ -1478,6 +1494,13 @@
 </tr>
 
 <tr>
+<td>basePath</td>
+<td>URI</td>
+<td>false</td>
+<td>The base path that partition discovery should start with.</td>
+</tr>
+
+<tr>
 <td>description</td>
 <td>String</td>
 <td>false</td>
@@ -1547,7 +1570,8 @@
   <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;image.width&#34;</span>
   <span class="p">],</span>
-  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="jdbcextract">JDBCExtract</h2>
@@ -1811,6 +1835,13 @@
 </tr>
 
 <tr>
+<td>basePath</td>
+<td>URI</td>
+<td>false</td>
+<td>The base path that partition discovery should start with.</td>
+</tr>
+
+<tr>
 <td>contiguousIndex</td>
 <td>Boolean</td>
 <td>false</td>
@@ -1919,7 +1950,8 @@
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="kafkaextract">KafkaExtract</h2>
@@ -2140,6 +2172,13 @@
 </tr>
 
 <tr>
+<td>basePath</td>
+<td>URI</td>
+<td>false</td>
+<td>The base path that partition discovery should start with.</td>
+</tr>
+
+<tr>
 <td>contiguousIndex</td>
 <td>Boolean</td>
 <td>false</td>
@@ -2232,7 +2271,8 @@
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="parquetextract">ParquetExtract</h2>
@@ -2287,6 +2327,13 @@
 <td>Map[String, String]</td>
 <td>false</td>
 <td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>basePath</td>
+<td>URI</td>
+<td>false</td>
+<td>The base path that partition discovery should start with.</td>
 </tr>
 
 <tr>
@@ -2382,7 +2429,8 @@
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="rateextract">RateExtract</h2>
@@ -2542,6 +2590,13 @@
 </tr>
 
 <tr>
+<td>basePath</td>
+<td>URI</td>
+<td>false</td>
+<td>The base path that partition discovery should start with.</td>
+</tr>
+
+<tr>
 <td>contiguousIndex</td>
 <td>Boolean</td>
 <td>false</td>
@@ -2632,7 +2687,8 @@
   <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="xmlextract">XMLExtract</h2>

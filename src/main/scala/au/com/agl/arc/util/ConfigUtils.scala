@@ -1417,7 +1417,7 @@ object ConfigUtils {
   def readXMLExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     val description = getOptionalValue[String]("description")
@@ -1446,17 +1446,16 @@ object ConfigUtils {
     )
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")  
-    val basePath = getOptionalValue[String]("basePath")
 
-    (name, description, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys, basePath) match {
-      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(pb), Right(_), Right(bp)) => 
+    (name, description, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(pb), Right(_)) => 
         val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
         var outputGraph = graph.addVertex(Vertex(idx, ov))
 
-        (Right(XMLExtract(n, d, schema, ov, input, auth, params, p, np, pb, ci, bp)), outputGraph)
+        (Right(XMLExtract(n, d, schema, ov, input, auth, params, p, np, pb, ci)), outputGraph)
       case _ =>
-        val allErrors: Errors = List(name, description, input, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys, basePath).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, input, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)

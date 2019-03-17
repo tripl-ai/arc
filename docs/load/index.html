@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.9.0</span></strong>
+          <span class="version">1.10.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -912,7 +912,7 @@
 </p>
 </div>
 
-<p>The <code>DatabricksSQLDWLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://azure.microsoft.com/en-au/services/sql-data-warehouse/">Azure SQL Data Warehouse</a> file using the proprietary driver within a Databricks Runtime Environment.</p>
+<p>The <code>DatabricksSQLDWLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://azure.microsoft.com/en-au/services/sql-data-warehouse/">Azure SQL Data Warehouse</a> file using a <a href="https://docs.databricks.com/spark/latest/data-sources/azure/sql-data-warehouse.html">proprietary driver</a> within a Databricks Runtime Environment.</p>
 
 <p>Known limitations:</p>
 
@@ -1009,6 +1009,13 @@
 <td>false</td>
 <td>The default length of <code>String</code>/<code>NVARCHAR</code> columns when creating the table in SQLDW.<br><br>Default: <code>256</code>.</td>
 </tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Parameters for connecting to the <a href="https://azure.microsoft.com/en-au/services/sql-data-warehouse/">Azure SQL Data Warehouse</a> so that password is not logged.</td>
+</tr>
 </tbody>
 </table>
 
@@ -1029,9 +1036,12 @@
     <span class="nt">&#34;accountName&#34;</span><span class="p">:</span> <span class="s2">&#34;myaccount&#34;</span><span class="p">,</span>
     <span class="nt">&#34;signature&#34;</span><span class="p">:</span> <span class="s2">&#34;ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=&#34;</span>
   <span class="p">},</span>
-  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:sqlserver://localhost;user=MyUserName;password=*****&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:sqlserver://localhost;user=MyUserName&#34;</span><span class="p">,</span>
   <span class="nt">&#34;dbTable&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;tempDir&#34;</span><span class="p">:</span> <span class="s2">&#34;wasbs://&lt;your-container-name&gt;@&lt;your-storage-account-name&gt;.blob.core.windows.net/&lt;your-directory-name&gt;&#34;</span>
+  <span class="nt">&#34;tempDir&#34;</span><span class="p">:</span> <span class="s2">&#34;wasbs://&lt;your-container-name&gt;@&lt;your-storage-account-name&gt;.blob.core.windows.net/&lt;your-directory-name&gt;&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;password&#34;</span><span class="p">:</span> <span class="s2">&#34;notlogged&#34;</span>
+  <span class="p">}</span>
 <span class="p">}</span></code></pre></div>
 
 <h4 id="complete-4">Complete</h4>
@@ -1049,12 +1059,15 @@
     <span class="nt">&#34;accountName&#34;</span><span class="p">:</span> <span class="s2">&#34;myaccount&#34;</span><span class="p">,</span>
     <span class="nt">&#34;signature&#34;</span><span class="p">:</span> <span class="s2">&#34;ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=&#34;</span>
   <span class="p">},</span>  
-  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:sqlserver://localhost;user=MyUserName;password=*****&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:sqlserver://localhost;user=MyUserName&#34;</span><span class="p">,</span>
   <span class="nt">&#34;dbTable&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;tempDir&#34;</span><span class="p">:</span> <span class="s2">&#34;wasbs://&lt;your-container-name&gt;@&lt;your-storage-account-name&gt;.blob.core.windows.net/&lt;your-directory-name&gt;&#34;</span><span class="p">,</span>
   <span class="nt">&#34;forwardSparkAzureStorageCredentials&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> 
   <span class="nt">&#34;tableOptions&#34;</span><span class="p">:</span> <span class="s2">&#34;CLUSTERED COLUMNSTORE INDEX, DISTRIBUTION = ROUND_ROBIN&#34;</span><span class="p">,</span> 
-  <span class="nt">&#34;maxStrLength&#34;</span><span class="p">:</span> <span class="mi">1024</span>
+  <span class="nt">&#34;maxStrLength&#34;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;password&#34;</span><span class="p">:</span> <span class="s2">&#34;notlogged&#34;</span>
+  <span class="p">}</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="delimitedload">DelimitedLoad</h2>
