@@ -16,7 +16,7 @@ object Dependencies {
   val sparkMl = "org.apache.spark" %% "spark-mllib" % sparkVersion % "provided"
 
   // Spark XML
-  val sparkXML = "com.databricks" %% "spark-xml" % "0.4.1" % "provided"
+  val sparkXML = "com.databricks" %% "spark-xml" % "0.5.0" % "provided"
 
   // Spark AVRO
   val sparkAvro = "org.apache.spark" %% "spark-avro" % "2.4.0" % "provided"

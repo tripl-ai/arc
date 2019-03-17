@@ -63,7 +63,7 @@ object XMLExtract {
           val textFile = spark.sparkContext.textFile(glob)
 
           val xmlReader = new XmlReader
-          val xml = xmlReader.xmlRdd(spark.sqlContext, textFile)
+          val xml = xmlReader.xmlRdd(spark, textFile)
 
           // reset delimiter
           if (oldDelimiter == null) {
@@ -76,7 +76,7 @@ object XMLExtract {
         }
         case Left(view) => {
           val xmlReader = new XmlReader
-          xmlReader.xmlRdd(spark.sqlContext, spark.table(view).as[String].rdd)
+          xmlReader.xmlRdd(spark, spark.table(view).as[String].rdd)
         }
       }     
     } catch {
