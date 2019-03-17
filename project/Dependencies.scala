@@ -22,8 +22,8 @@ object Dependencies {
   val sparkAvro = "org.apache.spark" %% "spark-avro" % "2.4.0" % "provided"
 
   // Amazon S3
-  val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % "2.7.3" % "provided"
-  val awsJavaSDK = "com.amazonaws" % "aws-java-sdk" % "1.7.4" % "provided"
+  val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % "2.7.7" % "provided"
+  val awsJavaSDK = "com.amazonaws" % "aws-java-sdk" % "1.11.519" % "provided"
 
   // Azure Blob
   val hadoopAzure = "org.apache.hadoop" % "hadoop-azure" % "2.7.3" % "provided"
@@ -40,11 +40,11 @@ object Dependencies {
   // SQL Server
   val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "7.2.1.jre8" % "it,test,provided"
   val azureSQLDB = "com.microsoft.azure" % "azure-sqldb-spark" % "1.0.2" % "provided"
-  val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.2" % "it,test,provided"
+  val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.5" % "it,test,provided"
 
   // geospark
-  val geospark = "org.datasyslab" % "geospark" % "1.1.1"  % "provided"
-  val geosparkSQL = "org.datasyslab" % "geospark-sql_2.3" % "1.1.1" % "provided"
+  val geospark = "org.datasyslab" % "geospark" % "1.2.0"  % "provided"
+  val geosparkSQL = "org.datasyslab" % "geospark-sql_2.3" % "1.2.0" % "provided"
 
   // cli arg parsing
   val scallop = "org.rogach" %% "scallop" % "2.1.1"
