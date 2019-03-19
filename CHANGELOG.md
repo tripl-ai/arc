@@ -4,6 +4,7 @@
 
 - added `basePath` to relevant `*Extract` do aid with partition discovery.
 - added check to ensure no parameters are remaining after `sqlParams` string replacement (i.e. missing `sqlParams`).
+- added `failMode` to `HTTPTransform` with default `failfast` (unchanged behaviour).
 
 # 1.9.0
 

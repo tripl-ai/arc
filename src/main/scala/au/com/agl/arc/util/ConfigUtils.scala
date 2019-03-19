@@ -1499,7 +1499,7 @@ object ConfigUtils {
   def readHTTPTransform(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "uri" :: "headers" :: "inputField" :: "persist" :: "validStatusCodes" :: "params" :: "batchSize" :: "delimiter" :: "numPartitions" :: "partitionBy" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "uri" :: "headers" :: "inputField" :: "persist" :: "validStatusCodes" :: "params" :: "batchSize" :: "delimiter" :: "numPartitions" :: "partitionBy" :: "failMode" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
 
     val description = getOptionalValue[String]("description")
@@ -1517,9 +1517,10 @@ object ConfigUtils {
     val delimiter = getValue[String]("delimiter", default = Some("\n"))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))    
+    val failMode = getValue[String]("failMode", default = Some("failfast"), validValues = "permissive" :: "failfast" :: Nil) |> parseFailMode("failMode") _
 
-    (name, description, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys, batchSize, delimiter, numPartitions, partitionBy) match {
-      case (Right(n), Right(d), Right(iv), Right(ov), Right(uri), Right(p), Right(ifld), Right(vsc), Right(_), Right(bs), Right(delim), Right(np), Right(pb)) => 
+    (name, description, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys, batchSize, delimiter, numPartitions, partitionBy, failMode) match {
+      case (Right(n), Right(d), Right(iv), Right(ov), Right(uri), Right(p), Right(ifld), Right(vsc), Right(_), Right(bs), Right(delim), Right(np), Right(pb), Right(fm)) => 
         
         var outputGraph = graph
         // add the vertices
@@ -1527,9 +1528,9 @@ object ConfigUtils {
         // add the edges
         outputGraph = outputGraph.addEdge(iv, ov)
 
-        (Right(HTTPTransform(n, d, uri, headers, vsc, iv, ov, ifld, params, p, bs, delim, np, pb)), outputGraph)
+        (Right(HTTPTransform(n, d, uri, headers, vsc, iv, ov, ifld, params, p, bs, delim, np, pb, fm)), outputGraph)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys, batchSize, delimiter, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputView, parsedHttpURI, persist, inputField, validStatusCodes, invalidKeys, batchSize, delimiter, numPartitions, partitionBy, failMode).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)

@@ -233,7 +233,7 @@ object API {
 
   case class DiffTransform(name: String, description: Option[String], inputLeftView: String, inputRightView: String, outputIntersectionView: Option[String], outputLeftView: Option[String], outputRightView: Option[String], params: Map[String, String], persist: Boolean) extends PersistableTransform { val getType = "DiffTransform" }
 
-  case class HTTPTransform(name: String, description: Option[String], uri: URI, headers: Map[String, String], validStatusCodes: List[Int], inputView: String, outputView: String, inputField: String, params: Map[String, String], persist: Boolean, batchSize: Int, delimiter: String, numPartitions: Option[Int], partitionBy: List[String]) extends PersistableTransform { val getType = "HTTPTransform" }  
+  case class HTTPTransform(name: String, description: Option[String], uri: URI, headers: Map[String, String], validStatusCodes: List[Int], inputView: String, outputView: String, inputField: String, params: Map[String, String], persist: Boolean, batchSize: Int, delimiter: String, numPartitions: Option[Int], partitionBy: List[String], failMode: FailModeType) extends PersistableTransform { val getType = "HTTPTransform" }  
   
   case class JSONTransform(name: String, description: Option[String], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends PersistableTransform { val getType = "JSONTransform" }
 

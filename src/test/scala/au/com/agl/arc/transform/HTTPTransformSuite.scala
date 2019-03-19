@@ -132,7 +132,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         batchSize=2,
         delimiter=delimiter,
         numPartitions=None,
-        partitionBy=Nil    
+        partitionBy=Nil,
+        failMode=FailModeTypeFailFast
       )
     ).get
 
@@ -179,7 +180,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         batchSize=2,
         delimiter=delimiter,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil,         
+        failMode=FailModeTypeFailFast
       )
     ).get
 
@@ -221,7 +223,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         batchSize=1,
         delimiter=delimiter,
         numPartitions=None,
-        partitionBy=Nil        
+        partitionBy=Nil,    
+        failMode=FailModeTypeFailFast
       )
     ).get
 
@@ -264,7 +267,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         batchSize=5,
         delimiter=delimiter,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil,         
+        failMode=FailModeTypeFailFast
       )
     ).get
 
@@ -300,7 +304,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         batchSize=1,
         delimiter=delimiter,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil,         
+        failMode=FailModeTypeFailFast
       )
     ).get
 
@@ -332,7 +337,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           batchSize=1,
           delimiter=delimiter,
           numPartitions=None,
-          partitionBy=Nil             
+          partitionBy=Nil,            
+          failMode=FailModeTypeFailFast
         )
       ).get.count
     }
@@ -364,7 +370,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           batchSize=1,
           delimiter=delimiter,
           numPartitions=None,
-          partitionBy=Nil             
+          partitionBy=Nil,            
+          failMode=FailModeTypeFailFast
         )
       ).get.count
     }
@@ -403,7 +410,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         batchSize=2,
         delimiter=delimiter,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil,          
+        failMode=FailModeTypeFailFast
       )
     ).get
 
@@ -447,7 +455,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           batchSize=1,
           delimiter=delimiter,
           numPartitions=None,
-          partitionBy=Nil             
+          partitionBy=Nil,           
+          failMode=FailModeTypeFailFast
         )
       ).get
     }
@@ -486,7 +495,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           batchSize=1,
           delimiter=delimiter,
           numPartitions=None,
-          partitionBy=Nil             
+          partitionBy=Nil,   
+          failMode=FailModeTypeFailFast
         )
       ).get
     }
@@ -527,7 +537,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           batchSize=1,
           delimiter=delimiter,
           numPartitions=None,
-          partitionBy=Nil             
+          partitionBy=Nil,  
+          failMode=FailModeTypeFailFast          
         )
       ).get
     }
@@ -570,7 +581,8 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         batchSize=1,
         delimiter=delimiter,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil,
+        failMode=FailModeTypeFailFast         
       )
     ).get
 
@@ -588,5 +600,44 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     } finally {
       writeStream.stop
     }
-  }      
+  }   
+
+  test("HTTPTransform: FailModeTypePermissive") {
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val dataset = TestDataUtils.getKnownDataset.toJSON.toDF
+    dataset.createOrReplaceTempView(inputView)
+
+    val df = transform.HTTPTransform.transform(
+      HTTPTransform(
+        name=outputView,
+        description=None,
+        uri=new URI(s"${uri}/${empty}/"),
+        headers=Map.empty,
+        validStatusCodes=201 :: Nil,
+        inputView=inputView,
+        outputView=outputView,
+        params=Map.empty,
+        persist=false,
+        inputField="value",
+        batchSize=1,
+        delimiter=delimiter,
+        numPartitions=None,
+        partitionBy=Nil,            
+        failMode=FailModeTypePermissive
+      )
+    ).get
+
+    assert(spark.sql(s"""
+      SELECT * 
+      FROM ${outputView} 
+      WHERE response.statusCode = 200
+      AND response.reasonPhrase = 'OK'
+      AND response.contentType = 'text/html'
+      AND response.responseTime < 100
+    """).count == 2L)
+  }     
+
 }
