@@ -62,8 +62,7 @@ object TextLoad {
               None
             }          
             case SaveMode.Overwrite => {
-              fs.delete(path, false)
-              Option(fs.create(path))
+              Option(fs.create(path, true))
             }
             case SaveMode.Append => {
               throw new Exception(s"File '${path}' already exists and 'saveMode' equals 'Append' which is not supported with 'singleFile' mode.")
