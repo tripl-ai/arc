@@ -237,7 +237,7 @@ The `ElasticsearchLoad` writes an input `DataFrame` to a target [Elasticsearch](
 
 
 ## HTTPLoad
-##### Since: 1.0.0 - Supports Streaming: False
+##### Since: 1.0.0 - Supports Streaming: True
 
 The `HTTPLoad` takes an input `DataFrame` and executes a series of `POST` requests against a remote HTTP service. The input to this stage needs to be a single column dataset of signature `value: string` and is intended to be used after a [JSONTransform](/load/#jsontransform) stage which would prepare the data for sending to the external server.
 

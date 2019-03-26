@@ -5,6 +5,7 @@
 - added `basePath` to relevant `*Extract` do aid with partition discovery.
 - added check to ensure no parameters are remaining after `sqlParams` string replacement (i.e. missing `sqlParams`).
 - added `failMode` to `HTTPTransform` with default `failfast` (unchanged behaviour).
+- added streaming mode support to `HTTPLoad`.
 - *CHORE* bumped some JAR versions up to latest.
 
 # 1.9.0
