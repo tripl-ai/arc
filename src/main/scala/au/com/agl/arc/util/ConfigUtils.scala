@@ -359,6 +359,14 @@ object ConfigUtils {
     }
   }
 
+  def parseEncoding(path: String)(encoding: String)(implicit c: Config): Either[Errors, EncodingType] = {
+    encoding.toLowerCase.trim match {
+      case "base64" => Right(EncodingTypeBase64)
+      case "hexadecimal" => Right(EncodingTypeHexadecimal)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }  
+
   def parseQuote(path: String)(quote: String)(implicit c: Config): Either[Errors, QuoteCharacter] = {
     quote.toLowerCase.trim match {
       case "doublequote" => Right(QuoteCharacter.DoubleQuote)

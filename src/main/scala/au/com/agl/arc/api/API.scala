@@ -130,6 +130,17 @@ object API {
     val sparkDataType: DataType = TimestampType
   }
 
+  case class BinaryColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], encoding: EncodingType, metadata: Option[String]) extends ExtractColumn {
+    val sparkDataType: DataType = BinaryType
+  }
+
+  sealed trait EncodingType {
+    def sparkString(): String
+  }
+  case object EncodingTypeBase64 extends EncodingType { val sparkString = "base64" }
+  case object EncodingTypeHexadecimal extends EncodingType { val sparkString = "hexadecimal" }
+
+
   /** true / false values are lists of strings that are considered equivalent
     * to true or false e.g. "Y", "yes", "N", "no".
     */

@@ -46,6 +46,33 @@ It is designed to:
 }
 ```
 
+## Binary
+
+### Additional Attributes
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|encoding|String|true|The binary-to-text encoding format of the value. Valid values `base64`, `hexadecimal`.|
+
+### Examples
+
+```json
+{
+  "id" : "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
+  "name" : "id",
+  "description" : "GUID identifier",
+  "type" : "binary",
+  "trim" : true,
+  "nullable" : true,
+  "nullableValues" : [ "", "null" ],
+  "encoding" : "base64",
+  "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  }  
+}
+```
+
 ## Boolean
 
 ### Additional Attributes

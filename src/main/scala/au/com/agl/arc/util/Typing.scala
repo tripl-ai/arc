@@ -12,6 +12,8 @@ import java.time.format.ResolverStyle
 import java.time.format.SignStyle
 import java.time.temporal.ChronoField
 
+import org.apache.commons.codec.binary.Base64
+
 import org.apache.spark.rdd._
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
@@ -141,15 +143,16 @@ object Typing {
         col.nullReplacementValue match {
             case Some(nullReplacementValue) => {
               col match {
-                case sc:StringColumn => StringTypeable.typeValue(sc, nullReplacementValue)
-                case ic:IntegerColumn => IntegerTypeable.typeValue(ic, nullReplacementValue)
-                case lc:LongColumn => LongTypeable.typeValue(lc, nullReplacementValue)
-                case dc:DoubleColumn => DoubleTypeable.typeValue(dc, nullReplacementValue)
-                case dc:DecimalColumn => DecimalTypeable.typeValue(dc, nullReplacementValue)
-                case tc:TimestampColumn => TimestampTypeable.typeValue(tc, nullReplacementValue)
-                case bc:BooleanColumn => BooleanTypeable.typeValue(bc, nullReplacementValue)
-                case dc:DateColumn => DateTypeable.typeValue(dc, nullReplacementValue)
-                case dc:TimeColumn => TimeTypeable.typeValue(dc, nullReplacementValue)
+                case c:BinaryColumn => BinaryTypeable.typeValue(c, nullReplacementValue)
+                case c:BooleanColumn => BooleanTypeable.typeValue(c, nullReplacementValue)
+                case c:DateColumn => DateTypeable.typeValue(c, nullReplacementValue)
+                case c:DecimalColumn => DecimalTypeable.typeValue(c, nullReplacementValue)
+                case c:DoubleColumn => DoubleTypeable.typeValue(c, nullReplacementValue)
+                case c:TimeColumn => TimeTypeable.typeValue(c, nullReplacementValue)
+                case c:IntegerColumn => IntegerTypeable.typeValue(c, nullReplacementValue)
+                case c:LongColumn => LongTypeable.typeValue(c, nullReplacementValue)
+                case c:StringColumn => StringTypeable.typeValue(c, nullReplacementValue)
+                case c:TimestampColumn => TimestampTypeable.typeValue(c, nullReplacementValue)
               }                
             }
             case None => {
@@ -163,15 +166,16 @@ object Typing {
     } else {
       // else take string value and try to convert to column type
       col match {
-        case sc:StringColumn => StringTypeable.typeValue(sc, valueToType)
-        case ic:IntegerColumn => IntegerTypeable.typeValue(ic, valueToType)
-        case lc:LongColumn => LongTypeable.typeValue(lc, valueToType)
-        case dc:DoubleColumn => DoubleTypeable.typeValue(dc, valueToType)
-        case dc:DecimalColumn => DecimalTypeable.typeValue(dc, valueToType)
-        case tc:TimestampColumn => TimestampTypeable.typeValue(tc, valueToType)
-        case bc:BooleanColumn => BooleanTypeable.typeValue(bc, valueToType)
-        case dc:DateColumn => DateTypeable.typeValue(dc, valueToType)
-        case tc:TimeColumn => TimeTypeable.typeValue(tc, valueToType)
+        case c:BinaryColumn => BinaryTypeable.typeValue(c, valueToType)
+        case c:BooleanColumn => BooleanTypeable.typeValue(c, valueToType)
+        case c:DateColumn => DateTypeable.typeValue(c, valueToType)
+        case c:DecimalColumn => DecimalTypeable.typeValue(c, valueToType)
+        case c:DoubleColumn => DoubleTypeable.typeValue(c, valueToType)
+        case c:IntegerColumn => IntegerTypeable.typeValue(c, valueToType)
+        case c:LongColumn => LongTypeable.typeValue(c, valueToType)
+        case c:StringColumn => StringTypeable.typeValue(c, valueToType)
+        case c:TimeColumn => TimeTypeable.typeValue(c, valueToType)
+        case c:TimestampColumn => TimestampTypeable.typeValue(c, valueToType)
       }  
     }
   }
@@ -401,6 +405,36 @@ object Typing {
       }
       
     }
+
+    object BinaryTypeable extends Typeable[BinaryColumn, Array[Byte]] {
+      def typeValue(col: BinaryColumn, value: String): (Option[Array[Byte]], Option[TypingError]) = {
+          binaryOrError(col, value)
+      }
+
+      def binaryOrError(col: BinaryColumn, value: String): TypingResult[Array[Byte]] = {
+        try {
+          col.encoding match {
+            case EncodingTypeBase64 => {
+              val valueByteArray = value.getBytes
+              if (Base64.isBase64(valueByteArray)) {
+                Option(Base64.decodeBase64(value)) -> None
+              } else {
+                throw new Exception()        
+              }
+            }
+            case EncodingTypeHexadecimal => {
+              // will throw exception if not valid hexadecimal
+              java.lang.Long.parseLong(value, 16)
+              Option(org.apache.spark.sql.catalyst.expressions.Hex.unhex(value.getBytes)) -> None
+            }
+          }
+        } catch {
+          case e: Exception =>
+            None -> Some(TypingError.forCol(col, s"Unable to convert '${value}' to binary using '${col.encoding.sparkString}' decoding."))
+        }
+      }
+
+    }    
 
     object BooleanTypeable extends Typeable[BooleanColumn, Boolean] {
       def typeValue(col: BooleanColumn, value: String): (Option[Boolean], Option[TypingError]) = {

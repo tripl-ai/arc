@@ -528,9 +528,51 @@
 }
 </code></pre>
 
-<h2 id="boolean">Boolean</h2>
+<h2 id="binary">Binary</h2>
 
 <h3 id="additional-attributes">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>encoding</td>
+<td>String</td>
+<td>true</td>
+<td>The binary-to-text encoding format of the value. Valid values <code>base64</code>, <code>hexadecimal</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-1">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;982cbf60-7ba7-4e50-a09b-d8624a5c49e6&quot;,
+  &quot;name&quot; : &quot;id&quot;,
+  &quot;description&quot; : &quot;GUID identifier&quot;,
+  &quot;type&quot; : &quot;binary&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;encoding&quot; : &quot;base64&quot;,
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }  
+}
+</code></pre>
+
+<h2 id="boolean">Boolean</h2>
+
+<h3 id="additional-attributes-1">Additional Attributes</h3>
 
 <table>
 <thead>
@@ -559,7 +601,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-1">Examples</h3>
+<h3 id="examples-2">Examples</h3>
 
 <pre><code class="language-json">{
   &quot;id&quot; : &quot;982cbf60-7ba7-4e50-a09b-d8624a5c49e6&quot;,
@@ -588,7 +630,7 @@
 </p>
 </div>
 
-<h3 id="additional-attributes-1">Additional Attributes</h3>
+<h3 id="additional-attributes-2">Additional Attributes</h3>
 
 <table>
 <thead>
@@ -610,7 +652,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-2">Examples</h3>
+<h3 id="examples-3">Examples</h3>
 
 <pre><code class="language-json">{
   &quot;id&quot; : &quot;0e8109ba-1000-4b7d-8a4c-b01bae07027f&quot;,
@@ -630,7 +672,7 @@
 
 <h2 id="decimal">Decimal</h2>
 
-<h3 id="additional-attributes-2">Additional Attributes</h3>
+<h3 id="additional-attributes-3">Additional Attributes</h3>
 
 <table>
 <thead>
@@ -666,7 +708,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-3">Examples</h3>
+<h3 id="examples-4">Examples</h3>
 
 <pre><code class="language-json">{
   &quot;id&quot; : &quot;9712c383-22d1-44a6-9ca2-0087af4857f1&quot;,
@@ -694,7 +736,7 @@
 <p>A Decimal should be used whenever precision is required or for numbers which must sum up correctly or balance, e.g. monetary transactions.</p>
 </div>
 
-<h3 id="additional-attributes-3">Additional Attributes</h3>
+<h3 id="additional-attributes-4">Additional Attributes</h3>
 
 <table>
 <thead>
@@ -716,7 +758,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-4">Examples</h3>
+<h3 id="examples-5">Examples</h3>
 
 <pre><code class="language-json">{
   &quot;id&quot; : &quot;31541ea3-5b74-4753-857c-770bd601c35b&quot;,
@@ -736,49 +778,6 @@
 <h2 id="integer">Integer</h2>
 
 <p>Use Integer when dealing with values up to ±2 billion (-2<sup>31</sup> to +2<sup>31</sup>-1)</p>
-
-<h3 id="additional-attributes-4">Additional Attributes</h3>
-
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>formatters</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0;-#,##0</code></td>
-</tr>
-</tbody>
-</table>
-
-<h3 id="examples-5">Examples</h3>
-
-<pre><code class="language-json">{
-  &quot;id&quot; : &quot;a66f3bbe-d1c6-44c7-b096-a4be59fdcd78&quot;,
-  &quot;name&quot; : &quot;update_count&quot;,
-  &quot;description&quot; : &quot;Number of updates to this customer record.&quot;,
-  &quot;type&quot; : &quot;integer&quot;,
-  &quot;trim&quot; : true,
-  &quot;nullable&quot; : true,
-  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
-  &quot;metadata&quot;: {
-    &quot;primaryKey&quot; : true,
-    &quot;position&quot;: 1
-  }
-}
-</code></pre>
-
-<h2 id="long">Long</h2>
-
-<p>Use a Long Integer when dealing with values greater than ±2 billion (-2<sup>63</sup> to +2<sup>63</sup>-1)</p>
 
 <h3 id="additional-attributes-5">Additional Attributes</h3>
 
@@ -805,6 +804,49 @@
 <h3 id="examples-6">Examples</h3>
 
 <pre><code class="language-json">{
+  &quot;id&quot; : &quot;a66f3bbe-d1c6-44c7-b096-a4be59fdcd78&quot;,
+  &quot;name&quot; : &quot;update_count&quot;,
+  &quot;description&quot; : &quot;Number of updates to this customer record.&quot;,
+  &quot;type&quot; : &quot;integer&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+<h2 id="long">Long</h2>
+
+<p>Use a Long Integer when dealing with values greater than ±2 billion (-2<sup>63</sup> to +2<sup>63</sup>-1)</p>
+
+<h3 id="additional-attributes-6">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>formatters</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0;-#,##0</code></td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-7">Examples</h3>
+
+<pre><code class="language-json">{
   &quot;id&quot; : &quot;1c0eec1d-17cd-45da-8744-7a9ef5b8b086&quot;,
   &quot;name&quot; : &quot;transaction_num&quot;,
   &quot;description&quot; : &quot;Global transaction sequence number.&quot;,
@@ -821,7 +863,7 @@
 
 <h2 id="string">String</h2>
 
-<h3 id="additional-attributes-6">Additional Attributes</h3>
+<h3 id="additional-attributes-7">Additional Attributes</h3>
 
 <table>
 <thead>
@@ -850,7 +892,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-7">Examples</h3>
+<h3 id="examples-8">Examples</h3>
 
 <pre><code class="language-json">{
   &quot;id&quot; : &quot;9712c383-22d1-44a6-9ca2-0087af4857f1&quot;,
@@ -875,7 +917,7 @@
 <p>Spark does not have an internal <code>TimeType</code> representation of time. This type can be used to ensure time values are able to be successfully parsed as <a href="https://docs.oracle.com/javase/8/docs/api/java/time/LocalTime.html">LocalTime</a> objects but they are always stored in Spark as <code>string</code> formatted in the standard <code>HH:mm:ss</code> format type meaning they can safely used in the <a href="https://spark.apache.org/docs/latest/api/sql/index.html#to_utc_timestamp">to_utc_timestamp</a> SQL function (but be very careful with timezone offsets). If they cannot be parsed then an error will be inserted into the <code>_errors</code> array like all other types.</p>
 </div>
 
-<h3 id="additional-attributes-7">Additional Attributes</h3>
+<h3 id="additional-attributes-8">Additional Attributes</h3>
 
 <table>
 <thead>
@@ -897,7 +939,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-8">Examples</h3>
+<h3 id="examples-9">Examples</h3>
 
 <pre><code class="language-json">{
   &quot;id&quot; : &quot;0f5162ce-64ca-409d-abd1-f0b5bb5830de&quot;,
@@ -917,7 +959,7 @@
 
 <h2 id="timestamp">Timestamp</h2>
 
-<h3 id="additional-attributes-8">Additional Attributes</h3>
+<h3 id="additional-attributes-9">Additional Attributes</h3>
 
 <table>
 <thead>
@@ -953,7 +995,7 @@
 </tbody>
 </table>
 
-<h3 id="examples-9">Examples</h3>
+<h3 id="examples-10">Examples</h3>
 
 <pre><code class="language-json">{
   &quot;id&quot; : &quot;8e42c8f0-22a8-40db-9798-6dd533c1de36&quot;,

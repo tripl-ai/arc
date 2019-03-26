@@ -6,6 +6,7 @@
 - added check to ensure no parameters are remaining after `sqlParams` string replacement (i.e. missing `sqlParams`).
 - added `failMode` to `HTTPTransform` with default `failfast` (unchanged behaviour).
 - added streaming mode support to `HTTPLoad`.
+- added `binary` `metadata` type to allow decoding `base64` and `hexadecimal` encodings.
 - *CHORE* bumped some JAR versions up to latest.
 
 # 1.9.0
