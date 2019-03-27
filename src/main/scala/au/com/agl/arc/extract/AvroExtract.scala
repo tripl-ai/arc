@@ -48,7 +48,10 @@ object AvroExtract {
 
     // if incoming dataset is empty create empty dataset with a known schema
     val df = try {
-      spark.read.format("avro").load(extract.input)
+      extract.basePath match {
+        case Some(basePath) => spark.read.format("avro").option("basePath", basePath).load(extract.input)
+        case None => spark.read.format("avro").load(extract.input)
+      }
     } catch {
         case e: FileNotFoundException => 
           spark.emptyDataFrame

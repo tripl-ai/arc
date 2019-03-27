@@ -44,7 +44,7 @@ object MetadataSchema {
       val id = ConfigReader.getValue[String]("id")
       val name = ConfigReader.getValue[String]("name")
       val description = ConfigReader.getOptionalValue[String]("description")
-      val _type = ConfigReader.getValue[String]("type", validValues = "boolean" :: "date" :: "decimal" :: "double" :: "integer" :: "long" :: "string" :: "time" :: "timestamp" :: Nil)
+      val _type = ConfigReader.getValue[String]("type", validValues = "boolean" :: "date" :: "decimal" :: "double" :: "integer" :: "long" :: "string" :: "time" :: "timestamp" :: "binary" :: Nil)
       val trim = ConfigReader.getValue[Boolean]("trim", default = Some(false))
       val nullable = ConfigReader.getValue[Boolean]("nullable")
       val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
@@ -76,6 +76,26 @@ object MetadataSchema {
           }
 
           t match {
+
+            case "binary" => {
+              // test keys
+              val expectedKeys = "encoding":: baseKeys
+              val invalidKeys = checkValidKeys(c)(expectedKeys)      
+
+              val encoding = getValue[String]("encoding", validValues = "base64" :: "hexadecimal" :: Nil) |> parseEncoding("encoding") _
+
+              (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, encoding) match {
+                case (Right(id), Right(name), Right(description), Right(_type), Right(nullable), Right(nullReplacementValue), Right(trim), Right(nullableValues), Right(metadata), Right(encoding)) => {
+                  Right(BinaryColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, encoding, metadata))
+                }
+                case _ => {
+                  val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, encoding, invalidKeys).collect{ case Left(errs) => errs }.flatten
+                  val metaName = stringOrDefault(name, "unnamed meta")
+                  val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
+                  Left(err :: Nil)
+                }
+              }  
+            }              
 
             case "boolean" => {
               // test keys

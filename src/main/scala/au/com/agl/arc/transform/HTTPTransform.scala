@@ -44,6 +44,7 @@ object HTTPTransform {
     stageDetail.put("validStatusCodes", transform.validStatusCodes.asJava)
     stageDetail.put("batchSize", Integer.valueOf(transform.batchSize))
     stageDetail.put("delimiter", transform.delimiter)
+    stageDetail.put("failMode", transform.failMode.sparkString)
 
     logger.info()
       .field("event", "enter")
@@ -71,9 +72,11 @@ object HTTPTransform {
       }  
     }
 
-    val typedSchema = StructType(
-      df.schema.fields.toList ::: List(new StructField("body", StringType, false))
-    )
+
+    val typedSchema = transform.failMode match {
+      case FailModeTypePermissive => StructType(df.schema.fields.toList ::: List(StructField("body", StringType, false), StructField("response", StructType(StructField("statusCode", IntegerType, false) :: StructField("reasonPhrase", StringType, false) :: StructField("contentType", StringType, false) :: StructField("responseTime", LongType, false):: Nil), false)))
+      case FailModeTypeFailFast => StructType(df.schema.fields.toList ::: List(StructField("body", StringType, false)))
+    }
 
     /** Create a dynamic RowEncoder from the provided schema. We use the phantom
       * TypeRow type to enable implicit resolution to find our encoder.
@@ -136,10 +139,12 @@ object HTTPTransform {
           
           try {
             // send the request
+            val requestStartTime = System.currentTimeMillis
             val response = httpClient.execute(post)
-            
+            val responseTime = System.currentTimeMillis - requestStartTime
+
             // verify status code is correct
-            if (!transform.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+            if (transform.failMode == FailModeTypeFailFast && !transform.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
               throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${transform.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
             }
 
@@ -158,7 +163,10 @@ object HTTPTransform {
 
             // cast to a TransformedRow to fit the Dataset map method requirements
             groupedRow.zipWithIndex.map { case (row, index) => {
-              Row.fromSeq(row.toSeq ++ Seq(body(index))).asInstanceOf[TransformedRow]
+              transform.failMode match {
+                case FailModeTypePermissive => Row.fromSeq(row.toSeq ++ Seq(body(index), Row(response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, response.getEntity.getContentType.toString.replace("Content-Type: ",""), responseTime))).asInstanceOf[TransformedRow]
+                case FailModeTypeFailFast => Row.fromSeq(row.toSeq ++ Seq(body(index))).asInstanceOf[TransformedRow]
+              }
             }}
 
           } finally {

@@ -24,7 +24,7 @@ RUN { \
 ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
 ENV PATH $PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin
 
-ENV JAVA_ALPINE_VERSION 8.191.12-r0
+ENV JAVA_ALPINE_VERSION 8.201.08-r0
 
 RUN set -x \
   && apk add --no-cache \
@@ -60,11 +60,11 @@ RUN set -ex && \
   rm -f spark.tar.gz
 
 # spark extensions
-RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/spark-xml_2.11/0.4.1/spark-xml_2.11-0.4.1.jar && \    
+RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/spark-xml_2.11/0.5.0/spark-xml_2.11-0.5.0.jar && \    
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/spark/spark-avro_2.11/2.4.0/spark-avro_2.11-2.4.0.jar && \
   # aws hadoop
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-aws/2.7.4/hadoop-aws-2.7.4.jar && \
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/amazonaws/aws-java-sdk/1.11.197/aws-java-sdk-1.11.197.jar && \
+  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-aws/2.7.7/hadoop-aws-2.7.7.jar && \
+  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/amazonaws/aws-java-sdk/1.11.519/aws-java-sdk-1.11.519.jar && \
   # azure hadoop
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-azure/2.7.4/hadoop-azure-2.7.4.jar && \
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-storage/3.1.0/azure-storage-3.1.0.jar && \   
@@ -82,7 +82,7 @@ RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/sp
   wget -P ${SPARK_JARS} https://repository.mulesoft.org/nexus/content/repositories/public/com/amazon/redshift/redshift-jdbc4/1.2.10.1009/redshift-jdbc4-1.2.10.1009.jar && \
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.2.1.jre8/mssql-jdbc-7.2.1.jre8.jar && \
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-sqldb-spark/1.0.2/azure-sqldb-spark-1.0.2.jar && \
-  wget -P ${SPARK_JARS} https://jdbc.postgresql.org/download/postgresql-42.2.2.jar && \  
+  wget -P ${SPARK_JARS} https://jdbc.postgresql.org/download/postgresql-42.2.5.jar && \  
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/datastax/spark/spark-cassandra-connector_2.11/2.0.5/spark-cassandra-connector_2.11-2.0.5.jar && \
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/mysql/mysql-connector-java/5.1.45/mysql-connector-java-5.1.45.jar && \ 
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/facebook/presto/presto-jdbc/0.209/presto-jdbc-0.209.jar && \
@@ -96,8 +96,8 @@ RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/sp
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/applicationinsights-logging-log4j1_2/1.0.9/applicationinsights-logging-log4j1_2-1.0.9.jar && \
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/github/ptv-logistics/log4jala/1.0.4/log4jala-1.0.4.jar && \       
   #geospark
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/datasyslab/geospark/1.1.3/geospark-1.1.3.jar && \       
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/datasyslab/geospark-sql_2.3/1.1.3/geospark-sql_2.3-1.1.3.jar && \
+  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/datasyslab/geospark/1.2.0/geospark-1.2.0.jar && \       
+  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/datasyslab/geospark-sql_2.3/1.2.0/geospark-sql_2.3-1.2.0.jar && \
   # google cloud
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop2-1.9.5/gcs-connector-hadoop2-1.9.5.jar && \ 
   # elasticsearch

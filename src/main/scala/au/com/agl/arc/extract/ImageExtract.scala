@@ -42,7 +42,10 @@ object ImageExtract {
       if (arcContext.isStreaming) {
         spark.readStream.format("image").option("dropInvalid", extract.dropInvalid).schema(ImageSchema.imageSchema).load(extract.input)   
       } else {      
-        spark.read.format("image").option("dropInvalid", extract.dropInvalid).load(extract.input)  
+        extract.basePath match {
+          case Some(basePath) => spark.read.format("image").option("dropInvalid", extract.dropInvalid).option("basePath", basePath).load(extract.input)
+          case None => spark.read.format("image").option("dropInvalid", extract.dropInvalid).load(extract.input)  
+        }
       }
     } catch {
       case e: AnalysisException if (e.getMessage.contains("Path does not exist")) => {

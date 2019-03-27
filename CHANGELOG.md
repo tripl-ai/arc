@@ -1,5 +1,14 @@
 ## Change Log
 
+# 1.10.0
+
+- added `basePath` to relevant `*Extract` do aid with partition discovery.
+- added check to ensure no parameters are remaining after `sqlParams` string replacement (i.e. missing `sqlParams`).
+- added `failMode` to `HTTPTransform` with default `failfast` (unchanged behaviour).
+- added streaming mode support to `HTTPLoad`.
+- added `binary` `metadata` type to allow decoding `base64` and `hexadecimal` encodings.
+- *CHORE* bumped some JAR versions up to latest.
+
 # 1.9.0
 
 - *FIX* fixed command line arguments which contain equals sign not being parsed correctly

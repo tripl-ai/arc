@@ -73,6 +73,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     ).get
@@ -111,6 +112,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     )
@@ -129,6 +131,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     )
@@ -168,6 +171,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
+          basePath=None,
           contiguousIndex=true
         )
       )
@@ -188,6 +192,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
+          basePath=None,
           contiguousIndex=true
         )
       )
@@ -207,6 +212,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     ).get

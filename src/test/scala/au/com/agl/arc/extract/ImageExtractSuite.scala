@@ -58,6 +58,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         dropInvalid=true
       )
     ).get
@@ -87,6 +88,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         dropInvalid=true
       )
     )
@@ -104,6 +106,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         dropInvalid=true
       )
     )
@@ -127,6 +130,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         dropInvalid=true
       )
     ).get
@@ -151,6 +155,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         dropInvalid=true        
       )
     ).get

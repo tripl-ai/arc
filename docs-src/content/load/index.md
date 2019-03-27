@@ -139,7 +139,7 @@ The `DatabricksSQLDWLoad` is currently in experimental state whilst the requirem
 This means this API is likely to change.
 {{</note>}}
 
-The `DatabricksSQLDWLoad` writes an input `DataFrame` to a target [Azure SQL Data Warehouse](https://azure.microsoft.com/en-au/services/sql-data-warehouse/) file using the proprietary driver within a Databricks Runtime Environment. 
+The `DatabricksSQLDWLoad` writes an input `DataFrame` to a target [Azure SQL Data Warehouse](https://azure.microsoft.com/en-au/services/sql-data-warehouse/) file using a [proprietary driver](https://docs.databricks.com/spark/latest/data-sources/azure/sql-data-warehouse.html) within a Databricks Runtime Environment.
 
 Known limitations:
 
@@ -160,6 +160,7 @@ Known limitations:
 |forwardSparkAzureStorageCredentials|Boolean|false|If true, the library automatically discovers the credentials that Spark is using to connect to the Blob Storage container and forwards those credentials to SQL DW over JDBC.<br><br>Default: `true`.|
 |tableOptions|String|false|Used to specify table options when creating the SQL DW table.|
 |maxStrLength|Integer|false|The default length of `String`/`NVARCHAR` columns when creating the table in SQLDW.<br><br>Default: `256`.|
+|params|Map[String, String]|false|Parameters for connecting to the [Azure SQL Data Warehouse](https://azure.microsoft.com/en-au/services/sql-data-warehouse/) so that password is not logged.|
 
 ### Examples
 
@@ -236,7 +237,7 @@ The `ElasticsearchLoad` writes an input `DataFrame` to a target [Elasticsearch](
 
 
 ## HTTPLoad
-##### Since: 1.0.0 - Supports Streaming: False
+##### Since: 1.0.0 - Supports Streaming: True
 
 The `HTTPLoad` takes an input `DataFrame` and executes a series of `POST` requests against a remote HTTP service. The input to this stage needs to be a single column dataset of signature `value: string` and is intended to be used after a [JSONTransform](/load/#jsontransform) stage which would prepare the data for sending to the external server.
 

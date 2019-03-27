@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.9.0</span></strong>
+          <span class="version">1.10.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -636,6 +636,13 @@
 </tr>
 
 <tr>
+<td>failMode</td>
+<td>String</td>
+<td>false</td>
+<td>Either <code>permissive</code> or <code>failfast</code>:<br><br><code>permissive</code> will process all rows in the dataset and collect HTTP response values (<code>statusCode</code>, <code>reasonPhrase</code>, <code>contentType</code>, <code>responseTime</code>) into a <code>response</code> column. Rules can then be applied in a <a href="validate/#sqlvalidate">SQLValidate</a> stage if required.<br><br><code>failfast</code> will fail the Arc job on the first reponse with a <code>statusCode</code> not in the <code>validStatusCodes</code> array.<br><br>Default: <code>failfast</code>.</td>
+</tr>
+
+<tr>
 <td>headers</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -674,7 +681,7 @@
 <td>validStatusCodes</td>
 <td>Array[Integer]</td>
 <td>false</td>
-<td>A list of valid status codes which will result in a successful stage if the list contains the HTTP server response code. If not provided the default values are <code>[200, 201, 202]</code>. Note: all request response codes must be contained in this list for the stage to be successful.</td>
+<td>A list of valid status codes which will result in a successful stage if the list contains the HTTP server response code. If not provided the default values are <code>[200, 201, 202]</code>. Note: all request response codes must be contained in this list for the stage to be successful if <code>failMode</code> is set to <code>failfast</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -723,7 +730,8 @@
   <span class="nt">&#34;validStatusCodes&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="mi">200</span><span class="p">,</span>
     <span class="mi">201</span>
-  <span class="p">]</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;failMode&#34;</span><span class="p">:</span> <span class="s2">&#34;failfast&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="jsontransform">JSONTransform</h2>

@@ -65,12 +65,13 @@ The `HTTPTransform` stage transforms the incoming dataset by `POST`ing the value
 |batchSize|Integer|false|The number of records to send in each HTTP request to reduce the cost of HTTP overhead.<br><br>Default: `1`.|
 |delimiter|String|false|When using a `batchSize` greater than one this option allows the specification of a delimiter so that the receiving HTTP service can split the request body into records and Arc can split the response body back into records.<br><br>Default: `\n` (newline).|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|failMode|String|false|Either `permissive` or `failfast`:<br><br>`permissive` will process all rows in the dataset and collect HTTP response values (`statusCode`, `reasonPhrase`, `contentType`, `responseTime`) into a `response` column. Rules can then be applied in a [SQLValidate](validate/#sqlvalidate) stage if required.<br><br>`failfast` will fail the Arc job on the first reponse with a `statusCode` not in the `validStatusCodes` array.<br><br>Default: `failfast`.|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
 |inputField|String|false|The field to pass to the endpoint. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}} Note: all request response codes must be contained in this list for the stage to be successful.|
+|validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}} Note: all request response codes must be contained in this list for the stage to be successful if `failMode` is set to `failfast`.|
 
 ### Examples
 

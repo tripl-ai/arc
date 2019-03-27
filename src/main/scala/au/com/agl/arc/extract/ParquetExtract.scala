@@ -52,8 +52,11 @@ object ParquetExtract {
           case Some(schema) => spark.readStream.option("mergeSchema", "true").schema(schema).parquet(extract.input)
           case None => throw new Exception("ParquetExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
         }       
-      } else {      
-        spark.read.option("mergeSchema", "true").parquet(extract.input)   
+      } else {    
+        extract.basePath match {
+          case Some(basePath) => spark.read.option("mergeSchema", "true").option("basePath", basePath).parquet(extract.input)
+          case None => spark.read.option("mergeSchema", "true").parquet(extract.input)   
+        }             
       }
     } catch {
       case e: AnalysisException if (e.getMessage == "Unable to infer schema for Parquet. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) => 

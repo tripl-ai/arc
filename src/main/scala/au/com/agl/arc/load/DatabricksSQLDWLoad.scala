@@ -43,7 +43,6 @@ object DatabricksSQLDWLoad {
     // for this stage these credentials are sent to the sql server see: forwardSparkAzureStorageCredentials
     CloudUtils.setHadoopConfiguration(load.authentication)
 
-
     val dropMap = new java.util.HashMap[String, Object]()
 
     // many jdbc targets cannot handle a column of ArrayType

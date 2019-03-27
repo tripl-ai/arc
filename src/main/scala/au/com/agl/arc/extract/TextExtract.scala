@@ -60,7 +60,10 @@ object TextExtract {
         // this will not throw an error for empty directory (but will for missing directory)
         try {
           if (extract.multiLine) {
-            spark.read.option("wholetext", "true").textFile(extract.input).toDF
+            extract.basePath match {
+              case Some(basePath) => spark.read.option("mergeSchema", "true").option("basePath", basePath).parquet(extract.input)
+              case None => spark.read.option("wholetext", "true").textFile(extract.input).toDF  
+            }  
           } else {
             spark.read.option("wholetext", "false").textFile(extract.input).toDF
           }

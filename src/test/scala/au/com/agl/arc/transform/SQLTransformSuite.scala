@@ -152,6 +152,31 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     assert(TestDataUtils.datasetEquality(expected, actual))
   }     
 
+  test("SQLTransform: sqlParams missing") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    // try with wildcard
+    val thrown0 = intercept[Exception with DetailException] {
+      val transformed = transform.SQLTransform.transform(
+        SQLTransform(
+          name="SQLTransform", 
+          description=None,
+          inputURI=new URI(targetFile),
+          sql=s"SELECT * FROM ${inputView} WHERE stringDatum = $${sql_string_param} AND booleanDatum = $${sql_boolean}",
+          outputView=outputView,
+          persist=false,
+          sqlParams=Map("sql_string_param" -> "test"),
+          params=Map.empty,
+          numPartitions=None,
+          partitionBy=Nil           
+        )
+      ).get
+    }
+    assert(thrown0.getMessage === "No replacement value found in sqlParams [sql_string_param] for placeholders: [${sql_boolean}].")
+  }     
+
   test("SQLTransform: partitionPushdown") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -169,6 +194,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     )    
@@ -235,6 +261,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
+        basePath=None,
         contiguousIndex=true
       )
     )

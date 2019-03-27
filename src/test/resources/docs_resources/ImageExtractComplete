@@ -14,5 +14,6 @@
   "partitionBy": [
     "image.width"
   ],
-  "persist": false
+  "persist": false,
+  "basePath": "hdfs://input_data/customer/"
 }

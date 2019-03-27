@@ -1,14 +1,14 @@
 package au.com.agl.arc.load
 
-import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.{StringEntity, ByteArrayEntity}
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
+import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.impl.client.LaxRedirectStrategy
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
@@ -25,9 +25,12 @@ case class Response(
     body: String
 )
 
+
+
+
 object HTTPLoad {
 
-  def load(load: HTTPLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def load(load: HTTPLoad)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     val startTime = System.currentTimeMillis() 
     val maskedHeaders = HTTPUtils.maskHeaders(load.headers)
@@ -57,63 +60,121 @@ object HTTPLoad {
     }    
 
     val responses = try {
-      df.mapPartitions(partition => {
-        val poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager()
-        poolingHttpClientConnectionManager.setMaxTotal(50)
-        val httpClient = HttpClients.custom()
+      if (arcContext.isStreaming) {
+
+        df.writeStream.foreach(
+          new ForeachWriter[Row] {
+            var poolingHttpClientConnectionManager: PoolingHttpClientConnectionManager = _
+            var httpClient: CloseableHttpClient = _
+            var uri: String = load.outputURI.toString
+
+            def open(partitionId: Long, epochId: Long): Boolean = {
+              // create connection pool
+              poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager()
+              httpClient = HttpClients.custom()
                 .setConnectionManager(poolingHttpClientConnectionManager)
                 .build()
-        val uri = load.outputURI.toString
-
-        // we are using a BufferedIterator so we can 'peek' at the first row to get column types without advancing the iterator
-        // meaning we don't have to keep finding fieldIndex and dataType for each row (inefficient as they will not change)
-        val bufferedPartition = partition.buffered
-        val fieldIndex = bufferedPartition.hasNext match {
-          case true => bufferedPartition.head.fieldIndex("value")
-          case false => 0
-        }
-        val dataType = bufferedPartition.hasNext match {
-          case true => bufferedPartition.head.schema(fieldIndex).dataType
-          case false => NullType
-        }        
-
-        bufferedPartition.map(row => {
-          val post = new HttpPost(uri)
-
-          // add headers
-          for ((k,v) <- load.headers) {
-            post.addHeader(k,v) 
-          }
-
-          // add payload
-          val entity = dataType match {
-            case _: StringType => new StringEntity(row.getString(fieldIndex))
-            case _: BinaryType => new ByteArrayEntity(row.get(fieldIndex).asInstanceOf[Array[scala.Byte]])
-          }
-          post.setEntity(entity)
-          
-          try {
-            // send the request
-            val response = httpClient.execute(post)
-            
-            // verify status code is correct
-            if (!load.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
-              throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${load.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
+              true
             }
 
-            // read and close response
-            val responseEntity = response.getEntity.getContent
-            val body = Source.fromInputStream(responseEntity).mkString
-            response.close 
+            def process(row: Row) = {
+              val post = new HttpPost(uri)
 
-            Response(response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, body)
-          } finally {
-            post.releaseConnection
+              // add headers
+              for ((k,v) <- load.headers) {
+                post.addHeader(k,v) 
+              }
+
+              post.setEntity(new StringEntity(row.getString(0)))       
+
+              val response = httpClient.execute(post)
+
+              // verify status code is correct
+              if (!load.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+                throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${load.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
+              }      
+
+              response.close
+              post.releaseConnection      
+            }
+
+            def close(errorOrNull: Throwable): Unit = {
+              // close the connection pool
+              httpClient.close
+              poolingHttpClientConnectionManager.close
+
+              errorOrNull match {
+                case null => 
+                case _ => throw new Exception(errorOrNull)
+              }
+            }
+
           }
+        ).start
+
+        None
+      } else {
+        val writtenDS = df.mapPartitions(partition => {
+          val poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager()
+          poolingHttpClientConnectionManager.setMaxTotal(50)
+          val httpClient = HttpClients.custom()
+                  .setConnectionManager(poolingHttpClientConnectionManager)
+                  .build()
+          val uri = load.outputURI.toString
+
+          // we are using a BufferedIterator so we can 'peek' at the first row to get column types without advancing the iterator
+          // meaning we don't have to keep finding fieldIndex and dataType for each row (inefficient as they will not change)
+          val bufferedPartition = partition.buffered
+          val fieldIndex = bufferedPartition.hasNext match {
+            case true => bufferedPartition.head.fieldIndex("value")
+            case false => 0
+          }
+          val dataType = bufferedPartition.hasNext match {
+            case true => bufferedPartition.head.schema(fieldIndex).dataType
+            case false => NullType
+          }        
+
+          bufferedPartition.map(row => {
+            val post = new HttpPost(uri)
+
+            // add headers
+            for ((k,v) <- load.headers) {
+              post.addHeader(k,v) 
+            }
+
+            // add payload
+            val entity = dataType match {
+              case _: StringType => new StringEntity(row.getString(fieldIndex))
+              case _: BinaryType => new ByteArrayEntity(row.get(fieldIndex).asInstanceOf[Array[scala.Byte]])
+            }
+            post.setEntity(entity)
+            
+            try {
+              // send the request
+              val response = httpClient.execute(post)
+              
+              // verify status code is correct
+              if (!load.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+                throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${load.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
+              }
+
+              // read and close response
+              val responseEntity = response.getEntity.getContent
+              val body = Source.fromInputStream(responseEntity).mkString
+              response.close 
+
+              Response(response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, body)
+            } finally {
+              post.releaseConnection
+              poolingHttpClientConnectionManager.close
+            }
+          })
         })
-      })
+        Option(writtenDS.toDF)
+      }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
+        println("here")
         override val detail = stageDetail          
       }
     }
@@ -124,6 +185,6 @@ object HTTPLoad {
       .map("stage", stageDetail)      
       .log()
 
-    Option(responses.toDF)
+    responses
   }
 }

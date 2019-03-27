@@ -41,6 +41,7 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 |inputURI|URI|true|URI/Glob of the input Avro files.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
@@ -135,6 +136,7 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 |inputURI|URI|true*|URI/Glob of the input delimited text files. If not present `inputView` is requred.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |delimiter|String|false|{{< readfile file="/content/partials/fields/delimiter.md" markdown="true" >}}|
 |customDelimiter|String|true*|{{< readfile file="/content/partials/fields/customDelimiter.md" markdown="true" >}}|
@@ -254,6 +256,7 @@ SELECT image.height FROM dataset
 |inputURI|URI|true|URI/Glob of the input images.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |dropInvalid|Boolean|false|Whether to drop any invalid image files.<br><br>Default: true.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
@@ -320,6 +323,7 @@ The `JSONExtract` stage reads either one or more JSON files or an input `Dataset
 |inputURI|URI|true*|URI/Glob of the input `json` files. If not present `inputView` is requred.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |inputField|String|false|If using `inputView` this option allows you to specify the name of the field which contains the delimited data.|
@@ -393,6 +397,7 @@ The `ORCExtract` stage reads one or more [Apache ORC](https://orc.apache.org/) f
 |inputURI|URI|true|URI/Glob of the input ORC files.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
@@ -424,6 +429,7 @@ The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.ap
 |inputURI|URI|true|URI/Glob of the input Parquet files.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
@@ -483,6 +489,7 @@ The `TextExtract` stage reads either one or more text files and returns a `DataF
 |inputURI|URI|true|URI/Glob of the input `text` files.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |multiLine|Boolean|false|Whether the to load the file as a single record or as individual records split by newline.<br><br>Default: false.|

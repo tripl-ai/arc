@@ -1,0 +1,1 @@
+The base path that partition discovery should start with.

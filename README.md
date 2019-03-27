@@ -154,16 +154,12 @@ To compile the main library (which will produce `target/scala-2.11/arc.jar`) in 
 sbt assembly
 ```
 
-To build a library to use with a [Databricks Runtime](https://databricks.com/product/databricks-runtime) environment remove the `provided` tag from `project/Dependencies.scala` on any of the libraries you require before running `sbt assembly` so they are included in the jar. You do not need to include any of the Spark core libraries.
+To build a library to use with a [Databricks Runtime](https://databricks.com/product/databricks-runtime) environment it is easiest to `assembly` Arc with all the dependencies into a single JAR to simplify the deployment.
 
 Example:
-```scala
-val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.2" % "it,test,provided"
-```
 
-becomes:
-```scala
-val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.2" % "it,test"
+```bash
+sbt -DassemblyTarget=databricks assembly
 ```
 
 If you are having problems compiling it is likely due to environment setup. You can use these additional commands to build a predictable build environment with Docker which could also be used in a CICD pipeline:
