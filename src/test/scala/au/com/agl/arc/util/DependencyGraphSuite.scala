@@ -104,7 +104,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
@@ -149,7 +149,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
 
     pipeline match {
       case Left(_) => assert(false)
@@ -184,7 +184,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
@@ -229,7 +229,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
 
     pipeline match {
       case Left(_) => assert(false)
@@ -305,7 +305,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
 
     pipeline match {
       case Left(_) => assert(false)
@@ -352,7 +352,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
 
     pipeline match {
       case Left(_) => assert(false)

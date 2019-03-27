@@ -186,7 +186,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
       val environmentVariables = ConfigFactory.parseMap(Map("JOB_RUN_DATE" -> "0", "ETL_CONF_BASE_URL" -> "").asJava)
       val initialGraph =  Graph(Vertex(0,"customer_20180501") :: Vertex(0,"customer_20180502") :: Nil, Nil,false)
-      val pipelineEither = ConfigUtils.readPipeline(config.resolveWith(environmentVariables).resolve(), new URI(""), argsMap, initialGraph, arcContext)
+      val pipelineEither = ConfigUtils.readPipeline(config.resolveWith(environmentVariables).resolve(), "", new URI(""), argsMap, initialGraph, arcContext)
 
       pipelineEither match {
         case Left(errors) => {
@@ -221,7 +221,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
@@ -260,7 +260,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
@@ -311,7 +311,7 @@ hdfs://test/{ab,c{de, fg}
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
@@ -352,7 +352,7 @@ hdfs://test/{ab,c{de, fg}
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
@@ -387,7 +387,7 @@ hdfs://test/{ab,c{de, fg}
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
 
     pipeline match {
       case Left(stageError) => {
@@ -423,7 +423,7 @@ hdfs://test/{ab,c{de, fg}
     val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
     val config = etlConf.withFallback(base)
     var argsMap = collection.mutable.Map[String, String]()
-    val pipelineEither = ConfigUtils.readPipeline(config.resolve(), new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val pipelineEither = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
 
     val expected = ETLPipeline(      
       DelimitedExtract(

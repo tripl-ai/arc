@@ -11,6 +11,8 @@ import scala.collection.JavaConverters._
 import scala.util.Properties._
 import com.typesafe.config._
 
+import org.apache.commons.codec.digest.DigestUtils
+
 import org.apache.hadoop.fs.GlobPattern
 
 import org.apache.spark.SparkFiles
@@ -158,6 +160,9 @@ object ConfigUtils {
     val etlConfString = getConfigString(uri, argsMap, arcContext)
 
     etlConfString.rightFlatMap { str =>
+      // calculate hash of raw string so that logs can be used to detect changes
+      val etlConfStringHash = DigestUtils.md5Hex(str.getBytes)
+
       val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
       // convert to json string so that parameters can be correctly parsed
@@ -184,7 +189,7 @@ object ConfigUtils {
           config.resolveWith(argsMapConf.withFallback(pluginConf)).resolve()
       }
 
-      readPipeline(c, uri, argsMap, graph, arcContext)
+      readPipeline(c, etlConfStringHash, uri, argsMap, graph, arcContext)
     }
   }
 
@@ -2591,7 +2596,7 @@ object ConfigUtils {
     }
   }
 
-  def readPipeline(c: Config, uri: URI, argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
+  def readPipeline(c: Config, configMD5: String, uri: URI, argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
     import ConfigReader._
 
     val startTime = System.currentTimeMillis() 
@@ -2600,6 +2605,7 @@ object ConfigUtils {
     logger.info()
       .field("event", "validateConfig")
       .field("uri", uri.toString)        
+      .field("content-md5", configMD5)
       .log()    
 
     val (stages, errors, dependencyGraph) = configStages.asScala.zipWithIndex.foldLeft[(List[PipelineStage], List[StageError], Graph)]( (Nil, Nil, graph) ) { case ( (stages, errs, graph), (stage, idx) ) =>
