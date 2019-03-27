@@ -503,7 +503,6 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     """
     
     val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
-    println(cols)
     cols match {
       case Left(_) => assert(false)
       case Right(stage) => assert(stage == List(BinaryColumn("982cbf60-7ba7-4e50-a09b-d8624a5c49e6","binaryDatum",Some("binaryDatum"),false,None,false,List("", "null"),EncodingTypeBase64,Some("{}"))))
