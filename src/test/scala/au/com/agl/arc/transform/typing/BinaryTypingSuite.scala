@@ -80,26 +80,4 @@ class BinaryTypingSuite extends FunSuite with BeforeAndAfter {
       }
     }
   }  
-
-  // test("BinaryTyping: complex characters") {
-  //   val col = BinaryColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=true, nullableValues=""::Nil, trueValues=List("true","TRUE"), falseValues=List("false","FALSE"), metadata=None)
-  //   Typing.typeValue("ኃይሌ ገብረሥላሴ", col) match {
-  //     case (res, Some(err)) => {
-  //       assert(res === None)
-  //       assert(err === TypingError("name", s"""Unable to convert 'ኃይሌ ገብረሥላሴ' to boolean using provided true values: ['true', 'TRUE'] or false values: ['false', 'FALSE']"""))
-  //     }
-  //     case (_,_) => assert(false)
-  //   }
-  // }  
-
-  // test("BinaryTyping: allowed complex characters") {
-  //   val col = BinaryColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=true, nullableValues=""::Nil, trueValues=List("true","TRUE","ኃይሌ"), falseValues=List("false","FALSE"), metadata=None)
-  //   Typing.typeValue("ኃይሌ", col) match {
-  //     case (Some(res), err) => {
-  //       assert(res === true)
-  //       assert(err === None)
-  //     }
-  //     case (_,_) => assert(false)
-  //   }
-  // }    
 }

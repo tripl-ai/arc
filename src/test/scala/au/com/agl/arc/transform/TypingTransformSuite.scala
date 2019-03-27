@@ -476,4 +476,37 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     assert(values(1).isNullAt(0) == true)
     assert(values(2).isNullAt(0) == true)
   }    
+
+  test("BinaryTyping: config") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val meta = """
+    [
+      {
+        "id": "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
+        "name": "binaryDatum",
+        "description": "binaryDatum",
+        "type": "binary",
+        "trim": false,
+        "nullable": false,
+        "nullableValues": [
+            "",
+            "null"
+        ],
+        "encoding": "base64",
+        "metadata": {
+        }
+      }
+    ]
+    """
+    
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    println(cols)
+    cols match {
+      case Left(_) => assert(false)
+      case Right(stage) => assert(stage == List(BinaryColumn("982cbf60-7ba7-4e50-a09b-d8624a5c49e6","binaryDatum",Some("binaryDatum"),false,None,false,List("", "null"),EncodingTypeBase64,Some("{}"))))
+    }  
+  }    
 }

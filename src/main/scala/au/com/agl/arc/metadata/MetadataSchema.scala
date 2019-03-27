@@ -44,7 +44,7 @@ object MetadataSchema {
       val id = ConfigReader.getValue[String]("id")
       val name = ConfigReader.getValue[String]("name")
       val description = ConfigReader.getOptionalValue[String]("description")
-      val _type = ConfigReader.getValue[String]("type", validValues = "boolean" :: "date" :: "decimal" :: "double" :: "integer" :: "long" :: "string" :: "time" :: "timestamp" :: Nil)
+      val _type = ConfigReader.getValue[String]("type", validValues = "boolean" :: "date" :: "decimal" :: "double" :: "integer" :: "long" :: "string" :: "time" :: "timestamp" :: "binary" :: Nil)
       val trim = ConfigReader.getValue[Boolean]("trim", default = Some(false))
       val nullable = ConfigReader.getValue[Boolean]("nullable")
       val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
