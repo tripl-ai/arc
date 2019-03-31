@@ -79,7 +79,8 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         batchSize=1,
         delimiter="",
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil,        
+        failMode=FailModeTypeFailFast          
       )
     ).get    
 
