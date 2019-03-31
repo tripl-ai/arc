@@ -390,6 +390,7 @@ import subprocess
 subprocess.call(['conda', 'install', '-y', '-c', 'conda-forge', 'pyarrow'])
 
 # imports
+import decimal
 import datetime
 import pytz
 import pyarrow as pa
@@ -399,7 +400,7 @@ import pyarrow.parquet as pq
 # be careful with null type here as it will be silently converted to a null IntegerType and will not match Spark's NullType
 booleanDatum = pa.array([True, False], type=pa.bool_())
 dateDatum = pa.array([datetime.date(2016, 12, 18), datetime.date(2016, 12, 19)])
-decimalDatum = pa.array([54.321, 12.345], type=pa.decimal128(38, 18))
+decimalDatum = pa.array([decimal.Decimal('54.321'), decimal.Decimal('12.345')], type=pa.decimal128(38, 18))
 doubleDatum = pa.array([42.4242, 21.2121], type=pa.float64())
 integerDatum = pa.array([17, 34], type=pa.int32())
 longDatum = pa.array([1520828868, 1520828123], type=pa.int64())
@@ -414,7 +415,7 @@ table = pa.Table.from_arrays([booleanDatum, dateDatum, decimalDatum, doubleDatum
   ['booleanDatum', 'dateDatum', 'decimalDatum', 'doubleDatum', 'integerDatum', 'longDatum', 'stringDatum', 'timestampDatum', 'timeDatum', 'nullDatum'])
 
 # write table to disk
-pq.write_table(table, '/tmp/data/example.parquet')
+pq.write_table(table, '/tmp/data/example.parquet', flavor='spark')
 ```
 
 The suggestion then is to use the `environments` key to only execute the `EqualityValidate` stage whilst in testing mode:
