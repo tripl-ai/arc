@@ -1,5 +1,10 @@
 ## Change Log
 
+# 1.11.0
+
+- added `keyType` and `valueType` (available values `string`, `binary`) to `KafkaExtract` to support extraction of `binary`.
+- added support for writing `binary` key/value to Kafka using `KafkaLoad`.
+
 # 1.10.0
 
 - added `basePath` to relevant `*Extract` do aid with partition discovery.

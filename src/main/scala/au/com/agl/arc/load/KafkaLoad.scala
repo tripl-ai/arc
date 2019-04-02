@@ -1,6 +1,5 @@
 package au.com.agl.arc.load
 
-import java.lang._
 import java.net.URI
 import java.util.Properties
 import scala.collection.JavaConverters._
@@ -35,16 +34,16 @@ object KafkaLoad {
     stageDetail.put("inputView", load.inputView)  
     stageDetail.put("topic", load.topic)  
     stageDetail.put("bootstrapServers", load.bootstrapServers)
-    stageDetail.put("acks", Integer.valueOf(load.acks))
-    stageDetail.put("retries", Integer.valueOf(load.retries))
-    stageDetail.put("batchSize", Integer.valueOf(load.batchSize))
+    stageDetail.put("acks", java.lang.Integer.valueOf(load.acks))
+    stageDetail.put("retries", java.lang.Integer.valueOf(load.retries))
+    stageDetail.put("batchSize", java.lang.Integer.valueOf(load.batchSize))
 
     logger.info()
       .field("event", "enter")
       .map("stage", stageDetail)      
       .log()
 
-    val signature = "KafkaLoad requires inputView to be dataset with [key: string, value: string] or [value: string] signature."
+    val signature = "KafkaLoad requires inputView to be dataset with [key: string, value: string], [value: string], [key: binary, value: binary] or [value: binary] signature."
 
     val df = spark.table(load.inputView)     
 
@@ -55,6 +54,8 @@ object KafkaLoad {
       simpleSchema match {
         case Array(SimpleType("key", StringType), SimpleType("value", StringType)) => 
         case Array(SimpleType("value", StringType)) => 
+        case Array(SimpleType("key", BinaryType), SimpleType("value", BinaryType)) => 
+        case Array(SimpleType("value", BinaryType)) =>         
         case _ => { 
           throw new Exception(s"${signature} inputView '${load.inputView}' has ${df.schema.length} columns of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
             override val detail = stageDetail          
@@ -74,11 +75,11 @@ object KafkaLoad {
 
       val repartitionedDF = load.numPartitions match {
         case Some(partitions) => {
-          stageDetail.put("numPartitions", Integer.valueOf(partitions))
+          stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
           df.repartition(partitions)
         }
         case None => {
-          stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+          stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
           df
         }
       }      
@@ -86,7 +87,7 @@ object KafkaLoad {
       // initialise statistics accumulators
       val recordAccumulator = spark.sparkContext.longAccumulator
       val bytesAccumulator = spark.sparkContext.longAccumulator
-      val outputMetricsMap = new java.util.HashMap[String, Long]()
+      val outputMetricsMap = new java.util.HashMap[java.lang.String, java.lang.Long]()
 
       try {
         repartitionedDF.schema.map(_.dataType) match {
@@ -103,20 +104,53 @@ object KafkaLoad {
               props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(load.batchSize))    
 
               // create producer
-              val kafkaProducer = new KafkaProducer[String, String](props)
+              val kafkaProducer = new KafkaProducer[java.lang.String, java.lang.String](props)
               try {
                 // send each message via producer
                 partition.foreach(row => {
                   // create payload and send sync
-                  val producerRecord = new ProducerRecord[String,String](load.topic, row.getString(0))
+                  val value = row.getString(0)
+
+                  val producerRecord = new ProducerRecord[java.lang.String, java.lang.String](load.topic, value)
                   kafkaProducer.send(producerRecord)
                   recordAccumulator.add(1)
+                  bytesAccumulator.add(value.getBytes.length)
                 }) 
               } finally {
                 kafkaProducer.close
               }          
             })
           }
+          case List(BinaryType) => {
+            repartitionedDF.foreachPartition(partition => {
+              // KafkaProducer properties 
+              // https://kafka.apache.org/documentation/#producerconfigs
+              val props = new Properties
+              props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, load.bootstrapServers)
+              props.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))
+              props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
+              props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
+              props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(load.retries))    
+              props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(load.batchSize))    
+
+              // create producer
+              val kafkaProducer = new KafkaProducer[Array[Byte], Array[Byte]](props)
+              try {
+                // send each message via producer
+                partition.foreach(row => {
+                  // create payload and send sync
+                  val value = row.get(0).asInstanceOf[Array[Byte]]
+
+                  val producerRecord = new ProducerRecord[Array[Byte],Array[Byte]](load.topic, value)
+                  kafkaProducer.send(producerRecord)
+                  recordAccumulator.add(1)
+                  bytesAccumulator.add(value.length)
+                }) 
+              } finally {
+                kafkaProducer.close
+              }          
+            })
+          }          
           case List(StringType, StringType) => {
             repartitionedDF.foreachPartition(partition => {
               // KafkaProducer properties 
@@ -148,19 +182,50 @@ object KafkaLoad {
               }          
             })
           }
+          case List(BinaryType, BinaryType) => {
+            repartitionedDF.foreachPartition(partition => {
+              // KafkaProducer properties 
+              // https://kafka.apache.org/documentation/#producerconfigs
+              val props = new Properties
+              props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, load.bootstrapServers)
+              props.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))
+              props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
+              props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
+              props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(load.retries))    
+              props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(load.batchSize))     
+
+              // create producer
+              val kafkaProducer = new KafkaProducer[Array[Byte], Array[Byte]](props)
+              try {
+                // send each message via producer
+                partition.foreach(row => {
+                  // create payload and send sync
+                  val key = row.get(0).asInstanceOf[Array[Byte]]
+                  val value = row.get(1).asInstanceOf[Array[Byte]]
+
+                  val producerRecord = new ProducerRecord[Array[Byte], Array[Byte]](load.topic, key, value)
+                  kafkaProducer.send(producerRecord)
+                  recordAccumulator.add(1)
+                  bytesAccumulator.add(key.length + value.length)
+                }) 
+              } finally {
+                kafkaProducer.close
+              }          
+            })
+          }          
         }
       } catch {
         case e: Exception => throw new Exception(e) with DetailException {
-          outputMetricsMap.put("recordsWritten", Long.valueOf(recordAccumulator.value))         
-          outputMetricsMap.put("bytesWritten", Long.valueOf(bytesAccumulator.value))
+          outputMetricsMap.put("recordsWritten", java.lang.Long.valueOf(recordAccumulator.value))         
+          outputMetricsMap.put("bytesWritten", java.lang.Long.valueOf(bytesAccumulator.value))
           stageDetail.put("outputMetrics", outputMetricsMap)
 
           override val detail = stageDetail          
         }
       }
 
-      outputMetricsMap.put("recordsWritten", Long.valueOf(recordAccumulator.value))         
-      outputMetricsMap.put("bytesWritten", Long.valueOf(bytesAccumulator.value))
+      outputMetricsMap.put("recordsWritten", java.lang.Long.valueOf(recordAccumulator.value))         
+      outputMetricsMap.put("bytesWritten", java.lang.Long.valueOf(bytesAccumulator.value))
       stageDetail.put("outputMetrics", outputMetricsMap)
 
       repartitionedDF

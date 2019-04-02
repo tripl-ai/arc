@@ -1,6 +1,5 @@
 package au.com.agl.arc.extract
 
-import java.lang._
 import java.net.URI
 import java.util.{Collections, Properties}
 
@@ -21,16 +20,11 @@ import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util._
 
-case class KafkaRecord (
-  topic: String,
-  partition: Int,
-  offset: Long,
-  timestamp: Long,
-  key: String,
-  value: String
-)
-
 object KafkaExtract {
+
+  /** Phantom Type to enable compiler to find the encoder we want
+    */
+  type KafkaRow = Row  
 
   def extract(extract: KafkaExtract)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
@@ -45,10 +39,10 @@ object KafkaExtract {
     stageDetail.put("bootstrapServers", extract.bootstrapServers)
     stageDetail.put("groupID", extract.groupID)
     stageDetail.put("topic", extract.topic)
-    stageDetail.put("maxPollRecords", Integer.valueOf(extract.maxPollRecords))
-    stageDetail.put("timeout", Long.valueOf(extract.timeout))
-    stageDetail.put("autoCommit", Boolean.valueOf(extract.autoCommit))
-    stageDetail.put("persist", Boolean.valueOf(extract.persist))
+    stageDetail.put("maxPollRecords", java.lang.Integer.valueOf(extract.maxPollRecords))
+    stageDetail.put("timeout", java.lang.Long.valueOf(extract.timeout))
+    stageDetail.put("autoCommit", java.lang.Boolean.valueOf(extract.autoCommit))
+    stageDetail.put("persist", java.lang.Boolean.valueOf(extract.persist))
 
     logger.info()
       .field("event", "enter")
@@ -63,6 +57,26 @@ object KafkaExtract {
         .option("subscribe", extract.topic)
         .load()
     } else {
+      // dynamically create schema
+      val baseSchema = List(
+        StructField("topic", StringType, false),
+        StructField("partition", IntegerType, false),
+        StructField("offset", LongType, false),
+        StructField("timestamp", LongType, false)
+      )
+
+      val extractSchema = (extract.keyType, extract.valueType) match {
+        case (StringType, StringType) => StructType(baseSchema ::: List(StructField("key", StringType, true), StructField("value", StringType, false)))
+        case (BinaryType, StringType) => StructType(baseSchema ::: List(StructField("key", BinaryType, true), StructField("value", StringType, false)))
+        case (StringType, BinaryType) => StructType(baseSchema ::: List(StructField("key", StringType, true), StructField("value", BinaryType, false)))
+        case (BinaryType, BinaryType) => StructType(baseSchema ::: List(StructField("key", BinaryType, true), StructField("value", BinaryType, false)))
+      }
+
+      /** Create a dynamic RowEncoder from the provided schema. We use the phantom
+        * TypeRow type to enable implicit resolution to find our encoder.
+        */
+      implicit val typedEncoder: Encoder[KafkaRow] = org.apache.spark.sql.catalyst.encoders.RowEncoder(extractSchema)
+          
       // KafkaConsumer properties
       // https://kafka.apache.org/documentation/#consumerconfigs
       val props = new Properties
@@ -79,7 +93,7 @@ object KafkaExtract {
 
       // first get the number of partitions via the driver process so it can be used for mapPartition
       val numPartitions = try {
-        val kafkaDriverConsumer = new KafkaConsumer[String, String](props)
+        val kafkaDriverConsumer = new KafkaConsumer[Array[Byte], Array[Byte]](props)
         try {
           kafkaDriverConsumer.partitionsFor(extract.topic).size
         } finally {
@@ -92,14 +106,32 @@ object KafkaExtract {
       }
 
       try {
-        spark.sqlContext.emptyDataFrame.repartition(numPartitions).mapPartitions(partition => {
+        spark.sqlContext.emptyDataFrame.repartition(numPartitions).mapPartitions[KafkaRow] { partition: Iterator[Row] => 
           // get the partition of this executor which maps 1:1 with Kafka partition
           val partitionId = TaskContext.getPartitionId
 
           val props = new Properties
           props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, extract.bootstrapServers)
-          props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-          props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
+
+          (extract.keyType, extract.valueType) match {
+            case (StringType, StringType) => {
+              props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
+              props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
+            }
+            case (BinaryType, StringType) => {
+              props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer")
+              props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
+            }
+            case (StringType, BinaryType) => {
+              props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
+              props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer")
+            }
+            case (BinaryType, BinaryType) => {
+              props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer")
+              props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer")
+            }
+          }
+
           props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
           props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
           props.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, extract.timeout.toString)
@@ -110,17 +142,22 @@ object KafkaExtract {
           props.put(ConsumerConfig.GROUP_ID_CONFIG, s"${extract.groupID}-${partitionId}")
 
           // try to assign records based on partitionId and extract 
-          val kafkaConsumer = new KafkaConsumer[String, String](props)
+          val kafkaConsumer = (extract.keyType, extract.valueType) match {
+            case (StringType, StringType) => new KafkaConsumer[String, String](props)
+            case (BinaryType, StringType) => new KafkaConsumer[Array[Byte], String](props)
+            case (StringType, BinaryType) => new KafkaConsumer[String, Array[Byte]](props)
+            case (BinaryType, BinaryType) => new KafkaConsumer[Array[Byte], Array[Byte]](props)
+          }
           val topicPartition = new TopicPartition(extract.topic, partitionId)
 
-          def getKafkaRecord(): List[KafkaRecord] = {
+          def getKafkaRecord(): List[KafkaRow] = {
             kafkaConsumer.poll(extract.timeout).records(extract.topic).asScala.map(consumerRecord => {
-              KafkaRecord(consumerRecord.topic, consumerRecord.partition, consumerRecord.offset, consumerRecord.timestamp, consumerRecord.key, consumerRecord.value)
+              Row.fromSeq(Seq(consumerRecord.topic, consumerRecord.partition, consumerRecord.offset, consumerRecord.timestamp, consumerRecord.key, consumerRecord.value)).asInstanceOf[KafkaRow]
             }).toList
           }
 
           @tailrec
-          def getAllKafkaRecords(kafkaRecords: List[KafkaRecord], kafkaRecordsAccumulator: List[KafkaRecord]): List[KafkaRecord] = {
+          def getAllKafkaRecords(kafkaRecords: List[KafkaRow], kafkaRecordsAccumulator: List[KafkaRow]): List[KafkaRow] = {
               kafkaRecords match {
                   case Nil => kafkaRecordsAccumulator
                   case _ => getAllKafkaRecords(getKafkaRecord, kafkaRecordsAccumulator ::: kafkaRecords)
@@ -142,7 +179,7 @@ object KafkaExtract {
           } finally {
             kafkaConsumer.close
           }
-        }).toDF
+        }.toDF
       } catch {
         case e: Exception => throw new Exception(e) with DetailException {
           override val detail = stageDetail          
@@ -170,14 +207,14 @@ object KafkaExtract {
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 
     if (!repartitionedDF.isStreaming) {
-      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
+      stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
     }
 
     // force persistence if autoCommit=false to prevent double KafkaExtract execution and different offsets
     if ((extract.persist || !extract.autoCommit) && !repartitionedDF.isStreaming) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+      stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
     }    
 
     logger.info()

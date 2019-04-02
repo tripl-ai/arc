@@ -20,6 +20,7 @@ import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.unsafe.types.UTF8String
 import org.apache.spark.sql._
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 
 import au.com.agl.arc.api._
@@ -344,6 +345,14 @@ object ConfigUtils {
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
   }  
+
+  def parseDataType(path: String)(datatype: String)(implicit c: Config): Either[Errors, DataType] = {
+    datatype.toLowerCase.trim match {
+      case "string" => Right(StringType)
+      case "binary" => Right(BinaryType)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }     
 
   def parseResponseType(path: String)(delim: String)(implicit c: Config): Either[Errors, ResponseType] = {
     delim.toLowerCase.trim match {
@@ -848,13 +857,17 @@ object ConfigUtils {
   def readAvroExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "inputField" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     val description = getOptionalValue[String]("description")
 
-    val inputURI = getValue[String]("inputURI")
-    val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
+    val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
+    val parsedGlob = if (!c.hasPath("inputView")) {
+      input.rightFlatMap(glob => parseGlob("inputURI", glob))
+    } else {
+      Right("")
+    }    
 
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
@@ -874,16 +887,18 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val basePath = getOptionalValue[String]("basePath")
+    val inputField = getOptionalValue[String]("inputField")
 
-    (name, description, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, invalidKeys, basePath) match {
-      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(pb), Right(auth), Right(ci), Right(_), Right(bp)) =>
+    (name, description, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, invalidKeys, basePath, inputField) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(pb), Right(auth), Right(ci), Right(_), Right(bp), Right(ipf)) =>
+        val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
         var outputGraph = graph.addVertex(Vertex(idx, ov))
 
-        (Right(AvroExtract(n, d, schema, ov, pg, auth, params, p, np, pb, ci, bp)), outputGraph)
+        (Right(AvroExtract(n, d, schema, ov, input, auth, params, p, np, pb, ci, bp, None, ipf)), outputGraph)
       case _ =>
-        val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys, basePath).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, input, schemaView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys, basePath, inputField).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
@@ -1246,7 +1261,7 @@ object ConfigUtils {
   def readKafkaExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "outputView" :: "bootstrapServers" :: "topic" :: "groupID" :: "autoCommit" :: "maxPollRecords" :: "numPartitions" :: "partitionBy" :: "persist" :: "timeout" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "outputView" :: "bootstrapServers" :: "topic" :: "groupID" :: "autoCommit" :: "maxPollRecords" :: "numPartitions" :: "partitionBy" :: "persist" :: "timeout" :: "params" :: "keyType" :: "valueType" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
 
     val description = getOptionalValue[String]("description")
@@ -1264,12 +1279,16 @@ object ConfigUtils {
     val timeout = getValue[Long]("timeout", default = Some(10000L))
     val autoCommit = getValue[Boolean]("autoCommit", default = Some(false))
 
-    (name, description, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit, partitionBy, invalidKeys) match {
-      case (Right(n), Right(d), Right(ov), Right(t), Right(bs), Right(g), Right(p), Right(np), Right(mpr), Right(time), Right(ac), Right(pb), Right(_)) => 
+
+    val keyType = getValue[String]("keyType", default = Some("string"), validValues = "string" :: "binary" :: Nil) |> parseDataType("keyType") _
+    val valueType = getValue[String]("valueType", default = Some("string"), validValues = "string" :: "binary" :: Nil) |> parseDataType("valueType") _
+
+    (name, description, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit, partitionBy, invalidKeys, keyType, valueType) match {
+      case (Right(n), Right(d), Right(ov), Right(t), Right(bs), Right(g), Right(p), Right(np), Right(mpr), Right(time), Right(ac), Right(pb), Right(_), Right(kt), Right(vt)) => 
         var outputGraph = graph.addVertex(Vertex(idx, ov))
-        (Right(KafkaExtract(n, d, ov, t, bs, g, mpr, time, ac, params, p, np, pb)), outputGraph)
+        (Right(KafkaExtract(n, d, ov, t, bs, g, mpr, time, ac, params, p, np, pb, kt, vt)), outputGraph)
       case _ =>
-        val allErrors: Errors = List(name, description, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, outputView, topic, bootstrapServers, groupID, persist, numPartitions, maxPollRecords, timeout, autoCommit, partitionBy, invalidKeys, keyType, valueType).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)

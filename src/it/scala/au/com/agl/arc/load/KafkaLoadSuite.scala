@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
 
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -96,7 +97,9 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
-        params=Map.empty
+        params=Map.empty,
+        keyType=StringType,
+        valueType=StringType  
       )
     ).get 
 
@@ -166,7 +169,9 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
-        params=Map.empty
+        params=Map.empty,
+        keyType=StringType,
+        valueType=StringType  
       )
     ).get
 
@@ -249,7 +254,9 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
-        params=Map.empty
+        params=Map.empty,
+        keyType=StringType,
+        valueType=StringType  
       )
     ).get
 
