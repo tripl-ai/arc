@@ -81,7 +81,7 @@ object DelimitedExtract {
               case e: AnalysisException if (e.getMessage == "Unable to infer schema for CSV. It must be specified manually.;") =>
                 spark.emptyDataFrame
               // the file does not exist at all
-              case e: AnalysisException if (e.getMessage == "Path does not exist") =>
+              case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
                 spark.emptyDataFrame
               case e: Exception => throw e
             }

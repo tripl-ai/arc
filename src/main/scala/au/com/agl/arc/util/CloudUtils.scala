@@ -3,6 +3,15 @@ package au.com.agl.arc.util
 import java.net.URI
 import java.time.Instant
 
+import scala.io.Source
+
+import org.apache.http.client.methods.{HttpGet}
+import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
+import org.apache.http.entity.StringEntity
+import org.apache.http.impl.client.LaxRedirectStrategy
+
 import org.apache.spark.sql._
 
 import au.com.agl.arc.api._
@@ -64,40 +73,63 @@ object CloudUtils {
   }  
 
   // using a string filePath so that invalid paths can be used for local files
-  def getTextBlob(filePath: String)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): String = {
-    val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
-    val newDelimiter = s"${0x0 : Char}"
+  def getTextBlob(uri: URI)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): String = {
 
-    // logging as this is a global variable and could cause strange behaviour downstream
-    val newDelimiterMap = new java.util.HashMap[String, String]()
-    newDelimiterMap.put("old", oldDelimiter)
-    newDelimiterMap.put("new", newDelimiter)    
-    logger.debug()
-      .field("event", "validateConfig")
-      .field("type", "getTextBlob")        
-      .field("textinputformat.record.delimiter", newDelimiterMap)
-      .log()
+    uri.getScheme match {
+      case "http" | "https" => {
+        val client = HttpClients.createDefault
+        val httpGet = new HttpGet(uri);
+    
+        val response = client.execute(httpGet);
 
-    // temporarily remove the delimiter so all the data is loaded as a single line
-    spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)
-    val textFile = spark.sparkContext.textFile(filePath).collect()(0)
+        val statusCode = response.getStatusLine.getStatusCode
+        val reasonPhrase = response.getStatusLine.getReasonPhrase
+        val payload = Source.fromInputStream(response.getEntity.getContent).mkString
 
-    // reset delimiter back to original value
-    val oldDelimiterMap = new java.util.HashMap[String, String]()
-    oldDelimiterMap.put("old", newDelimiter)
-    oldDelimiterMap.put("new", oldDelimiter)    
-    logger.debug()
-      .field("event", "validateConfig")
-      .field("type", "getTextBlob")        
-      .field("textinputformat.record.delimiter", oldDelimiterMap)
-      .log()
+        client.close
 
-    if (oldDelimiter == null) {
-      spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")              
-    } else {
-      spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)        
+        if (response.getStatusLine.getStatusCode != 200) {
+          throw new Exception(s"""Expected StatusCode = 200 when GET '${uri}' but server responded with ${statusCode} (${reasonPhrase}).""")
+        }
+
+        payload
+      }
+      case _ => {
+        val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
+        val newDelimiter = s"${0x0 : Char}"
+
+        // logging as this is a global variable and could cause strange behaviour downstream
+        val newDelimiterMap = new java.util.HashMap[String, String]()
+        newDelimiterMap.put("old", oldDelimiter)
+        newDelimiterMap.put("new", newDelimiter)    
+        logger.debug()
+          .field("event", "validateConfig")
+          .field("type", "getTextBlob")        
+          .field("textinputformat.record.delimiter", newDelimiterMap)
+          .log()
+
+        // temporarily remove the delimiter so all the data is loaded as a single line
+        spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)
+        val textFile = spark.sparkContext.textFile(uri.getPath).collect()(0)
+
+        // reset delimiter back to original value
+        val oldDelimiterMap = new java.util.HashMap[String, String]()
+        oldDelimiterMap.put("old", newDelimiter)
+        oldDelimiterMap.put("new", oldDelimiter)    
+        logger.debug()
+          .field("event", "validateConfig")
+          .field("type", "getTextBlob")        
+          .field("textinputformat.record.delimiter", oldDelimiterMap)
+          .log()
+
+        if (oldDelimiter == null) {
+          spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")              
+        } else {
+          spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)        
+        }
+
+        textFile
+      }
     }
-
-    textFile
   }
 }

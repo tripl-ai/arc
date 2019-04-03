@@ -29,7 +29,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
   val inputView = "inputView"
   val outputView = "outputView"
   val bootstrapServers = "localhost:29092"
-  val timeout = 3000L
+  val timeout = 1000L
   val checkPointPath = "/tmp/checkpoint"
 
   before {
@@ -66,6 +66,8 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
       .withColumn("normal", randn(seed=27))
       .repartition(10)
       .toJSON
+      .select(col("value").cast(BinaryType))
+
     dataset.createOrReplaceTempView(inputView)
 
     load.KafkaLoad.load(
@@ -97,14 +99,12 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
-        params=Map.empty,
-        keyType=StringType,
-        valueType=StringType  
+        params=Map.empty 
       )
     ).get 
 
     val expected = dataset
-    val actual = extractDataset.select($"value").as[String]
+    val actual = extractDataset.select($"value")
 
     val actualExceptExpectedCount = actual.except(expected).count
     val expectedExceptActualCount = expected.except(actual).count
@@ -136,8 +136,9 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
       .withColumn("uniform", rand(seed=10))
       .withColumn("normal", randn(seed=27))
       .withColumn("value", to_json(struct($"uniform", $"normal")))
-      .select("key", "value")
+      .select(col("key").cast(BinaryType), col("value").cast(BinaryType))
       .repartition(10)
+
     dataset.createOrReplaceTempView(inputView)
 
     load.KafkaLoad.load(
@@ -169,9 +170,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
-        params=Map.empty,
-        keyType=StringType,
-        valueType=StringType  
+        params=Map.empty 
       )
     ).get
 
@@ -254,9 +253,7 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
-        params=Map.empty,
-        keyType=StringType,
-        valueType=StringType  
+        params=Map.empty
       )
     ).get
 

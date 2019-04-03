@@ -67,14 +67,16 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         description=None,
         cols=Right(cols.right.getOrElse(Nil)),
         outputView=outputView,
-        input=targetFileGlob,
+        input=Right(targetFileGlob),
         authentication=None,
         params=Map.empty,
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        avroSchema=None,
+        inputField=None
       )
     ).get
 
@@ -106,14 +108,16 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         description=None,
         cols=Right(Nil),
         outputView=outputView,
-        input=targetFile,
+        input=Right(targetFile),
         authentication=None,
         params=Map.empty,
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        avroSchema=None,
+        inputField=None        
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -125,14 +129,16 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         description=None,
         cols=Right(Nil),
         outputView=outputView,
-        input=targetFile,
+        input=Right(targetFile),
         authentication=None,
         params=Map.empty,
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        avroSchema=None,
+        inputField=None        
       )
     )
     assert(spark.catalog.isCached(outputView) === true)     
@@ -165,14 +171,16 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
           description=None,
           cols=Right(Nil),
           outputView=outputView,
-          input=emptyWildcardDirectory,
+          input=Right(emptyWildcardDirectory),
           authentication=None,
           params=Map.empty,
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
           basePath=None,
-          contiguousIndex=true
+          contiguousIndex=true,
+          avroSchema=None,
+          inputField=None          
         )
       )
     }
@@ -186,14 +194,16 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
           description=None,
           cols=Right(Nil),
           outputView=outputView,
-          input=emptyDirectory,
+          input=Right(emptyDirectory),
           authentication=None,
           params=Map.empty,
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
           basePath=None,
-          contiguousIndex=true
+          contiguousIndex=true,
+          avroSchema=None,
+          inputField=None          
         )
       )
     }
@@ -206,14 +216,16 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         description=None,
         cols=Right(cols),
         outputView=outputView,
-        input=emptyDirectory,
+        input=Right(emptyDirectory),
         authentication=None,
         params=Map.empty,
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        avroSchema=None,
+        inputField=None        
       )
     ).get
 

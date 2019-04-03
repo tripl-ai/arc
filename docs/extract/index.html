@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.10.0</span></strong>
+          <span class="version">1.11.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -522,8 +522,15 @@
 <tr>
 <td>inputURI</td>
 <td>URI</td>
-<td>true</td>
-<td>URI/Glob of the input Avro files.</td>
+<td>true*</td>
+<td>URI/Glob of the input delimited  Avro files. If not present <code>inputView</code> is requred.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true*</td>
+<td>Name of the incoming Spark dataset. If not present <code>inputURI</code> is requred.</td>
 </tr>
 
 <tr>
@@ -600,7 +607,21 @@
 <td>schemaView</td>
 <td>URI</td>
 <td>false</td>
-<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+</tr>
+
+<tr>
+<td>inputField</td>
+<td>String</td>
+<td>false</td>
+<td>If using <code>inputView</code> this option allows you to specify the name of the field which contains the Avro binary data.</td>
+</tr>
+
+<tr>
+<td>avroSchemaView</td>
+<td>URI</td>
+<td>false*</td>
+<td>If using <code>inputView</code> this option allows you to specify the Avro schema URI. Has been tested to work with the <a href="https://www.confluent.io/confluent-schema-registry/">Kafka Schema Registry</a> with URI like <code>http://kafka-schema-registry:8081/schemas/ids/1</code> as well as standalone <code>*.avsc</code> files.</td>
 </tr>
 </tbody>
 </table>
@@ -639,9 +660,11 @@
     <span class="s2">&#34;country&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/schema/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.avro&#34;</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://input_data/customer/*.avro&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputField&#34;</span><span class="p">:</span> <span class="s2">&#34;value&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;avroSchemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/user.avsc&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="bytesextract">BytesExtract</h2>
@@ -1043,7 +1066,7 @@
 <td>schemaView</td>
 <td>URI</td>
 <td>false</td>
-<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
 </tbody>
 </table>
@@ -1716,7 +1739,7 @@
 <td>schemaView</td>
 <td>URI</td>
 <td>false</td>
-<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
 </tbody>
 </table>
@@ -1908,7 +1931,7 @@
 <td>schemaView</td>
 <td>URI</td>
 <td>false</td>
-<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
 </tbody>
 </table>
@@ -1967,6 +1990,56 @@
 </div>
 
 <p>The <code>KafkaExtract</code> stage reads records from a <a href="https://kafka.apache.org/">Kafka</a> <code>topic</code> and returns a <code>DataFrame</code>. It requires a unique <code>groupID</code> to be set which on first run will consume from the <code>earliest</code> offset available in Kafka. Each subsequent run will use the offset as recorded against that <code>groupID</code>. This means that if a job fails before properly processing the data then data may need to be restarted from the earliest offset by creating a new <code>groupID</code>.</p>
+
+<p>The returned <code>DataFrame</code> has the schema:</p>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>topic</code></td>
+<td>String</td>
+<td>The Kafka Topic.</td>
+</tr>
+
+<tr>
+<td><code>partition</code></td>
+<td>Integer</td>
+<td>The partition ID.</td>
+</tr>
+
+<tr>
+<td><code>offset</code></td>
+<td>Long</td>
+<td>The record offset.</td>
+</tr>
+
+<tr>
+<td><code>timestamp</code></td>
+<td>Long</td>
+<td>The record timestamp.</td>
+</tr>
+
+<tr>
+<td><code>key</code></td>
+<td>Binary</td>
+<td>The record key  as a byte array.</td>
+</tr>
+
+<tr>
+<td><code>value</code></td>
+<td>Binary</td>
+<td>The record value as a byte array.</td>
+</tr>
+</tbody>
+</table>
 
 <p>Can be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour (with <code>autoCommit</code> set to <code>false</code>) - in that the offset commit can be deferred until certain dependent stages are sucessfully executed.</p>
 
@@ -2231,7 +2304,7 @@
 <td>schemaView</td>
 <td>URI</td>
 <td>false</td>
-<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
 </tbody>
 </table>
@@ -2389,7 +2462,7 @@
 <td>schemaView</td>
 <td>URI</td>
 <td>false</td>
-<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
 </tbody>
 </table>
@@ -2649,7 +2722,7 @@
 <td>schemaView</td>
 <td>URI</td>
 <td>false</td>
-<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
 </tbody>
 </table>
@@ -2813,7 +2886,7 @@ FROM books_xml
 <td>schemaView</td>
 <td>URI</td>
 <td>false</td>
-<td>Similaar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
 </tbody>
 </table>

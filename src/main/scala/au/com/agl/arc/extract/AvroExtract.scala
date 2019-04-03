@@ -60,8 +60,8 @@ object AvroExtract {
           extract.avroSchema match {
             case Some(avroSchema) => {
               extract.inputField match {
-                case Some(inputField) => spark.table(view).select(from_avro(col(inputField), avroSchema.toString) as "value")
-                case None => spark.table(view).select(from_avro(col("value"), avroSchema.toString) as "value")
+                case Some(inputField) => spark.table(view).select(from_avro(col(inputField), avroSchema.toString) as "value").select("value.*")
+                case None => spark.table(view).select(from_avro(col("value"), avroSchema.toString) as "value").select("value.*")
               }
             }
             case None => throw new Exception(s"AvroExtract requires the 'avroSchema' to be provided when reading from an 'inputView'.")

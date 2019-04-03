@@ -38,7 +38,8 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputURI|URI|true|URI/Glob of the input Avro files.|
+|inputURI|URI|true*|URI/Glob of the input delimited  Avro files. If not present `inputView` is requred.|
+|inputView|String|true*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
@@ -49,6 +50,8 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
 |schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|inputField|String|false|If using `inputView` this option allows you to specify the name of the field which contains the Avro binary data.|
+|avroSchemaView|URI|false*|If using `inputView` this option allows you to specify the Avro schema URI. Has been tested to work with the [Kafka Schema Registry](https://www.confluent.io/confluent-schema-registry/) with URI like `http://kafka-schema-registry:8081/schemas/ids/1` as well as standalone `*.avsc` files.|
 
 ### Examples
 
@@ -353,6 +356,17 @@ This means this API is likely to change to better handle failures.
 {{</note>}}
 
 The `KafkaExtract` stage reads records from a [Kafka](https://kafka.apache.org/) `topic` and returns a `DataFrame`. It requires a unique `groupID` to be set which on first run will consume from the `earliest` offset available in Kafka. Each subsequent run will use the offset as recorded against that `groupID`. This means that if a job fails before properly processing the data then data may need to be restarted from the earliest offset by creating a new `groupID`.
+
+The returned `DataFrame` has the schema:
+
+| Field | Type | Description |
+|-------|------|-------------|
+|`topic`|String|The Kafka Topic.|
+|`partition`|Integer|The partition ID.|
+|`offset`|Long|The record offset.|
+|`timestamp`|Long|The record timestamp.|
+|`key`|Binary|The record key  as a byte array.|
+|`value`|Binary|The record value as a byte array.|
 
 Can be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecute) to allow quasi-transactional behaviour (with `autoCommit` set to `false`) - in that the offset commit can be deferred until certain dependent stages are sucessfully executed.
 

@@ -2,8 +2,9 @@
 
 # 1.11.0
 
-- added `keyType` and `valueType` (available values `string`, `binary`) to `KafkaExtract` to support extraction of `binary`.
+- **BREAKING** `key` and `value` fields extracted as `binary` type from `KafkaExtract` to be consistent with Spark Streaming schema and is easier to generalise.
 - added support for writing `binary` key/value to Kafka using `KafkaLoad`.
+- added `inputView`, `inputField` and `avroSchemaURI` to allow parsing of `avro` binary data which does not have an embedded schema for reading from sources like like `KafkaExtract` with a [Kafka Schema Registry](https://www.confluent.io/confluent-schema-registry/).
 
 # 1.10.0
 
