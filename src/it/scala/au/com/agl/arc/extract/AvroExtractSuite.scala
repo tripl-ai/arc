@@ -52,31 +52,32 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  // test("AvroExtract: Schema Included Avro") {
-  //   implicit val spark = session
-  //   import spark.implicits._
-  //   implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)  
+  test("AvroExtract: Schema Included Avro") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)  
 
-  //   val extractDataset = extract.AvroExtract.extract(
-  //     AvroExtract(
-  //       name=outputView,
-  //       description=None,
-  //       cols=Right(Nil),
-  //       outputView=outputView,
-  //       input=targetFile,
-  //       authentication=None,
-  //       params=Map.empty,
-  //       persist=false,
-  //       numPartitions=None,
-  //       partitionBy=Nil,
-  //       basePath=None,
-  //       contiguousIndex=true,
-  //       avroSchema=None
-  //     )
-  //   ).get
+    val extractDataset = extract.AvroExtract.extract(
+      AvroExtract(
+        name=outputView,
+        description=None,
+        cols=Right(Nil),
+        outputView=outputView,
+        input=Right(targetFile),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        basePath=None,
+        contiguousIndex=true,
+        avroSchema=None,
+        inputField=None        
+      )
+    ).get
 
-  //   extractDataset.show(false)
-  // }  
+    assert(extractDataset.first.getString(0) == "Alyssa")
+  }  
 
   test("AvroExtract: Binary only Avro") {
     implicit val spark = session
@@ -119,7 +120,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    assert(extractDataset.first.getString(0) == "Alyssa")
+    assert(extractDataset.select("value.*").first.getString(0) == "Alyssa")
   }   
 
   test("AvroExtract: Binary with Kafka Schema Registry") {
