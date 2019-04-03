@@ -1,6 +1,5 @@
 package au.com.agl.arc.extract
 
-import java.lang._
 import java.net.URI
 import java.util.{Collections, Properties}
 
@@ -26,8 +25,8 @@ case class KafkaRecord (
   partition: Int,
   offset: Long,
   timestamp: Long,
-  key: String,
-  value: String
+  key: Array[Byte],
+  value: Array[Byte]
 )
 
 object KafkaExtract {
@@ -45,10 +44,10 @@ object KafkaExtract {
     stageDetail.put("bootstrapServers", extract.bootstrapServers)
     stageDetail.put("groupID", extract.groupID)
     stageDetail.put("topic", extract.topic)
-    stageDetail.put("maxPollRecords", Integer.valueOf(extract.maxPollRecords))
-    stageDetail.put("timeout", Long.valueOf(extract.timeout))
-    stageDetail.put("autoCommit", Boolean.valueOf(extract.autoCommit))
-    stageDetail.put("persist", Boolean.valueOf(extract.persist))
+    stageDetail.put("maxPollRecords", java.lang.Integer.valueOf(extract.maxPollRecords))
+    stageDetail.put("timeout", java.lang.Long.valueOf(extract.timeout))
+    stageDetail.put("autoCommit", java.lang.Boolean.valueOf(extract.autoCommit))
+    stageDetail.put("persist", java.lang.Boolean.valueOf(extract.persist))
 
     logger.info()
       .field("event", "enter")
@@ -65,21 +64,25 @@ object KafkaExtract {
     } else {
       // KafkaConsumer properties
       // https://kafka.apache.org/documentation/#consumerconfigs
-      val props = new Properties
-      props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, extract.bootstrapServers)
-      props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-      props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-      props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
-      props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-      props.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, extract.timeout.toString)
-      props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, Math.min(10000, extract.timeout-1).toString)
-      props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, Math.min(500, extract.timeout-1).toString)
-      props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, Math.min(3000, extract.timeout-2).toString)
+
+
+      val baseProps = new Properties
+      baseProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, extract.bootstrapServers)
+      baseProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer")
+      baseProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer")
+      baseProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
+      baseProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+      baseProps.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, extract.timeout.toString)
+      baseProps.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, Math.min(10000, extract.timeout-1).toString)
+      baseProps.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, Math.min(500, extract.timeout-1).toString)
+      baseProps.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, Math.min(3000, extract.timeout-2).toString)
+
+      val props = baseProps
       props.put(ConsumerConfig.GROUP_ID_CONFIG, extract.groupID)
 
       // first get the number of partitions via the driver process so it can be used for mapPartition
       val numPartitions = try {
-        val kafkaDriverConsumer = new KafkaConsumer[String, String](props)
+        val kafkaDriverConsumer = new KafkaConsumer[Array[Byte], Array[Byte]](props)
         try {
           kafkaDriverConsumer.partitionsFor(extract.topic).size
         } finally {
@@ -95,22 +98,13 @@ object KafkaExtract {
         spark.sqlContext.emptyDataFrame.repartition(numPartitions).mapPartitions(partition => {
           // get the partition of this executor which maps 1:1 with Kafka partition
           val partitionId = TaskContext.getPartitionId
-
-          val props = new Properties
-          props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, extract.bootstrapServers)
-          props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-          props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer")
-          props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
-          props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-          props.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, extract.timeout.toString)
-          props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, Math.min(10000, extract.timeout-1).toString)
-          props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, Math.min(500, extract.timeout-1).toString)
-          props.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, Math.min(3000, extract.timeout-2).toString)
+          
+          val props = baseProps
           props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, extract.maxPollRecords.toString)
           props.put(ConsumerConfig.GROUP_ID_CONFIG, s"${extract.groupID}-${partitionId}")
 
           // try to assign records based on partitionId and extract 
-          val kafkaConsumer = new KafkaConsumer[String, String](props)
+          val kafkaConsumer = new KafkaConsumer[Array[Byte], Array[Byte]](props)
           val topicPartition = new TopicPartition(extract.topic, partitionId)
 
           def getKafkaRecord(): List[KafkaRecord] = {
@@ -170,14 +164,14 @@ object KafkaExtract {
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 
     if (!repartitionedDF.isStreaming) {
-      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
+      stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
     }
 
     // force persistence if autoCommit=false to prevent double KafkaExtract execution and different offsets
     if ((extract.persist || !extract.autoCommit) && !repartitionedDF.isStreaming) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+      stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
     }    
 
     logger.info()

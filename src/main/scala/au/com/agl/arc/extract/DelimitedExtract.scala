@@ -77,7 +77,11 @@ object DelimitedExtract {
             try {
               spark.read.options(options).csv(glob)
             } catch {
-              case e: AnalysisException if (e.getMessage == "Unable to infer schema for CSV. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) => 
+              // the file that is read is empty
+              case e: AnalysisException if (e.getMessage == "Unable to infer schema for CSV. It must be specified manually.;") =>
+                spark.emptyDataFrame
+              // the file does not exist at all
+              case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
                 spark.emptyDataFrame
               case e: Exception => throw e
             }
@@ -101,7 +105,7 @@ object DelimitedExtract {
       if (df.schema.length == 0) {
         stageDetail.put("records", Integer.valueOf(0))
         optionSchema match {
-          case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
+          case Some(schema) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], schema)
           case None => throw new Exception(s"DelimitedExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
         }
       } else {

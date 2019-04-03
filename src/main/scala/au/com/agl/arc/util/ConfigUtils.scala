@@ -20,6 +20,7 @@ import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.unsafe.types.UTF8String
 import org.apache.spark.sql._
+import org.apache.spark.sql.types._
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 
 import au.com.agl.arc.api._
@@ -49,12 +50,12 @@ object ConfigUtils {
   def getConfigString(uri: URI, argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], String] = {
     uri.getScheme match {
       case "local" => {
-        val filePath = SparkFiles.get(uri.getPath)
+        val filePath = new URI(SparkFiles.get(uri.getPath))
         val etlConfString = CloudUtils.getTextBlob(filePath)
         Right(etlConfString)
       }
       case "file" => {
-        val etlConfString = CloudUtils.getTextBlob(uri.toString)
+        val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
       // amazon s3
@@ -84,7 +85,7 @@ object ConfigUtils {
         val config = Map("fs_s3a_endpoint" -> endpoint, "fs_s3a_connection_ssl_enabled" -> connectionSSLEnabled, "fs_s3a_access_key" -> accessKey, "fs_s3a_secret_key" -> secretKey)
 
         CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(accessKey, secretKey)))
-        val etlConfString = CloudUtils.getTextBlob(uri.toString)
+        val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
       // azure blob
@@ -102,7 +103,7 @@ object ConfigUtils {
         }
 
         CloudUtils.setHadoopConfiguration(Some(Authentication.AzureSharedKey(accountName, accountKey)))
-        val etlConfString = CloudUtils.getTextBlob(uri.toString)
+        val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
       // azure data lake storage
@@ -120,7 +121,7 @@ object ConfigUtils {
         }
 
         CloudUtils.setHadoopConfiguration(Some(Authentication.AzureDataLakeStorageToken(clientID, refreshToken)))
-        val etlConfString = CloudUtils.getTextBlob(uri.toString)
+        val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
       // google cloud
@@ -138,7 +139,7 @@ object ConfigUtils {
         }
 
         CloudUtils.setHadoopConfiguration(Some(Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)))
-        val etlConfString = CloudUtils.getTextBlob(uri.toString)
+        val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
       case "classpath" => {
@@ -344,6 +345,14 @@ object ConfigUtils {
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
   }  
+
+  def parseDataType(path: String)(datatype: String)(implicit c: Config): Either[Errors, DataType] = {
+    datatype.toLowerCase.trim match {
+      case "string" => Right(StringType)
+      case "binary" => Right(BinaryType)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }     
 
   def parseResponseType(path: String)(delim: String)(implicit c: Config): Either[Errors, ResponseType] = {
     delim.toLowerCase.trim match {
@@ -741,6 +750,24 @@ object ConfigUtils {
     }
   }
 
+  private def parseAvroSchema(path: String, schemaString: String)(implicit c: Config): Either[Errors, Option[org.apache.avro.Schema]] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, Option[org.apache.avro.Schema]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+    try {
+      // if schema contains backslash it might have come from the kafka schema registry therefore try to get the data out of the returned object
+      // this is hacky but needs to behave well with a registry response
+      if (schemaString.contains(""""schema":""") && schemaString.contains("\\")) {
+        val objectMapper = new ObjectMapper()
+        val metaTree = objectMapper.readTree(schemaString)
+        Right(Option(new org.apache.avro.Schema.Parser().parse(metaTree.get("schema").asText)))
+      } else {
+        // try to parse schema
+        Right(Option(new org.apache.avro.Schema.Parser().parse(schemaString)))
+      }
+    } catch {
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
+    }
+  }
+
   private def parseGlob(path: String, glob: String)(implicit c: Config): Either[Errors, String] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
@@ -772,7 +799,7 @@ object ConfigUtils {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
-      val textFile = CloudUtils.getTextBlob(uri.toString)
+      val textFile = CloudUtils.getTextBlob(uri)
       if (textFile.length == 0) {
         err(Some(c.getValue(path).origin.lineNumber()), s"""File at ${uri.toString} is empty.""")
       } else {
@@ -848,13 +875,17 @@ object ConfigUtils {
   def readAvroExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "avroSchemaURI" :: "inputField" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     val description = getOptionalValue[String]("description")
 
-    val inputURI = getValue[String]("inputURI")
-    val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
+    val input = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
+    val parsedGlob = if (!c.hasPath("inputView")) {
+      input.rightFlatMap(glob => parseGlob("inputURI", glob))
+    } else {
+      Right("")
+    }    
 
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
@@ -874,16 +905,30 @@ object ConfigUtils {
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val basePath = getOptionalValue[String]("basePath")
+    val inputField = getOptionalValue[String]("inputField")
 
-    (name, description, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, invalidKeys, basePath) match {
-      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(pb), Right(auth), Right(ci), Right(_), Right(bp)) =>
+    val avroSchemaURI = getOptionalValue[String]("avroSchemaURI")
+    val avroSchema: Either[Errors, Option[org.apache.avro.Schema]] = avroSchemaURI.rightFlatMap(optAvroSchemaURI => 
+      optAvroSchemaURI match { 
+        case Some(uri) => {
+          parseURI("avroSchemaURI", uri)
+          .rightFlatMap(uri => textContentForURI(uri, "avroSchemaURI", Right(None) ))
+          .rightFlatMap(schemaString => parseAvroSchema("avroSchemaURI", schemaString))
+        }
+        case None => Right(None)
+      }
+    )    
+
+    (name, description, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, invalidKeys, basePath, inputField, avroSchemaURI, avroSchema) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(pb), Right(auth), Right(ci), Right(_), Right(bp), Right(ipf), Right(_), Right(avsc)) =>
+        val input = if(c.hasPath("inputView")) Left(in) else Right(pg)
         val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
 
         var outputGraph = graph.addVertex(Vertex(idx, ov))
 
-        (Right(AvroExtract(n, d, schema, ov, pg, auth, params, p, np, pb, ci, bp)), outputGraph)
+        (Right(AvroExtract(n, d, schema, ov, input, auth, params, p, np, pb, ci, bp, avsc, ipf)), outputGraph)
       case _ =>
-        val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys, basePath).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, input, schemaView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys, basePath, inputField, avroSchemaURI, avroSchema).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)

@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
@@ -24,7 +25,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
   val inputView1 = "inputView1"
   val outputView = "outputView"
   val bootstrapServers = "localhost:29092"
-  val timeout = 3000L
+  val timeout = 1000L
 
   before {
     implicit val spark = SparkSession
@@ -59,6 +60,8 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
       .withColumn("normal", randn(seed=27))
       .repartition(10)
       .toJSON
+      .select(col("value").cast(BinaryType))
+
     dataset0.createOrReplaceTempView(inputView0)
     load.KafkaLoad.load(
       KafkaLoad(
@@ -95,7 +98,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     var expected = dataset0
-    var actual = extractDataset0.select($"value").as[String]
+    var actual = extractDataset0.select("value")
     assert(actual.except(expected).count === 0)
     assert(expected.except(actual).count === 0)
 
@@ -119,7 +122,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     expected = dataset0
-    actual = extractDataset1.select($"value").as[String]
+    actual = extractDataset1.select("value")
     assert(actual.except(expected).count === 0)
     assert(expected.except(actual).count === 0)    
 
@@ -153,7 +156,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty
       )
     ).get
-    actual = extractDataset2.select($"value").as[String]
+    actual = extractDataset2.select("value")
     assert(actual.count === 0)
 
     // insert 200 records
@@ -163,6 +166,8 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
       .withColumn("normal", randn(seed=27))
       .repartition(10)
       .toJSON
+      .select(col("value").cast(BinaryType))
+
     dataset1.createOrReplaceTempView(inputView1)
     load.KafkaLoad.load(
       KafkaLoad(
@@ -199,7 +204,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     expected = dataset1
-    actual = extractDataset3.select($"value").as[String]
+    actual = extractDataset3.select("value")
     assert(actual.except(expected).count === 0)
     assert(expected.except(actual).count === 0)
   }      

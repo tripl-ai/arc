@@ -28,10 +28,10 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
-      KAFKA_LISTENERS: CLIENT://0.0.0.0:29092,INTERNAL://kafka:29093
-      KAFKA_ADVERTISED_LISTENERS: CLIENT://localhost:29092,INTERNAL://kafka:29093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLIENT:PLAINTEXT,INTERNAL:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_LISTENERS: CLIENT://0.0.0.0:29092,PLAINTEXT://kafka:29093
+      KAFKA_ADVERTISED_LISTENERS: CLIENT://localhost:29092,PLAINTEXT://kafka:29093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLIENT:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_NUM_PARTITIONS: 10
   
@@ -49,6 +49,19 @@ services:
       KAFKA_REST_BOOTSTRAP_SERVERS: kafka:29093
       KAFKA_REST_HOST_NAME: kafka-rest
       KAFKA_REST_LISTENERS: http://0.0.0.0:8082
+
+  kafka-schema-registry:
+    image: confluentinc/cp-schema-registry:5.0.2
+    networks:
+      - arc-integration
+    ports:
+      - 8081:8081
+    depends_on:
+      - zookeeper
+      - kafka
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:32181
 
   tensorflow_serving:
     image: tensorflow_serving/simple:latest
@@ -99,3 +112,13 @@ services:
     environment:
       discovery.type: single-node  
   
+  minio:
+    image: minio/minio:RELEASE.2019-03-20T22-38-47Z
+    networks:
+      - arc-integration    
+    ports:
+      - 9400:9000     
+    command: server /data
+    environment:
+      MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
+      MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY

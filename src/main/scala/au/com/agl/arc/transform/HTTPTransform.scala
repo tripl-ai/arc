@@ -87,10 +87,10 @@ object HTTPTransform {
       df.mapPartitions[TransformedRow] { partition: Iterator[Row] => 
         val poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager()
         poolingHttpClientConnectionManager.setMaxTotal(50)
-        val httpClient = HttpClients.custom()
+        val httpClient = HttpClients.custom
                 .setConnectionManager(poolingHttpClientConnectionManager)
-                .setRedirectStrategy(new LaxRedirectStrategy())
-                .build()
+                .setRedirectStrategy(new LaxRedirectStrategy)
+                .build
         val uri = transform.uri.toString
 
         // we are using a BufferedIterator so we can 'peek' at the first row to get column types without advancing the iterator

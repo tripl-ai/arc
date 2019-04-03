@@ -6,6 +6,7 @@ import java.net.URI
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
+import org.apache.spark.sql.avro._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.storage.StorageLevel
@@ -48,9 +49,24 @@ object AvroExtract {
 
     // if incoming dataset is empty create empty dataset with a known schema
     val df = try {
-      extract.basePath match {
-        case Some(basePath) => spark.read.format("avro").option("basePath", basePath).load(extract.input)
-        case None => spark.read.format("avro").load(extract.input)
+      extract.input match {
+        case Right(glob) => {
+          extract.basePath match {
+            case Some(basePath) => spark.read.format("avro").option("basePath", basePath).load(glob)
+            case None => spark.read.format("avro").load(glob)
+          }
+        }
+        case Left(view) => {
+          extract.avroSchema match {
+            case Some(avroSchema) => {
+              extract.inputField match {
+                case Some(inputField) => spark.table(view).select(from_avro(col(inputField), avroSchema.toString) as "value").select("value.*")
+                case None => spark.table(view).select(from_avro(col("value"), avroSchema.toString) as "value").select("value.*")
+              }
+            }
+            case None => throw new Exception(s"AvroExtract requires the 'avroSchema' to be provided when reading from an 'inputView'.")
+          }
+        }
       }
     } catch {
         case e: FileNotFoundException => 

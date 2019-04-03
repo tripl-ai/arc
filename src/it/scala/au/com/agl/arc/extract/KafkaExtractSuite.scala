@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types._
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
@@ -23,7 +24,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
   val inputView = "inputView"
   val outputView = "outputView"
   val bootstrapServers = "localhost:29092"
-  val timeout = 3000L
+  val timeout = 1000L
   val checkPointPath = "/tmp/checkpoint"
 
   before {
@@ -47,7 +48,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(checkPointPath)) 
   }
 
-  test("KafkaExtract") {
+  test("KafkaExtract: Binary") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -63,6 +64,8 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
       .withColumn("normal", randn(seed=27))
       .repartition(10)
       .toJSON
+      .select(col("value").cast(BinaryType))
+
     dataset.createOrReplaceTempView(inputView)
 
     load.KafkaLoad.load(
@@ -99,7 +102,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     val expected = dataset
-    val actual = extractDataset.select($"value").as[String]
+    val actual = extractDataset.select(col("value"))
 
     val actualExceptExpectedCount = actual.except(expected).count
     val expectedExceptActualCount = expected.except(actual).count
@@ -129,7 +132,10 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
       .withColumn("normal", randn(seed=27))
       .repartition(10)
       .toJSON
+      .select(col("value").cast(BinaryType))
+
     dataset.createOrReplaceTempView(inputView)
+
     load.KafkaLoad.load(
       KafkaLoad(
         name="df", 
@@ -159,7 +165,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
-        params=Map.empty
+        params=Map.empty     
       )
     ).get
 
@@ -177,7 +183,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
-        params=Map.empty
+        params=Map.empty 
       )
     ).get
 
@@ -214,7 +220,10 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
       .withColumn("normal", randn(seed=27))
       .repartition(10)
       .toJSON
+      .select(col("value").cast(BinaryType))
+
     dataset.createOrReplaceTempView(inputView)
+
     load.KafkaLoad.load(
       KafkaLoad(
         name="df", 
@@ -244,7 +253,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true, 
         numPartitions=None, 
         partitionBy=Nil,
-        params=Map.empty
+        params=Map.empty  
       )
     ).get
 
@@ -320,7 +329,6 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
       .option("kafka.bootstrap.servers", bootstrapServers)
       .option("topic", topic)
       .start()
-
 
     val df = spark.table("extract")
 

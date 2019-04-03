@@ -167,6 +167,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     for (filename <- TestDataUtils.getListOfFiles(resourcesDir)) {
       val fileContents = Source.fromFile(filename).mkString
+
       // inject a stage to register the 'customer' view to stop downstream stages breaking
       val conf = s"""{"stages": [${fileContents.trim}]}"""
 
@@ -179,21 +180,28 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       // replace meta directory with config so that the examples read correctly but have resource to validate
       val metaConf = mlConf.replaceAll("hdfs://datalake/metadata/", getClass.getResource("/conf/metadata/").toString)
 
-      val base = ConfigFactory.load()
-      val etlConf = ConfigFactory.parseString(metaConf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-      val config = etlConf.withFallback(base)
-      var argsMap = collection.mutable.Map[String, String]()
+      try {
+        val base = ConfigFactory.load()
+        val etlConf = ConfigFactory.parseString(metaConf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+        val config = etlConf.withFallback(base)
+        var argsMap = collection.mutable.Map[String, String]()
 
-      val environmentVariables = ConfigFactory.parseMap(Map("JOB_RUN_DATE" -> "0", "ETL_CONF_BASE_URL" -> "").asJava)
-      val initialGraph =  Graph(Vertex(0,"customer_20180501") :: Vertex(0,"customer_20180502") :: Nil, Nil,false)
-      val pipelineEither = ConfigUtils.readPipeline(config.resolveWith(environmentVariables).resolve(), "", new URI(""), argsMap, initialGraph, arcContext)
+        val environmentVariables = ConfigFactory.parseMap(Map("JOB_RUN_DATE" -> "0", "ETL_CONF_BASE_URL" -> "").asJava)
+        val initialGraph =  Graph(Vertex(0,"customer_20180501") :: Vertex(0,"customer_20180502") :: Nil, Nil,false)
+        val pipelineEither = ConfigUtils.readPipeline(config.resolveWith(environmentVariables).resolve(), "", new URI(""), argsMap, initialGraph, arcContext)
 
-      pipelineEither match {
-        case Left(errors) => {
-          assert(false, s"Error in config ${filename}: ${ConfigUtils.Error.pipelineErrorMsg(errors)}")
+        pipelineEither match {
+          case Left(errors) => {
+            assert(false, s"Error in config ${filename}: ${ConfigUtils.Error.pipelineErrorMsg(errors)}")
+          }
+          case Right(pipeline) => {
+            assert(true)
+          }
         }
-        case Right(pipeline) => {
-          assert(true)
+      } catch {
+        case e: Exception => {
+          println(s"error in: ${filename}\nerror: ${e}\ncontents: ${metaConf}")
+          assert(false)
         }
       }
     }
