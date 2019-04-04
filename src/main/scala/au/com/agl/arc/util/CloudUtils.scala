@@ -57,6 +57,28 @@ object CloudUtils {
           .field("fs.adl.oauth2.refresh.token", refreshToken)          
           .log()                    
       }
+      case Some(API.Authentication.AzureDataLakeStorageGen2AccountKey(accountName, accessKey)) => {
+        hc.set(s"fs.azure.account.key.${accountName}.dfs.core.windows.net", accessKey)
+        logger.debug()
+          .message("hadoopConfiguration.set()")
+          .field(s"fs.azure.account.key.${accountName}.dfs.core.windows.net", accessKey)
+          .log()                    
+      }      
+      case Some(API.Authentication.AzureDataLakeStorageGen2OAuth(clientID, secret, directoryID)) => {
+        hc.set("fs.azure.account.auth.type", "OAuth")
+        hc.set("fs.azure.account.oauth.provider.type", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider")
+        hc.set("fs.azure.account.oauth2.client.id", clientID)
+        hc.set("fs.azure.account.oauth2.client.secret", secret)
+        hc.set("fs.azure.account.oauth2.client.endpoint", s"https://login.microsoftonline.com/${directoryID}/oauth2/token")
+        logger.debug()
+          .message("hadoopConfiguration.set()")
+          .field("fs.azure.account.auth.type", "OAuth")
+          .field("fs.azure.account.oauth.provider.type", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider")
+          .field("fs.azure.account.oauth2.client.id", clientID)
+          .field("fs.azure.account.oauth2.client.secret", secret)
+          .field("fs.azure.account.oauth2.client.endpoint", s"https://login.microsoftonline.com/${directoryID}/oauth2/token")
+          .log()                    
+      }          
       case Some(API.Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)) => {
         hc.set("google.cloud.auth.service.account.enable", "true")
         hc.set("fs.gs.project.id", projectID)
@@ -110,7 +132,7 @@ object CloudUtils {
 
         // temporarily remove the delimiter so all the data is loaded as a single line
         spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)
-        val textFile = spark.sparkContext.textFile(uri.getPath).collect()(0)
+        val textFile = spark.sparkContext.textFile(uri.toString).collect()(0)
 
         // reset delimiter back to original value
         val oldDelimiterMap = new java.util.HashMap[String, String]()

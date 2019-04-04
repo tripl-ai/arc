@@ -58,6 +58,18 @@ object ConfigUtils {
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
+      case "classpath" => {
+        val path = s"/${uri.getHost}${uri.getPath}"
+        val etlConfString = using(getClass.getResourceAsStream(path)) { is =>
+          scala.io.Source.fromInputStream(is).mkString
+        }
+        Right(etlConfString)
+      }      
+      // databricks file system
+      case "dbfs" => {
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }    
       // amazon s3
       case "s3a" => {
         val s3aEndpoint: Option[String] = argsMap.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
@@ -89,7 +101,7 @@ object ConfigUtils {
         Right(etlConfString)
       }
       // azure blob
-      case "wasbs" => {
+      case "wasb" | "wasbs" => {
         val azureAccountName: Option[String] = argsMap.get("etl.config.fs.azure.account.name").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_NAME"))
         val azureAccountKey: Option[String] = argsMap.get("etl.config.fs.azure.account.key").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_KEY"))
 
@@ -124,6 +136,24 @@ object ConfigUtils {
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
+      // azure data lake storage gen 2
+      case "abfs" | "abfss" => {
+        val dfAccountName: Option[String] = argsMap.get("etl.config.fs.dfs.account.name").orElse(envOrNone("ETL_CONF_DFS_ACCOUNT_NAME"))
+        val dfAccessKey: Option[String] = argsMap.get("etl.config.fs.dfs.access.key").orElse(envOrNone("ETL_CONF_DFS_ACCESS_KEY"))
+
+        val accountName = dfAccountName match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Azure DLS Account Name not provided for: ${uri}. Set etl.config.fs.dfs.account.name property or ETL_CONF_DFS_ACCOUNT_NAME environment variable.")
+        }
+        val accountKey = dfAccessKey match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Azure DLS Access Key not provided for: ${uri}. Set etl.config.fs.dfs.access.key property or ETL_CONF_DFS_ACCESS_KEY environment variable.")
+        }
+
+        CloudUtils.setHadoopConfiguration(Some(Authentication.AzureDataLakeStorageGen2AccountKey(accountName, accountKey)))
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }      
       // google cloud
       case "gs" => {
         val gsProjectID: Option[String] = argsMap.get("etl.config.fs.gs.project.id").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_PROJECT_ID"))
@@ -140,13 +170,6 @@ object ConfigUtils {
 
         CloudUtils.setHadoopConfiguration(Some(Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)))
         val etlConfString = CloudUtils.getTextBlob(uri)
-        Right(etlConfString)
-      }
-      case "classpath" => {
-        val path = s"/${uri.getHost}${uri.getPath}"
-        val etlConfString = using(getClass.getResourceAsStream(path)) { is =>
-          scala.io.Source.fromInputStream(is).mkString
-        }
         Right(etlConfString)
       }
       case _ => {
@@ -285,7 +308,33 @@ object ConfigUtils {
                 case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageToken' requires 'refreshToken' parameter.")
               }
               Right(Some(Authentication.AzureDataLakeStorageToken(clientID, refreshToken)))
-            }             
+            }          
+            case Some("AzureDataLakeStorageGen2AccountKey") => {
+              val accountName = authentication.get("accountName") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageGen2AccountKey' requires 'accountName' parameter.")
+              }
+              val accessKey = authentication.get("accessKey") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageGen2AccountKey' requires 'accessKey' parameter.")
+              }
+              Right(Some(Authentication.AzureDataLakeStorageGen2AccountKey(accountName, accessKey)))
+            }   
+            case Some("AzureDataLakeStorageGen2OAuth") => {
+              val clientID = authentication.get("clientID") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageGen2OAuth' requires 'clientID' parameter.")
+              }
+              val secret = authentication.get("secret") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageGen2OAuth' requires 'secret' parameter.")
+              }
+              val directoryID = authentication.get("directoryID") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageGen2OAuth' requires 'directoryID' parameter.")
+              }              
+              Right(Some(Authentication.AzureDataLakeStorageGen2OAuth(clientID, secret, directoryID)))
+            }                            
             case Some("AmazonAccessKey") => {
               val accessKeyID = authentication.get("accessKeyID") match {
                 case Some(v) => v
