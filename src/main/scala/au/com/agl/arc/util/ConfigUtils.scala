@@ -101,7 +101,7 @@ object ConfigUtils {
         Right(etlConfString)
       }
       // azure blob
-      case "wasbs" => {
+      case "wasb" | "wasbs" => {
         val azureAccountName: Option[String] = argsMap.get("etl.config.fs.azure.account.name").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_NAME"))
         val azureAccountKey: Option[String] = argsMap.get("etl.config.fs.azure.account.key").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_KEY"))
 
@@ -136,6 +136,24 @@ object ConfigUtils {
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
+      // azure data lake storage gen 2
+      case "abfs" | "abfss" => {
+        val dfAccountName: Option[String] = argsMap.get("etl.config.fs.dfs.account.name").orElse(envOrNone("ETL_CONF_DFS_ACCOUNT_NAME"))
+        val dfAccessKey: Option[String] = argsMap.get("etl.config.fs.dfs.access.key").orElse(envOrNone("ETL_CONF_DFS_ACCESS_KEY"))
+
+        val accountName = dfAccountName match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Azure DLS Account Name not provided for: ${uri}. Set etl.config.fs.dfs.account.name property or ETL_CONF_DFS_ACCOUNT_NAME environment variable.")
+        }
+        val accountKey = dfAccessKey match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Azure DLS Access Key not provided for: ${uri}. Set etl.config.fs.dfs.access.key property or ETL_CONF_DFS_ACCESS_KEY environment variable.")
+        }
+
+        CloudUtils.setHadoopConfiguration(Some(Authentication.AzureDataLakeStorageGen2AccountKey(accountName, accountKey)))
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }      
       // google cloud
       case "gs" => {
         val gsProjectID: Option[String] = argsMap.get("etl.config.fs.gs.project.id").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_PROJECT_ID"))
