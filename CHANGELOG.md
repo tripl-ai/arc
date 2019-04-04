@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.11.1
+
+- added support for `AzureDataLakeStorageGen2AccountKey` and `AzureDataLakeStorageGen2OAuth` authentication methods.
+
 # 1.11.0
 
 - **BREAKING** `key` and `value` fields extracted as `binary` type from `KafkaExtract` to be consistent with Spark Streaming schema and is easier to generalise.
@@ -13,11 +17,11 @@
 - added `failMode` to `HTTPTransform` with default `failfast` (unchanged behaviour).
 - added streaming mode support to `HTTPLoad`.
 - added `binary` `metadata` type to allow decoding `base64` and `hexadecimal` encodings.
-- *CHORE* bumped some JAR versions up to latest.
+- **CHORE** bumped some JAR versions up to latest.
 
 # 1.9.0
 
-- *FIX* fixed command line arguments which contain equals sign not being parsed correctly
+- **FIX** fixed command line arguments which contain equals sign not being parsed correctly
 - added `DatabricksSQLDWLoad` stage for bulk loading Azure SQLDW when executing in the [Databricks Runtime](https://databricks.com/product/databricks-runtime) environment.
 - added `ElasticsearchExtract` and `ElasticsearchLoad` stages for connecting to [Elasticsearch](https://www.elastic.co/products/elasticsearch) clusters.
 - added additional checks for table dependencies when validating the job config.

@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.11.0</span></strong>
+          <span class="version">1.11.1</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -442,7 +442,7 @@
 <td>method</td>
 <td>String</td>
 <td>true</td>
-<td>A value of <code>AzureSharedKey</code>, <code>AzureSharedAccessSignature</code>, <code>AzureDataLakeStorageToken</code>, <code>AmazonAccessKey</code>, <code>GoogleCloudStorageKeyFile</code> which defines which method should be used to authenticate with the remote service.</td>
+<td>A value of <code>AzureSharedKey</code>, <code>AzureSharedAccessSignature</code>, <code>AzureDataLakeStorageToken</code>, <code>AzureDataLakeStorageGen2AccountKey</code>, <code>AzureDataLakeStorageGen2OAuth</code>, <code>AmazonAccessKey</code>, <code>GoogleCloudStorageKeyFile</code> which defines which method should be used to authenticate with the remote service.</td>
 </tr>
 
 <tr>
@@ -485,6 +485,41 @@
 <td>String</td>
 <td>false*</td>
 <td>Required for <code>AzureDataLakeStorageToken</code>.</td>
+</tr>
+
+<tr>
+<td>accountName</td>
+<td>String</td>
+<td>false*</td>
+<td>Required for <code>AzureDataLakeStorageGen2AccountKey</code>.</td>
+</tr>
+
+<tr>
+<td>accessKey</td>
+<td>String</td>
+<td>false*</td>
+<td>Required for <code>AzureDataLakeStorageGen2AccountKey</code>.</td>
+</tr>
+
+<tr>
+<td>clientID</td>
+<td>String</td>
+<td>false*</td>
+<td>Required for <code>AzureDataLakeStorageGen2OAuth</code>.</td>
+</tr>
+
+<tr>
+<td>secret</td>
+<td>String</td>
+<td>false*</td>
+<td>Required for <code>AzureDataLakeStorageGen2OAuth</code>.</td>
+</tr>
+
+<tr>
+<td>directoryID</td>
+<td>String</td>
+<td>false*</td>
+<td>Required for <code>AzureDataLakeStorageGen2OAuth</code>.</td>
 </tr>
 
 <tr>

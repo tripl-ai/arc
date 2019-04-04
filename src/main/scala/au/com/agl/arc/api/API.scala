@@ -346,6 +346,8 @@ object API {
     case class AzureSharedKey(accountName: String, signature: String) extends Authentication
     case class AzureSharedAccessSignature(accountName: String, container: String, token: String) extends Authentication
     case class AzureDataLakeStorageToken(clientID: String, refreshToken: String) extends Authentication
+    case class AzureDataLakeStorageGen2AccountKey(accountName: String, accessKey: String) extends Authentication
+    case class AzureDataLakeStorageGen2OAuth(clientID: String, secret: String, directoryId: String) extends Authentication    
     case class GoogleCloudStorageKeyFile(projectID: String, keyFilePath: String) extends Authentication
   }
 

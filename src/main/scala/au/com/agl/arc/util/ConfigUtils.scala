@@ -285,7 +285,33 @@ object ConfigUtils {
                 case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageToken' requires 'refreshToken' parameter.")
               }
               Right(Some(Authentication.AzureDataLakeStorageToken(clientID, refreshToken)))
-            }             
+            }          
+            case Some("AzureDataLakeStorageGen2AccountKey") => {
+              val accountName = authentication.get("accountName") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageGen2AccountKey' requires 'accountName' parameter.")
+              }
+              val accessKey = authentication.get("accessKey") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageGen2AccountKey' requires 'accessKey' parameter.")
+              }
+              Right(Some(Authentication.AzureDataLakeStorageGen2AccountKey(accountName, accessKey)))
+            }   
+            case Some("AzureDataLakeStorageGen2OAuth") => {
+              val clientID = authentication.get("clientID") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageGen2OAuth' requires 'clientID' parameter.")
+              }
+              val secret = authentication.get("secret") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageGen2OAuth' requires 'secret' parameter.")
+              }
+              val directoryID = authentication.get("directoryID") match {
+                case Some(v) => v
+                case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageGen2OAuth' requires 'directoryID' parameter.")
+              }              
+              Right(Some(Authentication.AzureDataLakeStorageGen2OAuth(clientID, secret, directoryID)))
+            }                            
             case Some("AmazonAccessKey") => {
               val accessKeyID = authentication.get("accessKeyID") match {
                 case Some(v) => v
