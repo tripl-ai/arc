@@ -58,6 +58,10 @@ object ConfigUtils {
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
+      case "dbfs" => {
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }      
       // amazon s3
       case "s3a" => {
         val s3aEndpoint: Option[String] = argsMap.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
