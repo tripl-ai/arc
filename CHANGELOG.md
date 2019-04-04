@@ -2,6 +2,7 @@
 
 # 1.11.1
 
+- **FIX** error reading text file during config stage.
 - added support for `AzureDataLakeStorageGen2AccountKey` and `AzureDataLakeStorageGen2OAuth` authentication methods.
 
 # 1.11.0
