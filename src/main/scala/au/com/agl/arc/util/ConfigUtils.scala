@@ -58,10 +58,18 @@ object ConfigUtils {
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
+      case "classpath" => {
+        val path = s"/${uri.getHost}${uri.getPath}"
+        val etlConfString = using(getClass.getResourceAsStream(path)) { is =>
+          scala.io.Source.fromInputStream(is).mkString
+        }
+        Right(etlConfString)
+      }      
+      // databricks file system
       case "dbfs" => {
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
-      }      
+      }    
       // amazon s3
       case "s3a" => {
         val s3aEndpoint: Option[String] = argsMap.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
@@ -144,13 +152,6 @@ object ConfigUtils {
 
         CloudUtils.setHadoopConfiguration(Some(Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)))
         val etlConfString = CloudUtils.getTextBlob(uri)
-        Right(etlConfString)
-      }
-      case "classpath" => {
-        val path = s"/${uri.getHost}${uri.getPath}"
-        val etlConfString = using(getClass.getResourceAsStream(path)) { is =>
-          scala.io.Source.fromInputStream(is).mkString
-        }
         Right(etlConfString)
       }
       case _ => {
