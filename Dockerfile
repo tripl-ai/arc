@@ -64,7 +64,7 @@ RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/sp
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/spark/spark-avro_2.11/2.4.0/spark-avro_2.11-2.4.0.jar && \
   # aws hadoop
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-aws/2.7.7/hadoop-aws-2.7.7.jar && \
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/amazonaws/aws-java-sdk/1.11.519/aws-java-sdk-1.11.519.jar && \
+  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar && \
   # azure hadoop
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-azure/2.7.4/hadoop-azure-2.7.4.jar && \
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-storage/3.1.0/azure-storage-3.1.0.jar && \   

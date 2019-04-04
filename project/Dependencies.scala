@@ -24,7 +24,7 @@ object Dependencies {
 
   // Amazon S3
   val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % "2.7.7" % includeJars
-  val awsJavaSDK = "com.amazonaws" % "aws-java-sdk" % "1.11.519" % includeJars
+  val awsJavaSDK = "com.amazonaws" % "aws-java-sdk" % "1.7.4" % includeJars
 
   // Azure Blob
   val hadoopAzure = "org.apache.hadoop" % "hadoop-azure" % "2.7.3" % includeJars
@@ -100,6 +100,7 @@ object Dependencies {
 
     // elasticsearch
     elasticsearch
+
 
   )
 }
