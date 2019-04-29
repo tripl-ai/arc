@@ -94,7 +94,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
         description=None,
         inputView=outputView, 
         outputURI=new URI(targetFile), 
-        numPartitions=Option(10),  
+        numPartitions=Option(1000),  
         authentication=None, 
         saveMode=SaveMode.Overwrite, 
         params=Map.empty,
@@ -107,7 +107,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
 
     val actual = spark.read.text(targetFile)
 
-    // numPartitions = 10 is large enough to avoid hash collisions but will force data to be on two rows
+    // numPartitions = 1000 is large enough to avoid hash collisions but will force data to be on two rows
     assert(actual.select(spark_partition_id()).distinct.count === 2)
   }  
 
