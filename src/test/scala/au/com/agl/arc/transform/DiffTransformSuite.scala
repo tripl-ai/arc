@@ -35,12 +35,12 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
                   .appName("Spark ETL Test")
                   .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
+    
+    // set for deterministic timezone
+    spark.conf.set("spark.sql.session.timeZone", "UTC")   
 
     session = spark
-    import spark.implicits._
-
-    // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    import spark.implicits._ 
   }
 
   after {

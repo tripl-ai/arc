@@ -70,11 +70,11 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
                   .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
+    // set for deterministic timezone
+    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+
     session = spark
     import spark.implicits._
-
-    // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
 
     // register handlers 
     val postEchoContext = new ContextHandler(s"/${echo}")
