@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   // Versions
-  lazy val sparkVersion = "2.4.0"
+  lazy val sparkVersion = "2.4.2"
   lazy val scalaTestVersion = "3.0.1"
   lazy val includeJars = if (Option(System.getProperty("assemblyTarget")).getOrElse("standalone") == "databricks") "compile" else "provided"
 

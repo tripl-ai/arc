@@ -12,6 +12,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
+import org.apache.spark.TaskContext
 
 import scala.io.Source
 
@@ -89,19 +90,22 @@ object KafkaLoad {
       val bytesAccumulator = spark.sparkContext.longAccumulator
       val outputMetricsMap = new java.util.HashMap[java.lang.String, java.lang.Long]()
 
+      // KafkaProducer properties 
+      // https://kafka.apache.org/documentation/#producerconfigs
+      val commonProps = new Properties
+      commonProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, load.bootstrapServers)
+      commonProps.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))      
+      commonProps.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(load.retries))    
+      commonProps.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(load.batchSize))    
+
       try {
         repartitionedDF.schema.map(_.dataType) match {
           case List(StringType) => {
             repartitionedDF.foreachPartition(partition => {
-              // KafkaProducer properties 
-              // https://kafka.apache.org/documentation/#producerconfigs
               val props = new Properties
-              props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, load.bootstrapServers)
-              props.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))
+              props.putAll(commonProps)
               props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
               props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
-              props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(load.retries))    
-              props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(load.batchSize))    
 
               // create producer
               val kafkaProducer = new KafkaProducer[java.lang.String, java.lang.String](props)
@@ -123,15 +127,10 @@ object KafkaLoad {
           }
           case List(BinaryType) => {
             repartitionedDF.foreachPartition(partition => {
-              // KafkaProducer properties 
-              // https://kafka.apache.org/documentation/#producerconfigs
               val props = new Properties
-              props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, load.bootstrapServers)
-              props.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))
+              props.putAll(commonProps)
               props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
-              props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
-              props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(load.retries))    
-              props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(load.batchSize))    
+              props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")  
 
               // create producer
               val kafkaProducer = new KafkaProducer[Array[Byte], Array[Byte]](props)
@@ -153,15 +152,10 @@ object KafkaLoad {
           }          
           case List(StringType, StringType) => {
             repartitionedDF.foreachPartition(partition => {
-              // KafkaProducer properties 
-              // https://kafka.apache.org/documentation/#producerconfigs
               val props = new Properties
-              props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, load.bootstrapServers)
-              props.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))
+              props.putAll(commonProps)
               props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
-              props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
-              props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(load.retries))    
-              props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(load.batchSize))     
+              props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")  
 
               // create producer
               val kafkaProducer = new KafkaProducer[String, String](props)
@@ -187,12 +181,9 @@ object KafkaLoad {
               // KafkaProducer properties 
               // https://kafka.apache.org/documentation/#producerconfigs
               val props = new Properties
-              props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, load.bootstrapServers)
-              props.put(ProducerConfig.ACKS_CONFIG, String.valueOf(load.acks))
+              props.putAll(commonProps)
               props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
               props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
-              props.put(ProducerConfig.RETRIES_CONFIG, String.valueOf(load.retries))    
-              props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(load.batchSize))     
 
               // create producer
               val kafkaProducer = new KafkaProducer[Array[Byte], Array[Byte]](props)

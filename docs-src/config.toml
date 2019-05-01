@@ -20,8 +20,8 @@ pygmentsUseClasses=true
 	repo_url = "https://github.com/aglenergy/arc"
 
 	image = "seddonm1/arc"
-	version = "1.11.1"
-	spark_version = "2.4.0"
+	version = "1.12.0"
+	spark_version = "2.4.2"
 	logo = "images/logo.png"
 	favicon = ""
 
