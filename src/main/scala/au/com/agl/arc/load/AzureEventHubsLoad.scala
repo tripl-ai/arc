@@ -75,7 +75,7 @@ object AzureEventHubsLoad {
     val outputMetricsMap = new java.util.HashMap[String, Long]()
 
     try {
-      repartitionedDF.foreachPartition(partition => {
+      repartitionedDF.foreachPartition { partition: Iterator[org.apache.spark.sql.Row] =>
         // establish connection
         val connStr = { new ConnectionStringBuilder()
           .setNamespaceName(load.namespaceName)
@@ -123,7 +123,7 @@ object AzureEventHubsLoad {
           eventHubClient.closeSync
           executorService.shutdown
         }          
-      })
+      }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         outputMetricsMap.put("recordsWritten", Long.valueOf(recordAccumulator.value))         

@@ -101,7 +101,7 @@ object KafkaLoad {
       try {
         repartitionedDF.schema.map(_.dataType) match {
           case List(StringType) => {
-            repartitionedDF.foreachPartition(partition => {
+            repartitionedDF.foreachPartition { partition: Iterator[org.apache.spark.sql.Row] => 
               val props = new Properties
               props.putAll(commonProps)
               props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
@@ -123,10 +123,10 @@ object KafkaLoad {
               } finally {
                 kafkaProducer.close
               }          
-            })
+            }
           }
           case List(BinaryType) => {
-            repartitionedDF.foreachPartition(partition => {
+            repartitionedDF.foreachPartition { partition: Iterator[org.apache.spark.sql.Row] => 
               val props = new Properties
               props.putAll(commonProps)
               props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
@@ -148,10 +148,10 @@ object KafkaLoad {
               } finally {
                 kafkaProducer.close
               }          
-            })
+            }
           }          
           case List(StringType, StringType) => {
-            repartitionedDF.foreachPartition(partition => {
+            repartitionedDF.foreachPartition { partition: Iterator[org.apache.spark.sql.Row] => 
               val props = new Properties
               props.putAll(commonProps)
               props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer")
@@ -174,10 +174,10 @@ object KafkaLoad {
               } finally {
                 kafkaProducer.close
               }          
-            })
+            }
           }
           case List(BinaryType, BinaryType) => {
-            repartitionedDF.foreachPartition(partition => {
+            repartitionedDF.foreachPartition { partition: Iterator[org.apache.spark.sql.Row] => 
               // KafkaProducer properties 
               // https://kafka.apache.org/documentation/#producerconfigs
               val props = new Properties
@@ -202,7 +202,7 @@ object KafkaLoad {
               } finally {
                 kafkaProducer.close
               }          
-            })
+            }
           }          
         }
       } catch {
