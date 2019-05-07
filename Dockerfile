@@ -123,5 +123,3 @@ COPY log4j.properties ${SPARK_HOME}/conf/log4j.properties
 COPY target/scala-2.11/arc.jar ${SPARK_HOME}/jars/arc.jar
 
 WORKDIR $SPARK_HOME
-
-
