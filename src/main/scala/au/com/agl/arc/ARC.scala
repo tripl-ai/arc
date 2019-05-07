@@ -16,8 +16,6 @@ object ARC {
 
   import scala.annotation.tailrec
   import scala.util.Properties._
-  import org.datasyslab.geospark.serde.GeoSparkKryoRegistrator
-  import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator
 
   import org.apache.spark.sql._
   import org.apache.spark.sql.types._
@@ -79,7 +77,6 @@ object ARC {
         .appName(jobId.getOrElse(s"arc:${frameworkVersion}-${UUID.randomUUID.toString}"))
         .config("spark.debug.maxToStringFields", "8192")
         .config("spark.sql.orc.impl", "native") // needed to overcome structured streaming write issue
-        .config("spark.kryo.registrator", classOf[GeoSparkKryoRegistrator].getName)
         .getOrCreate()  
     } catch {
       case e: Exception => 
@@ -156,6 +153,8 @@ object ARC {
       .field("config", sparkConf)
       .field("sparkVersion", spark.version)
       .field("frameworkVersion", frameworkVersion)
+      .field("scalaVersion", scala.util.Properties.versionNumberString)
+      .field("javaVersion", System.getProperty("java.runtime.version"))
       .field("environment", env)
       .field("dynamicConfigurationPlugins", dynamicConfigurationPlugins)
       .field("pipelineStagePlugins", pipelineStagePlugins)
@@ -164,7 +163,6 @@ object ARC {
 
     // add spark listeners
     try {
-      GeoSparkSQLRegistrator.registerAll(spark)
       if (logger.isTraceEnabled) {
         ListenerUtils.addExecutorListener()(spark, logger)
       }

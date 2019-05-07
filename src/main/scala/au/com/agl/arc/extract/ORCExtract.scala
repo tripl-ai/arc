@@ -49,7 +49,7 @@ object ORCExtract {
     val df = try {
       if (arcContext.isStreaming) {
         optionSchema match {
-          case Some(schema) => spark.readStream.option("mergeSchema", "true").schema(schema).orc(extract.input)
+          case Some(schema) => spark.readStream.option("mergeSchema", "true").schema(schema).format("orc").load(extract.input)
           case None => throw new Exception("ORCExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
         }       
       } else {    

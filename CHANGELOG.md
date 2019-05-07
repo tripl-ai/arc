@@ -4,6 +4,7 @@
 
 - bump to Spark [2.4.2](https://spark.apache.org/releases/spark-release-2-4-2.html).
 - bump to Scala `2.12.8` from `2.11.8` to allow use of Spark [Prebuilt Binaries](https://spark.apache.org/downloads.html).
+- bump to [sbt](https://www.scala-sbt.org/) `0.13.18` from `0.13.8`.
 - bump to OpenJDK 8.201.08-r1 in `Dockerfile`.
 
 # 1.11.1
