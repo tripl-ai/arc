@@ -621,6 +621,10 @@ bin/spark-submit \
 --etl.config.uri=file:///opt/tutorial/streaming/job/0/streaming.json
 </code></pre>
 
+<h2 id="spark-and-ulimit">Spark and ulimit</h2>
+
+<p>On larger instances with many cores per machine it is possible to exceed the default (<code>1024</code>) max open files (<code>ulimit</code>). This should be verified on your instances if you are receiving <code>too many open files</code> type errors.</p>
+
 
 			<aside class="copyright" role="note">
 				

@@ -107,3 +107,7 @@ bin/spark-submit \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///opt/tutorial/streaming/job/0/streaming.json
 ```
+
+## Spark and ulimit
+
+On larger instances with many cores per machine it is possible to exceed the default (`1024`) max open files (`ulimit`). This should be verified on your instances if you are receiving `too many open files` type errors.
