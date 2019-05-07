@@ -7,7 +7,6 @@ lazy val root = (project in file(".")).
     name := "arc",
     organization := "au.com.agl",
     scalaVersion := "2.11.12",
-    
     scalastyleFailOnError := false,
     libraryDependencies ++= etlDeps,
     parallelExecution in Test := false,
