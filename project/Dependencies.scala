@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   // Versions
-  lazy val sparkVersion = "2.4.2"
+  lazy val sparkVersion = "2.4.3"
   lazy val scalaTestVersion = "3.0.7"
   lazy val includeJars = if (Option(System.getProperty("assemblyTarget")).getOrElse("standalone") == "databricks") "compile" else "provided"
 
@@ -20,7 +20,7 @@ object Dependencies {
   val sparkXML = "com.databricks" %% "spark-xml" % "0.5.0" % includeJars
 
   // Spark AVRO
-  val sparkAvro = "org.apache.spark" %% "spark-avro" % "2.4.0" % includeJars
+  val sparkAvro = "org.apache.spark" %% "spark-avro" % sparkVersion % includeJars
 
   // Amazon S3
   val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % "2.7.7" % includeJars
