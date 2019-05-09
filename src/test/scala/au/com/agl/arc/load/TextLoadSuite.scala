@@ -33,6 +33,9 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
                   .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
+    // set for deterministic timezone
+    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+
     session = spark
 
     // ensure targets removed
@@ -94,7 +97,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
         description=None,
         inputView=outputView, 
         outputURI=new URI(targetFile), 
-        numPartitions=Option(10),  
+        numPartitions=Option(1000),  
         authentication=None, 
         saveMode=SaveMode.Overwrite, 
         params=Map.empty,
@@ -107,7 +110,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
 
     val actual = spark.read.text(targetFile)
 
-    // numPartitions = 10 is large enough to avoid hash collisions but will force data to be on two rows
+    // numPartitions = 1000 is large enough to avoid hash collisions but will force data to be on two rows
     assert(actual.select(spark_partition_id()).distinct.count === 2)
   }  
 
@@ -168,7 +171,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     )    
 
     val actual = spark.read.text(targetFile)
-    val expected = Seq("""[{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-21T08:46:54.000+11:00"},{"booleanDatum":false,"dateDatum":"2016-12-19","decimalDatum":12.345000000000000000,"doubleDatum":21.2121,"integerDatum":34,"longDatum":1520828123,"stringDatum":"breakdelimiter,test","timeDatum":"23:45:16","timestampDatum":"2017-12-30T04:21:49.000+11:00"}]""").toDF
+    val expected = Seq("""[{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-20T21:46:54.000Z"},{"booleanDatum":false,"dateDatum":"2016-12-19","decimalDatum":12.345000000000000000,"doubleDatum":21.2121,"integerDatum":34,"longDatum":1520828123,"stringDatum":"breakdelimiter,test","timeDatum":"23:45:16","timestampDatum":"2017-12-29T17:21:49.000Z"}]""").toDF
 
     assert(TestDataUtils.datasetEquality(expected, actual))
   }   

@@ -66,18 +66,19 @@ object KafkaExtract {
       // https://kafka.apache.org/documentation/#consumerconfigs
 
 
-      val baseProps = new Properties
-      baseProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, extract.bootstrapServers)
-      baseProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer")
-      baseProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer")
-      baseProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
-      baseProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-      baseProps.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, extract.timeout.toString)
-      baseProps.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, Math.min(10000, extract.timeout-1).toString)
-      baseProps.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, Math.min(500, extract.timeout-1).toString)
-      baseProps.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, Math.min(3000, extract.timeout-2).toString)
+      val commonProps = new Properties
+      commonProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, extract.bootstrapServers)
+      commonProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer")
+      commonProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArrayDeserializer")
+      commonProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false")
+      commonProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+      commonProps.put(ConsumerConfig.REQUEST_TIMEOUT_MS_CONFIG, extract.timeout.toString)
+      commonProps.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, Math.min(10000, extract.timeout-1).toString)
+      commonProps.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, Math.min(500, extract.timeout-1).toString)
+      commonProps.put(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, Math.min(3000, extract.timeout-2).toString)
 
-      val props = baseProps
+      val props = new Properties
+      props.putAll(commonProps)
       props.put(ConsumerConfig.GROUP_ID_CONFIG, extract.groupID)
 
       // first get the number of partitions via the driver process so it can be used for mapPartition
@@ -96,10 +97,11 @@ object KafkaExtract {
 
       try {
         spark.sqlContext.emptyDataFrame.repartition(numPartitions).mapPartitions(partition => {
-          // get the partition of this executor which maps 1:1 with Kafka partition
+          // get the partition of this task which maps 1:1 with Kafka partition
           val partitionId = TaskContext.getPartitionId
           
-          val props = baseProps
+          val props = new Properties
+          props.putAll(commonProps)
           props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, extract.maxPollRecords.toString)
           props.put(ConsumerConfig.GROUP_ID_CONFIG, s"${extract.groupID}-${partitionId}")
 
@@ -122,6 +124,7 @@ object KafkaExtract {
           }
 
           try {
+            // assign only current partition to this task
             kafkaConsumer.assign(List(topicPartition).asJava)
 
             // recursively get batches of records until finished

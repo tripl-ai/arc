@@ -166,7 +166,7 @@ If you are having problems compiling it is likely due to environment setup. You 
 
 ```bash
 docker build . -t scala-sbt:latest -f BuildDockerfile 
-docker run -v $(pwd):/sbt scala-sbt:latest sbt assembly
+docker run --rm -v $(pwd):/sbt scala-sbt:latest sbt assembly
 ```
 
 The compiled JAR is then copied into the Docker image in the `Dockerfile`.

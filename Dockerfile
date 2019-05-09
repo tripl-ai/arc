@@ -24,7 +24,7 @@ RUN { \
 ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
 ENV PATH $PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin
 
-ENV JAVA_ALPINE_VERSION 8.201.08-r0
+ENV JAVA_ALPINE_VERSION 8.212.04-r0
 
 RUN set -x \
   && apk add --no-cache \
@@ -32,24 +32,17 @@ RUN set -x \
   && [ "$JAVA_HOME" = "$(docker-java-home)" ]
 
 # Spark Verison
-ENV SPARK_VERSION         2.4.0
+ENV SPARK_VERSION         2.4.3
+ENV SCALA_VERSION         2.11
 ENV HADOOP_VERSION        2.7
 ENV SPARK_HOME            /opt/spark
 ENV SPARK_JARS            /opt/spark/jars/
-ENV SPARK_CHECKSUM_URL    https://www.apache.org/dist/spark
+ENV SPARK_CHECKSUM_URL    https://archive.apache.org/dist/spark
 ENV SPARK_DOWNLOAD_URL    https://www-us.apache.org/dist/spark
-ENV GLIBC_VERSION         2.26-r0
 
 # install spark
 RUN set -ex && \
-  apk upgrade --update && \
-  apk add --update libstdc++ ca-certificates bash openblas findutils coreutils && \
-  for pkg in glibc-${GLIBC_VERSION} glibc-bin-${GLIBC_VERSION} glibc-i18n-${GLIBC_VERSION}; do wget https://github.com/andyshinn/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/${pkg}.apk -O /tmp/${pkg}.apk; done && \
-  apk add --allow-untrusted /tmp/*.apk && \
-  rm -v /tmp/*.apk && \
-  ( /usr/glibc-compat/bin/localedef --force --inputfile POSIX --charmap UTF-8 C.UTF-8 || true ) && \
-  echo "export LANG=C.UTF-8" > /etc/profile.d/locale.sh && \
-  /usr/glibc-compat/sbin/ldconfig /lib /usr/glibc-compat/lib && \
+  apk add --no-cache --update  ca-certificates bash findutils coreutils && \
   mkdir -p ${SPARK_HOME} && \
   wget -O spark.sha ${SPARK_CHECKSUM_URL}/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz.sha512 && \
   export SPARK_SHA512_SUM=$(grep -o "[A-F0-9]\{8\}" spark.sha | awk '{print}' ORS='' | tr '[:upper:]' '[:lower:]') && \
@@ -61,7 +54,7 @@ RUN set -ex && \
 
 # spark extensions
 RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/spark-xml_2.11/0.5.0/spark-xml_2.11-0.5.0.jar && \    
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/spark/spark-avro_2.11/2.4.0/spark-avro_2.11-2.4.0.jar && \
+  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/spark/spark-avro_2.11/${SPARK_VERSION}/spark-avro_2.11-${SPARK_VERSION}.jar && \
   # aws hadoop
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-aws/2.7.7/hadoop-aws-2.7.7.jar && \
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/amazonaws/aws-java-sdk/1.11.519/aws-java-sdk-1.11.519.jar && \
@@ -117,5 +110,3 @@ COPY target/scala-2.11/arc.jar ${SPARK_HOME}/jars/arc.jar
 
 WORKDIR $SPARK_HOME
 # EOF
-
-

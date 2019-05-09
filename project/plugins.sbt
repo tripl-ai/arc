@@ -1,8 +1,8 @@
 // better ivy / maven jar downloading
-addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-M14")
+addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.1.0-M13-4")
 
-// code checking
-addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.8.0")
+// style
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "1.0.0")
 
 // versioninfo
-addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.7.0")
+addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.9.0")

@@ -33,12 +33,15 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
 
   before {
     implicit val spark = SparkSession
-                  .builder()
-                  .master("local[*]")
-                  .config("spark.ui.port", "9999")
-                  .appName("Spark ETL Test")
-                  .getOrCreate()
-    // spark.sparkContext.setLogLevel("ERROR")
+      .builder()
+      .master("local[*]")
+      .config("spark.ui.port", "9999")
+      .appName("Spark ETL Test")
+      .getOrCreate()
+    spark.sparkContext.setLogLevel("ERROR")
+
+    // set for deterministic timezone
+    spark.conf.set("spark.sql.session.timeZone", "UTC")       
 
     session = spark
   }

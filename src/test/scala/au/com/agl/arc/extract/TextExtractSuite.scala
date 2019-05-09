@@ -37,6 +37,9 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
                   .getOrCreate()
     spark.sparkContext.setLogLevel("FATAL")
 
+    // set for deterministic timezone
+    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+
     session = spark
   }
 

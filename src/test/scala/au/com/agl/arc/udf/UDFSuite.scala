@@ -23,10 +23,10 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
                   .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
-    session = spark
-
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")
+    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+
+    session = spark
 
     logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 

@@ -1,5 +1,10 @@
 ## Change Log
 
+# 1.12.0
+
+- bump to Spark [2.4.3](https://spark.apache.org/releases/spark-release-2-4-3.html).
+- bump to OpenJDK `8.212.04-r0` in `Dockerfile`.
+
 # 1.11.1
 
 - **FIX** error reading text file during config stage.

@@ -11,3 +11,5 @@ spark/
 *~
 derby.log
 docs-src/hugo
+.metals/
+.bloop/

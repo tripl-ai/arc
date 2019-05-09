@@ -6,7 +6,7 @@ lazy val root = (project in file(".")).
   settings(
     name := "arc",
     organization := "au.com.agl",
-    scalaVersion := "2.11.8",
+    scalaVersion := "2.11.12",
     scalastyleFailOnError := false,
     libraryDependencies ++= etlDeps,
     parallelExecution in Test := false,
@@ -20,7 +20,7 @@ test in assembly := {}
 
 assemblyJarName in assembly := s"${name.value}.jar"
 
-scalacOptions := Seq("-unchecked", "-deprecation")
+scalacOptions := Seq("-target:jvm-1.8", "-unchecked", "-deprecation")
 
 // exclude from build as they are in the dockerfile
 assemblyExcludedJars in assembly := { 

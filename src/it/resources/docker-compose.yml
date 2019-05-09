@@ -113,12 +113,14 @@ services:
       discovery.type: single-node  
   
   minio:
-    image: minio/minio:RELEASE.2019-03-20T22-38-47Z
+    image: minio/minio:it
+    build: minio/.
     networks:
       - arc-integration    
     ports:
       - 9400:9000     
-    command: server /data
+    command: server /it
     environment:
       MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
       MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+

@@ -38,6 +38,9 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
                   .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
+    // set for deterministic timezone
+    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+
     session = spark
     spark.sparkContext.hadoopConfiguration.set("io.compression.codecs", classOf[au.com.agl.arc.util.ZipCodec].getName)
 

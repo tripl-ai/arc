@@ -31,6 +31,9 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
                   .getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
 
+    // set for deterministic timezone
+    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+
     session = spark
 
     // ensure targets removed

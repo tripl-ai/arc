@@ -2,8 +2,8 @@ import sbt._
 
 object Dependencies {
   // Versions
-  lazy val sparkVersion = "2.4.0"
-  lazy val scalaTestVersion = "3.0.1"
+  lazy val sparkVersion = "2.4.3"
+  lazy val scalaTestVersion = "3.0.7"
   lazy val includeJars = if (Option(System.getProperty("assemblyTarget")).getOrElse("standalone") == "databricks") "compile" else "provided"
 
   // Testing
@@ -20,11 +20,11 @@ object Dependencies {
   val sparkXML = "com.databricks" %% "spark-xml" % "0.5.0" % includeJars
 
   // Spark AVRO
-  val sparkAvro = "org.apache.spark" %% "spark-avro" % "2.4.0" % includeJars
+  val sparkAvro = "org.apache.spark" %% "spark-avro" % sparkVersion % includeJars
 
   // Amazon S3
   val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % "2.7.7" % includeJars
-  val awsJavaSDK = "com.amazonaws" % "aws-java-sdk" % "1.11.519" % includeJars
+  val awsJavaSDK = "com.amazonaws" % "aws-java-sdk" % "1.7.4" % includeJars
 
   // Azure Blob
   val hadoopAzure = "org.apache.hadoop" % "hadoop-azure" % "2.7.3" % includeJars
@@ -42,10 +42,6 @@ object Dependencies {
   val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "7.2.1.jre8" % includeJars
   val azureSQLDB = "com.microsoft.azure" % "azure-sqldb-spark" % "1.0.2" % includeJars
   val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.5" % includeJars
-
-  // geospark
-  val geospark = "org.datasyslab" % "geospark" % "1.2.0"  % includeJars
-  val geosparkSQL = "org.datasyslab" % "geospark-sql_2.3" % "1.2.0" % includeJars
 
   // cli arg parsing
   val scallop = "org.rogach" %% "scallop" % "2.1.1"
@@ -90,16 +86,13 @@ object Dependencies {
     sparkXML,
     sparkAvro,
 
-    // geospark
-    geospark,
-    geosparkSQL,
-
     // Azure EventHubs
     azureEventHub,
     qpid,
 
     // elasticsearch
     elasticsearch
+
 
   )
 }
