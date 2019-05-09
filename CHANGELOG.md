@@ -3,8 +3,6 @@
 # 1.12.0
 
 - bump to Spark [2.4.3](https://spark.apache.org/releases/spark-release-2-4-3.html).
-- bump to Scala `2.11.12` from `2.11.8`.
-- bump to [sbt](https://www.scala-sbt.org/) `1.2.8` from `0.13.8`.
 - bump to OpenJDK `8.212.04-r0` in `Dockerfile`.
 
 # 1.11.1
