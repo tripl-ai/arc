@@ -38,7 +38,7 @@ ENV HADOOP_VERSION        2.7
 ENV SPARK_HOME            /opt/spark
 ENV SPARK_JARS            /opt/spark/jars/
 ENV SPARK_CHECKSUM_URL    https://archive.apache.org/dist/spark
-ENV SPARK_DOWNLOAD_URL    https://archive.apache.org/dist/spark
+ENV SPARK_DOWNLOAD_URL    https://www-us.apache.org/dist/spark
 
 # install spark
 RUN set -ex && \

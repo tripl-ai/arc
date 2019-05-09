@@ -21,7 +21,7 @@ pygmentsUseClasses=true
 
 	image = "seddonm1/arc"
 	version = "1.12.0"
-	spark_version = "2.4.2"
+	spark_version = "2.4.3"
 	logo = "images/logo.png"
 	favicon = ""
 
