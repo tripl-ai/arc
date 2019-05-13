@@ -462,4 +462,57 @@ hdfs://test/{ab,c{de, fg}
     }  
   }    
 
+  test("Test config substitutions") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val conf = """{
+      "common": {
+        "environments": [
+            "production",
+            "test"
+        ],
+        "name": "foo"
+      },
+      "stages": [
+        {
+          "environments": ${common.environments}
+          "type": "RateExtract",
+          "name": ${common.name},
+          "outputView": "stream",
+          "rowsPerSecond": 1,
+          "rampUpTime": 1,
+          "numPartitions": 1
+        }
+      ]
+    }"""
+
+    val base = ConfigFactory.load()
+    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+    val config = etlConf.withFallback(base)
+    var argsMap = collection.mutable.Map[String, String]()
+    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+
+    val stage = RateExtract(
+        name="foo",
+        description=None,
+        outputView="stream", 
+        rowsPerSecond=1,
+        rampUpTime=1,
+        numPartitions=1,
+        params=Map.empty
+      )
+
+    val expected = ETLPipeline(stage :: Nil)
+
+    pipeline match {
+      case Left(errors) => assert(false)
+      case Right( (pl, graph) ) => {
+        assert(pl === expected)
+      }
+    } 
+  }
+
+
 }
