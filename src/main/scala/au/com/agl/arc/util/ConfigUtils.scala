@@ -42,7 +42,7 @@ object ConfigUtils {
 
   def parsePipeline(configUri: Option[String], argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
     configUri match {
-      case Some(uri) => parseConfig(new URI(uri), argsMap, graph, arcContext)
+      case Some(uri) => parseConfig(Right(new URI(uri)), argsMap, graph, arcContext)
       case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
      }
   }
@@ -178,10 +178,18 @@ object ConfigUtils {
     }
   }
 
-  def parseConfig(uri: URI, argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
+  def parseConfig(uri: Either[String, URI], argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
     val base = ConfigFactory.load()
 
-    val etlConfString = getConfigString(uri, argsMap, arcContext)
+    val etlConfString = uri match {
+      case Left(str) => Right(str)
+      case Right(uri) => getConfigString(uri, argsMap, arcContext)
+    }
+
+    val uriString = uri match {
+      case Left(str) => ""
+      case Right(uri) => uri.toString
+    }    
 
     etlConfString.rightFlatMap { str =>
       // calculate hash of raw string so that logs can be used to detect changes
@@ -198,11 +206,9 @@ object ConfigUtils {
       
       val pluginConfs: List[Config] = resolvedConfigPlugins.map( c => ConfigFactory.parseMap(c) )
 
-      val config = etlConf.withFallback(base)
-
       val c = pluginConfs match {
         case Nil =>
-          config.resolveWith(argsMapConf).resolve()
+          etlConf.resolveWith(argsMapConf.withFallback(etlConf).withFallback(base)).resolve()
         case _ =>
           val pluginConf = pluginConfs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
           val pluginValues = pluginConf.root().unwrapped()
@@ -210,10 +216,10 @@ object ConfigUtils {
             .message("Found additional config values from plugins")
             .field("pluginConf", pluginValues)
             .log()           
-          config.resolveWith(argsMapConf.withFallback(pluginConf)).resolve()
+          etlConf.resolveWith(argsMapConf.withFallback(pluginConf).withFallback(etlConf).withFallback(base)).resolve()
       }
 
-      readPipeline(c, etlConfStringHash, uri, argsMap, graph, arcContext)
+      readPipeline(c, etlConfStringHash, uriString, argsMap, graph, arcContext)
     }
   }
 
@@ -2593,7 +2599,7 @@ object ConfigUtils {
     (name, description, uri, invalidKeys) match {
       case (Right(n), Right(d), Right(u), Right(_)) => 
         val uri = new URI(u)
-        val subPipeline = parseConfig(uri, argsMap, graph, arcContext)
+        val subPipeline = parseConfig(Right(uri), argsMap, graph, arcContext)
         subPipeline match {
           case Right(etl) => (Right(PipelineExecute(n, d, uri, etl._1)), graph)
           case Left(errors) => {
@@ -2690,7 +2696,7 @@ object ConfigUtils {
     }
   }
 
-  def readPipeline(c: Config, configMD5: String, uri: URI, argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
+  def readPipeline(c: Config, configMD5: String, uri: String, argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
     import ConfigReader._
 
     val startTime = System.currentTimeMillis() 
@@ -2698,7 +2704,7 @@ object ConfigUtils {
 
     logger.info()
       .field("event", "validateConfig")
-      .field("uri", uri.toString)        
+      .field("uri", uri)        
       .field("content-md5", configMD5)
       .log()    
 

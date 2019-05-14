@@ -103,13 +103,11 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     }
     """
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
-    pipeline match {
+    pipelineEither match {
       case Left(stageError) => {
         assert(stageError == StageError(0, "test",3,List(ConfigError("inputView",Some(10), "view 'testView' does not exist by this stage of the job."))) :: Nil)
       }
@@ -148,13 +146,11 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     }
     """
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
-    pipeline match {
+    pipelineEither match {
       case Left(_) => assert(false)
       case Right( (pipeline, graph) ) => {
         assert(true)
@@ -183,13 +179,11 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     }
     """
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
-    pipeline match {
+    pipelineEither match {
       case Left(stageError) => {
         assert(stageError == StageError(0, "test",3,List(ConfigError("inputURI",Some(10),"view 'customer' does not exist by this stage of the job."))) :: Nil)
       }
@@ -228,13 +222,11 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     }
     """
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
-    pipeline match {
+    pipelineEither match {
       case Left(_) => assert(false)
       case Right( (pipeline, graph) ) => {
         assert(graph.vertices == Vertex(0, "customer") :: Vertex(1, "outputView") :: Nil)
@@ -304,13 +296,11 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     }
     """
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
-    pipeline match {
+    pipelineEither match {
       case Left(_) => assert(false)
       case Right( (_, graph) ) => {
         assert(graph.vertices == Vertex(0, "customer") :: Vertex(1, "outputView0") :: Vertex(2, "customer") :: Vertex(3, "outputView0") :: Vertex(4, "outputView1") :: Nil)
@@ -351,13 +341,11 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     }
     """
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil,false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext) 
 
-    pipeline match {
+    pipelineEither match {
       case Left(_) => assert(false)
       case Right( (_, graph) ) => {
         assert(graph.vertices == Vertex(1, "1:ParquetLoad"):: Nil)

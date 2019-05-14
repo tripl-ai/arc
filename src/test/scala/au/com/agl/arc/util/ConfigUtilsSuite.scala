@@ -5,6 +5,8 @@ import java.net.URI
 import scala.io.Source
 import scala.collection.JavaConverters._
 
+import com.fasterxml.jackson.databind.ObjectMapper
+
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
@@ -184,14 +186,9 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val metaConf = mlConf.replaceAll("hdfs://datalake/metadata/", getClass.getResource("/conf/metadata/").toString)
 
       try {
-        val base = ConfigFactory.load()
-        val etlConf = ConfigFactory.parseString(metaConf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-        val config = etlConf.withFallback(base)
-        var argsMap = collection.mutable.Map[String, String]()
-
-        val environmentVariables = ConfigFactory.parseMap(Map("JOB_RUN_DATE" -> "0", "ETL_CONF_BASE_URL" -> "").asJava)
-        val initialGraph =  Graph(Vertex(0,"customer_20180501") :: Vertex(0,"customer_20180502") :: Nil, Nil,false)
-        val pipelineEither = ConfigUtils.readPipeline(config.resolveWith(environmentVariables).resolve(), "", new URI(""), argsMap, initialGraph, arcContext)
+        var argsMap = collection.mutable.Map[String, String]("JOB_RUN_DATE" -> "0", "ETL_CONF_BASE_URL" -> "")
+        val graph =  Graph(Vertex(0,"customer_20180501") :: Vertex(0,"customer_20180502") :: Nil, Nil,false)
+        val pipelineEither = ConfigUtils.parseConfig(Left(metaConf), argsMap, graph, arcContext)
 
         pipelineEither match {
           case Left(errors) => {
@@ -227,14 +224,12 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         }
       ]
     }"""
+    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
-
-    pipeline match {
+    pipelineEither match {
       case Left(stageError) => {
         assert(stageError == 
         StageError(0, "file extract",3,List(
@@ -267,13 +262,11 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
-    pipeline match {
+    pipelineEither match {
       case Left(stageError) => {
         assert(stageError == 
         StageError(0, "file extract",3,List(
@@ -318,13 +311,11 @@ hdfs://test/{ab,c{de, fg}
       ]
     }"""
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
-    pipeline match {
+    pipelineEither match {
       case Left(stageError) => {
         assert(stageError == 
         StageError(1, "file extract 1",13,List(
@@ -359,13 +350,11 @@ hdfs://test/{ab,c{de, fg}
       ]
     }"""
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
-    pipeline match {
+    pipelineEither match {
       case Left(stageError) => {
         assert(stageError == StageError(0, "file extract",3,List(ConfigError("delimiter", Some(12), "Invalid value. Valid values are ['Comma','Pipe','DefaultHive','Custom']."))) :: Nil)
       }
@@ -394,13 +383,11 @@ hdfs://test/{ab,c{de, fg}
       ]
     }"""
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
-    pipeline match {
+    pipelineEither match {
       case Left(stageError) => {
         assert(stageError == StageError(0, "file extract",3,List(ConfigError("customDelimiter", None, "Missing required attribute 'customDelimiter'."))) :: Nil)
       }
@@ -430,11 +417,9 @@ hdfs://test/{ab,c{de, fg}
       ]
     }"""
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipelineEither = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
     val expected = ETLPipeline(      
       DelimitedExtract(
@@ -461,5 +446,57 @@ hdfs://test/{ab,c{de, fg}
       }
     }  
   }    
+
+  test("Test config substitutions") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val conf = """{
+      "common": {
+        "environments": [
+            "production",
+            "test"
+        ],
+        "name": "foo"
+      },
+      "stages": [
+        {
+          "environments": ${common.environments}
+          "type": "RateExtract",
+          "name": ${common.name},
+          "outputView": "stream",
+          "rowsPerSecond": 1,
+          "rampUpTime": 1,
+          "numPartitions": 1
+        }
+      ]
+    }"""
+
+
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+
+    val stage = RateExtract(
+        name="foo",
+        description=None,
+        outputView="stream", 
+        rowsPerSecond=1,
+        rampUpTime=1,
+        numPartitions=1,
+        params=Map.empty
+      )
+
+    val expected = ETLPipeline(stage :: Nil)
+
+    pipelineEither match {
+      case Left(errors) => assert(false)
+      case Right( (pl, graph) ) => {
+        assert(pl === expected)
+      }
+    } 
+  }
+
 
 }

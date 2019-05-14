@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.12.1
+
+- **FIX** defect where job config files would not resolve internal subsittution values.
+
 # 1.12.0
 
 - bump to Spark [2.4.3](https://spark.apache.org/releases/spark-release-2-4-3.html).
