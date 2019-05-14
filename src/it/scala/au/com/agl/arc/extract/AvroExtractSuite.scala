@@ -173,15 +173,14 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
 
-    pipeline match {
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+
+    pipelineEither match {
       case Left(_) => {
-        println(pipeline)  
+        println(pipelineEither)  
         assert(false)
       }
       case Right((pl, _)) => {
@@ -224,15 +223,13 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
-    pipeline match {
+    pipelineEither match {
       case Left(_) => {
-        println(pipeline)  
+        println(pipelineEither)  
         assert(false)
       }
       case Right((pl, _)) => {
