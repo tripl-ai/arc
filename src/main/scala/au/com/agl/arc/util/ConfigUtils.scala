@@ -1710,14 +1710,15 @@ object ConfigUtils {
     }
 
     (name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy) match {
-      case (Right(n), Right(d), Right(uri), Right(isql), Right(vsql), Right(iv), Right(ov), Right(p), Right(_), Right(np), Right(pb)) => 
+      case (Right(n), Right(d), Right(uri), Right(sql), Right(vsql), Right(iv), Right(ov), Right(p), Right(_), Right(np), Right(pb)) => 
         var outputGraph = graph
         // add the vertices
         outputGraph = outputGraph.addVertex(Vertex(idx, ov))
         // add the edges
         outputGraph = outputGraph.addEdge(iv, ov)
 
-        (Right(MetadataFilterTransform(n, d, iv, uri, vsql, ov, params, sqlParams, p, np, pb)), outputGraph)
+        // pass the unreplaced input sql not the 'valid sql' as the paramenters will be replaced when the stage is executed for testing
+        (Right(MetadataFilterTransform(n, d, iv, uri, sql, ov, params, sqlParams, p, np, pb)), outputGraph)
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
@@ -1816,7 +1817,7 @@ object ConfigUtils {
     }
 
     (name, description, parsedURI, inputSQL, validSQL, outputView, persist, invalidKeys, numPartitions, partitionBy, tableExistence) match {
-      case (Right(n), Right(d), Right(uri), Right(isql), Right(vsql), Right(ov), Right(p), Right(_), Right(np), Right(pb), Right(te)) => 
+      case (Right(n), Right(d), Right(uri), Right(sql), Right(vsql), Right(ov), Right(p), Right(_), Right(np), Right(pb), Right(te)) => 
 
         if (vsql.toLowerCase() contains "now") {
           logger.warn()
@@ -1856,7 +1857,8 @@ object ConfigUtils {
           outputGraph = outputGraph.addEdge(iv, ov)
         }
 
-        (Right(SQLTransform(n, d, uri, vsql, ov, params, sqlParams, p, np, pb)), outputGraph)
+        // pass the unreplaced input sql not the 'valid sql' as the paramenters will be replaced when the stage is executed for testing
+        (Right(SQLTransform(n, d, uri, sql, ov, params, sqlParams, p, np, pb)), outputGraph)
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, parsedURI, inputSQL, validSQL, outputView, persist, invalidKeys, numPartitions, partitionBy, tableExistence).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
@@ -2663,6 +2665,7 @@ object ConfigUtils {
 
     (name, description, parsedURI, inputSQL, validSQL, invalidKeys) match {
       case (Right(n), Right(d), Right(uri), Right(sql), Right(vsql), Right(_)) => 
+        // pass the unreplaced input sql not the 'valid sql' as the paramenters will be replaced when the stage is executed for testing
         (Right(SQLValidate(n, d, uri, sql, sqlParams, params)), graph)
       case _ =>
         val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten

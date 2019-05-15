@@ -43,6 +43,39 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
+  test("SQLValidate: end-to-end") {
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "SQLValidate",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${getClass.getResource("/conf/sql/").toString}/basic.sql",
+          "sqlParams": {
+            "placeholder": "value",
+          }
+        }
+      ]
+    }"""
+    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+
+    pipelineEither match {
+      case Left(_) => assert(false)
+      case Right((pipeline,_)) => ARC.run(pipeline)(spark, logger, arcContext)
+    }  
+  }
+
   test("SQLValidate: true, null") {
     implicit val spark = session
     import spark.implicits._

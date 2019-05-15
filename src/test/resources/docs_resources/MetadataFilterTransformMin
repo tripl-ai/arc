@@ -6,6 +6,6 @@
     "test"
   ],
   "inputURI": "hdfs://datalake/sql/filter_pii.sql",
-  "inputView": "cutomer",
+  "inputView": "customer",
   "outputView": "customer_safe"
 }

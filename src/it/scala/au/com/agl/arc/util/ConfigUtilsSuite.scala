@@ -85,6 +85,9 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
             "production",
             "test"
           ],
+          "sqlParams": {
+            "breed": "Akita"
+          },
           "inputURI": "s3a://${bucketName}/select_akita.sql",
           "outputView": "${outputView}",
           "authentication": {

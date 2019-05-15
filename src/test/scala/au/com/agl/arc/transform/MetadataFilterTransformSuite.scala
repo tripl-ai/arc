@@ -55,6 +55,63 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(targetFile))     
   }
 
+  test("MetadataFilterTransform: end-to-end") {
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    // load csv
+    val extractDataset = spark.read.csv(targetFile)
+    extractDataset.createOrReplaceTempView(inputView)
+
+    // parse json schema to List[ExtractColumn]
+    val cols = au.com.agl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+
+    // apply metadata
+    transform.TypingTransform.transform(
+      TypingTransform(
+        name="TypingTransform",
+        description=None,
+        cols=Right(cols.right.getOrElse(null)), 
+        inputView=inputView,
+        outputView=outputView, 
+        params=Map.empty,
+        persist=false,
+        failMode=FailModeTypePermissive,
+        numPartitions=None,
+        partitionBy=Nil           
+      )
+    )
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "MetadataFilterTransform",
+          "name": "filter out Personally identifiable information (pii) fields",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${getClass.getResource("/conf/sql/").toString}/filter_private.sql",
+          "inputView": "${outputView}",
+          "outputView": "customer_safe",
+          "sqlParams": {
+            "private": "true"
+          }
+        }        
+      ]
+    }"""
+    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+
+    pipelineEither match {
+      case Left(_) => assert(false)
+      case Right((pipeline,_)) => ARC.run(pipeline)(spark, logger, arcContext)
+    }  
+  }  
+
   test("MetadataFilterTransform: private=true") {
     implicit val spark = session
     import spark.implicits._
