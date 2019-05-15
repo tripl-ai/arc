@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.12.2
+
+- **FIX** defect where `sqlParams` in `SQLTransform` stage would throw exception.
+
 # 1.12.1
 
 - **FIX** defect where job config files would not resolve internal subsittution values.

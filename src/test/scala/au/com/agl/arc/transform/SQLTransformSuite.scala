@@ -85,6 +85,41 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     assert(TestDataUtils.datasetEquality(expected, actual))
   }  
 
+  test("SQLTransform: end-to-end") {
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "SQLTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${getClass.getResource("/conf/sql/").toString}/basic.sql",
+          "outputView": "customer",
+          "persist": false,
+          "sqlParams": {
+            "placeholder": "value",
+          }
+        }
+      ]
+    }"""
+    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+
+    pipelineEither match {
+      case Left(_) => assert(false)
+      case Right((pipeline,_)) => ARC.run(pipeline)(spark, logger, arcContext)
+    }  
+  }
+
   test("SQLTransform: persist") {
     implicit val spark = session
     import spark.implicits._

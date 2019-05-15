@@ -85,6 +85,9 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
             "production",
             "test"
           ],
+          "sqlParams": {
+            "breed": "Akita"
+          },
           "inputURI": "s3a://${bucketName}/select_akita.sql",
           "outputView": "${outputView}",
           "authentication": {
@@ -96,15 +99,13 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val base = ConfigFactory.load()
-    val etlConf = ConfigFactory.parseString(conf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-    val config = etlConf.withFallback(base)
-    var argsMap = collection.mutable.Map[String, String]()
-    val pipeline = ConfigUtils.readPipeline(config.resolve(), "", new URI(""), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
 
-    pipeline match {
+    pipelineEither match {
       case Left(_) => {
-        println(pipeline)  
+        println(pipelineEither)  
         assert(false)
       }
       case Right((pl, _)) => {

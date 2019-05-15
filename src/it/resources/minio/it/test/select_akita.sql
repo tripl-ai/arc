@@ -3,4 +3,4 @@ SELECT
 FROM
     akc_breed_info
 WHERE
-    breed = 'Akita'
+    breed = '${breed}'

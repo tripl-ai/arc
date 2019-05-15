@@ -34,6 +34,7 @@ assemblyExcludedJars in assembly := {
 // META-INF discarding
 assemblyMergeStrategy in assembly := {
    {
+    // this match removes META-INF files except for the ones for plugins
     case PathList("META-INF", xs @ _*) =>
       xs match {
         case "services" :: xs => MergeStrategy.filterDistinctLines
