@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.13.0
+
+- added `AzureCosmosDBExtract` stage.
+
 # 1.12.2
 
 - **FIX** defect where `sqlParams` in `SQLTransform` stage would throw exception.

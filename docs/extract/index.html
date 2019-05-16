@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.12.2</span></strong>
+          <span class="version">1.13.0</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -667,13 +667,168 @@
   <span class="nt">&#34;avroSchemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/user.avsc&#34;</span>
 <span class="p">}</span></code></pre></div>
 
+<h2 id="azurecosmosdbextract">AzureCosmosDBExtract</h2>
+
+<h5 id="since-1-13-0-supports-streaming-true">Since: 1.13.0 - Supports Streaming: True</h5>
+
+<p>The <code>AzureCosmosDBExtract</code> stage reads data from a <a href="https://azure.microsoft.com/en-au/services/cosmos-db/">Azure Cosmos DB</a> instance and returns a <code>DataFrame</code>.</p>
+
+<h3 id="parameters-1">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>config</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>The Cosmos DB configuration options.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
+</tr>
+
+<tr>
+<td>schemaURI</td>
+<td>URI</td>
+<td>false</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>DataFrame</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>DataFrame</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td>schemaView</td>
+<td>URI</td>
+<td>false</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-1">Examples</h3>
+
+<h4 id="minimal-1">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;AzureCosmosDBExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customer avro extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;config&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;Endpoint&#34;</span><span class="p">:</span> <span class="s2">&#34;https://doctorwho.documents.azure.com:443/&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;Masterkey&#34;</span><span class="p">:</span> <span class="s2">&#34;YOUR-KEY-HERE&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;Database&#34;</span><span class="p">:</span> <span class="s2">&#34;DepartureDelays&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;Collection&#34;</span><span class="p">:</span> <span class="s2">&#34;flights_pcoll&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;query_custom&#34;</span><span class="p">:</span> <span class="s2">&#34;SELECT c.date, c.delay, c.distance, c.origin, c.destination FROM c WHERE c.origin = &#39;SEA&#39;&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-1">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;AzureCosmosDBExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customer avro extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;load customer avro extract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;config&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;Endpoint&#34;</span><span class="p">:</span> <span class="s2">&#34;https://doctorwho.documents.azure.com:443/&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;Masterkey&#34;</span><span class="p">:</span> <span class="s2">&#34;YOUR-KEY-HERE&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;Database&#34;</span><span class="p">:</span> <span class="s2">&#34;DepartureDelays&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;Collection&#34;</span><span class="p">:</span> <span class="s2">&#34;flights_pcoll&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;query_custom&#34;</span><span class="p">:</span> <span class="s2">&#34;SELECT c.date, c.delay, c.distance, c.origin, c.destination FROM c WHERE c.origin = &#39;SEA&#39;&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
 <h2 id="bytesextract">BytesExtract</h2>
 
 <h5 id="since-1-0-9-supports-streaming-false">Since: 1.0.9 - Supports Streaming: False</h5>
 
 <p>The <code>BytesExtract</code> stage reads one or more binary files and returns a <code>DataFrame</code> containing a <code>Array[Byte]</code> of the file content (named <code>value</code>) and the file path (named <code>_filename</code>).</p>
 
-<h3 id="parameters-1">Parameters</h3>
+<h3 id="parameters-2">Parameters</h3>
 
 <table>
 <thead>
@@ -758,9 +913,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-1">Examples</h3>
+<h3 id="examples-2">Examples</h3>
 
-<h4 id="minimal-1">Minimal</h4>
+<h4 id="minimal-2">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;BytesExtract&#34;</span><span class="p">,</span>
@@ -773,7 +928,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_vehicles_photos&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-1">Complete</h4>
+<h4 id="complete-2">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;BytesExtract&#34;</span><span class="p">,</span>
@@ -805,7 +960,7 @@
 
 <p>The <code>DatabricksDeltaExtract</code> stage reads one or more <a href="https://databricks.com/product/databricks-delta/">Databricks Delta</a> files and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-2">Parameters</h3>
+<h3 id="parameters-3">Parameters</h3>
 
 <table>
 <thead>
@@ -876,9 +1031,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-2">Examples</h3>
+<h3 id="examples-3">Examples</h3>
 
-<h4 id="minimal-2">Minimal</h4>
+<h4 id="minimal-3">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DatabricksDeltaExtract&#34;</span><span class="p">,</span>
@@ -891,7 +1046,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-2">Complete</h4>
+<h4 id="complete-3">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DatabricksDeltaExtract&#34;</span><span class="p">,</span>
@@ -916,7 +1071,7 @@
 
 <p>The <code>DelimitedExtract</code> stage reads either one or more delimited text files or an input <code>Dataset[String]</code> and returns a <code>DataFrame</code>. <code>DelimitedExtract</code> will always set the underlying Spark configuration option of <code>inferSchema</code> to <code>false</code> to ensure consistent results.</p>
 
-<h3 id="parameters-3">Parameters</h3>
+<h3 id="parameters-4">Parameters</h3>
 
 <table>
 <thead>
@@ -1071,9 +1226,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-3">Examples</h3>
+<h3 id="examples-4">Examples</h3>
 
-<h4 id="minimal-3">Minimal</h4>
+<h4 id="minimal-4">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedExtract&#34;</span><span class="p">,</span>
@@ -1086,7 +1241,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-3">Complete</h4>
+<h4 id="complete-4">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedExtract&#34;</span><span class="p">,</span>
@@ -1129,7 +1284,7 @@
 
 <p>The <code>ElasticsearchExtract</code> stage reads from an <a href="https://www.elastic.co/products/elasticsearch">Elasticsearch</a> cluster and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-4">Parameters</h3>
+<h3 id="parameters-5">Parameters</h3>
 
 <table>
 <thead>
@@ -1207,9 +1362,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-4">Examples</h3>
+<h3 id="examples-5">Examples</h3>
 
-<h4 id="minimal-4">Minimal</h4>
+<h4 id="minimal-5">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ElasticsearchExtract&#34;</span><span class="p">,</span>
@@ -1228,7 +1383,7 @@
   <span class="p">}</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-4">Complete</h4>
+<h4 id="complete-5">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ElasticsearchExtract&#34;</span><span class="p">,</span>
@@ -1260,7 +1415,7 @@
 
 <p>This stage would typically be used with a <code>JSONExtract</code> stage by specifying <code>inputView</code> instead of <code>inputURI</code> (setting <code>multiLine</code>=<code>true</code> allows processing of JSON array responses).</p>
 
-<h3 id="parameters-5">Parameters</h3>
+<h3 id="parameters-6">Parameters</h3>
 
 <table>
 <thead>
@@ -1366,9 +1521,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-5">Examples</h3>
+<h3 id="examples-6">Examples</h3>
 
-<h4 id="minimal-5">Minimal</h4>
+<h4 id="minimal-6">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPExtract&#34;</span><span class="p">,</span>
@@ -1381,7 +1536,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-5">Complete</h4>
+<h4 id="complete-6">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPExtract&#34;</span><span class="p">,</span>
@@ -1468,7 +1623,7 @@
 <pre><code class="language-sql">SELECT image.height FROM dataset
 </code></pre>
 
-<h3 id="parameters-6">Parameters</h3>
+<h3 id="parameters-7">Parameters</h3>
 
 <table>
 <thead>
@@ -1560,9 +1715,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-6">Examples</h3>
+<h3 id="examples-7">Examples</h3>
 
-<h4 id="minimal-6">Minimal</h4>
+<h4 id="minimal-7">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ImageExtract&#34;</span><span class="p">,</span>
@@ -1575,7 +1730,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-6">Complete</h4>
+<h4 id="complete-7">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ImageExtract&#34;</span><span class="p">,</span>
@@ -1603,7 +1758,7 @@
 
 <p>The <code>JDBCExtract</code> reads directly from a JDBC Database and returns a <code>DataFrame</code>. See <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases">Spark JDBC documentation</a>.</p>
 
-<h3 id="parameters-7">Parameters</h3>
+<h3 id="parameters-8">Parameters</h3>
 
 <table>
 <thead>
@@ -1744,9 +1899,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-7">Examples</h3>
+<h3 id="examples-8">Examples</h3>
 
-<h4 id="minimal-7">Minimal</h4>
+<h4 id="minimal-8">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCExtract&#34;</span><span class="p">,</span>
@@ -1760,7 +1915,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-7">Complete</h4>
+<h4 id="complete-8">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCExtract&#34;</span><span class="p">,</span>
@@ -1802,7 +1957,7 @@
 
 <p>The <code>JSONExtract</code> stage reads either one or more JSON files or an input <code>Dataset[String]</code> and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-8">Parameters</h3>
+<h3 id="parameters-9">Parameters</h3>
 
 <table>
 <thead>
@@ -1936,9 +2091,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-8">Examples</h3>
+<h3 id="examples-9">Examples</h3>
 
-<h4 id="minimal-8">Minimal</h4>
+<h4 id="minimal-9">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONExtract&#34;</span><span class="p">,</span>
@@ -1951,7 +2106,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-8">Complete</h4>
+<h4 id="complete-9">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONExtract&#34;</span><span class="p">,</span>
@@ -2043,7 +2198,7 @@
 
 <p>Can be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour (with <code>autoCommit</code> set to <code>false</code>) - in that the offset commit can be deferred until certain dependent stages are sucessfully executed.</p>
 
-<h3 id="parameters-9">Parameters</h3>
+<h3 id="parameters-10">Parameters</h3>
 
 <table>
 <thead>
@@ -2149,9 +2304,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-9">Examples</h3>
+<h3 id="examples-10">Examples</h3>
 
-<h4 id="minimal-9">Minimal</h4>
+<h4 id="minimal-10">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaExtract&#34;</span><span class="p">,</span>
@@ -2166,7 +2321,7 @@
   <span class="nt">&#34;groupID&#34;</span><span class="p">:</span> <span class="s2">&#34;spark-customer-extract-job&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-9">Complete</h4>
+<h4 id="complete-10">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaExtract&#34;</span><span class="p">,</span>
@@ -2196,7 +2351,7 @@
 
 <p>The <code>ORCExtract</code> stage reads one or more <a href="https://orc.apache.org/">Apache ORC</a> files and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-10">Parameters</h3>
+<h3 id="parameters-11">Parameters</h3>
 
 <table>
 <thead>
@@ -2309,9 +2464,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-10">Examples</h3>
+<h3 id="examples-11">Examples</h3>
 
-<h4 id="minimal-10">Minimal</h4>
+<h4 id="minimal-11">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ORCExtract&#34;</span><span class="p">,</span>
@@ -2324,7 +2479,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-10">Complete</h4>
+<h4 id="complete-11">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ORCExtract&#34;</span><span class="p">,</span>
@@ -2354,7 +2509,7 @@
 
 <p>The <code>ParquetExtract</code> stage reads one or more <a href="https://parquet.apache.org/">Apache Parquet</a> files and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-11">Parameters</h3>
+<h3 id="parameters-12">Parameters</h3>
 
 <table>
 <thead>
@@ -2467,9 +2622,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-11">Examples</h3>
+<h3 id="examples-12">Examples</h3>
 
-<h4 id="minimal-11">Minimal</h4>
+<h4 id="minimal-12">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetExtract&#34;</span><span class="p">,</span>
@@ -2482,7 +2637,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-11">Complete</h4>
+<h4 id="complete-12">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetExtract&#34;</span><span class="p">,</span>
@@ -2514,7 +2669,7 @@
 
 <p>This stage has been included for testing Structured Streaming jobs as it can be very difficult to generate test data. Generally this stage would only be included when Arc is run in a test mode (i.e. the <code>environment</code> is set to <code>test</code>).</p>
 
-<h3 id="parameters-12">Parameters</h3>
+<h3 id="parameters-13">Parameters</h3>
 
 <table>
 <thead>
@@ -2578,9 +2733,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-12">Examples</h3>
+<h3 id="examples-13">Examples</h3>
 
-<h4 id="minimal-12">Minimal</h4>
+<h4 id="minimal-13">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;RateExtract&#34;</span><span class="p">,</span>
@@ -2592,7 +2747,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;stream&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-12">Complete</h4>
+<h4 id="complete-13">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;RateExtract&#34;</span><span class="p">,</span>
@@ -2614,7 +2769,7 @@
 
 <p>The <code>TextExtract</code> stage reads either one or more text files and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-13">Parameters</h3>
+<h3 id="parameters-14">Parameters</h3>
 
 <table>
 <thead>
@@ -2727,9 +2882,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-13">Examples</h3>
+<h3 id="examples-14">Examples</h3>
 
-<h4 id="minimal-13">Minimal</h4>
+<h4 id="minimal-14">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TextExtract&#34;</span><span class="p">,</span>
@@ -2742,7 +2897,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-13">Complete</h4>
+<h4 id="complete-14">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TextExtract&#34;</span><span class="p">,</span>
@@ -2778,7 +2933,7 @@ FROM books_xml
 
 <p>The backtick character (`) can be used to address fields with non-alphanumeric names.</p>
 
-<h3 id="parameters-14">Parameters</h3>
+<h3 id="parameters-15">Parameters</h3>
 
 <table>
 <thead>
@@ -2891,9 +3046,9 @@ FROM books_xml
 </tbody>
 </table>
 
-<h3 id="examples-14">Examples</h3>
+<h3 id="examples-15">Examples</h3>
 
-<h4 id="minimal-14">Minimal</h4>
+<h4 id="minimal-15">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLExtract&#34;</span><span class="p">,</span>
@@ -2906,7 +3061,7 @@ FROM books_xml
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-14">Complete</h4>
+<h4 id="complete-15">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLExtract&#34;</span><span class="p">,</span>

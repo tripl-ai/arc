@@ -62,6 +62,36 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 {{< readfile file="/resources/docs_resources/AvroExtractComplete" highlight="json" >}} 
 
 
+## AzureCosmosDBExtract
+##### Since: 1.13.0 - Supports Streaming: True
+
+The `AzureCosmosDBExtract` stage reads data from a [Azure Cosmos DB](https://azure.microsoft.com/en-au/services/cosmos-db/) instance and returns a `DataFrame`. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|config|Map[String, String]|false|The Cosmos DB configuration options.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/AzureCosmosDBExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/AzureCosmosDBExtractComplete" highlight="json" >}} 
+
+
 ## BytesExtract
 ##### Since: 1.0.9 - Supports Streaming: False
 

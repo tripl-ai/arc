@@ -1,0 +1,16 @@
+{
+  "type": "AzureCosmosDBExtract",
+  "name": "load customer avro extract",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "outputView": "customer",
+  "config": {
+    "Endpoint": "https://doctorwho.documents.azure.com:443/",
+    "Masterkey": "YOUR-KEY-HERE",
+    "Database": "DepartureDelays",
+    "Collection": "flights_pcoll",
+    "query_custom": "SELECT c.date, c.delay, c.distance, c.origin, c.destination FROM c WHERE c.origin = 'SEA'"
+  }
+}

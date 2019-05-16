@@ -926,6 +926,16 @@ object ConfigUtils {
     }
   }  
 
+  private def validateAzureCosmosDBConfig(path: String, map:  Map[String, String])(implicit spark: SparkSession, c: Config): Either[Errors, com.microsoft.azure.cosmosdb.spark.config.Config] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, com.microsoft.azure.cosmosdb.spark.config.Config] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    try {
+      Right(com.microsoft.azure.cosmosdb.spark.config.Config(map))
+    } catch {
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
+    }
+  }    
+
   // extract
   def readAvroExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
@@ -989,6 +999,48 @@ object ConfigUtils {
         (Left(err :: Nil), graph)
     }
   }  
+
+  def readAzureCosmosDBExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
+    import ConfigReader._
+
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "authentication" :: "outputView" :: "numPartitions" :: "partitionBy" :: "persist" :: "params" :: "config" :: "schemaView" :: "schemaURI" :: Nil
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    val description = getOptionalValue[String]("description")
+
+    val config = readMap("config", c)
+    val configValid = validateAzureCosmosDBConfig("config", config)
+    val authentication = readAuthentication("authentication")
+
+    val uriKey = "schemaURI"
+    val stringURI = getOptionalValue[String](uriKey)
+    val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
+      optURI match { 
+        case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
+        case None => Right(None)
+      }
+    )
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
+
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist", default = Some(false))
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
+
+    (name, description, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, authentication, invalidKeys, configValid) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(pb), Right(auth), Right(_), Right(_)) =>
+      val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
+      var outputGraph = graph.addVertex(Vertex(idx, ov))
+
+      (Right(AzureCosmosDBExtract(n, d, schema, ov, params, p, np, pb, config)), outputGraph)
+      case _ =>
+        val allErrors: Errors = List(name, description, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, authentication, invalidKeys, configValid).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
+        (Left(err :: Nil), graph)
+    }
+  }    
 
   def readBytesExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
@@ -2760,6 +2812,7 @@ object ConfigUtils {
         val (stageOrError: Either[List[StageError], PipelineStage], newGraph: Graph) = _type match {
 
           case Right("AvroExtract") => readAvroExtract(idx, graph, name, params)
+          case Right("AzureCosmosDBExtract") => readAzureCosmosDBExtract(idx, graph, name, params)
           case Right("BytesExtract") => readBytesExtract(idx, graph, name, params)
           case Right("DatabricksDeltaExtract") => readDatabricksDeltaExtract(idx, graph, name, params)
           case Right("DelimitedExtract") => readDelimitedExtract(idx, graph, name, params)

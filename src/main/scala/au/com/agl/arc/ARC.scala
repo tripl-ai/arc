@@ -396,6 +396,8 @@ object ARC {
     stage match {
       case e : AvroExtract =>
         extract.AvroExtract.extract(e)  
+      case e : AzureCosmosDBExtract =>
+        extract.AzureCosmosDBExtract.extract(e)          
       case e : BytesExtract =>
         extract.BytesExtract.extract(e)    
       case e : DatabricksDeltaExtract =>

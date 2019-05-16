@@ -41,6 +41,8 @@ object Dependencies {
   // SQL Server
   val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "7.2.1.jre8" % includeJars
   val azureSQLDB = "com.microsoft.azure" % "azure-sqldb-spark" % "1.0.2" % includeJars
+  // conflicts with jackson version so included in /lib
+  // val azureCosmosDB = "com.microsoft.azure" %% "azure-cosmosdb-spark_2.4.0" % "1.3.5" % includeJars
   val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.5" % includeJars
 
   // cli arg parsing
@@ -72,6 +74,8 @@ object Dependencies {
     azureStorage,   
     sqlServerJDBC,
     azureSQLDB,
+    // conflicts with jackson version so included in /lib
+    // azureCosmosDB,
 
     // postgres
     postgresJDBC,
