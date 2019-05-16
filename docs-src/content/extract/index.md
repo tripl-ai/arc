@@ -65,6 +65,12 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 ## AzureCosmosDBExtract
 ##### Since: 1.13.0 - Supports Streaming: True
 
+{{< note title="Experimental" >}}
+The `AzureCosmosDBExtract` is currently in experimental state whilst the requirements become clearer. 
+
+This means this API is likely to change.
+{{</note>}}
+
 The `AzureCosmosDBExtract` stage reads data from a [Azure Cosmos DB](https://azure.microsoft.com/en-au/services/cosmos-db/) instance and returns a `DataFrame`. 
 
 ### Parameters

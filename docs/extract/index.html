@@ -671,6 +671,14 @@
 
 <h5 id="since-1-13-0-supports-streaming-true">Since: 1.13.0 - Supports Streaming: True</h5>
 
+<div class="admonition note">
+<p class="admonition-title">Experimental</p>
+<p><p>The <code>AzureCosmosDBExtract</code> is currently in experimental state whilst the requirements become clearer.</p>
+
+<p>This means this API is likely to change.</p>
+</p>
+</div>
+
 <p>The <code>AzureCosmosDBExtract</code> stage reads data from a <a href="https://azure.microsoft.com/en-au/services/cosmos-db/">Azure Cosmos DB</a> instance and returns a <code>DataFrame</code>.</p>
 
 <h3 id="parameters-1">Parameters</h3>
@@ -805,7 +813,6 @@
   <span class="p">],</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
-  <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
   <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
   <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;country&#34;</span>

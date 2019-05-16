@@ -8,7 +8,6 @@
   ],
   "outputView": "customer",
   "authentication": {},
-  "contiguousIndex": true,
   "numPartitions": 10,
   "partitionBy": [
     "country"
