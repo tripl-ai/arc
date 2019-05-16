@@ -1,7 +1,7 @@
 {
   "type": "AzureCosmosDBExtract",
-  "name": "load customer avro extract",
-  "description": "load customer avro extract",
+  "name": "load customer extract",
+  "description": "load customer extract",
   "environments": [
     "production",
     "test"
