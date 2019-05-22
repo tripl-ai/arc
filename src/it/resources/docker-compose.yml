@@ -108,8 +108,7 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.0.1
     networks:
-      arc-integration:
-        ipv4_address: 172.19.0.100  
+      - arc-integration
     ports:
       - 9200:9200
       - 9300:9300
