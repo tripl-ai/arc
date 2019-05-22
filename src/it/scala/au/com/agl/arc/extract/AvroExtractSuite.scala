@@ -7,7 +7,6 @@ import org.apache.http.client.methods.{HttpPost}
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.entity.StringEntity
 
-import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
 import org.scalatest.FunSuite
@@ -21,7 +20,6 @@ import org.apache.spark.sql.functions._
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
-import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.util.ConfigUtils._
 import au.com.agl.arc.util.log.LoggerFactory 
 
@@ -96,6 +94,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       BytesExtract(
         name="dataset",
         description=None,
+        cols=Right(Nil),
         outputView=outputView, 
         input=Right(targetBinaryFile),
         authentication=None,
@@ -131,7 +130,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   test("AvroExtract: Binary with Kafka Schema Registry") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
 
     val schema = new Schema.Parser().parse(CloudUtils.getTextBlob(new URI(schemaFile)))
@@ -185,7 +184,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         println(pipelineEither)  
         assert(false)
       }
-      case Right((pl, _)) => {
+      case Right((pl, _, _)) => {
         ARC.run(pl)
       }
     }
@@ -194,7 +193,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   test("AvroExtract: Binary with user.avsc") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     val conf = s"""{
       "stages": [
@@ -234,7 +233,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         println(pipelineEither)  
         assert(false)
       }
-      case Right((pl, _)) => {
+      case Right((pl, _, _)) => {
         ARC.run(pl)
       }
     }

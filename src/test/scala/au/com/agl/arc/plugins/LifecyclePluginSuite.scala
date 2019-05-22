@@ -1,7 +1,5 @@
 package au.com.agl.arc.plugins
 
-import scala.collection.mutable.ListBuffer
-
 import au.com.agl.arc.util.ConfigUtils
 import au.com.agl.arc.util.ConfigUtils._
 import au.com.agl.arc.util.log.LoggerFactory
@@ -39,7 +37,7 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
   test("Read and execute config with lifecycle configuration plugin") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
+    val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
     import spark.implicits._
 
     val argsMap = collection.mutable.HashMap[String, String]()
@@ -51,7 +49,7 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(_) => assert(false)
-      case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
+      case Right((pipeline, _, arcCtx)) => ARC.run(pipeline)(spark, logger, arcCtx)
     } 
     
     val expectedBefore = Seq(("delimited extract", "before", "testValue")).toDF("stage","when","message")

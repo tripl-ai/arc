@@ -5,7 +5,6 @@ import java.net.URI
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
-import scala.collection.mutable.ListBuffer
 import collection.JavaConverters._
 
 import org.apache.commons.io.FileUtils
@@ -15,7 +14,6 @@ import org.apache.spark.sql.functions._
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
-import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.util.log.LoggerFactory 
 
 import au.com.agl.arc.util._
@@ -53,12 +51,13 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     extract.BytesExtract.extract(
       BytesExtract(
         name="dataset",
         description=None,
+        cols=Right(Nil),
         outputView=outputView, 
         input=Right(dogImage),
         authentication=None,

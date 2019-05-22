@@ -3,7 +3,6 @@ package au.com.agl.arc
 import java.net.URI
 
 import scala.io.Source
-import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConverters._
 
 import org.scalatest.FunSuite
@@ -14,7 +13,6 @@ import org.apache.spark.sql._
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.api.{Delimited, Delimiter, QuoteCharacter}
-import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.util.log.LoggerFactory
 import au.com.agl.arc.util.ConfigUtils
 import au.com.agl.arc.util.ConfigUtils._
@@ -53,7 +51,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("ConfigUtilsSuite: Ensure remote data and config references can be parsed") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     // point to local minio s3 rather than actual s3
     spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", minioHostPort)
@@ -110,7 +108,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         println(pipelineEither)  
         assert(false)
       }
-      case Right((pl, _)) => {
+      case Right((pl, _, _)) => {
         ARC.run(pl)
       }
     }

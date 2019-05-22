@@ -1,6 +1,5 @@
 package au.com.agl.arc
 
-import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.udf.UDF
 import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, PipelineStagePlugin, UDFPlugin}
 
@@ -10,7 +9,6 @@ object ARC {
   import java.util.UUID
   import java.util.ServiceLoader
   import org.apache.commons.lang3.exception.ExceptionUtils
-  import scala.collection.mutable.ListBuffer
   import scala.collection.JavaConverters._
 
   import org.slf4j.MDC
@@ -134,14 +132,14 @@ object ARC {
     }  
     MDC.put("environment", env) 
     
-    val envId: Option[String] = argsMap.get("etl.config.environment.id").orElse(envOrNone("ETL_CONF_ENV_ID"))
-    for (e <- envId) {
+    val environmentId: Option[String] = argsMap.get("etl.config.environment.id").orElse(envOrNone("ETL_CONF_ENV_ID"))
+    for (e <- environmentId) {
         MDC.put("environmentId", e) 
     }         
 
     MDC.put("applicationId", spark.sparkContext.applicationId) 
 
-    val arcContext = ARCContext(jobId=jobId, jobName=jobName, environment=env, environmentId=envId, configUri=configUri, isStreaming=isStreaming, ignoreEnvironments=ignoreEnvironments, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
+    val arcContext = ARCContext(jobId=jobId, jobName=jobName, environment=env, environmentId=environmentId, configUri=configUri, isStreaming=isStreaming, ignoreEnvironments=ignoreEnvironments, lifecyclePlugins=Nil)
     
     // log available plugins
     val loader = Utils.getContextOrSparkClassLoader
@@ -234,10 +232,11 @@ object ARC {
     }
 
     val error: Boolean = pipelineConfig match {
-      case Right( (pipeline, _) ) =>
+      case Right( (pipeline, _, arcCtx) ) =>
         try {
           UDF.registerUDFs(spark.sqlContext)
-          ARC.run(pipeline)(spark, logger, arcContext)
+          println(arcCtx)
+          ARC.run(pipeline)(spark, logger, arcCtx)
           false
         } catch {
           case e: Exception with DetailException => 

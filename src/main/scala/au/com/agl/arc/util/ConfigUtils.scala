@@ -7,7 +7,6 @@ import java.util.{Map => JMap}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
-import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConverters._
 import scala.util.Properties._
 import com.typesafe.config._
@@ -41,14 +40,14 @@ object ConfigUtils {
       params.filter{ case (k,v) => options.contains(k) }
   }
 
-  def parsePipeline(configUri: Option[String], argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
+  def parsePipeline(configUri: Option[String], argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph, ARCContext)] = {
     configUri match {
       case Some(uri) => parseConfig(Right(new URI(uri)), argsMap, graph, arcContext)
       case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
      }
   }
 
-  def parseConfig(uri: Either[String, URI], argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
+  def parseConfig(uri: Either[String, URI], argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph, ARCContext)] = {
     val base = ConfigFactory.load()
 
     val etlConfString = uri match {
@@ -89,10 +88,10 @@ object ConfigUtils {
           etlConf.resolveWith(argsMapConf.withFallback(pluginConf).withFallback(etlConf).withFallback(base)).resolve()
       }
 
-      // used the resolved config to find plugins.lifestyle and create objects
-      arcContext.lifecyclePlugins ++= resolveLifecyclePlugins(resolvedConfig, arcContext)
+      // used the resolved config to find plugins.lifestyle and create objects and replace the context
+      val arcCtx = ARCContext(arcContext.jobId, arcContext.jobName, arcContext.environment, arcContext.environmentId, arcContext.configUri, arcContext.isStreaming, arcContext.ignoreEnvironments, resolveLifecyclePlugins(resolvedConfig, arcContext))
 
-      readPipeline(resolvedConfig, etlConfStringHash, uriString, argsMap, graph, arcContext)
+      readPipeline(resolvedConfig, etlConfStringHash, uriString, argsMap, graph, arcCtx)
     }
   }  
 
@@ -2825,7 +2824,7 @@ object ConfigUtils {
     }
   }
 
-  def readPipeline(c: Config, configMD5: String, uri: String, argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
+  def readPipeline(c: Config, configMD5: String, uri: String, argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph, ARCContext)] = {
     import ConfigReader._
 
     val startTime = System.currentTimeMillis() 
@@ -2982,7 +2981,7 @@ object ConfigUtils {
           }
         }
 
-        Right(ETLPipeline(stagesReversed), dependencyGraphReversed)
+        Right(ETLPipeline(stagesReversed), dependencyGraphReversed, arcContext)
       }
       case _ => Left(errors.reverse)
     }
