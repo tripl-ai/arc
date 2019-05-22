@@ -7,6 +7,7 @@ import java.util.{Map => JMap}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
+import scala.collection.mutable.ListBuffer
 import scala.collection.JavaConverters._
 import scala.util.Properties._
 import com.typesafe.config._
@@ -25,7 +26,7 @@ import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
-import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, PipelineStagePlugin}
+import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin}
 import au.com.agl.arc.util.ControlUtils._
 import au.com.agl.arc.util.EitherUtils._
 
@@ -46,6 +47,54 @@ object ConfigUtils {
       case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
      }
   }
+
+  def parseConfig(uri: Either[String, URI], argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
+    val base = ConfigFactory.load()
+
+    val etlConfString = uri match {
+      case Left(str) => Right(str)
+      case Right(uri) => getConfigString(uri, argsMap, arcContext)
+    }
+
+    val uriString = uri match {
+      case Left(str) => ""
+      case Right(uri) => uri.toString
+    }    
+
+    etlConfString.rightFlatMap { str =>
+      // calculate hash of raw string so that logs can be used to detect changes
+      val etlConfStringHash = DigestUtils.md5Hex(str.getBytes)
+
+      val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+
+      // convert to json string so that parameters can be correctly parsed
+      val argsMapJson = new ObjectMapper().writeValueAsString(argsMap.asJava).replace("\\", "")
+      val argsMapConf = ConfigFactory.parseString(argsMapJson, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+
+      // try to read objects in the plugins.config path
+      val resolvedConfigPlugins = resolveConfigPlugins(etlConf, base, arcContext)
+      
+      val pluginConfs: List[Config] = resolvedConfigPlugins.map( c => ConfigFactory.parseMap(c) )
+
+      val resolvedConfig: Config = pluginConfs match {
+        case Nil =>
+          etlConf.resolveWith(argsMapConf.withFallback(etlConf).withFallback(base)).resolve()
+        case _ =>
+          val pluginConf = pluginConfs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
+          val pluginValues = pluginConf.root().unwrapped()
+          logger.debug()
+            .message("Found additional config values from plugins")
+            .field("pluginConf", pluginValues)
+            .log()           
+          etlConf.resolveWith(argsMapConf.withFallback(pluginConf).withFallback(etlConf).withFallback(base)).resolve()
+      }
+
+      // used the resolved config to find plugins.lifestyle and create objects
+      arcContext.lifecyclePlugins ++= resolveLifecyclePlugins(resolvedConfig, arcContext)
+
+      readPipeline(resolvedConfig, etlConfStringHash, uriString, argsMap, graph, arcContext)
+    }
+  }  
 
   def getConfigString(uri: URI, argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], String] = {
     uri.getScheme match {
@@ -178,61 +227,35 @@ object ConfigUtils {
     }
   }
 
-  def parseConfig(uri: Either[String, URI], argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
-    val base = ConfigFactory.load()
-
-    val etlConfString = uri match {
-      case Left(str) => Right(str)
-      case Right(uri) => getConfigString(uri, argsMap, arcContext)
-    }
-
-    val uriString = uri match {
-      case Left(str) => ""
-      case Right(uri) => uri.toString
-    }    
-
-    etlConfString.rightFlatMap { str =>
-      // calculate hash of raw string so that logs can be used to detect changes
-      val etlConfStringHash = DigestUtils.md5Hex(str.getBytes)
-
-      val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-
-      // convert to json string so that parameters can be correctly parsed
-      val argsMapJson = new ObjectMapper().writeValueAsString(argsMap.asJava).replace("\\", "")
-      val argsMapConf = ConfigFactory.parseString(argsMapJson, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-
-      // try to read objects in the plugins.config path
-      val resolvedConfigPlugins = resolveConfigPlugins(etlConf, base)
-      
-      val pluginConfs: List[Config] = resolvedConfigPlugins.map( c => ConfigFactory.parseMap(c) )
-
-      val c = pluginConfs match {
-        case Nil =>
-          etlConf.resolveWith(argsMapConf.withFallback(etlConf).withFallback(base)).resolve()
-        case _ =>
-          val pluginConf = pluginConfs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
-          val pluginValues = pluginConf.root().unwrapped()
-          logger.debug()
-            .message("Found additional config values from plugins")
-            .field("pluginConf", pluginValues)
-            .log()           
-          etlConf.resolveWith(argsMapConf.withFallback(pluginConf).withFallback(etlConf).withFallback(base)).resolve()
-      }
-
-      readPipeline(c, etlConfStringHash, uriString, argsMap, graph, arcContext)
-    }
-  }
-
-  def resolveConfigPlugins(c: Config, base: Config)(implicit logger: au.com.agl.arc.util.log.logger.Logger): List[JMap[String, Object]] = {
+  def resolveConfigPlugins(c: Config, base: Config, arcContext: ARCContext)(implicit logger: au.com.agl.arc.util.log.logger.Logger): List[JMap[String, Object]] = {
     if (c.hasPath("plugins.config")) {
       val plugins =
         (for (p <- c.getObjectList("plugins.config").asScala) yield {
           val plugin = p.toConfig.withFallback(base).resolve()
-          
           if (plugin.hasPath("type")) {
-            val name = plugin.getString("type")
-            val params = readMap("params", plugin)
-            DynamicConfigurationPlugin.resolveAndExecutePlugin(name, params).map(_ :: Nil)
+            val _type =  plugin.getString("type")
+
+            // deprecation message to override empty environments
+            val environments = if (plugin.hasPath("environments")) plugin.getStringList("environments").asScala.toList else Nil
+            val depricationEnvironments = environments match {
+              case Nil => List("prd", "ppd", "tst", "dev")
+              case _ => environments
+            }          
+
+            logger.trace()
+              .field("event", "validateConfig")
+              .field("type", _type)              
+              .field("message", "skipping plugin due to environment configuration")       
+              .field("environment", arcContext.environment)               
+              .list("environments", depricationEnvironments.asJava)               
+              .log()   
+
+            if (arcContext.ignoreEnvironments || depricationEnvironments.contains(arcContext.environment)) {
+              val params = readMap("params", plugin)
+              DynamicConfigurationPlugin.resolveAndExecutePlugin(_type, params).map(_ :: Nil)
+            } else {
+              None
+            }
           } else {
             None
           }
@@ -242,6 +265,45 @@ object ConfigUtils {
       Nil
     }
   }
+
+  def resolveLifecyclePlugins(c: Config, arcContext: ARCContext)(implicit logger: au.com.agl.arc.util.log.logger.Logger): List[LifecyclePlugin] = {
+    if (c.hasPath("plugins.lifecycle")) {
+      val plugins =
+        (for (p <- c.getObjectList("plugins.lifecycle").asScala) yield {
+          val plugin = p.toConfig
+          if (plugin.hasPath("type")) {
+            val _type =  plugin.getString("type")
+
+            // deprecation message to override empty environments
+            val environments = if (plugin.hasPath("environments")) plugin.getStringList("environments").asScala.toList else Nil
+            val depricationEnvironments = environments match {
+              case Nil => List("prd", "ppd", "tst", "dev")
+              case _ => environments
+            }          
+
+            logger.trace()
+              .field("event", "validateConfig")
+              .field("type", _type)              
+              .field("message", "skipping plugin due to environment configuration")       
+              .field("environment", arcContext.environment)               
+              .list("environments", depricationEnvironments.asJava)               
+              .log()   
+
+            if (arcContext.ignoreEnvironments || depricationEnvironments.contains(arcContext.environment)) {
+              val params = readMap("params", plugin)
+              LifecyclePlugin.resolve(_type, params).map(_ :: Nil)
+            } else {
+              None
+            }
+          } else {
+            None
+          }
+        }).toList
+      plugins.flatMap( p => p.getOrElse(Nil) )
+    } else {
+      Nil
+    }
+  }  
 
   def readMap(path: String, c: Config): Map[String, String] = {
     if (c.hasPath(path)) {

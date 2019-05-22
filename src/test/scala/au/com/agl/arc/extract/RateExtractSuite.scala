@@ -6,6 +6,7 @@ import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
 import collection.JavaConverters._
+import scala.collection.mutable.ListBuffer
 
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
@@ -14,6 +15,7 @@ import org.apache.spark.sql.functions._
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
+import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.util.log.LoggerFactory 
 
 import au.com.agl.arc.util._
@@ -49,7 +51,7 @@ class RateExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
 
     val extractDataset = extract.RateExtract.extract(
       RateExtract(

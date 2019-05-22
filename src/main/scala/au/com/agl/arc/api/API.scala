@@ -3,7 +3,9 @@ package au.com.agl.arc.api
 import java.net.URI
 import java.time.LocalTime
 
-import au.com.agl.arc.plugins.PipelineStagePlugin
+  import scala.collection.mutable.ListBuffer
+
+import au.com.agl.arc.plugins.{LifecyclePlugin, PipelineStagePlugin}
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.types._
@@ -46,7 +48,11 @@ object API {
 
     /** whether to ignore environments and process everything
       */    
-    ignoreEnvironments: Boolean    
+    ignoreEnvironments: Boolean,
+
+    /** a list of lifecycle plugins which are called before and after each stage
+      */    
+    lifecyclePlugins: ListBuffer[LifecyclePlugin]
 
   )
 

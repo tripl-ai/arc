@@ -22,7 +22,7 @@ object Dependencies {
   // Spark AVRO
   val sparkAvro = "org.apache.spark" %% "spark-avro" % sparkVersion % includeJars
 
-  // Amazon S3
+  // Amazon
   val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % "2.7.7" % includeJars
   val awsJavaSDK = "com.amazonaws" % "aws-java-sdk" % "1.7.4" % includeJars
 
@@ -41,9 +41,15 @@ object Dependencies {
   // SQL Server
   val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "7.2.1.jre8" % includeJars
   val azureSQLDB = "com.microsoft.azure" % "azure-sqldb-spark" % "1.0.2" % includeJars
-  // conflicts with jackson version so included in /lib
-  // val azureCosmosDB = "com.microsoft.azure" %% "azure-cosmosdb-spark_2.4.0" % "1.3.5" % includeJars
+
+  // Postgres
   val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.5" % includeJars
+
+  // Presto
+  val presto = "com.facebook.presto" % "presto-jdbc" % "0.209" % includeJars
+
+  // Mysql
+  val mysql = "mysql" % "mysql-connector-java" % "5.1.47" % includeJars
 
   // cli arg parsing
   val scallop = "org.rogach" %% "scallop" % "2.1.1"
@@ -64,39 +70,23 @@ object Dependencies {
     sparkHive,
     sparkMl,
     scalaTest,
-
-    // AWS
     hadoopAWS,
     awsJavaSDK,
-
-    // Azure
     hadoopAzure,
     azureStorage,   
     sqlServerJDBC,
     azureSQLDB,
-    // conflicts with jackson version so included in /lib
-    // azureCosmosDB,
-
-    // postgres
     postgresJDBC,
-
+    mysql,
+    presto,
     scallop,
     typesafeConfig,
-
     scala_graph_core,
     scala_graph_dot,
-
-    // filetypes
     sparkXML,
     sparkAvro,
-
-    // Azure EventHubs
     azureEventHub,
     qpid,
-
-    // elasticsearch
     elasticsearch
-
-
   )
 }

@@ -7,6 +7,7 @@ import org.apache.http.client.methods.{HttpPost}
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.entity.StringEntity
 
+import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
 import org.scalatest.FunSuite
@@ -20,8 +21,9 @@ import org.apache.spark.sql.functions._
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
-import au.com.agl.arc.util.log.LoggerFactory 
+import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.util.ConfigUtils._
+import au.com.agl.arc.util.log.LoggerFactory 
 
 import com.typesafe.config._
 
@@ -129,7 +131,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   test("AvroExtract: Binary with Kafka Schema Registry") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
 
 
     val schema = new Schema.Parser().parse(CloudUtils.getTextBlob(new URI(schemaFile)))
@@ -192,7 +194,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   test("AvroExtract: Binary with user.avsc") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
 
     val conf = s"""{
       "stages": [

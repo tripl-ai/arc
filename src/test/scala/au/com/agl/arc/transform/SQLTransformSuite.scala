@@ -8,6 +8,8 @@ import org.scalatest.BeforeAndAfter
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 
+import scala.collection.mutable.ListBuffer
+
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
@@ -16,6 +18,7 @@ import org.apache.spark.sql.functions._
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
+import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.util.log.LoggerFactory 
 
 import au.com.agl.arc.util._
@@ -88,7 +91,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform: end-to-end") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
 
     val conf = s"""{
       "stages": [
@@ -116,7 +119,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(_) => assert(false)
-      case Right((pipeline,_)) => ARC.run(pipeline)(spark, logger, arcContext)
+      case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
     }  
   }
 
@@ -218,7 +221,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform: partitionPushdown") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
 
     extract.ParquetExtract.extract(
       ParquetExtract(
@@ -285,7 +288,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform: partitionPushdown and predicatePushdown") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
 
     extract.ParquetExtract.extract(
       ParquetExtract(

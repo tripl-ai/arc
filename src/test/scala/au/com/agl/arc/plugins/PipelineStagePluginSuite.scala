@@ -1,5 +1,7 @@
 package au.com.agl.arc.plugins
 
+import scala.collection.mutable.ListBuffer
+
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.ConfigUtils
 import au.com.agl.arc.util.log.LoggerFactory
@@ -33,14 +35,14 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
 
     pipeline match {
-      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), graph) ) =>
+      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), _) ) =>
         assert(name === "custom plugin")
         val configParms = Map[String, String](
           "foo" -> "bar"

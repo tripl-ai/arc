@@ -39,11 +39,21 @@ ENV SPARK_HOME            /opt/spark
 ENV SPARK_JARS            /opt/spark/jars/
 ENV SPARK_CHECKSUM_URL    https://archive.apache.org/dist/spark
 ENV SPARK_DOWNLOAD_URL    https://www-us.apache.org/dist/spark
+ENV GLIBC_VERSION         2.26-r0
+
+# Setup basics
+RUN set -ex && \
+  apk upgrade --update && \
+  apk add --update libstdc++ ca-certificates bash openblas curl findutils && \
+  for pkg in glibc-${GLIBC_VERSION} glibc-bin-${GLIBC_VERSION} glibc-i18n-${GLIBC_VERSION}; do curl -sSL https://github.com/andyshinn/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/${pkg}.apk -o /tmp/${pkg}.apk; done && \
+  apk add --allow-untrusted /tmp/*.apk && \
+  rm -v /tmp/*.apk && \
+  ( /usr/glibc-compat/bin/localedef --force --inputfile POSIX --charmap UTF-8 C.UTF-8 || true ) && \
+  echo "export LANG=C.UTF-8" > /etc/profile.d/locale.sh && \
+  /usr/glibc-compat/sbin/ldconfig /lib /usr/glibc-compat/lib
 
 # install spark
-RUN set -ex && \
-  apk add --no-cache --update  ca-certificates bash findutils coreutils && \
-  mkdir -p ${SPARK_HOME} && \
+RUN mkdir -p ${SPARK_HOME} && \
   wget -O spark.sha ${SPARK_CHECKSUM_URL}/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz.sha512 && \
   export SPARK_SHA512_SUM=$(grep -o "[A-F0-9]\{8\}" spark.sha | awk '{print}' ORS='' | tr '[:upper:]' '[:lower:]') && \
   rm -f spark.sha && \

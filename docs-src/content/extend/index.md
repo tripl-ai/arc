@@ -4,16 +4,17 @@ weight: 98
 type: blog
 ---
 
-Arc can be exended in three ways by registering:
+Arc can be exended in four ways by registering:
 
 - [Dynamic Configuration Plugins](#dynamic-configuration-plugins).
+- [Lifecycle Plugins](#lifecycle-plugins).
 - [Pipeline Stage Plugins](#pipeline-stage-plugins).
 - [User Defined Functions](#user-defined-functions) which extend the Spark SQL dialect.
 
 ## Dynamic Configuration Plugins
 ##### Since: 1.3.0
 
-{{<note title="Dynamic Configuration vs Determinism">}}
+{{<note title="Dynamic vs Deterministic Configuration">}}
 Use of this functionality is discouraged as it goes against the [principles of Arc](/#principles) specifically around statelessness/deterministic behaviour but is inlcuded here for users who have not yet committed to a job orchestrator such as [Apache Airflow](https://airflow.apache.org/) and have dynamic configuration requirements.
 {{</note>}}
 
@@ -135,6 +136,10 @@ The `ETL_CONF_LAST_PROCESSING_DAY` variable is then available to be resolved in 
     "config": [
       {
         "type": "au.com.agl.arc.plugins.config.DeltaPeriodDynamicConfigurationPlugin",
+        "environments": [
+          "production",
+          "test"
+        ],
         "params": {
           "returnName": "ETL_CONF_DELTA_PERIOD",
           "lagDays": "10",
@@ -158,6 +163,96 @@ The `ETL_CONF_LAST_PROCESSING_DAY` variable is then available to be resolved in 
   ]
 }
 ```
+
+## Lifecycle Plugins
+##### Since: 1.3.0
+
+Custom `Lifecycle Plugins` allow users to extend the base Arc framework with logic which is executed `before` or `after` each Arc stage. These stages are useful for implementing things like dataset logging after each stage execution for debugging.
+
+### Examples
+
+```scala
+package au.com.agl.arc.plugins.lifecycle
+
+import java.util
+
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import au.com.agl.arc.api.API._
+import au.com.agl.arc.util.Utils
+import au.com.agl.arc.util.log.logger.Logger
+
+class DataframePrinterLifecyclePlugin extends LifecyclePlugin {
+
+  var params = Map[String, String]()
+
+  override def setParams(p: Map[String, String]) {
+    params = p
+  }
+
+  override def before(stage: PipelineStage)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger) {
+    logger.trace()        
+      .field("event", "before")
+      .field("stage", stage.name)
+      .field("stageType", stage.getType)
+      .log()  
+  }
+
+  override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger) {
+    logger.trace()        
+      .field("event", "after")
+      .field("stage", stage.name)
+      .field("stageType", stage.getType)
+      .field("isLast", java.lang.Boolean.valueOf(isLast))
+      .log() 
+
+    result match {
+      case Some(df) => {
+        val numRows = params.get("numRows") match {
+          case Some(n) => n.toInt
+          case None => 20
+        }
+
+        val truncate = params.get("truncate") match {
+          case Some(t) => t.toBoolean
+          case None => true
+        }  
+
+        df.show(numRows, truncate)
+      }
+      case None =>
+    }
+  }
+
+}
+```
+
+The plugin then needs to be registered by adding the full plugin name must be listed in your project’s `/resources/META-INF/services/au.com.agl.arc.plugins.LifecyclePlugin` file.
+
+To execute:
+
+```json
+{
+  "plugins": {
+    "lifecycle": [
+      {
+        "type": "au.com.agl.arc.plugins.lifecycle.DataframePrinterLifecyclePlugin",
+        "environments": [
+          "production",
+          "test"
+        ],
+        "params": {
+          "numRows": "100",
+          "truncate": "false",
+        }
+      }
+    ]
+  },
+  "stages": [
+    ...
+  ]
+}
+```
+
 
 ## Pipeline Stage Plugins
 ##### Since: 1.3.0

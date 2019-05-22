@@ -10,6 +10,7 @@ object ARC {
   import java.util.UUID
   import java.util.ServiceLoader
   import org.apache.commons.lang3.exception.ExceptionUtils
+  import scala.collection.mutable.ListBuffer
   import scala.collection.JavaConverters._
 
   import org.slf4j.MDC
@@ -140,8 +141,8 @@ object ARC {
 
     MDC.put("applicationId", spark.sparkContext.applicationId) 
 
-    val arcContext = ARCContext(jobId, jobName, env, envId, configUri, isStreaming, ignoreEnvironments)    
-
+    val arcContext = ARCContext(jobId=jobId, jobName=jobName, environment=env, environmentId=envId, configUri=configUri, isStreaming=isStreaming, ignoreEnvironments=ignoreEnvironments, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
+    
     // log available plugins
     val loader = Utils.getContextOrSparkClassLoader
     val dynamicConfigurationPlugins = ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
@@ -357,18 +358,16 @@ object ARC {
   def run(pipeline: ETLPipeline)
   (implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
 
-    val lifecyclePlugins = LifecyclePlugin.plugins()
-
     def before(stage: PipelineStage): Unit = {
-      for (p <- lifecyclePlugins) {
-        logger.info().message(s"Executing before() on LifecyclePlugin: ${p.getClass.getName}")
+      for (p <- arcContext.lifecyclePlugins) {
+        logger.trace().message(s"Executing before() on LifecyclePlugin: ${p.getClass.getName}")
         p.before(stage)
       }
     }
 
     def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean): Unit = {
-      for (p <- lifecyclePlugins) {
-        logger.info().message(s"Executing after(last = $isLast) on LifecyclePlugin: ${p.getClass.getName}")
+      for (p <- arcContext.lifecyclePlugins) {
+        logger.trace().message(s"Executing after(last = $isLast) on LifecyclePlugin: ${p.getClass.getName}")
         p.after(stage, result, isLast)
       }
     }

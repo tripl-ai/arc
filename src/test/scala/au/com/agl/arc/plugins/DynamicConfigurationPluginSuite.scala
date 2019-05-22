@@ -1,5 +1,7 @@
 package au.com.agl.arc.plugins
 
+import scala.collection.mutable.ListBuffer
+
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.ConfigUtils
 import au.com.agl.arc.util.ConfigUtils._
@@ -34,18 +36,18 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
 
     pipeline match {
-      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), graph) ) =>
+      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), _) ) =>
         assert(name === "custom plugin")
         val configParms = Map[String, String](
           "foo" -> "baz",
-          "bar" -> "paramValue"
+          "bar" -> "testValue"
         )
         assert(params === configParms)
         assert(stage.getClass.getName === "au.com.agl.arc.plugins.ArcCustomPipelineStage")
@@ -57,14 +59,14 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
   test("Test argsMap precedence") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
 
     val argsMap = collection.mutable.HashMap[String, String]("ARGS_MAP_VALUE" -> "before\"${arc.paramvalue}\"after")
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin_precendence.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
 
     pipeline match {
-      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), graph) ) =>
+      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), _) ) =>
         assert(name === "custom plugin")
         val configParms = Map[String, String](
           "foo" -> "beforeparamValueafter"
@@ -78,7 +80,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
   test("Test missing plugin") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
@@ -94,5 +96,29 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
       }
       case Right(_) => assert(false)
     } 
-  }     
+  }   
+
+  test("Read config with dynamic configuration plugin environments true") {
+    implicit val spark = session
+
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="production", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
+
+    val argsMap = collection.mutable.HashMap[String, String]()
+
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
+
+    pipeline match {
+      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), _) ) =>
+        assert(name === "custom plugin")
+        val configParms = Map[String, String](
+          "foo" -> "baz",
+          "bar" -> "productionValue"
+        )
+        assert(params === configParms)
+        assert(stage.getClass.getName === "au.com.agl.arc.plugins.ArcCustomPipelineStage")
+      case _ => fail("expected CustomStage")
+    }
+    
+  }    
 }

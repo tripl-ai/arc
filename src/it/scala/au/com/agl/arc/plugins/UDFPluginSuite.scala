@@ -6,6 +6,8 @@ import au.com.agl.arc.util.log.LoggerFactory
 import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
+import scala.collection.mutable.ListBuffer
+
 case class UDFTest(value: String)
 case class UDFTestResult(value: String, reverse_value: String)
 
@@ -43,7 +45,7 @@ class UDFPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     implicit val l = logger
     import spark.implicits._
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=new ListBuffer[LifecyclePlugin]())
 
     val df = Seq(
       UDFTest("one"),

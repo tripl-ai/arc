@@ -8,6 +8,9 @@ import au.com.agl.arc.api.API.PipelineStage
 import au.com.agl.arc.util.Utils
 
 trait LifecyclePlugin {
+  def params: Map[String, String]
+
+  def setParams(params: Map[String, String]) 
 
   def before(stage: PipelineStage)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger)
 
@@ -17,14 +20,19 @@ trait LifecyclePlugin {
 
 object LifecyclePlugin {
 
-  def plugins(): List[LifecyclePlugin] = {
+  def resolve(plugin: String, params: Map[String, String]): Option[LifecyclePlugin] = {
 
     val loader = Utils.getContextOrSparkClassLoader
     val serviceLoader = ServiceLoader.load(classOf[LifecyclePlugin], loader)
 
-    val plugins = serviceLoader.iterator().asScala.toList
-
-    plugins
+    val plugins = for (p <- serviceLoader.iterator().asScala.toList if p.getClass.getName == plugin) yield p
+    plugins.headOption match {
+      case Some(p) => {
+        p.setParams(params)
+        Option(p)
+      }
+      case None => None
+    }
   }
 
 }
