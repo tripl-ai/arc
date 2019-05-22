@@ -27,6 +27,7 @@ object ElasticsearchLoad {
     stageDetail.put("output", load.output)  
     stageDetail.put("partitionBy", load.partitionBy.asJava)
     stageDetail.put("saveMode", load.saveMode.toString.toLowerCase)
+    stageDetail.put("params", load.params.asJava)
 
     val df = spark.table(load.inputView)      
 

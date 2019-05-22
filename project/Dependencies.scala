@@ -61,7 +61,7 @@ object Dependencies {
   val scala_graph_json = "org.scala-graph" %% "graph-json" % "1.11.0"
 
   // elasticsearch
-  val elasticsearch = "org.elasticsearch" % "elasticsearch-hadoop" % "6.6.1" % includeJars
+  val elasticsearch = "org.elasticsearch" % "elasticsearch-hadoop" % "7.0.1" % includeJars
 
   // Project
   val etlDeps = Seq(

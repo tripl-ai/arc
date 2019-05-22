@@ -27,6 +27,7 @@ object ElasticsearchExtract {
       stageDetail.put("description", description)    
     }     
     stageDetail.put("outputView", extract.outputView)  
+    stageDetail.put("params", extract.params.asJava)
 
     logger.info()
       .field("event", "enter")
