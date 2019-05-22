@@ -11,5 +11,7 @@
   "persist": false,
   "numPartitions": 10,
   "contiguousIndex": false,
-  "authentication": {}
+  "authentication": {},
+  "schemaURI": "hdfs://datalake/metadata/customer.json",
+  "schemaView": "customer_schema",  
 }

@@ -2,11 +2,13 @@ package au.com.agl.arc.extract
 
 import java.lang._
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.{CloudUtils, DetailException, ExtractUtils}
 import org.apache.spark.sql.types.{BinaryType, StringType}
 import org.apache.spark.storage.StorageLevel
+
+import org.apache.hadoop.mapreduce.lib.input.InvalidInputException
 
 object BytesExtract {
 
@@ -36,6 +38,15 @@ object BytesExtract {
 
     val signature = "BytesExtract requires pathView to be dataset with [value: string] signature."
 
+    // try to get the schema
+    val optionSchema = try {
+      ExtractUtils.getSchema(extract.cols)(spark, logger)
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }      
+    }
+
     CloudUtils.setHadoopConfiguration(extract.authentication)
 
     val df = try {
@@ -63,21 +74,44 @@ object BytesExtract {
           spark.read.format("bytes").load(path)
         }
         case Right(glob) => {
-          spark.read.format("bytes").load(glob)          
+          val bytesDF = spark.read.format("bytes").load(glob)   
+          // force evaluation so errors can be caught
+          bytesDF.take(1)
+          bytesDF
         }
       }
     } catch {
+      case e: InvalidInputException => 
+        spark.emptyDataFrame
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail
-      }
+        override val detail = stageDetail          
+      }   
     }
+    // if incoming dataset has 0 columns then create empty dataset with correct schema
+    val emptyDataframeHandlerDF = try {
+      if (df.schema.length == 0) {
+        stageDetail.put("records", Integer.valueOf(0))
+        optionSchema match {
+          case Some(s) => {
+            // create empty dataframe with schema and add _filename
+            spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s.add($"_filename".string))
+          }
+          case None => throw new Exception(s"BytesExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+        }
+      } else {
+        df
+      }
+    } catch {
+      case e: Exception => throw new Exception(e.getMessage) with DetailException {
+        override val detail = stageDetail          
+      }      
+    }  
 
     // datasource already has a _filename column so no need to add internal columns
-
     // repartition to distribute rows evenly
     val repartitionedDF = extract.numPartitions match {
-      case Some(numPartitions) => df.repartition(numPartitions)
-      case None => df
+      case Some(numPartitions) => emptyDataframeHandlerDF.repartition(numPartitions)
+      case None => emptyDataframeHandlerDF
     }
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 

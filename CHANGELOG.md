@@ -8,6 +8,7 @@
 - added `AzureCosmosDBExtract` stage.
 - added ability to pass `params` to [Lifecycle Plugins](https://aglenergy.github.io/arc/extend/#lifecycle-plugins).
 - rewrote tutorial to use [arc-starter](https://github.com/seddonm1/arc-starter).
+- added `schemaView` and `schemaURI` options to `BytesExtract` to allow pipeline to continue if missing binary files.
 
 # 1.12.2
 

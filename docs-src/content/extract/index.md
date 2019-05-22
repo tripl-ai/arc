@@ -117,6 +117,8 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
