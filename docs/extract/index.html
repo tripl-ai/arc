@@ -917,6 +917,27 @@
 <td>false</td>
 <td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
+
+<tr>
+<td>schemaURI</td>
+<td>URI</td>
+<td>false</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>DataFrame</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>DataFrame</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td>schemaView</td>
+<td>URI</td>
+<td>false</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+</tr>
 </tbody>
 </table>
 
@@ -950,7 +971,9 @@
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
   <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{}</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>  
 <span class="p">}</span></code></pre></div>
 
 <h2 id="databricksdeltaextract">DatabricksDeltaExtract</h2>

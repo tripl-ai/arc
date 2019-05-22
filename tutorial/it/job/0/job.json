@@ -1,360 +1,376 @@
-{"stages": [
 {
-  "type": "JSONExtract",
-  "name": "load dataset",
-  "environments": [
-    "production",
-    "test"
+"plugins": {
+  "lifecycle": [
+    {
+      "type": "au.com.agl.arc.plugins.lifecycle.DataFramePrinterLifecyclePlugin",
+      "environments": [
+        "production",
+        "test"
+      ],
+      "params": {
+        "numRows": "10",
+        "truncate": false
+      }
+    }
   ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/data.json",
-  "outputView": "dataset",
-  "multiLine": false,
-  "persist": true
 },
-{
-  "type": "SQLTransform",
-  "name": "convert_to_strings",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/convert_to_strings.sql",
-  "outputView": "dataset_strings"
-},
-{
-  "type": "TypingTransform",
-  "name": "apply data types",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/meta.json",
-  "inputView": "dataset_strings",
-  "outputView": "dataset_typed"
-},
-{
-  "type": "SQLValidate",
-  "name": "validate",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/sqlvalidate_errors.sql",
-  "sqlParams": {
-    "table_name": "dataset_typed"
+"stages": [
+  {
+    "type": "JSONExtract",
+    "name": "load dataset",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/data.json",
+    "outputView": "dataset",
+    "multiLine": false,
+    "persist": true
+  },
+  {
+    "type": "SQLTransform",
+    "name": "convert_to_strings",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/convert_to_strings.sql",
+    "outputView": "dataset_strings"
+  },
+  {
+    "type": "TypingTransform",
+    "name": "apply data types",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/meta.json",
+    "inputView": "dataset_strings",
+    "outputView": "dataset_typed"
+  },
+  {
+    "type": "SQLValidate",
+    "name": "validate",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/sqlvalidate_errors.sql",
+    "sqlParams": {
+      "table_name": "dataset_typed"
+    }
+  },
+  {
+    "type": "JSONTransform",
+    "name": "single column",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputView": "dataset",
+    "outputView": "dataset_single",
+    "persist": true
+  },
+  {
+    "type": "AvroLoad",
+    "name": "write extract",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputView": "dataset",
+    "outputURI": "/tmp/dataset.avro"
+  },
+  {
+    "type": "AvroExtract",
+    "name": "load extract",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": "/tmp/dataset.avro",
+    "outputView": "loaded",
+  },
+  {
+    "type": "SQLValidate",
+    "name": "validate",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+  },
+  {
+    "type": "BytesExtract",
+    "name": "load extract",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": "/tmp/dataset.avro",
+    "outputView": "loaded",
+  },
+  {
+    "type": "SQLValidate",
+    "name": "validate",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+  },
+  {
+    "type": "DelimitedLoad",
+    "name": "write extract",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputView": "dataset",
+    "outputURI": "/tmp/dataset.csv"
+  },
+  {
+    "type": "DelimitedExtract",
+    "name": "load extract",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": "/tmp/dataset.csv",
+    "outputView": "loaded"
+  },
+  {
+    "type": "SQLValidate",
+    "name": "validate",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+  },
+  {
+    "type": "ElasticsearchLoad",
+    "name": "write dataset",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "output": "index/dataset",
+    "inputView": "dataset",
+    "params": {
+      "es.nodes": "elasticsearch",
+      "es.port": "9200",
+      "es.nodes.wan.only": "true",
+      "es.net.ssl": "false"
+    }
+  },
+  {
+    "type": "ElasticsearchExtract",
+    "name": "load dataset",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "input": "index/dataset",
+    "outputView": "loaded",
+    "params": {
+      "es.nodes": "elasticsearch",
+      "es.port": "9200",
+      "es.nodes.wan.only": "true",
+      "es.net.ssl": "false"
+    }
+  },
+  {
+    "type": "SQLValidate",
+    "name": "validate",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+  },
+  {
+    "type": "JDBCLoad",
+    "name": "write dataset",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputView": "dataset",
+    "jdbcURL": "jdbc:postgresql://postgres:5432/sa",
+    "tableName": "sa.public.dataset",
+    "params": {
+      "user": "sa",
+      "password": "SecretPass!2018"
+    }
+  },
+  {
+    "type": "JDBCExtract",
+    "name": "load dataset",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "jdbcURL": "jdbc:postgresql://postgres:5432/sa",
+    "tableName": "sa.public.dataset",
+    "outputView": "loaded",
+    "params": {
+      "user": "sa",
+      "password": "SecretPass!2018"
+    }
+  },
+  {
+    "type": "SQLValidate",
+    "name": "validate",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+  },
+  {
+    "type": "JSONLoad",
+    "name": "write extract",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputView": "dataset",
+    "outputURI": "/tmp/dataset.json"
+  },
+  {
+    "type": "JSONExtract",
+    "name": "load extract",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": "/tmp/dataset.json",
+    "outputView": "loaded"
+  },
+  {
+    "type": "SQLValidate",
+    "name": "validate",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+  },
+  {
+    "type": "ORCLoad",
+    "name": "write extract",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputView": "dataset",
+    "outputURI": "/tmp/dataset.orc"
+  },
+  {
+    "type": "ORCExtract",
+    "name": "load dataset",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": "/tmp/dataset.orc",
+    "outputView": "loaded"
+  },
+  {
+    "type": "SQLValidate",
+    "name": "validate",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+  },
+  {
+    "type": "ParquetLoad",
+    "name": "write extract",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputView": "dataset",
+    "outputURI": "/tmp/dataset.parquet"
+  },
+  {
+    "type": "ParquetExtract",
+    "name": "load dataset",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": "/tmp/dataset.parquet",
+    "outputView": "loaded"
+  },
+  {
+    "type": "SQLValidate",
+    "name": "validate",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+  },
+  {
+    "type": "TextLoad",
+    "name": "write extract",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputView": "dataset_single",
+    "outputURI": "/tmp/dataset.text"
+  },
+  {
+    "type": "TextExtract",
+    "name": "load dataset",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": "/tmp/dataset.text",
+    "outputView": "loaded"
+  },
+  {
+    "type": "SQLValidate",
+    "name": "validate",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+  },
+  {
+    "type": "XMLLoad",
+    "name": "write extract",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputView": "dataset",
+    "outputURI": "/tmp/dataset.text"
+  },
+  {
+    "type": "XMLExtract",
+    "name": "load dataset",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": "/tmp/dataset.text",
+    "outputView": "loaded"
+  },
+  {
+    "type": "SQLValidate",
+    "name": "validate",
+    "environments": [
+      "production",
+      "test"
+    ],
+    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
   }
-},
-{
-  "type": "JSONTransform",
-  "name": "single column",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputView": "dataset",
-  "outputView": "dataset_single",
-  "persist": true
-},
-{
-  "type": "AvroLoad",
-  "name": "write extract",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputView": "dataset",
-  "outputURI": "/tmp/dataset.avro"
-},
-{
-  "type": "AvroExtract",
-  "name": "load extract",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": "/tmp/dataset.avro",
-  "outputView": "loaded",
-},
-{
-  "type": "SQLValidate",
-  "name": "validate",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
-},
-{
-  "type": "BytesExtract",
-  "name": "load extract",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": "/tmp/dataset.avro",
-  "outputView": "loaded",
-},
-{
-  "type": "SQLValidate",
-  "name": "validate",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
-},
-{
-  "type": "DelimitedLoad",
-  "name": "write extract",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputView": "dataset",
-  "outputURI": "/tmp/dataset.csv"
-},
-{
-  "type": "DelimitedExtract",
-  "name": "load extract",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": "/tmp/dataset.csv",
-  "outputView": "loaded"
-},
-{
-  "type": "SQLValidate",
-  "name": "validate",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
-},
-{
-  "type": "ElasticsearchLoad",
-  "name": "write dataset",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "output": "index/dataset",
-  "inputView": "dataset",
-  "params": {
-    "es.nodes": "elasticsearch",
-    "es.port": "9200",
-    "es.nodes.wan.only": "true",
-    "es.net.ssl": "false"
-  }
-},
-{
-  "type": "ElasticsearchExtract",
-  "name": "load dataset",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "input": "index/dataset",
-  "outputView": "loaded",
-  "params": {
-    "es.nodes": "elasticsearch",
-    "es.port": "9200",
-    "es.nodes.wan.only": "true",
-    "es.net.ssl": "false"
-  }
-},
-{
-  "type": "SQLValidate",
-  "name": "validate",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
-},
-{
-  "type": "JDBCLoad",
-  "name": "write dataset",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputView": "dataset",
-  "jdbcURL": "jdbc:postgresql://postgres:5432/sa",
-  "tableName": "sa.public.dataset",
-  "params": {
-    "user": "sa",
-    "password": "SecretPass!2018"
-  }
-},
-{
-  "type": "JDBCExtract",
-  "name": "load dataset",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "jdbcURL": "jdbc:postgresql://postgres:5432/sa",
-  "tableName": "sa.public.dataset",
-  "outputView": "loaded",
-  "params": {
-    "user": "sa",
-    "password": "SecretPass!2018"
-  }
-},
-{
-  "type": "SQLValidate",
-  "name": "validate",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
-},
-{
-  "type": "JSONLoad",
-  "name": "write extract",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputView": "dataset",
-  "outputURI": "/tmp/dataset.json"
-},
-{
-  "type": "JSONExtract",
-  "name": "load extract",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": "/tmp/dataset.json",
-  "outputView": "loaded"
-},
-{
-  "type": "SQLValidate",
-  "name": "validate",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
-},
-{
-  "type": "ORCLoad",
-  "name": "write extract",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputView": "dataset",
-  "outputURI": "/tmp/dataset.orc"
-},
-{
-  "type": "ORCExtract",
-  "name": "load dataset",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": "/tmp/dataset.orc",
-  "outputView": "loaded"
-},
-{
-  "type": "SQLValidate",
-  "name": "validate",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
-},
-{
-  "type": "ParquetLoad",
-  "name": "write extract",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputView": "dataset",
-  "outputURI": "/tmp/dataset.parquet"
-},
-{
-  "type": "ParquetExtract",
-  "name": "load dataset",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": "/tmp/dataset.parquet",
-  "outputView": "loaded"
-},
-{
-  "type": "SQLValidate",
-  "name": "validate",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
-},
-{
-  "type": "TextLoad",
-  "name": "write extract",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputView": "dataset_single",
-  "outputURI": "/tmp/dataset.text"
-},
-{
-  "type": "TextExtract",
-  "name": "load dataset",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": "/tmp/dataset.text",
-  "outputView": "loaded"
-},
-{
-  "type": "SQLValidate",
-  "name": "validate",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
-},
-{
-  "type": "XMLLoad",
-  "name": "write extract",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputView": "dataset",
-  "outputURI": "/tmp/dataset.text"
-},
-{
-  "type": "XMLExtract",
-  "name": "load dataset",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": "/tmp/dataset.text",
-  "outputView": "loaded"
-},
-{
-  "type": "SQLValidate",
-  "name": "validate",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
-}
 ]}

@@ -587,7 +587,7 @@ class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
 
 <h5 id="since-1-3-0-1">Since: 1.3.0</h5>
 
-<p>Custom <code>Lifecycle Plugins</code> allow users to extend the base Arc framework with logic which is executed <code>before</code> or <code>after</code> each Arc stage. These stages are useful for implementing things like dataset logging after each stage execution for debugging.</p>
+<p>Custom <code>Lifecycle Plugins</code> allow users to extend the base Arc framework with logic which is executed <code>before</code> or <code>after</code> each Arc stage (lifecycle hooks). These stages are useful for implementing things like dataset logging after each stage execution for debugging.</p>
 
 <h3 id="examples-1">Examples</h3>
 
@@ -596,11 +596,13 @@ class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
 import java.util
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
+
 import au.com.agl.arc.api.API._
+import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.util.Utils
 import au.com.agl.arc.util.log.logger.Logger
 
-class DataframePrinterLifecyclePlugin extends LifecyclePlugin {
+class DataFramePrinterLifecyclePlugin extends LifecyclePlugin {
 
   var params = Map[String, String]()
 
@@ -653,7 +655,7 @@ class DataframePrinterLifecyclePlugin extends LifecyclePlugin {
   &quot;plugins&quot;: {
     &quot;lifecycle&quot;: [
       {
-        &quot;type&quot;: &quot;au.com.agl.arc.plugins.lifecycle.DataframePrinterLifecyclePlugin&quot;,
+        &quot;type&quot;: &quot;au.com.agl.arc.plugins.lifecycle.DataFramePrinterLifecyclePlugin&quot;,
         &quot;environments&quot;: [
           &quot;production&quot;,
           &quot;test&quot;

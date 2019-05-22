@@ -167,7 +167,7 @@ The `ETL_CONF_LAST_PROCESSING_DAY` variable is then available to be resolved in 
 ## Lifecycle Plugins
 ##### Since: 1.3.0
 
-Custom `Lifecycle Plugins` allow users to extend the base Arc framework with logic which is executed `before` or `after` each Arc stage. These stages are useful for implementing things like dataset logging after each stage execution for debugging.
+Custom `Lifecycle Plugins` allow users to extend the base Arc framework with logic which is executed `before` or `after` each Arc stage (lifecycle hooks). These stages are useful for implementing things like dataset logging after each stage execution for debugging.
 
 ### Examples
 
@@ -177,11 +177,13 @@ package au.com.agl.arc.plugins.lifecycle
 import java.util
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
+
 import au.com.agl.arc.api.API._
+import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.util.Utils
 import au.com.agl.arc.util.log.logger.Logger
 
-class DataframePrinterLifecyclePlugin extends LifecyclePlugin {
+class DataFramePrinterLifecyclePlugin extends LifecyclePlugin {
 
   var params = Map[String, String]()
 
@@ -235,7 +237,7 @@ To execute:
   "plugins": {
     "lifecycle": [
       {
-        "type": "au.com.agl.arc.plugins.lifecycle.DataframePrinterLifecyclePlugin",
+        "type": "au.com.agl.arc.plugins.lifecycle.DataFramePrinterLifecyclePlugin",
         "environments": [
           "production",
           "test"
