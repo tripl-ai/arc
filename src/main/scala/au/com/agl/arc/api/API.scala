@@ -217,7 +217,7 @@ object API {
 
   case class AzureCosmosDBExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], config: Map[String, String]) extends Extract { val getType = "AzureCosmosDBExtract" }
 
-  case class BytesExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Boolean) extends ColumnarExtract { val getType = "BytesExtract" }
+  case class BytesExtract(name: String, description: Option[String], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Boolean, failMode: FailModeType) extends Extract { val getType = "BytesExtract" }
 
   case class DatabricksDeltaExtract(name: String, description: Option[String], outputView: String, input: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "DeltaExtract" }
 

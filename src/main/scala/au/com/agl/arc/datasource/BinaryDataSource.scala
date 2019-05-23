@@ -7,15 +7,19 @@ import org.apache.spark.sql.types._
 
 import scala.util.Try
 
+object BinaryContent {
+  val schema = StructType(
+    Seq(
+      StructField("value", BinaryType, true),
+      StructField("_filename", StringType, false)
+    )
+  )
+}
+
 class BinaryContentRelation(val sqlContext: SQLContext, val path: String) extends BaseRelation with TableScan {
 
   override def schema: StructType = {
-    StructType(
-      Seq(
-        StructField("value", BinaryType, true),
-        StructField("_filename", StringType, false)
-      )
-    )
+    BinaryContent.schema
   }
 
   override def buildScan(): RDD[Row] = {

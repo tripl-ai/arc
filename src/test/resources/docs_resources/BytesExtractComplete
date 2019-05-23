@@ -12,6 +12,5 @@
   "numPartitions": 10,
   "contiguousIndex": false,
   "authentication": {},
-  "schemaURI": "hdfs://datalake/metadata/customer.json",
-  "schemaView": "customer_schema",  
+  "failMode": "permissive"
 }

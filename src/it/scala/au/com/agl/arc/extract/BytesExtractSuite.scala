@@ -57,14 +57,14 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       BytesExtract(
         name="dataset",
         description=None,
-        cols=Right(Nil),
         outputView=outputView, 
         input=Right(dogImage),
         authentication=None,
         persist=false,
         numPartitions=None,
         contiguousIndex=true,
-        params=Map.empty
+        params=Map.empty,
+        failMode=FailModeTypeFailFast
       )
     )
 

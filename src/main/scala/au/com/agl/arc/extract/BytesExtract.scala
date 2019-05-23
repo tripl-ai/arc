@@ -5,6 +5,7 @@ import java.lang._
 import org.apache.spark.sql._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.{CloudUtils, DetailException, ExtractUtils}
+import au.com.agl.arc.datasource.BinaryContent
 import org.apache.spark.sql.types.{BinaryType, StringType}
 import org.apache.spark.storage.StorageLevel
 
@@ -23,6 +24,7 @@ object BytesExtract {
     }     
     stageDetail.put("outputView", extract.outputView)
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
+    stageDetail.put("failMode", extract.failMode.sparkString)
 
     val inputValue = extract.input match {
       case Left(view) => view
@@ -37,15 +39,6 @@ object BytesExtract {
       .log()
 
     val signature = "BytesExtract requires pathView to be dataset with [value: string] signature."
-
-    // try to get the schema
-    val optionSchema = try {
-      ExtractUtils.getSchema(extract.cols)(spark, logger)
-    } catch {
-      case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
-      }      
-    }
 
     CloudUtils.setHadoopConfiguration(extract.authentication)
 
@@ -82,36 +75,23 @@ object BytesExtract {
       }
     } catch {
       case e: InvalidInputException => 
-        spark.emptyDataFrame
+        if (extract.failMode == FailModeTypeFailFast) {
+          throw new Exception("BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.") with DetailException {
+            override val detail = stageDetail          
+          }  
+        }
+        spark.createDataFrame(spark.sparkContext.emptyRDD[Row], BinaryContent.schema)
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          
       }   
     }
-    // if incoming dataset has 0 columns then create empty dataset with correct schema
-    val emptyDataframeHandlerDF = try {
-      if (df.schema.length == 0) {
-        stageDetail.put("records", Integer.valueOf(0))
-        optionSchema match {
-          case Some(s) => {
-            // create empty dataframe with schema and add _filename
-            spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s.add($"_filename".string))
-          }
-          case None => throw new Exception(s"BytesExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-        }
-      } else {
-        df
-      }
-    } catch {
-      case e: Exception => throw new Exception(e.getMessage) with DetailException {
-        override val detail = stageDetail          
-      }      
-    }  
 
     // datasource already has a _filename column so no need to add internal columns
+
     // repartition to distribute rows evenly
     val repartitionedDF = extract.numPartitions match {
-      case Some(numPartitions) => emptyDataframeHandlerDF.repartition(numPartitions)
-      case None => emptyDataframeHandlerDF
+      case Some(numPartitions) => df.repartition(numPartitions)
+      case None => df
     }
     repartitionedDF.createOrReplaceTempView(extract.outputView)
 

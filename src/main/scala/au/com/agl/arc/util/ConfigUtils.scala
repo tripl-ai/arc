@@ -1106,7 +1106,7 @@ object ConfigUtils {
   def readBytesExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "persist" :: "params" :: "schemaURI" :: "schemaView" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "persist" :: "params" :: "failMode" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
 
     val description = getOptionalValue[String]("description")
@@ -1126,22 +1126,10 @@ object ConfigUtils {
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
     val inputView = getOptionalValue[String]("inputView")
+    val failMode = getValue[String]("failMode", default = Some("failfast"), validValues = "permissive" :: "failfast" :: Nil) |> parseFailMode("failMode") _
 
-    val uriKey = "schemaURI"
-    val stringURI = getOptionalValue[String](uriKey)
-    val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
-      optURI match { 
-        case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
-        case None => Right(None)
-      }
-    )
-    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
-    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")    
-
-    (name, description, extractColumns, schemaView, parsedGlob, inputView, outputView, persist, numPartitions, authentication, contiguousIndex, invalidKeys) match {
-      case (Right(n), Right(d), Right(cols), Right(sv), Right(pg), Right(iv), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(_)) =>
-        val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-
+    (name, description, parsedGlob, inputView, outputView, persist, numPartitions, authentication, contiguousIndex, invalidKeys, failMode) match {
+      case (Right(n), Right(d), Right(pg), Right(iv), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(_), Right(fm)) =>
         val validInput = (pg, iv) match {
           case (Some(_), None) => true
           case (None, Some(_)) => true
@@ -1154,7 +1142,7 @@ object ConfigUtils {
           // add the vertices
           var outputGraph = graph.addVertex(Vertex(idx, ov))
 
-          (Right(BytesExtract(n, d, schema, ov, input, auth, params, p, np, ci)), outputGraph)
+          (Right(BytesExtract(n, d, ov, input, auth, params, p, np, ci, fm)), outputGraph)
         } else {
           val inputError = ConfigError("inputURI:inputView", Some(c.getValue("inputURI").origin.lineNumber()), "Either inputURI and inputView must be defined but only one can be defined at the same time") :: Nil
           val stageName = stringOrDefault(name, "unnamed stage")
@@ -1162,7 +1150,7 @@ object ConfigUtils {
           (Left(err :: Nil), graph)
         }
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputURI, inputView, outputView, persist, numPartitions, authentication, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, inputView, outputView, persist, numPartitions, authentication, invalidKeys, failMode).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)

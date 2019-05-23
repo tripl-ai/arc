@@ -115,10 +115,9 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|failMode|String|false|Either `permissive` or `failfast`:<br><br>`permissive` will create an empty dataframe of `[value, _filename]` in case of no files.<br><br>`failfast` will fail the Arc job if no files are found.<br><br>Default: `failfast`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 

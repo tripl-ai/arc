@@ -14,6 +14,7 @@ import org.apache.spark.sql.functions._
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
+import au.com.agl.arc.datasource.BinaryContent
 import au.com.agl.arc.util.log.LoggerFactory 
 
 import au.com.agl.arc.util._
@@ -60,14 +61,14 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       BytesExtract(
         name="dataset",
         description=None,
-        cols=Right(Nil),
         outputView=outputView, 
         input=Right(targetFile),
         authentication=None,
         persist=false,
         numPartitions=None,
         contiguousIndex=true,
-        params=Map.empty
+        params=Map.empty,
+        failMode=FailModeTypeFailFast
       )
     ).get
 
@@ -88,37 +89,24 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       BytesExtract(
         name="dataset",
         description=None,
-        cols=Right(Nil),
         outputView=outputView, 
         input=Left(pathView),
         authentication=None,
         persist=false,
         numPartitions=None,
         contiguousIndex=true,
-        params=Map.empty
+        params=Map.empty,
+        failMode=FailModeTypeFailFast
       )
     ).get
 
     assert(extractDataset.count == 2)
   }    
 
-  test("BytesExtract Empty Dataset") {
+  test("BytesExtract: FailModeTypeFailFast") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-    val cols = 
-      BinaryColumn(
-        id="1",
-        name="binaryDatum",
-        description=None,
-        nullable=true,
-        nullReplacementValue=None,
-        trim=false,
-        nullableValues=Nil, 
-        encoding=EncodingTypeBase64,
-        metadata=None
-      ) :: Nil    
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
@@ -126,18 +114,18 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         BytesExtract(
           name="dataset",
           description=None,
-          cols=Right(Nil),
           outputView=outputView, 
           input=Right(emptyWildcardDirectory),
           authentication=None,
           persist=false,
           numPartitions=None,
           contiguousIndex=true,
-          params=Map.empty
+          params=Map.empty,
+          failMode=FailModeTypeFailFast
         )        
       )
     }
-    assert(thrown0.getMessage === "BytesExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown0.getMessage === "BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.")
     
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
@@ -145,18 +133,18 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         BytesExtract(
           name="dataset",
           description=None,
-          cols=Right(Nil),
           outputView=outputView, 
           input=Right(emptyDirectory),
           authentication=None,
           persist=false,
           numPartitions=None,
           contiguousIndex=true,
-          params=Map.empty
+          params=Map.empty,
+          failMode=FailModeTypeFailFast
         )  
       )
     }
-    assert(thrown1.getMessage === "BytesExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown1.getMessage === "BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.")
     
     // try without providing column metadata
     val thrown2 = intercept[Exception with DetailException] {
@@ -164,37 +152,38 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         BytesExtract(
           name="dataset",
           description=None,
-          cols=Right(Nil),
           outputView=outputView, 
           input=Right(missingDirectory),
           authentication=None,
           persist=false,
           numPartitions=None,
           contiguousIndex=true,
-          params=Map.empty
+          params=Map.empty,
+          failMode=FailModeTypeFailFast
         )  
       )
     }
-    assert(thrown2.getMessage === "BytesExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown2.getMessage === "BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.")
 
     // try with column
-    val extractDataset = extract.BytesExtract.extract(
+    val actual = extract.BytesExtract.extract(
       BytesExtract(
         name="dataset",
         description=None,
-        cols=Right(cols),
         outputView=outputView, 
         input=Right(emptyWildcardDirectory),
         authentication=None,
         persist=false,
         numPartitions=None,
         contiguousIndex=true,
-        params=Map.empty
+        params=Map.empty,
+        failMode=FailModeTypePermissive
       )  
     ).get
 
-    assert(extractDataset.columns.deep == Array("binaryDatum", "_filename").deep)
-    assert(extractDataset.count == 0)
+    val expected = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], BinaryContent.schema)
+    assert(TestDataUtils.datasetEquality(expected, actual))
+
   }  
 
 }

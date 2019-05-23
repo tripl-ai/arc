@@ -355,7 +355,7 @@ object ARC {
     * engines as the submitted stages are not specific to Spark.
     */
   def run(pipeline: ETLPipeline)
-  (implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
+  (implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     def before(stage: PipelineStage): Unit = {
       for (p <- arcContext.lifecyclePlugins) {
@@ -372,13 +372,14 @@ object ARC {
     }
 
     @tailrec
-    def runStages(stages: List[PipelineStage]) {
+    def runStages(stages: List[PipelineStage]): Option[DataFrame] = {
       stages match {
-        case Nil => // end
+        case Nil => None // end
         case head :: Nil =>
           before(head)
           val result = processStage(head)
           after(head, result, true)
+          result
         case head :: tail =>
           before(head)
           val result = processStage(head)
