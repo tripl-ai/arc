@@ -148,5 +148,4 @@ services:
     command: "bin/spark-submit --master local[*] --driver-memory=2G --class au.com.agl.arc.ARC /opt/spark/jars/arc.jar"
     environment:
       ETL_CONF_ENV: test
-      ETL_CONF_BASE_URL: /opt/tutorial/it/job/0
       ETL_CONF_URI: file:///opt/tutorial/it/job/0/job.json

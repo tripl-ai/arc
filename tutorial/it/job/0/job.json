@@ -22,7 +22,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/data.json",
+    "inputURI": "/opt/tutorial/it/job/0/data.json",
     "outputView": "dataset",
     "multiLine": false,
     "persist": true
@@ -34,7 +34,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/convert_to_strings.sql",
+    "inputURI": "/opt/tutorial/it/job/0/convert_to_strings.sql",
     "outputView": "dataset_strings"
   },
   {
@@ -44,7 +44,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/meta.json",
+    "inputURI": "/opt/tutorial/it/job/0/meta.json",
     "inputView": "dataset_strings",
     "outputView": "dataset_typed"
   },
@@ -55,7 +55,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/sqlvalidate_errors.sql",
+    "inputURI": "/opt/tutorial/it/job/0/sqlvalidate_errors.sql",
     "sqlParams": {
       "table_name": "dataset_typed"
     }
@@ -98,7 +98,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+    "inputURI": "/opt/tutorial/it/job/0/assert_not_empty.sql"
   },
   {
     "type": "BytesExtract",
@@ -117,7 +117,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+    "inputURI": "/opt/tutorial/it/job/0/assert_not_empty.sql"
   },
   {
     "type": "DelimitedLoad",
@@ -146,7 +146,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+    "inputURI": "/opt/tutorial/it/job/0/assert_not_empty.sql"
   },
   {
     "type": "ElasticsearchLoad",
@@ -187,7 +187,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+    "inputURI": "/opt/tutorial/it/job/0/assert_not_empty.sql"
   },
   {
     "type": "JDBCLoad",
@@ -226,7 +226,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+    "inputURI": "/opt/tutorial/it/job/0/assert_not_empty.sql"
   },
   {
     "type": "JSONLoad",
@@ -255,7 +255,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+    "inputURI": "/opt/tutorial/it/job/0/assert_not_empty.sql"
   },
   {
     "type": "ORCLoad",
@@ -284,7 +284,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+    "inputURI": "/opt/tutorial/it/job/0/assert_not_empty.sql"
   },
   {
     "type": "ParquetLoad",
@@ -313,7 +313,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+    "inputURI": "/opt/tutorial/it/job/0/assert_not_empty.sql"
   },
   {
     "type": "TextLoad",
@@ -342,7 +342,7 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+    "inputURI": "/opt/tutorial/it/job/0/assert_not_empty.sql"
   },
   {
     "type": "XMLLoad",
@@ -371,6 +371,6 @@
       "production",
       "test"
     ],
-    "inputURI": ${ETL_CONF_BASE_URL}"/assert_not_empty.sql"
+    "inputURI": "/opt/tutorial/it/job/0/assert_not_empty.sql"
   }
 ]}
