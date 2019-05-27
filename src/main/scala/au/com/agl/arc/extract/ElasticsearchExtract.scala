@@ -27,7 +27,7 @@ object ElasticsearchExtract {
       stageDetail.put("description", description)    
     }     
     stageDetail.put("outputView", extract.outputView)  
-    stageDetail.put("params", extract.params.asJava)
+    stageDetail.put("params", extract.params)
 
     logger.info()
       .field("event", "enter")
@@ -39,7 +39,7 @@ object ElasticsearchExtract {
       if (arcContext.isStreaming) {
         spark.emptyDataFrame
       } else {      
-        spark.read.format("org.elasticsearch.spark.sql").options(extract.params).load(extract.input)  
+        spark.read.format("org.elasticsearch.spark.sql").options(extract.params).load(extract.input)
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {

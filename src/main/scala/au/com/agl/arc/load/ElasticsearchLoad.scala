@@ -41,25 +41,38 @@ object ElasticsearchLoad {
       .map("stage", stageDetail)      
       .log()
 
+
+    val dropMap = new java.util.HashMap[String, Object]()
+
+    // elasticsearch cannot support a column called _index
+    val unsupported = df.schema.filter( _.name == "_index").map(_.name)
+    if (!unsupported.isEmpty) {
+      dropMap.put("Unsupported", unsupported.asJava)
+    }
+
+    stageDetail.put("drop", dropMap)    
+    
+    val nonNullDF = df.drop(unsupported:_*)
+
     val listener = ListenerUtils.addStageCompletedListener(stageDetail)
 
     // Elasticsearch will convert date and times to epoch milliseconds
     val outputDF = try {
       load.partitionBy match {
         case Nil =>
-          val dfToWrite = load.numPartitions.map(df.repartition(_)).getOrElse(df)
+          val dfToWrite = load.numPartitions.map(nonNullDF.repartition(_)).getOrElse(nonNullDF)
           dfToWrite.write.options(load.params).mode(load.saveMode).format("org.elasticsearch.spark.sql").save(load.output)
           dfToWrite
         case partitionBy => {
           // create a column array for repartitioning
-          val partitionCols = partitionBy.map(col => df(col))
+          val partitionCols = partitionBy.map(col => nonNullDF(col))
           load.numPartitions match {
             case Some(n) =>
-              val dfToWrite = df.repartition(n, partitionCols:_*)
+              val dfToWrite = nonNullDF.repartition(n, partitionCols:_*)
               dfToWrite.write.options(load.params).partitionBy(partitionBy:_*).mode(load.saveMode).format("org.elasticsearch.spark.sql").save(load.output)
               dfToWrite
             case None =>
-              val dfToWrite = df.repartition(partitionCols:_*)
+              val dfToWrite = nonNullDF.repartition(partitionCols:_*)
               dfToWrite.write.options(load.params).partitionBy(partitionBy:_*).mode(load.saveMode).format("org.elasticsearch.spark.sql").save(load.output)
               dfToWrite
           }

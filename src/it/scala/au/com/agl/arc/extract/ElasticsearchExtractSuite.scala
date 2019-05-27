@@ -30,7 +30,7 @@ class ElasticsearchExtractSuite extends FunSuite with BeforeAndAfter {
 
   val testData = getClass.getResource("/akc_breed_info.csv").toString
   val outputView = "actual"
-  val index = "index/dogs"
+  val index = "dogs"
   val esURL = "localhost"
   val port = "9200"
   val wanOnly = "true"
@@ -75,6 +75,7 @@ class ElasticsearchExtractSuite extends FunSuite with BeforeAndAfter {
       .option("es.port",port)
       .option("es.net.ssl",ssl)
       .option("es.nodes", esURL)
+      .mode("overwrite")
       .save(index)
 
     extract.ElasticsearchExtract.extract(

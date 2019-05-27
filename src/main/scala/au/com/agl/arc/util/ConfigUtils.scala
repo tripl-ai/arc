@@ -308,11 +308,14 @@ object ConfigUtils {
     if (c.hasPath(path)) {
       val params = c.getConfig(path).entrySet
       (for (e <- params.asScala) yield {
-        val k = e.getKey
-        val v = e.getValue
+
+        // regex replaceall finds leading or trailing double quote(") characters
+        // typesafe config will emit them if the key string contains dot (.) characters because they could be used as a reference
+        val k = e.getKey.replaceAll("^\"|\"$", "")
+        val v = e.getValue.unwrapped.toString
         
         // append string value to map
-        k -> v.unwrapped.toString
+        k -> v
       }).toMap
     } else {
       Map.empty
