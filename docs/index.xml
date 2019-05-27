@@ -118,7 +118,7 @@ Example  create a new table each run using a JDBCLoad stage with a dynamic desti
       <guid>https://aglenergy.github.io/arc/deploy/</guid>
       <description>Arc has been packaged as a Docker image to simplify deployment as a stateless process on cloud infrastructure.
 Running a Job An example command to start a job is:
-docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&amp;quot; \ -it -p 4040:4040 seddonm1/arc:1.12.2 \ bin/spark-submit \ --master local[*] \ --class au.com.agl.arc.ARC \ /opt/spark/jars/arc.jar \ --etl.config.uri=file:///opt/tutorial/basic/job/0/basic.json  This job executes the following job file which is included in the docker image:</description>
+docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&amp;quot; \ -it -p 4040:4040 seddonm1/arc:1.13.0 \ bin/spark-submit \ --master local[*] \ --class au.com.agl.arc.ARC \ /opt/spark/jars/arc.jar \ --etl.config.uri=file:///opt/tutorial/basic/job/0/basic.json  This job executes the following job file which is included in the docker image:</description>
     </item>
     
     <item>
@@ -127,8 +127,8 @@ docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_C
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://aglenergy.github.io/arc/extend/</guid>
-      <description>Arc can be exended in three ways by registering:
- Dynamic Configuration Plugins. Pipeline Stage Plugins. User Defined Functions which extend the Spark SQL dialect.  Dynamic Configuration Plugins Since: 1.3.0 Dynamic Configuration vs Determinism
+      <description>Arc can be exended in four ways by registering:
+ Dynamic Configuration Plugins. Lifecycle Plugins. Pipeline Stage Plugins. User Defined Functions which extend the Spark SQL dialect.  Dynamic Configuration Plugins Since: 1.3.0 Dynamic vs Deterministic Configuration
 Use of this functionality is discouraged as it goes against the principles of Arc specifically around statelessness/deterministic behaviour but is inlcuded here for users who have not yet committed to a job orchestrator such as Apache Airflow and have dynamic configuration requirements.</description>
     </item>
     

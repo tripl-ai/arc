@@ -4,7 +4,6 @@ import java.net.URI
 
 import scala.io.Source
 import scala.collection.JavaConverters._
-
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
@@ -47,7 +46,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test addVertex") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     // make empty graph
     var outputGraph = Graph(Nil,Nil,false)
@@ -65,7 +64,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test addEdge") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     // make empty graph
     var outputGraph = Graph(Nil,Nil,false)
@@ -85,7 +84,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test vertexExists: false") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     val conf = """{
       "stages": [          
@@ -118,7 +117,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test vertexExists: true") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     val conf = """{
       "stages": [     
@@ -152,7 +151,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(_) => assert(false)
-      case Right( (pipeline, graph) ) => {
+      case Right( (_, _, _) ) => {
         assert(true)
       }
     }
@@ -161,7 +160,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test vertexExists: false - SQLTransform") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     val conf = s"""{
       "stages": [          
@@ -187,14 +186,14 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
       case Left(stageError) => {
         assert(stageError == StageError(0, "test",3,List(ConfigError("inputURI",Some(10),"view 'customer' does not exist by this stage of the job."))) :: Nil)
       }
-      case Right( (pipeline, graph) ) => assert(false)
+      case Right( (_, _, _) ) => assert(false)
     }
   } 
 
   test("Test vertexExists: true - SQLTransform") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     val conf = s"""{
       "stages": [   
@@ -228,7 +227,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(_) => assert(false)
-      case Right( (pipeline, graph) ) => {
+      case Right( (_, graph, _) ) => {
         assert(graph.vertices == Vertex(0, "customer") :: Vertex(1, "outputView") :: Nil)
         assert(graph.edges == Edge(Vertex(0, "customer"), Vertex(1, "outputView")) :: Nil)
       }
@@ -238,7 +237,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test vertexExists: multiple") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     val conf = s"""{
       "stages": [   
@@ -302,7 +301,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(_) => assert(false)
-      case Right( (_, graph) ) => {
+      case Right( (_, graph, _) ) => {
         assert(graph.vertices == Vertex(0, "customer") :: Vertex(1, "outputView0") :: Vertex(2, "customer") :: Vertex(3, "outputView0") :: Vertex(4, "outputView1") :: Nil)
         assert(graph.edges == Edge(Vertex(0, "customer"),Vertex(1, "outputView0")) :: Edge(Vertex(2,"customer"),Vertex(3,"outputView0")) :: Edge(Vertex(2,"customer"),Vertex(4,"outputView1")) :: Nil)
       }
@@ -312,7 +311,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test vertexExists: PipelineStagePlugin") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     val conf = s"""{
       "stages": [   
@@ -347,7 +346,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(_) => assert(false)
-      case Right( (_, graph) ) => {
+      case Right( (_, graph, _) ) => {
         assert(graph.vertices == Vertex(1, "1:ParquetLoad"):: Nil)
         assert(graph.edges == Nil)
       }

@@ -5,7 +5,7 @@
     "production",
     "test"
   ],
-  "output": "index/customer",
+  "output": "customer",
   "inputView": "customer",
   "params": {
     "es.nodes": "<my>.elasticsearch.com",

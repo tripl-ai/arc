@@ -5,6 +5,9 @@ networks:
   arc-integration:
     name: arc-integration
     driver: bridge
+    ipam:
+     config:
+       - subnet: 172.19.0.0/24  
 
 services:
   zookeeper:
@@ -103,14 +106,15 @@ services:
       - 5000:5000
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.6.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.0.1
     networks:
-      - arc-integration    
+      - arc-integration
     ports:
       - 9200:9200
       - 9300:9300
     environment:
-      discovery.type: single-node  
+      discovery.type: single-node
+      network.host: 0.0.0.0
   
   minio:
     image: minio/minio:it
@@ -124,3 +128,24 @@ services:
       MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
       MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
+  arc:
+    image: seddonm1/arc:1.13.0
+    depends_on:
+      - zookeeper  
+      - kafka  
+      - kafka-rest
+      - kafka-schema-registry
+      - tensorflow_serving
+      - sqlserver
+      - postgres
+      - flask_serving
+      - elasticsearch
+      - minio
+    networks:
+      - arc-integration    
+    ports:
+      - 4040:4040   
+    command: "bin/spark-submit --master local[*] --driver-memory=2G --class au.com.agl.arc.ARC /opt/spark/jars/arc.jar"
+    environment:
+      ETL_CONF_ENV: test
+      ETL_CONF_URI: file:///opt/tutorial/it/job/0/job.json

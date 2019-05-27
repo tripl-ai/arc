@@ -2,11 +2,14 @@ package au.com.agl.arc.extract
 
 import java.lang._
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql._
 import au.com.agl.arc.api.API._
 import au.com.agl.arc.util.{CloudUtils, DetailException, ExtractUtils}
+import au.com.agl.arc.datasource.BinaryContent
 import org.apache.spark.sql.types.{BinaryType, StringType}
 import org.apache.spark.storage.StorageLevel
+
+import org.apache.hadoop.mapreduce.lib.input.InvalidInputException
 
 object BytesExtract {
 
@@ -21,6 +24,7 @@ object BytesExtract {
     }     
     stageDetail.put("outputView", extract.outputView)
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
+    stageDetail.put("failMode", extract.failMode.sparkString)
 
     val inputValue = extract.input match {
       case Left(view) => view
@@ -63,13 +67,23 @@ object BytesExtract {
           spark.read.format("bytes").load(path)
         }
         case Right(glob) => {
-          spark.read.format("bytes").load(glob)          
+          val bytesDF = spark.read.format("bytes").load(glob)   
+          // force evaluation so errors can be caught
+          bytesDF.take(1)
+          bytesDF
         }
       }
     } catch {
+      case e: InvalidInputException => 
+        if (extract.failMode == FailModeTypeFailFast) {
+          throw new Exception("BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.") with DetailException {
+            override val detail = stageDetail          
+          }  
+        }
+        spark.createDataFrame(spark.sparkContext.emptyRDD[Row], BinaryContent.schema)
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail
-      }
+        override val detail = stageDetail          
+      }   
     }
 
     // datasource already has a _filename column so no need to add internal columns

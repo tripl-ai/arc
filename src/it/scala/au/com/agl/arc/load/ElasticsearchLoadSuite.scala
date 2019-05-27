@@ -19,6 +19,7 @@ import org.apache.spark.sql.functions._
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
+import au.com.agl.arc.util._
 import au.com.agl.arc.util.log.LoggerFactory 
 
 import org.elasticsearch.spark.sql._ 
@@ -28,7 +29,7 @@ class ElasticsearchLoadSuite extends FunSuite with BeforeAndAfter {
   var session: SparkSession = _  
   val testData = getClass.getResource("/akc_breed_info.csv").toString
   val inputView = "expected"
-  val index = "index/dogs"
+  val index = "dogs"
   val esURL = "localhost"
   val port = "9200"
   val wanOnly = "true"
@@ -58,7 +59,7 @@ class ElasticsearchLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     val df0 = spark.read.option("header","true").csv(testData)
     df0.createOrReplaceTempView(inputView)
@@ -84,8 +85,8 @@ class ElasticsearchLoadSuite extends FunSuite with BeforeAndAfter {
     val df1 = spark.read
       .format("org.elasticsearch.spark.sql")
       .option("es.nodes.wan.only",wanOnly)
-      .option("es.port",port)
-      .option("es.net.ssl",ssl)
+      .option("es.port", port)
+      .option("es.net.ssl", ssl)
       .option("es.nodes", esURL)
       .load(index)
 
@@ -114,4 +115,48 @@ class ElasticsearchLoadSuite extends FunSuite with BeforeAndAfter {
     assert(expectedExceptActualCount === 0)
   } 
 
+
+  test("ElasticsearchLoad end-to-end") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+
+    val df = spark.read.option("header","true").csv(testData)
+    df.createOrReplaceTempView(inputView)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "ElasticsearchLoad",
+          "name": "write person",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "output": "person",
+          "inputView": "${inputView}",
+          "saveMode": "Overwrite",
+          "params": {
+            "es.nodes": "${esURL}",
+            "es.port": "${port}",
+            "es.nodes.wan.only": "${wanOnly}",
+            "es.net.ssl": "${ssl}"
+          }
+        }
+      ]
+    }"""
+    
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+
+    pipelineEither match {
+      case Left(_) => {
+        println(pipelineEither)
+        assert(false)
+      }
+      case Right((pipeline, _, _)) => ARC.run(pipeline)(spark, logger, arcContext)
+    }  
+  } 
 }

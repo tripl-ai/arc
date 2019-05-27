@@ -1,8 +1,7 @@
 package au.com.agl.arc
 
-import au.com.agl.arc.plugins.LifecyclePlugin
 import au.com.agl.arc.udf.UDF
-import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, PipelineStagePlugin, UDFPlugin}
+import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin, UDFPlugin}
 
 object ARC {
 
@@ -133,18 +132,19 @@ object ARC {
     }  
     MDC.put("environment", env) 
     
-    val envId: Option[String] = argsMap.get("etl.config.environment.id").orElse(envOrNone("ETL_CONF_ENV_ID"))
-    for (e <- envId) {
+    val environmentId: Option[String] = argsMap.get("etl.config.environment.id").orElse(envOrNone("ETL_CONF_ENV_ID"))
+    for (e <- environmentId) {
         MDC.put("environmentId", e) 
     }         
 
     MDC.put("applicationId", spark.sparkContext.applicationId) 
 
-    val arcContext = ARCContext(jobId, jobName, env, envId, configUri, isStreaming, ignoreEnvironments)    
-
+    val arcContext = ARCContext(jobId=jobId, jobName=jobName, environment=env, environmentId=environmentId, configUri=configUri, isStreaming=isStreaming, ignoreEnvironments=ignoreEnvironments, lifecyclePlugins=Nil)
+    
     // log available plugins
     val loader = Utils.getContextOrSparkClassLoader
     val dynamicConfigurationPlugins = ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
+    val lifecyclePlugins = ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
     val pipelineStagePlugins = ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
     val udfPlugins = ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
 
@@ -157,6 +157,7 @@ object ARC {
       .field("javaVersion", System.getProperty("java.runtime.version"))
       .field("environment", env)
       .field("dynamicConfigurationPlugins", dynamicConfigurationPlugins)
+      .field("lifecyclePlugins", lifecyclePlugins)
       .field("pipelineStagePlugins", pipelineStagePlugins)
       .field("udfPlugins", udfPlugins)
       .log()   
@@ -233,10 +234,11 @@ object ARC {
     }
 
     val error: Boolean = pipelineConfig match {
-      case Right( (pipeline, _) ) =>
+      case Right( (pipeline, _, arcCtx) ) =>
         try {
           UDF.registerUDFs(spark.sqlContext)
-          ARC.run(pipeline)(spark, logger, arcContext)
+          println(arcCtx)
+          ARC.run(pipeline)(spark, logger, arcCtx)
           false
         } catch {
           case e: Exception with DetailException => 
@@ -355,32 +357,31 @@ object ARC {
     * engines as the submitted stages are not specific to Spark.
     */
   def run(pipeline: ETLPipeline)
-  (implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
-
-    val lifecyclePlugins = LifecyclePlugin.plugins()
+  (implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     def before(stage: PipelineStage): Unit = {
-      for (p <- lifecyclePlugins) {
-        logger.info().message(s"Executing before() on LifecyclePlugin: ${p.getClass.getName}")
+      for (p <- arcContext.lifecyclePlugins) {
+        logger.trace().message(s"Executing before() on LifecyclePlugin: ${p.getClass.getName}")
         p.before(stage)
       }
     }
 
     def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean): Unit = {
-      for (p <- lifecyclePlugins) {
-        logger.info().message(s"Executing after(last = $isLast) on LifecyclePlugin: ${p.getClass.getName}")
+      for (p <- arcContext.lifecyclePlugins) {
+        logger.trace().message(s"Executing after(last = $isLast) on LifecyclePlugin: ${p.getClass.getName}")
         p.after(stage, result, isLast)
       }
     }
 
     @tailrec
-    def runStages(stages: List[PipelineStage]) {
+    def runStages(stages: List[PipelineStage]): Option[DataFrame] = {
       stages match {
-        case Nil => // end
+        case Nil => None // end
         case head :: Nil =>
           before(head)
           val result = processStage(head)
           after(head, result, true)
+          result
         case head :: tail =>
           before(head)
           val result = processStage(head)
@@ -396,6 +397,8 @@ object ARC {
     stage match {
       case e : AvroExtract =>
         extract.AvroExtract.extract(e)  
+      case e : AzureCosmosDBExtract =>
+        extract.AzureCosmosDBExtract.extract(e)          
       case e : BytesExtract =>
         extract.BytesExtract.extract(e)    
       case e : DatabricksDeltaExtract =>

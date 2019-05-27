@@ -3,12 +3,14 @@ package au.com.agl.arc.api
 import java.net.URI
 import java.time.LocalTime
 
-import au.com.agl.arc.plugins.PipelineStagePlugin
+import au.com.agl.arc.plugins.{LifecyclePlugin, PipelineStagePlugin}
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.types.MetadataBuilder
 import org.apache.spark.sql.SaveMode
+
+import com.microsoft.azure.cosmosdb.spark.config.Config
 
 /** The API defines the model for a pipline. It is made up of stages,
   * extract, transform and load with their respective settings.
@@ -44,7 +46,11 @@ object API {
 
     /** whether to ignore environments and process everything
       */    
-    ignoreEnvironments: Boolean    
+    ignoreEnvironments: Boolean,
+
+    /** a list of lifecycle plugins which are called before and after each stage
+      */    
+    lifecyclePlugins: List[LifecyclePlugin]
 
   )
 
@@ -209,7 +215,9 @@ object API {
 
   case class AvroExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, basePath: Option[String], avroSchema: Option[org.apache.avro.Schema], inputField: Option[String]) extends ColumnarExtract { val getType = "AvroExtract" }  
 
-  case class BytesExtract(name: String, description: Option[String], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Boolean) extends Extract { val getType = "BytesExtract" }
+  case class AzureCosmosDBExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], config: Map[String, String]) extends Extract { val getType = "AzureCosmosDBExtract" }
+
+  case class BytesExtract(name: String, description: Option[String], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Boolean, failMode: FailModeType) extends Extract { val getType = "BytesExtract" }
 
   case class DatabricksDeltaExtract(name: String, description: Option[String], outputView: String, input: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "DeltaExtract" }
 

@@ -51,7 +51,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     extract.BytesExtract.extract(
       BytesExtract(
@@ -63,7 +63,8 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         contiguousIndex=true,
-        params=Map.empty
+        params=Map.empty,
+        failMode=FailModeTypeFailFast
       )
     )
 

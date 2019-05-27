@@ -25,7 +25,7 @@ import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
-import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, PipelineStagePlugin}
+import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin}
 import au.com.agl.arc.util.ControlUtils._
 import au.com.agl.arc.util.EitherUtils._
 
@@ -40,12 +40,60 @@ object ConfigUtils {
       params.filter{ case (k,v) => options.contains(k) }
   }
 
-  def parsePipeline(configUri: Option[String], argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
+  def parsePipeline(configUri: Option[String], argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph, ARCContext)] = {
     configUri match {
       case Some(uri) => parseConfig(Right(new URI(uri)), argsMap, graph, arcContext)
       case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
      }
   }
+
+  def parseConfig(uri: Either[String, URI], argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph, ARCContext)] = {
+    val base = ConfigFactory.load()
+
+    val etlConfString = uri match {
+      case Left(str) => Right(str)
+      case Right(uri) => getConfigString(uri, argsMap, arcContext)
+    }
+
+    val uriString = uri match {
+      case Left(str) => ""
+      case Right(uri) => uri.toString
+    }    
+
+    etlConfString.rightFlatMap { str =>
+      // calculate hash of raw string so that logs can be used to detect changes
+      val etlConfStringHash = DigestUtils.md5Hex(str.getBytes)
+
+      val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+
+      // convert to json string so that parameters can be correctly parsed
+      val argsMapJson = new ObjectMapper().writeValueAsString(argsMap.asJava).replace("\\", "")
+      val argsMapConf = ConfigFactory.parseString(argsMapJson, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+
+      // try to read objects in the plugins.config path
+      val resolvedConfigPlugins = resolveConfigPlugins(etlConf, base, arcContext)
+      
+      val pluginConfs: List[Config] = resolvedConfigPlugins.map( c => ConfigFactory.parseMap(c) )
+
+      val resolvedConfig: Config = pluginConfs match {
+        case Nil =>
+          etlConf.resolveWith(argsMapConf.withFallback(etlConf).withFallback(base)).resolve()
+        case _ =>
+          val pluginConf = pluginConfs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
+          val pluginValues = pluginConf.root().unwrapped()
+          logger.debug()
+            .message("Found additional config values from plugins")
+            .field("pluginConf", pluginValues)
+            .log()           
+          etlConf.resolveWith(argsMapConf.withFallback(pluginConf).withFallback(etlConf).withFallback(base)).resolve()
+      }
+
+      // used the resolved config to find plugins.lifestyle and create objects and replace the context
+      val arcCtx = ARCContext(arcContext.jobId, arcContext.jobName, arcContext.environment, arcContext.environmentId, arcContext.configUri, arcContext.isStreaming, arcContext.ignoreEnvironments, resolveLifecyclePlugins(resolvedConfig, arcContext))
+
+      readPipeline(resolvedConfig, etlConfStringHash, uriString, argsMap, graph, arcCtx)
+    }
+  }  
 
   def getConfigString(uri: URI, argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], String] = {
     uri.getScheme match {
@@ -178,61 +226,35 @@ object ConfigUtils {
     }
   }
 
-  def parseConfig(uri: Either[String, URI], argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
-    val base = ConfigFactory.load()
-
-    val etlConfString = uri match {
-      case Left(str) => Right(str)
-      case Right(uri) => getConfigString(uri, argsMap, arcContext)
-    }
-
-    val uriString = uri match {
-      case Left(str) => ""
-      case Right(uri) => uri.toString
-    }    
-
-    etlConfString.rightFlatMap { str =>
-      // calculate hash of raw string so that logs can be used to detect changes
-      val etlConfStringHash = DigestUtils.md5Hex(str.getBytes)
-
-      val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-
-      // convert to json string so that parameters can be correctly parsed
-      val argsMapJson = new ObjectMapper().writeValueAsString(argsMap.asJava).replace("\\", "")
-      val argsMapConf = ConfigFactory.parseString(argsMapJson, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
-
-      // try to read objects in the plugins.config path
-      val resolvedConfigPlugins = resolveConfigPlugins(etlConf, base)
-      
-      val pluginConfs: List[Config] = resolvedConfigPlugins.map( c => ConfigFactory.parseMap(c) )
-
-      val c = pluginConfs match {
-        case Nil =>
-          etlConf.resolveWith(argsMapConf.withFallback(etlConf).withFallback(base)).resolve()
-        case _ =>
-          val pluginConf = pluginConfs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
-          val pluginValues = pluginConf.root().unwrapped()
-          logger.debug()
-            .message("Found additional config values from plugins")
-            .field("pluginConf", pluginValues)
-            .log()           
-          etlConf.resolveWith(argsMapConf.withFallback(pluginConf).withFallback(etlConf).withFallback(base)).resolve()
-      }
-
-      readPipeline(c, etlConfStringHash, uriString, argsMap, graph, arcContext)
-    }
-  }
-
-  def resolveConfigPlugins(c: Config, base: Config)(implicit logger: au.com.agl.arc.util.log.logger.Logger): List[JMap[String, Object]] = {
+  def resolveConfigPlugins(c: Config, base: Config, arcContext: ARCContext)(implicit logger: au.com.agl.arc.util.log.logger.Logger): List[JMap[String, Object]] = {
     if (c.hasPath("plugins.config")) {
       val plugins =
         (for (p <- c.getObjectList("plugins.config").asScala) yield {
           val plugin = p.toConfig.withFallback(base).resolve()
-          
           if (plugin.hasPath("type")) {
-            val name = plugin.getString("type")
-            val params = readMap("params", plugin)
-            DynamicConfigurationPlugin.resolveAndExecutePlugin(name, params).map(_ :: Nil)
+            val _type =  plugin.getString("type")
+
+            // deprecation message to override empty environments
+            val environments = if (plugin.hasPath("environments")) plugin.getStringList("environments").asScala.toList else Nil
+            val depricationEnvironments = environments match {
+              case Nil => List("prd", "ppd", "tst", "dev")
+              case _ => environments
+            }          
+
+            logger.trace()
+              .field("event", "validateConfig")
+              .field("type", _type)              
+              .field("message", "skipping plugin due to environment configuration")       
+              .field("environment", arcContext.environment)               
+              .list("environments", depricationEnvironments.asJava)               
+              .log()   
+
+            if (arcContext.ignoreEnvironments || depricationEnvironments.contains(arcContext.environment)) {
+              val params = readMap("params", plugin)
+              DynamicConfigurationPlugin.resolveAndExecutePlugin(_type, params).map(_ :: Nil)
+            } else {
+              None
+            }
           } else {
             None
           }
@@ -243,15 +265,57 @@ object ConfigUtils {
     }
   }
 
+  def resolveLifecyclePlugins(c: Config, arcContext: ARCContext)(implicit logger: au.com.agl.arc.util.log.logger.Logger): List[LifecyclePlugin] = {
+    if (c.hasPath("plugins.lifecycle")) {
+      val plugins =
+        (for (p <- c.getObjectList("plugins.lifecycle").asScala) yield {
+          val plugin = p.toConfig
+          if (plugin.hasPath("type")) {
+            val _type =  plugin.getString("type")
+
+            // deprecation message to override empty environments
+            val environments = if (plugin.hasPath("environments")) plugin.getStringList("environments").asScala.toList else Nil
+            val depricationEnvironments = environments match {
+              case Nil => List("prd", "ppd", "tst", "dev")
+              case _ => environments
+            }          
+
+            logger.trace()
+              .field("event", "validateConfig")
+              .field("type", _type)              
+              .field("message", "skipping plugin due to environment configuration")       
+              .field("environment", arcContext.environment)               
+              .list("environments", depricationEnvironments.asJava)               
+              .log()   
+
+            if (arcContext.ignoreEnvironments || depricationEnvironments.contains(arcContext.environment)) {
+              val params = readMap("params", plugin)
+              LifecyclePlugin.resolve(_type, params).map(_ :: Nil)
+            } else {
+              None
+            }
+          } else {
+            None
+          }
+        }).toList
+      plugins.flatMap( p => p.getOrElse(Nil) )
+    } else {
+      Nil
+    }
+  }  
+
   def readMap(path: String, c: Config): Map[String, String] = {
     if (c.hasPath(path)) {
       val params = c.getConfig(path).entrySet
       (for (e <- params.asScala) yield {
-        val k = e.getKey
-        val v = e.getValue
+
+        // regex replaceall finds leading or trailing double quote(") characters
+        // typesafe config will emit them if the key string contains dot (.) characters because they could be used as a reference
+        val k = e.getKey.replaceAll("^\"|\"$", "")
+        val v = e.getValue.unwrapped.toString
         
         // append string value to map
-        k -> v.unwrapped.toString
+        k -> v
       }).toMap
     } else {
       Map.empty
@@ -926,6 +990,16 @@ object ConfigUtils {
     }
   }  
 
+  private def validateAzureCosmosDBConfig(path: String, map:  Map[String, String])(implicit spark: SparkSession, c: Config): Either[Errors, com.microsoft.azure.cosmosdb.spark.config.Config] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, com.microsoft.azure.cosmosdb.spark.config.Config] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    try {
+      Right(com.microsoft.azure.cosmosdb.spark.config.Config(map))
+    } catch {
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
+    }
+  }    
+
   // extract
   def readAvroExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
@@ -983,17 +1057,59 @@ object ConfigUtils {
 
         (Right(AvroExtract(n, d, schema, ov, input, auth, params, p, np, pb, ci, bp, avsc, ipf)), outputGraph)
       case _ =>
-        val allErrors: Errors = List(name, description, input, schemaView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys, basePath, inputField, avroSchemaURI, avroSchema).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, extractColumns, schemaView, input, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys, basePath, inputField, avroSchemaURI, avroSchema).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
     }
   }  
 
+  def readAzureCosmosDBExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
+    import ConfigReader._
+
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "authentication" :: "outputView" :: "numPartitions" :: "partitionBy" :: "persist" :: "params" :: "config" :: "schemaView" :: "schemaURI" :: Nil
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    val description = getOptionalValue[String]("description")
+
+    val config = readMap("config", c)
+    val configValid = validateAzureCosmosDBConfig("config", config)
+    val authentication = readAuthentication("authentication")
+
+    val uriKey = "schemaURI"
+    val stringURI = getOptionalValue[String](uriKey)
+    val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
+      optURI match { 
+        case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
+        case None => Right(None)
+      }
+    )
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
+
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist", default = Some(false))
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
+
+    (name, description, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, authentication, invalidKeys, configValid) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(pb), Right(auth), Right(_), Right(_)) =>
+      val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
+      var outputGraph = graph.addVertex(Vertex(idx, ov))
+
+      (Right(AzureCosmosDBExtract(n, d, schema, ov, params, p, np, pb, config)), outputGraph)
+      case _ =>
+        val allErrors: Errors = List(name, description, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, authentication, invalidKeys, configValid).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
+        (Left(err :: Nil), graph)
+    }
+  }    
+
   def readBytesExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "persist" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "persist" :: "params" :: "failMode" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
 
     val description = getOptionalValue[String]("description")
@@ -1013,10 +1129,10 @@ object ConfigUtils {
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
     val inputView = getOptionalValue[String]("inputView")
+    val failMode = getValue[String]("failMode", default = Some("failfast"), validValues = "permissive" :: "failfast" :: Nil) |> parseFailMode("failMode") _
 
-    (name, description, parsedGlob, inputView, outputView, persist, numPartitions, authentication, contiguousIndex, invalidKeys) match {
-      case (Right(n), Right(d), Right(pg), Right(iv), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(_)) =>
-
+    (name, description, parsedGlob, inputView, outputView, persist, numPartitions, authentication, contiguousIndex, invalidKeys, failMode) match {
+      case (Right(n), Right(d), Right(pg), Right(iv), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(_), Right(fm)) =>
         val validInput = (pg, iv) match {
           case (Some(_), None) => true
           case (None, Some(_)) => true
@@ -1029,7 +1145,7 @@ object ConfigUtils {
           // add the vertices
           var outputGraph = graph.addVertex(Vertex(idx, ov))
 
-          (Right(BytesExtract(n, d, ov, input, auth, params, p, np, ci)), outputGraph)
+          (Right(BytesExtract(n, d, ov, input, auth, params, p, np, ci, fm)), outputGraph)
         } else {
           val inputError = ConfigError("inputURI:inputView", Some(c.getValue("inputURI").origin.lineNumber()), "Either inputURI and inputView must be defined but only one can be defined at the same time") :: Nil
           val stageName = stringOrDefault(name, "unnamed stage")
@@ -1037,7 +1153,7 @@ object ConfigUtils {
           (Left(err :: Nil), graph)
         }
       case _ =>
-        val allErrors: Errors = List(name, description, inputURI, inputView, outputView, persist, numPartitions, authentication, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, inputView, outputView, persist, numPartitions, authentication, invalidKeys, failMode).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
@@ -2699,7 +2815,7 @@ object ConfigUtils {
     }
   }
 
-  def readPipeline(c: Config, configMD5: String, uri: String, argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph)] = {
+  def readPipeline(c: Config, configMD5: String, uri: String, argsMap: collection.mutable.Map[String, String], graph: Graph, arcContext: ARCContext)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, Graph, ARCContext)] = {
     import ConfigReader._
 
     val startTime = System.currentTimeMillis() 
@@ -2760,6 +2876,7 @@ object ConfigUtils {
         val (stageOrError: Either[List[StageError], PipelineStage], newGraph: Graph) = _type match {
 
           case Right("AvroExtract") => readAvroExtract(idx, graph, name, params)
+          case Right("AzureCosmosDBExtract") => readAzureCosmosDBExtract(idx, graph, name, params)
           case Right("BytesExtract") => readBytesExtract(idx, graph, name, params)
           case Right("DatabricksDeltaExtract") => readDatabricksDeltaExtract(idx, graph, name, params)
           case Right("DelimitedExtract") => readDelimitedExtract(idx, graph, name, params)
@@ -2855,7 +2972,7 @@ object ConfigUtils {
           }
         }
 
-        Right(ETLPipeline(stagesReversed), dependencyGraphReversed)
+        Right(ETLPipeline(stagesReversed), dependencyGraphReversed, arcContext)
       }
       case _ => Left(errors.reverse)
     }

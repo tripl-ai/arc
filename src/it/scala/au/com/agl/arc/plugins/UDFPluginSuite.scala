@@ -43,7 +43,7 @@ class UDFPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     implicit val l = logger
     import spark.implicits._
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
 
     val df = Seq(
       UDFTest("one"),

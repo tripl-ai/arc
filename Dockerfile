@@ -39,11 +39,21 @@ ENV SPARK_HOME            /opt/spark
 ENV SPARK_JARS            /opt/spark/jars/
 ENV SPARK_CHECKSUM_URL    https://archive.apache.org/dist/spark
 ENV SPARK_DOWNLOAD_URL    https://www-us.apache.org/dist/spark
+ENV GLIBC_VERSION         2.26-r0
+
+# Setup basics
+RUN set -ex && \
+  apk upgrade --update && \
+  apk add --update libstdc++ ca-certificates bash openblas curl findutils && \
+  for pkg in glibc-${GLIBC_VERSION} glibc-bin-${GLIBC_VERSION} glibc-i18n-${GLIBC_VERSION}; do curl -sSL https://github.com/andyshinn/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/${pkg}.apk -o /tmp/${pkg}.apk; done && \
+  apk add --allow-untrusted /tmp/*.apk && \
+  rm -v /tmp/*.apk && \
+  ( /usr/glibc-compat/bin/localedef --force --inputfile POSIX --charmap UTF-8 C.UTF-8 || true ) && \
+  echo "export LANG=C.UTF-8" > /etc/profile.d/locale.sh && \
+  /usr/glibc-compat/sbin/ldconfig /lib /usr/glibc-compat/lib
 
 # install spark
-RUN set -ex && \
-  apk add --no-cache --update  ca-certificates bash findutils coreutils && \
-  mkdir -p ${SPARK_HOME} && \
+RUN mkdir -p ${SPARK_HOME} && \
   wget -O spark.sha ${SPARK_CHECKSUM_URL}/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz.sha512 && \
   export SPARK_SHA512_SUM=$(grep -o "[A-F0-9]\{8\}" spark.sha | awk '{print}' ORS='' | tr '[:upper:]' '[:lower:]') && \
   rm -f spark.sha && \
@@ -75,6 +85,8 @@ RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/sp
   wget -P ${SPARK_JARS} https://repository.mulesoft.org/nexus/content/repositories/public/com/amazon/redshift/redshift-jdbc4/1.2.10.1009/redshift-jdbc4-1.2.10.1009.jar && \
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.2.1.jre8/mssql-jdbc-7.2.1.jre8.jar && \
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-sqldb-spark/1.0.2/azure-sqldb-spark-1.0.2.jar && \
+  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-cosmosdb-spark_2.4.0_2.11/1.3.5/azure-cosmosdb-spark_2.4.0_2.11-1.3.5.jar && \
+  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-documentdb/2.4.0/azure-documentdb-2.4.0.jar && \
   wget -P ${SPARK_JARS} https://jdbc.postgresql.org/download/postgresql-42.2.5.jar && \  
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/datastax/spark/spark-cassandra-connector_2.11/2.0.5/spark-cassandra-connector_2.11-2.0.5.jar && \
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/mysql/mysql-connector-java/5.1.45/mysql-connector-java-5.1.45.jar && \ 
@@ -94,7 +106,7 @@ RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/sp
   # google cloud
   wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop2-1.9.5/gcs-connector-hadoop2-1.9.5.jar && \ 
   # elasticsearch
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/elasticsearch/elasticsearch-hadoop/6.6.1/elasticsearch-hadoop-6.6.1.jar
+  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/elasticsearch/elasticsearch-hadoop/7.0.1/elasticsearch-hadoop-7.0.1.jar
 
 # copy in tutorial
 COPY tutorial /opt/tutorial
