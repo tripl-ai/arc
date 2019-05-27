@@ -1,7 +1,7 @@
 package au.com.agl.arc
 
 import au.com.agl.arc.udf.UDF
-import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, PipelineStagePlugin, UDFPlugin}
+import au.com.agl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin, UDFPlugin}
 
 object ARC {
 
@@ -144,6 +144,7 @@ object ARC {
     // log available plugins
     val loader = Utils.getContextOrSparkClassLoader
     val dynamicConfigurationPlugins = ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
+    val lifecyclePlugins = ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
     val pipelineStagePlugins = ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
     val udfPlugins = ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
 
@@ -156,6 +157,7 @@ object ARC {
       .field("javaVersion", System.getProperty("java.runtime.version"))
       .field("environment", env)
       .field("dynamicConfigurationPlugins", dynamicConfigurationPlugins)
+      .field("lifecyclePlugins", lifecyclePlugins)
       .field("pipelineStagePlugins", pipelineStagePlugins)
       .field("udfPlugins", udfPlugins)
       .log()   

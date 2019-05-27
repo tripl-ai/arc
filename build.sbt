@@ -16,6 +16,8 @@ lazy val root = (project in file(".")).
     Defaults.itSettings
   )
 
+fork in run := true  
+
 test in assembly := {}
 
 assemblyJarName in assembly := s"${name.value}.jar"
