@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.13.0</span></strong>
+          <span class="version">1.13.1</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -430,7 +430,7 @@
 <pre><code class="language-json">docker run \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&quot; \
--it -p 4040:4040 seddonm1/arc:1.13.0 \
+-it -p 4040:4040 seddonm1/arc:1.13.1 \
 bin/spark-submit \
 --master local[*] \
 --class au.com.agl.arc.ARC \
@@ -493,6 +493,12 @@ bin/spark-submit \
 <td>ETL_CONF_JOB_NAME</td>
 <td>etl.config.job.name</td>
 <td>A job name added to all logging messages and Spark history server.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_TAGS</td>
+<td>etl.config.tags</td>
+<td>Custom key/value tags separated by space to add to all logging messages.<br><br>E.g. <code>ETL_CONF_TAGS=cost_center=123456 owner=jovyan</code>.</td>
 </tr>
 
 <tr>
@@ -613,7 +619,7 @@ bin/spark-submit \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_STREAMING=true&quot; \
 -e &quot;ETL_CONF_ROWS_PER_SECOND=10&quot; \
--it -p 4040:4040 seddonm1/arc:1.13.0 \
+-it -p 4040:4040 seddonm1/arc:1.13.1 \
 bin/spark-submit \
 --master local[*] \
 --class au.com.agl.arc.ARC \
