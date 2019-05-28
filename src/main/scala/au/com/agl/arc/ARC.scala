@@ -118,6 +118,20 @@ object ARC {
     spark.sparkContext.getConf.getAll.foreach{ case (k, v) => sparkConf.put(k, v) }
 
     implicit val logger = LoggerFactory.getLogger(jobId.getOrElse(spark.sparkContext.applicationId))
+
+    // add tags 
+    val tags: Option[String] = argsMap.get("etl.config.tags").orElse(envOrNone("ETL_CONF_TAGS"))
+    for (tgs <- tags) {
+      val t = tgs.split(" ")
+      t.foreach { x =>
+        // regex split on only single = signs not at start or end of line
+        val pair = x.split("=(?!=)(?!$)", 2)
+        if (pair.length == 2) {
+          MDC.put(pair(0), pair(1))
+        }
+      }      
+    }
+
     val environment: Option[String] = argsMap.get("etl.config.environment").orElse(envOrNone("ETL_CONF_ENV"))
     val env = environment match {
       case Some(value) => value
@@ -135,7 +149,7 @@ object ARC {
     val environmentId: Option[String] = argsMap.get("etl.config.environment.id").orElse(envOrNone("ETL_CONF_ENV_ID"))
     for (e <- environmentId) {
         MDC.put("environmentId", e) 
-    }         
+    }
 
     MDC.put("applicationId", spark.sparkContext.applicationId) 
 
@@ -237,7 +251,6 @@ object ARC {
       case Right( (pipeline, _, arcCtx) ) =>
         try {
           UDF.registerUDFs(spark.sqlContext)
-          println(arcCtx)
           ARC.run(pipeline)(spark, logger, arcCtx)
           false
         } catch {

@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.13.1
+
+- added ability to add custom key/value tags to all log messages via `ETL_CONF_TAGS` or `etl.config.tags`.
+
 # 1.13.0
 
 - **BREAKING** added `environments` key to [Dynamic Configuration Plugins](https://aglenergy.github.io/arc/extend/#dynamic-configuration-plugins) and [Lifecycle Plugins](https://aglenergy.github.io/arc/extend/#lifecycle-plugins) so they can be enabled/disabled depending on the deloyment environment.

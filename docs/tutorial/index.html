@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.13.0</span></strong>
+          <span class="version">1.13.1</span></strong>
         
         <br> aglenergy/arc 
       </div>
@@ -511,7 +511,7 @@ cd arc-starter
 -e JAVA_OPTS=&quot;-Xmx4096m&quot; \
 -p 4040:4040 \
 -p 8888:8888 \
-seddonm1/arc-jupyter:0.0.9 \
+seddonm1/arc-jupyter:0.0.10 \
 start-notebook.sh \
 --NotebookApp.password='' \
 --NotebookApp.token=''
@@ -822,7 +822,7 @@ FROM (
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_BASE_URL=/home/jovyan/tutorial&quot; \
 -p 4040:4040 \
-seddonm1/arc:1.13.0 \
+seddonm1/arc:1.13.1 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=4G \
@@ -1261,6 +1261,109 @@ FROM (
 </code></pre>
 
 <p>A snapshot of what we have done so far is <code>tutorial/job/5/nyctaxi.ipynb</code>.</p>
+
+<h2 id="applying-machine-learning">Applying Machine Learning</h2>
+
+<p>There are multiple ways to execute Machine Learning using Arc:</p>
+
+<ul>
+<li><a href="https://aglenergy.github.io/arc/transform/#httptransform">HTTPTransform</a> allows calling an externally hosted model via HTTP.</li>
+<li><a href="https://aglenergy.github.io/arc/transform/#tensorflowservingtransform">TensorFlowServingTransform</a> allows calling a model hosted in a TensorFlow Serving container.</li>
+<li><a href="https://aglenergy.github.io/arc/transform/#mltransform">MLTransform</a> allows executing pretrained Spark ML model.</li>
+</ul>
+
+<p>Assuming you have executed the job up to stage 5 we will use the <code>trips.parquet</code> file to train a new Spark ML model to attempt to predict the fare based on other input values. It is suggested to use a SQL statement to perform feature creation as even though SQL is clumsy compared with the brevity of Python Pandas it is automatically parallelizable by Spark and so can easily perform on <code>1</code> or <code>n</code> CPU cores without modification. It is also very easy to find people who can understand the logic:</p>
+
+<pre><code class="language-sql">-- enrich the data by:
+-- - filtering bad data
+-- - one-hot encode hour component of pickup_datetime
+-- - one-hot encode dayofweek component of pickup_datetime
+-- - calculate duration in seconds
+-- - adding flag to indicate whether pickup/dropoff within jfk airport bounding box
+SELECT 
+  *
+  ,CAST(HOUR(pickup_datetime) = 0 AS INT) AS pickup_hour_0
+  ,CAST(HOUR(pickup_datetime) = 1 AS INT) AS pickup_hour_1
+  ,CAST(HOUR(pickup_datetime) = 2 AS INT) AS pickup_hour_2
+  ,CAST(HOUR(pickup_datetime) = 3 AS INT) AS pickup_hour_3
+  ,CAST(HOUR(pickup_datetime) = 4 AS INT) AS pickup_hour_4
+  ,CAST(HOUR(pickup_datetime) = 5 AS INT) AS pickup_hour_5
+  ,CAST(HOUR(pickup_datetime) = 6 AS INT) AS pickup_hour_6
+  ,CAST(HOUR(pickup_datetime) = 7 AS INT) AS pickup_hour_7
+  ,CAST(HOUR(pickup_datetime) = 8 AS INT) AS pickup_hour_8
+  ,CAST(HOUR(pickup_datetime) = 9 AS INT) AS pickup_hour_9
+  ,CAST(HOUR(pickup_datetime) = 10 AS INT) AS pickup_hour_10
+  ,CAST(HOUR(pickup_datetime) = 11 AS INT) AS pickup_hour_11
+  ,CAST(HOUR(pickup_datetime) = 12 AS INT) AS pickup_hour_12
+  ,CAST(HOUR(pickup_datetime) = 13 AS INT) AS pickup_hour_13
+  ,CAST(HOUR(pickup_datetime) = 14 AS INT) AS pickup_hour_14
+  ,CAST(HOUR(pickup_datetime) = 15 AS INT) AS pickup_hour_15
+  ,CAST(HOUR(pickup_datetime) = 16 AS INT) AS pickup_hour_16
+  ,CAST(HOUR(pickup_datetime) = 17 AS INT) AS pickup_hour_17
+  ,CAST(HOUR(pickup_datetime) = 18 AS INT) AS pickup_hour_18
+  ,CAST(HOUR(pickup_datetime) = 19 AS INT) AS pickup_hour_19
+  ,CAST(HOUR(pickup_datetime) = 20 AS INT) AS pickup_hour_20
+  ,CAST(HOUR(pickup_datetime) = 21 AS INT) AS pickup_hour_21
+  ,CAST(HOUR(pickup_datetime) = 22 AS INT) AS pickup_hour_22
+  ,CAST(HOUR(pickup_datetime) = 23 AS INT) AS pickup_hour_23
+  ,CAST(DAYOFWEEK(pickup_datetime) = 0 AS INT) AS pickup_dayofweek_0
+  ,CAST(DAYOFWEEK(pickup_datetime) = 1 AS INT) AS pickup_dayofweek_1
+  ,CAST(DAYOFWEEK(pickup_datetime) = 2 AS INT) AS pickup_dayofweek_2
+  ,CAST(DAYOFWEEK(pickup_datetime) = 3 AS INT) AS pickup_dayofweek_3
+  ,CAST(DAYOFWEEK(pickup_datetime) = 4 AS INT) AS pickup_dayofweek_4
+  ,CAST(DAYOFWEEK(pickup_datetime) = 5 AS INT) AS pickup_dayofweek_5
+  ,CAST(DAYOFWEEK(pickup_datetime) = 6 AS INT) AS pickup_dayofweek_6
+  ,UNIX_TIMESTAMP(dropoff_datetime) - UNIX_TIMESTAMP(pickup_datetime) AS duration
+  ,CASE
+      WHEN 
+          (pickup_latitude &lt; 40.651381 
+          AND pickup_latitude &gt; 40.640668
+          AND pickup_longitude &lt; -73.776283
+          AND pickup_longitude &gt; -73.794694)
+          OR
+          (dropoff_latitude &lt; 40.651381 
+          AND dropoff_latitude &gt; 40.640668
+          AND dropoff_longitude &lt; -73.776283
+          AND dropoff_longitude &gt; -73.794694)           
+      THEN 1 
+      ELSE 0
+  END AS jfk
+FROM trips
+WHERE trip_distance &gt; 0
+AND pickup_longitude IS NOT NULL
+AND pickup_latitude IS NOT NULL
+AND dropoff_longitude IS NOT NULL
+AND dropoff_latitude IS NOT NULL
+</code></pre>
+
+<p>To execute the training load the <code>/job/6/New York City Taxi Fare Prediction SparkML.ipynb</code> notebook. It is commented and will describe the process to execute the SQL above to prepare the training dataset and train a model.</p>
+
+<p>Once done the model can be executed in the notebook:</p>
+
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;SQLTransform&quot;,
+  &quot;name&quot;: &quot;merge green_tripdata_* to create a full trips&quot;,
+  &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+  &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/job/6/trips_enriched.sql&quot;,
+  &quot;outputView&quot;: &quot;trips_enriched&quot;,            
+  &quot;persist&quot;: false
+},
+{
+  &quot;type&quot;: &quot;MLTransform&quot;,
+  &quot;name&quot;: &quot;apply machine learning prediction model&quot;,
+  &quot;environments&quot;: [
+    &quot;production&quot;,
+    &quot;test&quot;
+  ],
+  &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/job/6/trips_enriched.model&quot;,
+  &quot;inputView&quot;: &quot;trips_enriched&quot;,
+  &quot;outputView&quot;: &quot;trips_scored&quot;
+}
+</code></pre>
+
+<p>You can now <a href="https://aglenergy.github.io/arc/load">Load</a> the output dataset into a target like <code>parquet</code> or <code>JDBCLoad</code> into a caching database for serving.</p>
+
+<p>A snapshot of what we have done so far is <code>tutorial/job/6/nyctaxi.ipynb</code>.</p>
 
 
 			<aside class="copyright" role="note">
