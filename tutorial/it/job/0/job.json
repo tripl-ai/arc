@@ -352,7 +352,7 @@
       "test"
     ],
     "inputView": "dataset",
-    "outputURI": "/tmp/dataset.text"
+    "outputURI": "/tmp/dataset.xml"
   },
   {
     "type": "XMLExtract",
@@ -361,7 +361,7 @@
       "production",
       "test"
     ],
-    "inputURI": "/tmp/dataset.text",
+    "inputURI": "/tmp/dataset.xml",
     "outputView": "loaded"
   },
   {

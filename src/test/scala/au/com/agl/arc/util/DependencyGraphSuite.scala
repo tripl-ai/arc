@@ -234,6 +234,83 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     }
   } 
 
+  test("Test vertexExists: false - SQLTransform with CTE") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+
+    val conf = s"""{
+      "stages": [          
+        {
+          "type": "SQLTransform",
+          "name": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${getClass.getResource("/conf/sql/").toString}/customer_cte.sql",
+          "outputView": "outputView"          
+        },      
+      ]
+    }
+    """
+
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+
+    pipelineEither match {
+      case Left(stageError) => {
+        assert(stageError == StageError(0, "test",3,List(ConfigError("inputURI",Some(10),"view 'customer' does not exist by this stage of the job."))) :: Nil)
+      }
+      case Right( (_, _, _) ) => assert(false)
+    }
+  } 
+
+  test("Test vertexExists: true - SQLTransform with CTE") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+
+    val conf = s"""{
+      "stages": [   
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "/tmp/in.csv",
+          "outputView": "customer"
+        },               
+        {
+          "type": "SQLTransform",
+          "name": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${getClass.getResource("/conf/sql/").toString}/customer_cte.sql",
+          "outputView": "outputView"          
+        }    
+      ]
+    }
+    """
+
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+
+    pipelineEither match {
+      case Left(_) => assert(false)
+      case Right( (_, graph, _) ) => {
+        assert(graph.vertices == Vertex(0, "customer") :: Vertex(1, "customer_contact") :: Vertex(1, "outputView") :: Nil)
+        assert(graph.edges == Edge(Vertex(0, "customer"), Vertex(1, "customer_contact")) :: Edge(Vertex(1, "customer_contact"), Vertex(1, "outputView")) :: Nil)
+      }
+    }
+  }   
+
   test("Test vertexExists: multiple") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)

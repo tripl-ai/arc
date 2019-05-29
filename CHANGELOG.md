@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.13.2
+
+- **FIX** issue where using SQL Common Table Expressions (CTE - `WITH` statements) would break the config dependency graph validation.
+
 # 1.13.1
 
 - added ability to add custom key/value tags to all log messages via `ETL_CONF_TAGS` or `etl.config.tags`.
