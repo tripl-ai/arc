@@ -234,7 +234,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     }
   } 
 
-  test("Test vertexExists with CTE: false - SQLTransform") { 
+  test("Test vertexExists: false - SQLTransform with CTE") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
@@ -267,7 +267,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     }
   } 
 
-  test("Test vertexExists with CTE: true - SQLTransform") { 
+  test("Test vertexExists: true - SQLTransform with CTE") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
