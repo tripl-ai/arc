@@ -22,7 +22,7 @@ object SQLUtils {
     FileUtils.readFileToString(file, "UTF-8")
   }
 
-  def injectParameters(sql: String, sqlParams: Map[String, String])(implicit logger: au.com.agl.arc.util.log.logger.Logger): String = {
+  def injectParameters(sql: String, sqlParams: Map[String, String], allowMissing: Boolean)(implicit logger: au.com.agl.arc.util.log.logger.Logger): String = {
     // replace sql parameters
     // using regex from the apache zeppelin project
     val stmt = sqlParams.foldLeft(sql) {
@@ -30,7 +30,7 @@ object SQLUtils {
           val placeholderRegex = "[$][{]\\s*" + k + "\\s*(?:=[^}]+)?[}]"
 
           // throw error if no match found
-          if (placeholderRegex.r.findAllIn(sql).length == 0) {
+          if (!allowMissing && placeholderRegex.r.findAllIn(sql).length == 0) {
             throw new Exception(s"No placeholder found in SQL statement for sqlParam: '${k}'.")
           }           
 

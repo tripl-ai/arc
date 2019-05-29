@@ -1839,7 +1839,7 @@ object ConfigUtils {
 
     // try to verify if sql is technically valid against HQL dialect (will not check dependencies)
     val validSQL = inputSQL.rightFlatMap { sql =>
-      validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams))
+      validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams, false))
     }
 
     (name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy) match {
@@ -1927,7 +1927,7 @@ object ConfigUtils {
 
     // try to verify if sql is technically valid against HQL dialect (will not check dependencies)
     val validSQL = inputSQL.rightFlatMap { sql =>
-      validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams))
+      validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams, false))
     }
 
     // tables exist
@@ -2830,7 +2830,7 @@ object ConfigUtils {
 
     // try to verify if sql is technically valid against HQL dialect (will not check dependencies)
     val validSQL = inputSQL.rightFlatMap { sql =>
-      validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams))
+      validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams, false))
     }    
 
     (name, description, parsedURI, inputSQL, validSQL, invalidKeys) match {

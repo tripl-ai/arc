@@ -21,7 +21,7 @@ object MetadataFilterTransform {
     }    
 
     // inject sql parameters
-    val stmt = SQLUtils.injectParameters(transform.sql, transform.sqlParams)
+    val stmt = SQLUtils.injectParameters(transform.sql, transform.sqlParams, false)
     stageDetail.put("sql", stmt)
 
     logger.info()
