@@ -22,6 +22,8 @@ import org.apache.spark.unsafe.types.UTF8String
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.catalyst.analysis.UnresolvedRelation
+import org.apache.spark.sql.catalyst.plans.logical.With
+import org.apache.spark.sql.catalyst.plans.logical.SubqueryAlias
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
@@ -990,6 +992,21 @@ object ConfigUtils {
     }
   }  
 
+  // getRelations finds referenced tables within sql statements
+  private def getRelations(sql: String)(implicit spark: SparkSession): List[String] = {
+    val parser = spark.sessionState.sqlParser
+    val plan = parser.parsePlan(sql)
+    val relations = plan.collect { case r: UnresolvedRelation => r.tableName }
+    relations.distinct.toList
+  }  
+
+  // getRelations finds referenced tables and aliases created within sql CTE statements
+  private def getCteRelations(sql: String)(implicit spark: SparkSession): List[(String, List[String])] = {
+    val parser = spark.sessionState.sqlParser
+    val plan = parser.parsePlan(sql)
+    plan.collect { case r: With => r.cteRelations.collect { case (alias, sa: SubqueryAlias) => (alias, sa.collect { case r: UnresolvedRelation => r.tableName }.toList)}}.flatten.toList
+  }      
+
   private def validateAzureCosmosDBConfig(path: String, map:  Map[String, String])(implicit spark: SparkSession, c: Config): Either[Errors, com.microsoft.azure.cosmosdb.spark.config.Config] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, com.microsoft.azure.cosmosdb.spark.config.Config] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
@@ -1889,6 +1906,9 @@ object ConfigUtils {
   def readSQLTransform(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
+
+    var outputGraph = graph
+
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
@@ -1912,23 +1932,60 @@ object ConfigUtils {
 
     // tables exist
     val tableExistence: Either[Errors, String] = validSQL.rightFlatMap { sql =>
-      val parser = spark.sessionState.sqlParser
-      val plan = parser.parsePlan(sql)
-      val relations = plan.collect { case r: UnresolvedRelation => r.tableName }
 
-      val (errors, _) = relations.map { relation => 
-         graph.vertexExists("inputURI")(relation)
-      }
-      .foldLeft[(Errors, String)]( (Nil, "") ){ case ( (errs, ret), table ) => 
+      // first ensure that all the tables referenced by the cte exist and add them to the graph
+      val cteRelations = getCteRelations(sql)
+      val (cteErrors, _) = cteRelations.map { case (alias, relations) => 
+        // ensure all the relations inside the cte exist
+        val errors = relations.map { relation => 
+          val relEither = outputGraph.vertexExists("inputURI")(relation)
+          relEither match {
+            case Right(r) => {
+              // add the CTE alias
+              outputGraph = outputGraph.addVertex(Vertex(idx, alias))
+              // add an edge
+              outputGraph = outputGraph.addEdge(r, alias)
+            }
+            case Left(_) =>
+          }
+          relEither
+        }
+        .foldLeft[(Errors, String)]( (Nil, "") ){ case ( (errs, ret), table ) => 
+          table match {
+            case Left(err) => (err ::: errs, "")
+            case _ => (errs, "")
+          }
+        }    
+
+        errors
+      }.foldLeft[(Errors, String)]( (Nil, "") ){ case ( (errs, ret), table ) => 
         table match {
-          case Left(err) => (err ::: errs, "")
+          case (err, _) => (err ::: errs, "")
           case _ => (errs, "")
         }
-      }
+      }  
+ 
+      // if any cte tables missing do not evaluate dependency
+      if (!cteErrors.isEmpty) {
+        Left(cteErrors.reverse)
+      } else {
+        // if no cte errors
+        // then ensure that all the relations in the non-cte part refer to tables that exist
+        val relations = getRelations(sql)
+        val (errors, _) = relations.map { relation => 
+          outputGraph.vertexExists("inputURI")(relation)
+        }
+        .foldLeft[(Errors, String)]( (Nil, "") ){ case ( (errs, ret), table ) => 
+          table match {
+            case Left(err) => (err ::: errs, "")
+            case _ => (errs, "")
+          }
+        }        
 
-      errors match {
-        case Nil => Right("")
-        case _ => Left(errors.reverse)
+        errors match {
+          case Nil => Right("")
+          case _ => Left(errors.reverse)
+        }        
       }
     }
 
@@ -1962,14 +2019,11 @@ object ConfigUtils {
             .log()   
         }        
 
-        var outputGraph = graph
-        // add the vertices
         outputGraph = outputGraph.addVertex(Vertex(idx, ov))
         // add the edges
         // add input/output edges by resolving dependent tables
-        val parser = spark.sessionState.sqlParser
-        val plan = parser.parsePlan(vsql)        
-        plan.collect { case r: UnresolvedRelation => r.tableName }.toList.foreach { iv =>
+        val relations = getRelations(sql)
+        relations.foreach { iv =>
           outputGraph = outputGraph.addEdge(iv, ov)
         }
 
