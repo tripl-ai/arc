@@ -118,7 +118,7 @@ Example  create a new table each run using a JDBCLoad stage with a dynamic desti
       <guid>https://aglenergy.github.io/arc/deploy/</guid>
       <description>Arc has been packaged as a Docker image to simplify deployment as a stateless process on cloud infrastructure.
 Running a Job An example command to start a job is:
-docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&amp;quot; \ -it -p 4040:4040 seddonm1/arc:1.13.2 \ bin/spark-submit \ --master local[*] \ --class au.com.agl.arc.ARC \ /opt/spark/jars/arc.jar \ --etl.config.uri=file:///opt/tutorial/basic/job/0/basic.json  This job executes the following job file which is included in the docker image:</description>
+docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&amp;quot; \ -it -p 4040:4040 seddonm1/arc:1.13.3 \ bin/spark-submit \ --master local[*] \ --class au.com.agl.arc.ARC \ /opt/spark/jars/arc.jar \ --etl.config.uri=file:///opt/tutorial/basic/job/0/basic.json  This job executes the following job file which is included in the docker image:</description>
     </item>
     
     <item>

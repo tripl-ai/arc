@@ -65,6 +65,8 @@ This example is included to demonstrate:
 |ETL_CONF_ENV_ID|etl.config.environment.id|An environment identifier to be added to all logging messages. Could be something like a [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) which allows joining to logs produced by ephemeral compute started by something like [Terraform](https://www.terraform.io/).|
 |ETL_CONF_URI|etl.config.uri|The URI of the job file to execute.|
 |ETL_CONF_STREAMING|etl.config.streaming|Run in [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html) mode or not. Boolean default `false`.|
+|ETL_CONF_DISABLE_DEPENDENCY_VALIDATION|etl.config.disableDependencyValidation|Disable config dependency graph validation in case of dependency resolution defects. Boolean default `false`.|
+
 
 Additionally there are permissions arguments that can be used to retrieve the job file from cloud storage:
 

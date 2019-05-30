@@ -50,7 +50,11 @@ object API {
 
     /** a list of lifecycle plugins which are called before and after each stage
       */    
-    lifecyclePlugins: List[LifecyclePlugin]
+    lifecyclePlugins: List[LifecyclePlugin],
+
+    /** an escape hatch for graph dependency validation in case of defects in the sometimes very complex plan matching
+      */    
+    disableDependencyValidation: Boolean
 
   )
 

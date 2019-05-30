@@ -91,7 +91,7 @@ object ConfigUtils {
       }
 
       // used the resolved config to find plugins.lifestyle and create objects and replace the context
-      val arcCtx = ARCContext(arcContext.jobId, arcContext.jobName, arcContext.environment, arcContext.environmentId, arcContext.configUri, arcContext.isStreaming, arcContext.ignoreEnvironments, resolveLifecyclePlugins(resolvedConfig, arcContext))
+      val arcCtx = ARCContext(arcContext.jobId, arcContext.jobName, arcContext.environment, arcContext.environmentId, arcContext.configUri, arcContext.isStreaming, arcContext.ignoreEnvironments, resolveLifecyclePlugins(resolvedConfig, arcContext), arcContext.disableDependencyValidation)
 
       readPipeline(resolvedConfig, etlConfStringHash, uriString, argsMap, graph, arcCtx)
     }
@@ -799,9 +799,10 @@ object ConfigUtils {
       }
     }
 
-    def vertexExists(path: String)(vertexName: String)(implicit spark: SparkSession, c: Config): Either[Errors, String] = {
+    def vertexExists(path: String)(vertexName: String)(implicit spark: SparkSession, c: Config, ctx: ARCContext): Either[Errors, String] = {
       // if at least one PipelineStagePlugin exists in the job then disable vertexExists check due to opaque nature of code in plugins
-      if (containsPipelineStagePlugin) {
+      // or dependency validation is disabled
+      if (containsPipelineStagePlugin || ctx.disableDependencyValidation) {
         Right(vertexName)
       } else {
         // either the vertex was added by previous stage or has been already been registered in a hive metastore
@@ -818,7 +819,6 @@ object ConfigUtils {
         }
       }
     }
-
   }
 
   def levenshteinDistance(keys: Seq[String], input: String)(limit: Int): Seq[String] = {
@@ -1205,7 +1205,7 @@ object ConfigUtils {
     }
   }  
 
-  def readDelimitedExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
+  def readDelimitedExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config, ctx: ARCContext): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
     import au.com.agl.arc.extract.DelimitedExtract._
 
@@ -1710,7 +1710,7 @@ object ConfigUtils {
 
 
   // transform
-  def readDiffTransform(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
+  def readDiffTransform(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config, ctx: ARCContext): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputLeftView" :: "inputRightView" :: "outputIntersectionView" :: "outputLeftView" :: "outputRightView" :: "persist" :: "params" :: Nil
@@ -1903,7 +1903,7 @@ object ConfigUtils {
     }
   }
 
-  def readSQLTransform(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
+  def readSQLTransform(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config, ctx: ARCContext): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
 
@@ -2562,7 +2562,7 @@ object ConfigUtils {
     }
   }  
 
-  def readParquetLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
+  def readParquetLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config, ctx: ARCContext): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
@@ -2597,7 +2597,7 @@ object ConfigUtils {
     }
   }  
 
-  def readTextLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
+  def readTextLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config, ctx: ARCContext): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: "singleFile" :: "prefix" :: "separator" :: "suffix" :: Nil
@@ -2672,7 +2672,6 @@ object ConfigUtils {
   }  
 
   // execute
-
   def readHTTPExecute(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
@@ -2788,7 +2787,6 @@ object ConfigUtils {
   }
 
   // validate
-
   def readEqualityValidate(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
@@ -2884,6 +2882,7 @@ object ConfigUtils {
     val (stages, errors, dependencyGraph) = configStages.asScala.zipWithIndex.foldLeft[(List[PipelineStage], List[StageError], Graph)]( (Nil, Nil, graph) ) { case ( (stages, errs, graph), (stage, idx) ) =>
 
       implicit val s = stage.toConfig
+      implicit val ctx = arcContext
       val name: StringConfigValue = getValue[String]("name")
       val params = readMap("params", s)
       val environments = if (s.hasPath("environments")) s.getStringList("environments").asScala.toList else Nil
