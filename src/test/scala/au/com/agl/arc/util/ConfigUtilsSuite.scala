@@ -45,7 +45,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
@@ -159,7 +159,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Read documentation config files") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
@@ -209,7 +209,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test missing keys exception") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [
@@ -244,7 +244,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test rightFlatMap validation") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [
@@ -282,7 +282,7 @@ hdfs://test/{ab,c{de, fg}
   test("Test extraneous attributes") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [
@@ -331,7 +331,7 @@ hdfs://test/{ab,c{de, fg}
   test("Test invalid validValues") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [       
@@ -364,7 +364,7 @@ hdfs://test/{ab,c{de, fg}
   test("Test read custom delimiter") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [       
@@ -397,7 +397,7 @@ hdfs://test/{ab,c{de, fg}
   test("Test read custom delimiter success") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [       
@@ -449,7 +449,7 @@ hdfs://test/{ab,c{de, fg}
   test("Test config substitutions") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "common": {

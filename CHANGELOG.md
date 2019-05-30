@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.13.3
+
+- added configuration flag `ETL_CONF_DISABLE_DEPENDENCY_VALIDATION` and `etl.config.disableDependencyValidation` to disable config dependency graph validation in case of dependency resolution defects.
+
 # 1.13.2
 
 - **FIX** issue where using SQL Common Table Expressions (CTE - `WITH` statements) would break the config dependency graph validation.

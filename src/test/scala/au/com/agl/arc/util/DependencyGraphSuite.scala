@@ -46,7 +46,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test addVertex") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     // make empty graph
     var outputGraph = Graph(Nil,Nil,false)
@@ -64,7 +64,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test addEdge") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     // make empty graph
     var outputGraph = Graph(Nil,Nil,false)
@@ -84,7 +84,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test vertexExists: false") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [          
@@ -117,7 +117,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test vertexExists: true") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [     
@@ -157,10 +157,41 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
     }
   }  
 
+  test("Test vertexExists: false with disableDependencyValidation") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=true)
+
+    val conf = """{
+      "stages": [          
+        {
+          "type": "ParquetLoad",
+          "name": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "testView",
+          "outputURI": "/tmp/out.parquet"
+        },      
+      ]
+    }
+    """
+
+    val argsMap = collection.mutable.Map[String, String]()
+    val graph = ConfigUtils.Graph(Nil, Nil, false)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+
+    pipelineEither match {
+      case Left(stageError) => assert(false)
+      case Right(_) => assert(true)
+    }
+  }   
+
   test("Test vertexExists: false - SQLTransform") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = s"""{
       "stages": [          
@@ -193,7 +224,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test vertexExists: true - SQLTransform") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = s"""{
       "stages": [   
@@ -237,7 +268,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test vertexExists: false - SQLTransform with CTE") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = s"""{
       "stages": [          
@@ -270,7 +301,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test vertexExists: true - SQLTransform with CTE") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = s"""{
       "stages": [   
@@ -314,7 +345,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test vertexExists: multiple") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = s"""{
       "stages": [   
@@ -388,7 +419,7 @@ class DependencyGraphSuite extends FunSuite with BeforeAndAfter {
   test("Test vertexExists: PipelineStagePlugin") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = s"""{
       "stages": [   

@@ -34,7 +34,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
@@ -57,7 +57,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
   test("Test argsMap precedence") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val argsMap = collection.mutable.HashMap[String, String]("ARGS_MAP_VALUE" -> "before\"${arc.paramvalue}\"after")
 
@@ -78,7 +78,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
   test("Test missing plugin") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
@@ -100,7 +100,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="production", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="production", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val argsMap = collection.mutable.HashMap[String, String]()
 

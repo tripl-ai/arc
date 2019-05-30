@@ -82,5 +82,5 @@ Thanks to the following projects:
 
 ## License
 
-Arc is released under the [MIT License](https://opensource.org/licenses/MIT).
+Arc is released under the [MIT License](https://opensource.org/licenses/MIT). See [License](/license) for full information.
 

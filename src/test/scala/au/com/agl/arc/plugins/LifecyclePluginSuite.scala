@@ -37,7 +37,7 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
   test("Read and execute config with lifecycle configuration plugin") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
     import spark.implicits._
 
     val argsMap = collection.mutable.HashMap[String, String]()

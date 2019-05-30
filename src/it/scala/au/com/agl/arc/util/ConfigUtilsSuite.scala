@@ -51,7 +51,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("ConfigUtilsSuite: Ensure remote data and config references can be parsed") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     // point to local minio s3 rather than actual s3
     spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", minioHostPort)

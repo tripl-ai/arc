@@ -66,6 +66,14 @@ object ARC {
     }
     MDC.put("ignoreEnvironments", ignoreEnvironments.toString)     
 
+    val disableDepVal: Option[String] = argsMap.get("etl.config.disableDependencyValidation").orElse(envOrNone("ETL_CONF_DISABLE_DEPENDENCY_VALIDATION"))
+    val disableDependencyValidation = disableDepVal match {
+      case Some(v) if v.trim.toLowerCase == "true" => true
+      case Some(v) if v.trim.toLowerCase == "false" => false
+      case _ => false
+    }
+    MDC.put("ignoreEnvironments", ignoreEnvironments.toString)         
+
     val configUri: Option[String] = argsMap.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))    
 
     val frameworkVersion = Utils.getFrameworkVersion
@@ -153,7 +161,7 @@ object ARC {
 
     MDC.put("applicationId", spark.sparkContext.applicationId) 
 
-    val arcContext = ARCContext(jobId=jobId, jobName=jobName, environment=env, environmentId=environmentId, configUri=configUri, isStreaming=isStreaming, ignoreEnvironments=ignoreEnvironments, lifecyclePlugins=Nil)
+    val arcContext = ARCContext(jobId=jobId, jobName=jobName, environment=env, environmentId=environmentId, configUri=configUri, isStreaming=isStreaming, ignoreEnvironments=ignoreEnvironments, lifecyclePlugins=Nil, disableDependencyValidation=disableDependencyValidation)
     
     // log available plugins
     val loader = Utils.getContextOrSparkClassLoader

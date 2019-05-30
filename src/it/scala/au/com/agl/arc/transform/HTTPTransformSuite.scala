@@ -58,7 +58,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can call TensorflowServing via REST" ) {
     implicit val spark = session
     implicit val l = logger
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -103,7 +103,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can call TensorflowServing via REST: inputField" ) {
     implicit val spark = session
     implicit val l = logger
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
