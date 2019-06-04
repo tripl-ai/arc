@@ -26,7 +26,9 @@ cd arc-starter
 
 ## Get the Data
 
-In the repository there is a directory called `tutorial` and in that directory there is a directory called `data`. There are two scripts in that directory `download_raw_data_large.sh` and `download_raw_data_small.sh`. The small version will download data for approximately 40 million records (6.3GB) and the large will download more than one billion rows of data. Either of these files can be used for this tutorial. 
+In the repository there is a directory called `tutorial` and in that directory there is a directory called `data`. It already contains subsets of the [New York City Taxi dataset](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml) stored as `gzip` archives. The tutorial can be run with these included files.
+
+Alternatively, for a larger dataset, there are two scripts in that directory `download_raw_data_large.sh` and `download_raw_data_small.sh`. The small version will download data for approximately 40 million records (6.3GB) and the large will download more than one billion rows of data. Either of these files can be used with this tutorial. 
 
 ```bash
 cd tutorial/data
@@ -121,7 +123,7 @@ The first stage we are going to add is a `DelimitedExtract` stage because the so
   "type": "DelimitedExtract",
   "name": "extract data from green_tripdata/0",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/0/*.csv",
+  "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/0/*",
   "outputView": "green_tripdata0_raw",            
   "delimiter": "Comma",
   "quote" : "DoubleQuote",
@@ -371,7 +373,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
     "type": "DelimitedExtract",
     "name": "extract data from green_tripdata/0",
     "environments": ["production", "test"],
-    "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/0/*.csv",
+    "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/0/*",
     "outputView": "green_tripdata0_raw",            
     "delimiter": "Comma",
     "quote": "DoubleQuote",
@@ -398,7 +400,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
     "type": "DelimitedExtract",
     "name": "extract data from green_tripdata/1",
     "environments": ["production", "test"],
-    "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/1/*.csv",
+    "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/1/*",
     "outputView": "green_tripdata1_raw",            
     "delimiter": "Comma",
     "quote": "DoubleQuote",
@@ -425,7 +427,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
     "type": "DelimitedExtract",
     "name": "extract data from green_tripdata/2",
     "environments": ["production", "test"],
-    "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/2/*.csv",
+    "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/2/*",
     "outputView": "green_tripdata2_raw",            
     "delimiter": "Comma",
     "quote": "DoubleQuote",
@@ -591,7 +593,7 @@ To fix this issue add a `schemaURI` key which points to the same metadata file u
   "type": "DelimitedExtract",
   "name": "extract data from uber_tripdata/1",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_BASE_URL}"/data/uber_tripdata/1/*.csv",
+  "inputURI": ${ETL_CONF_BASE_URL}"/data/uber_tripdata/1/*",
   "schemaURI": ${ETL_CONF_BASE_URL}"/meta/uber_tripdata/1/uber_tripdata.json",
   "outputView": "uber_tripdata1_raw",            
   "delimiter": "Comma",
