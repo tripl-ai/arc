@@ -444,7 +444,9 @@ cd arc-starter
 
 <h2 id="get-the-data">Get the Data</h2>
 
-<p>In the repository there is a directory called <code>tutorial</code> and in that directory there is a directory called <code>data</code>. There are two scripts in that directory <code>download_raw_data_large.sh</code> and <code>download_raw_data_small.sh</code>. The small version will download data for approximately 40 million records (6.3GB) and the large will download more than one billion rows of data. Either of these files can be used for this tutorial.</p>
+<p>In the repository there is a directory called <code>tutorial</code> and in that directory there is a directory called <code>data</code>. It already contains subsets of the <a href="http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml">New York City Taxi dataset</a> stored as <code>gzip</code> archives. The tutorial can be run with these included files.</p>
+
+<p>Alternatively, for a larger dataset, there are two scripts in that directory <code>download_raw_data_large.sh</code> and <code>download_raw_data_small.sh</code>. The small version will download data for approximately 40 million records (6.3GB) and the large will download more than one billion rows of data. Either of these files can be used with this tutorial.</p>
 
 <pre><code class="language-bash">cd tutorial/data
 ./download_raw_data_small.sh
@@ -511,7 +513,7 @@ cd arc-starter
 -e JAVA_OPTS=&quot;-Xmx4096m&quot; \
 -p 4040:4040 \
 -p 8888:8888 \
-seddonm1/arc-jupyter:0.0.10 \
+seddonm1/arc-jupyter:0.0.12 \
 start-notebook.sh \
 --NotebookApp.password='' \
 --NotebookApp.token=''
@@ -536,7 +538,7 @@ start-notebook.sh \
   &quot;type&quot;: &quot;DelimitedExtract&quot;,
   &quot;name&quot;: &quot;extract data from green_tripdata/0&quot;,
   &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-  &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/green_tripdata/0/*.csv&quot;,
+  &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/green_tripdata/0/*&quot;,
   &quot;outputView&quot;: &quot;green_tripdata0_raw&quot;,            
   &quot;delimiter&quot;: &quot;Comma&quot;,
   &quot;quote&quot; : &quot;DoubleQuote&quot;,
@@ -856,7 +858,7 @@ bin/spark-submit \
     &quot;type&quot;: &quot;DelimitedExtract&quot;,
     &quot;name&quot;: &quot;extract data from green_tripdata/0&quot;,
     &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/green_tripdata/0/*.csv&quot;,
+    &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/green_tripdata/0/*&quot;,
     &quot;outputView&quot;: &quot;green_tripdata0_raw&quot;,            
     &quot;delimiter&quot;: &quot;Comma&quot;,
     &quot;quote&quot;: &quot;DoubleQuote&quot;,
@@ -883,7 +885,7 @@ bin/spark-submit \
     &quot;type&quot;: &quot;DelimitedExtract&quot;,
     &quot;name&quot;: &quot;extract data from green_tripdata/1&quot;,
     &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/green_tripdata/1/*.csv&quot;,
+    &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/green_tripdata/1/*&quot;,
     &quot;outputView&quot;: &quot;green_tripdata1_raw&quot;,            
     &quot;delimiter&quot;: &quot;Comma&quot;,
     &quot;quote&quot;: &quot;DoubleQuote&quot;,
@@ -910,7 +912,7 @@ bin/spark-submit \
     &quot;type&quot;: &quot;DelimitedExtract&quot;,
     &quot;name&quot;: &quot;extract data from green_tripdata/2&quot;,
     &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/green_tripdata/2/*.csv&quot;,
+    &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/green_tripdata/2/*&quot;,
     &quot;outputView&quot;: &quot;green_tripdata2_raw&quot;,            
     &quot;delimiter&quot;: &quot;Comma&quot;,
     &quot;quote&quot;: &quot;DoubleQuote&quot;,
@@ -1076,7 +1078,7 @@ FROM green_tripdata2
   &quot;type&quot;: &quot;DelimitedExtract&quot;,
   &quot;name&quot;: &quot;extract data from uber_tripdata/1&quot;,
   &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-  &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/uber_tripdata/1/*.csv&quot;,
+  &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/data/uber_tripdata/1/*&quot;,
   &quot;schemaURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/uber_tripdata/1/uber_tripdata.json&quot;,
   &quot;outputView&quot;: &quot;uber_tripdata1_raw&quot;,            
   &quot;delimiter&quot;: &quot;Comma&quot;,
