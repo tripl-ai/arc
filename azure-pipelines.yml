@@ -5,15 +5,17 @@
 
 trigger:
 - master
+- develop
+- feature/*
 
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- script: |
+    docker build . -t scala-sbt:latest -f BuildDockerfile 
+  displayName: 'Build the scala-sbt docker image'
 
 - script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    docker run --rm -v $(pwd):/sbt scala-sbt:latest sbt test
+  displayName: 'Run arc test'
