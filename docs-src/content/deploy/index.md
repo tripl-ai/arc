@@ -17,7 +17,7 @@ docker run \
 -it -p 4040:4040 {{% docker_image %}} \
 bin/spark-submit \
 --master local[*] \
---class au.com.agl.arc.ARC \
+--class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///opt/tutorial/basic/job/0/basic.json
 ```
@@ -87,7 +87,7 @@ Additionally there are permissions arguments that can be used to retrieve the jo
 
 ### Streaming
 
-This is an example of a streaming job [source](https://github.com/AGLEnergy/arc/blob/master/tutorial/streaming/job/0/streaming.json). This job is intended to be executed after the integration test envornment has been started:
+This is an example of a streaming job [source](https://github.com/tripl-ai/arc/blob/master/tutorial/streaming/job/0/streaming.json). This job is intended to be executed after the integration test envornment has been started:
 
 Start integration test environments:
 
@@ -106,7 +106,7 @@ docker run \
 -it -p 4040:4040 {{% docker_image %}} \
 bin/spark-submit \
 --master local[*] \
---class au.com.agl.arc.ARC \
+--class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///opt/tutorial/streaming/job/0/streaming.json
 ```

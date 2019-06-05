@@ -5,14 +5,14 @@ lazy val root = (project in file(".")).
   configs(IntegrationTest).
   settings(
     name := "arc",
-    organization := "au.com.agl",
+    organization := "ai.tripl",
     scalaVersion := "2.11.12",
     scalastyleFailOnError := false,
     libraryDependencies ++= etlDeps,
     parallelExecution in Test := false,
     parallelExecution in IntegrationTest := false,
     buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion),
-    buildInfoPackage := "au.com.agl.arc.ArcBuildInfo",
+    buildInfoPackage := "ai.tripl.arc.ArcBuildInfo",
     Defaults.itSettings
   )
 

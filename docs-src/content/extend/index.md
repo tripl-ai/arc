@@ -25,12 +25,12 @@ The `Dynamic Configuration Plugin` plugin allow users to inject custom configura
 For example a custom runtime configuration plugin could be used calculate a formatted list of dates to be used with an [Extract](../extract) stage to read only a subset of documents:
 
 ```scala
-package au.com.agl.arc.plugins.config
+package ai.tripl.arc.plugins.config
 
 import scala.collection.JavaConverters._
 
-import au.com.agl.arc.plugins._
-import au.com.agl.arc.util.log.logger.Logger
+import ai.tripl.arc.plugins._
+import ai.tripl.arc.util.log.logger.Logger
 
 import java.sql.Date
 import java.time.LocalDate
@@ -39,7 +39,7 @@ import java.time.format.ResolverStyle
 
 class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
 
-  override def values(params: Map[String, String])(implicit logger: au.com.agl.arc.util.log.logger.Logger): java.util.Map[String, Object] = {
+  override def values(params: Map[String, String])(implicit logger: ai.tripl.arc.util.log.logger.Logger): java.util.Map[String, Object] = {
     val startTime = System.currentTimeMillis() 
 
     val stageDetail = new java.util.HashMap[String, Object]()
@@ -124,7 +124,7 @@ class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
 }
 ```
 
-The plugin then needs to be registered in the `plugins.config` section of the job configuration and the full plugin name must be listed in your project's `/resources/META-INF/services/au.com.agl.arc.plugins.DynamicConfigurationPlugin` file. See [this example](https://github.com/AGLEnergy/arc/blob/master/src/test/resources/META-INF/services/au.com.agl.arc.plugins.DynamicConfigurationPlugin). 
+The plugin then needs to be registered in the `plugins.config` section of the job configuration and the full plugin name must be listed in your project's `/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin` file. See [this example](https://github.com/tripl-ai/arc/blob/master/src/test/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin). 
 
 Note that the resolution order of these plugins is in descending order in that if the the `ETL_CONF_LAST_PROCESSING_DAY` was declared in multiple plugins the value set by the plugin with the lower index in the `plugins.config` array will take precedence.
 
@@ -135,7 +135,7 @@ The `ETL_CONF_LAST_PROCESSING_DAY` variable is then available to be resolved in 
   "plugins": {
     "config": [
       {
-        "type": "au.com.agl.arc.plugins.config.DeltaPeriodDynamicConfigurationPlugin",
+        "type": "ai.tripl.arc.plugins.config.DeltaPeriodDynamicConfigurationPlugin",
         "environments": [
           "production",
           "test"
@@ -172,16 +172,16 @@ Custom `Lifecycle Plugins` allow users to extend the base Arc framework with log
 ### Examples
 
 ```scala
-package au.com.agl.arc.plugins.lifecycle
+package ai.tripl.arc.plugins.lifecycle
 
 import java.util
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import au.com.agl.arc.api.API._
-import au.com.agl.arc.plugins.LifecyclePlugin
-import au.com.agl.arc.util.Utils
-import au.com.agl.arc.util.log.logger.Logger
+import ai.tripl.arc.api.API._
+import ai.tripl.arc.plugins.LifecyclePlugin
+import ai.tripl.arc.util.Utils
+import ai.tripl.arc.util.log.logger.Logger
 
 class DataFramePrinterLifecyclePlugin extends LifecyclePlugin {
 
@@ -191,7 +191,7 @@ class DataFramePrinterLifecyclePlugin extends LifecyclePlugin {
     params = p
   }
 
-  override def before(stage: PipelineStage)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger) {
+  override def before(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger) {
     logger.trace()        
       .field("event", "before")
       .field("stage", stage.name)
@@ -199,7 +199,7 @@ class DataFramePrinterLifecyclePlugin extends LifecyclePlugin {
       .log()  
   }
 
-  override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: au.com.agl.arc.util.log.logger.Logger) {
+  override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger) {
     logger.trace()        
       .field("event", "after")
       .field("stage", stage.name)
@@ -228,7 +228,7 @@ class DataFramePrinterLifecyclePlugin extends LifecyclePlugin {
 }
 ```
 
-The plugin then needs to be registered by adding the full plugin name must be listed in your project’s `/resources/META-INF/services/au.com.agl.arc.plugins.LifecyclePlugin` file.
+The plugin then needs to be registered by adding the full plugin name must be listed in your project’s `/resources/META-INF/services/ai.tripl.arc.plugins.LifecyclePlugin` file.
 
 To execute:
 
@@ -237,7 +237,7 @@ To execute:
   "plugins": {
     "lifecycle": [
       {
-        "type": "au.com.agl.arc.plugins.lifecycle.DataFramePrinterLifecyclePlugin",
+        "type": "ai.tripl.arc.plugins.lifecycle.DataFramePrinterLifecyclePlugin",
         "environments": [
           "production",
           "test"
@@ -261,15 +261,15 @@ To execute:
 
 Custom `Pipeline Stage Plugins` allow users to extend the base Arc framework with custom stages which allow the full use of the Spark [Scala API](https://spark.apache.org/docs/latest/api/scala/). This means that private business logic or code which relies on libraries not included in the base Arc framework can be used - however it is strongly advised to use the inbuilt SQL stages where possible. These stages can use the `params` map to be able to pass configuration parameters.
 
-If stages are general purpose enough for use outside your organisation consider creating a pull request against the main [Arc repository](https://github.com/aglenergy/arc) so that others can benefit.
+If stages are general purpose enough for use outside your organisation consider creating a pull request against the main [Arc repository](https://github.com/tripl-ai/arc) so that others can benefit.
 
 ### Examples
 
 ```scala
 package au.com.myfakebusiness.plugins
 
-import au.com.agl.arc.plugins
-import au.com.agl.arc.util.log.logger.Logger
+import ai.tripl.arc.plugins
+import ai.tripl.arc.util.log.logger.Logger
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class MyFakeBusinessAddCopyrightStage extends PipelineStagePlugin {
@@ -312,7 +312,7 @@ class MyFakeBusinessAddCopyrightStage extends PipelineStagePlugin {
 }
 ```
 
-The plugin then needs to be registered by adding the full plugin name must be listed in your project’s `/resources/META-INF/services/au.com.agl.arc.plugins.PipelineStagePlugin` file.
+The plugin then needs to be registered by adding the full plugin name must be listed in your project’s `/resources/META-INF/services/ai.tripl.arc.plugins.PipelineStagePlugin` file.
 
 To execute:
 
@@ -345,23 +345,23 @@ The inbuilt [Spark SQL Functions](https://spark.apache.org/docs/latest/api/sql/i
 
 `User Defined Functions` allow users to extend the [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) dialect. 
 
-Arc already includes [some addtional functions](partials/#user-defined-functions) which are not included in the base [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) dialect so any useful generic functions can be included in the [Arc repository](https://github.com/aglenergy/arc) so that others can benefit.
+Arc already includes [some addtional functions](partials/#user-defined-functions) which are not included in the base [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) dialect so any useful generic functions can be included in the [Arc repository](https://github.com/tripl-ai/arc) so that others can benefit.
 
 ### Examples
 
 Write the code to define the custom `User Defined Function`:
 
 ```scala
-package au.com.agl.arc.plugins
+package ai.tripl.arc.plugins
 import java.util
 
 import org.apache.spark.sql.SQLContext
 
-import au.com.agl.arc.util.log.logger.Logger
+import ai.tripl.arc.util.log.logger.Logger
 
 class UDFPluginTest extends UDFPlugin {
   // one udf plugin can register multiple user defined functions
-  override def register(sqlContext: SQLContext)(implicit logger: au.com.agl.arc.util.log.logger.Logger): Seq[String] = {
+  override def register(sqlContext: SQLContext)(implicit logger: ai.tripl.arc.util.log.logger.Logger): Seq[String] = {
     
     // register the functions so they can be accessed via Spark SQL
     // SELECT add_ten(1) AS one_plus_ten
@@ -380,4 +380,4 @@ object UDFPluginTest {
 }
 ```
 
-The plugin then needs to be registered by adding the full plugin name must be listed in your project's `/resources/META-INF/services/au.com.agl.arc.plugins.UDFPlugin` file.
+The plugin then needs to be registered by adding the full plugin name must be listed in your project's `/resources/META-INF/services/ai.tripl.arc.plugins.UDFPlugin` file.
