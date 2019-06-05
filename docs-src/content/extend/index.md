@@ -124,7 +124,7 @@ class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
 }
 ```
 
-The plugin then needs to be registered in the `plugins.config` section of the job configuration and the full plugin name must be listed in your project's `/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin` file. See [this example](https://github.com/AGLEnergy/arc/blob/master/src/test/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin). 
+The plugin then needs to be registered in the `plugins.config` section of the job configuration and the full plugin name must be listed in your project's `/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin` file. See [this example](https://github.com/tripl-ai/arc/blob/master/src/test/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin). 
 
 Note that the resolution order of these plugins is in descending order in that if the the `ETL_CONF_LAST_PROCESSING_DAY` was declared in multiple plugins the value set by the plugin with the lower index in the `plugins.config` array will take precedence.
 
@@ -261,7 +261,7 @@ To execute:
 
 Custom `Pipeline Stage Plugins` allow users to extend the base Arc framework with custom stages which allow the full use of the Spark [Scala API](https://spark.apache.org/docs/latest/api/scala/). This means that private business logic or code which relies on libraries not included in the base Arc framework can be used - however it is strongly advised to use the inbuilt SQL stages where possible. These stages can use the `params` map to be able to pass configuration parameters.
 
-If stages are general purpose enough for use outside your organisation consider creating a pull request against the main [Arc repository](https://github.com/aglenergy/arc) so that others can benefit.
+If stages are general purpose enough for use outside your organisation consider creating a pull request against the main [Arc repository](https://github.com/tripl-ai/arc) so that others can benefit.
 
 ### Examples
 
@@ -345,7 +345,7 @@ The inbuilt [Spark SQL Functions](https://spark.apache.org/docs/latest/api/sql/i
 
 `User Defined Functions` allow users to extend the [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) dialect. 
 
-Arc already includes [some addtional functions](partials/#user-defined-functions) which are not included in the base [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) dialect so any useful generic functions can be included in the [Arc repository](https://github.com/aglenergy/arc) so that others can benefit.
+Arc already includes [some addtional functions](partials/#user-defined-functions) which are not included in the base [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) dialect so any useful generic functions can be included in the [Arc repository](https://github.com/tripl-ai/arc) so that others can benefit.
 
 ### Examples
 

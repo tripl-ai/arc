@@ -30,7 +30,7 @@ Many of these principles have come from [12factor](https://12factor.net/):
 
 ## Documentation
 
-Full documentation is available here: https://aglenergy.github.io/arc/
+Full documentation is available here: https://tripl-ai.github.io/arc/
 
 ## Not just for data engineers
 
@@ -142,7 +142,7 @@ This is an example of a fairly standard pipeline:
 }
 ```
 
-A full worked example job is available [here](https://github.com/AGLEnergy/arc/tree/master/tutorial/gnaf/job/0). It is for the Australian Geocoded National Address File [G-NAF](https://data.gov.au/dataset/geocoded-national-address-file-g-naf) and will load the pipe-separated data, apply data types, ensure there are no errors in applying data types and write the output to Parquet. This could easily be modified to write to a JDBC target.
+A full worked example job is available [here](https://github.com/tripl-ai/arc/tree/master/tutorial/gnaf/job/0). It is for the Australian Geocoded National Address File [G-NAF](https://data.gov.au/dataset/geocoded-national-address-file-g-naf) and will load the pipe-separated data, apply data types, ensure there are no errors in applying data types and write the output to Parquet. This could easily be modified to write to a JDBC target.
 
 ## Building
 
@@ -217,7 +217,6 @@ When you contribute code, you affirm that the contribution is your original work
 
 ## Authors/Contributors
 
-- [AGL Energy](https://github.com/aglenergy)
 - [Mike Seddon](https://github.com/seddonm1)
 - [John Bruce](https://github.com/jbruce)
 
@@ -226,6 +225,7 @@ When you contribute code, you affirm that the contribution is your original work
 
 Thanks to the following projects:
 
+- [AGL Energy](https://github.com/aglenergy) for the original development.
 - [Apache Spark](https://spark.apache.org/) for the underlying framework that has made this library possible.
 - [slf4j-json-logger](https://github.com/savoirtech/slf4j-json-logger) Copyright (c) 2016 Savoir Technologies released under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0). We have slightly altered their library to change the default logging format.
 - [azure-sqldb-spark](https://github.com/Azure/azure-sqldb-spark) for their Microsoft SQL Server bulkload driver. Currently included in /lib but will be pulled from Maven once available.

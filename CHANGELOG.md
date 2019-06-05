@@ -14,12 +14,12 @@
 
 # 1.13.0
 
-- **BREAKING** added `environments` key to [Dynamic Configuration Plugins](https://aglenergy.github.io/arc/extend/#dynamic-configuration-plugins) and [Lifecycle Plugins](https://aglenergy.github.io/arc/extend/#lifecycle-plugins) so they can be enabled/disabled depending on the deloyment environment.
-- **BREAKING** [Lifecycle Plugins](https://aglenergy.github.io/arc/extend/#lifecycle-plugins) now require explicit declaration like [Dynamic Configuration Plugins](https://aglenergy.github.io/arc/extend/#dynamic-configuration-plugins) by use of the `config.lifecycle` attribute.
+- **BREAKING** added `environments` key to [Dynamic Configuration Plugins](https://tripl-ai.github.io/arc/extend/#dynamic-configuration-plugins) and [Lifecycle Plugins](https://tripl-ai.github.io/arc/extend/#lifecycle-plugins) so they can be enabled/disabled depending on the deloyment environment.
+- **BREAKING** [Lifecycle Plugins](https://tripl-ai.github.io/arc/extend/#lifecycle-plugins) now require explicit declaration like [Dynamic Configuration Plugins](https://tripl-ai.github.io/arc/extend/#dynamic-configuration-plugins) by use of the `config.lifecycle` attribute.
 - **FIX** fixed issue https://issues.apache.org/jira/browse/SPARK-26995 to Dockerfile.
 - **FIX** error reading `Elasticsearch*` configuration parameters due to escaping by Typesafe Config.
 - added `AzureCosmosDBExtract` stage.
-- added ability to pass `params` to [Lifecycle Plugins](https://aglenergy.github.io/arc/extend/#lifecycle-plugins).
+- added ability to pass `params` to [Lifecycle Plugins](https://tripl-ai.github.io/arc/extend/#lifecycle-plugins).
 - rewrote tutorial to use [arc-starter](https://github.com/seddonm1/arc-starter).
 - added `failMode` to `BytesExtract` to allow pipeline to continue if missing binary files.
 - added `DataFramePrinterLifecyclePlugin` to base image.

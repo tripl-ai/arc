@@ -402,8 +402,8 @@
         <ul>
            
           <li>
-            <a href="https://github.com/aglenergy" target="_blank" title="@aglenergy on GitHub">
-              @aglenergy on GitHub
+            <a href="https://github.com/tripl-ai" target="_blank" title="@tripl-ai on GitHub">
+              @tripl-ai on GitHub
             </a>
           </li>
            
@@ -544,7 +544,7 @@ class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
 }
 </code></pre>
 
-<p>The plugin then needs to be registered in the <code>plugins.config</code> section of the job configuration and the full plugin name must be listed in your project&rsquo;s <code>/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin</code> file. See <a href="https://github.com/AGLEnergy/arc/blob/master/src/test/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin">this example</a>.</p>
+<p>The plugin then needs to be registered in the <code>plugins.config</code> section of the job configuration and the full plugin name must be listed in your project&rsquo;s <code>/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin</code> file. See <a href="https://github.com/tripl-ai/arc/blob/master/src/test/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin">this example</a>.</p>
 
 <p>Note that the resolution order of these plugins is in descending order in that if the the <code>ETL_CONF_LAST_PROCESSING_DAY</code> was declared in multiple plugins the value set by the plugin with the lower index in the <code>plugins.config</code> array will take precedence.</p>
 
@@ -679,7 +679,7 @@ class DataFramePrinterLifecyclePlugin extends LifecyclePlugin {
 
 <p>Custom <code>Pipeline Stage Plugins</code> allow users to extend the base Arc framework with custom stages which allow the full use of the Spark <a href="https://spark.apache.org/docs/latest/api/scala/">Scala API</a>. This means that private business logic or code which relies on libraries not included in the base Arc framework can be used - however it is strongly advised to use the inbuilt SQL stages where possible. These stages can use the <code>params</code> map to be able to pass configuration parameters.</p>
 
-<p>If stages are general purpose enough for use outside your organisation consider creating a pull request against the main <a href="https://github.com/aglenergy/arc">Arc repository</a> so that others can benefit.</p>
+<p>If stages are general purpose enough for use outside your organisation consider creating a pull request against the main <a href="https://github.com/tripl-ai/arc">Arc repository</a> so that others can benefit.</p>
 
 <h3 id="examples-2">Examples</h3>
 
@@ -763,7 +763,7 @@ class MyFakeBusinessAddCopyrightStage extends PipelineStagePlugin {
 
 <p><code>User Defined Functions</code> allow users to extend the <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL</a> dialect.</p>
 
-<p>Arc already includes <a href="partials/#user-defined-functions">some addtional functions</a> which are not included in the base <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL</a> dialect so any useful generic functions can be included in the <a href="https://github.com/aglenergy/arc">Arc repository</a> so that others can benefit.</p>
+<p>Arc already includes <a href="partials/#user-defined-functions">some addtional functions</a> which are not included in the base <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL</a> dialect so any useful generic functions can be included in the <a href="https://github.com/tripl-ai/arc">Arc repository</a> so that others can benefit.</p>
 
 <h3 id="examples-3">Examples</h3>
 
