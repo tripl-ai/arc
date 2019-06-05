@@ -241,44 +241,6 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }    
   }
 
-  test("Test rightFlatMap validation") { 
-    implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
-
-    val conf = """{
-      "stages": [
-        {
-          "type": "DelimitedExtract",
-          "name": "file extract",
-          "environments": [
-            "production",
-            "test"
-          ],
-          "inputURI": "hdfs://test/{ab,c{de, fg}",
-          "outputView": "output"
-        }
-      ]
-    }"""
-
-    val argsMap = collection.mutable.Map[String, String]()
-    val graph = ConfigUtils.Graph(Nil, Nil, false)
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
-
-    pipelineEither match {
-      case Left(stageError) => {
-        assert(stageError == 
-        StageError(0, "file extract",3,List(
-            ConfigError("inputURI", Some(10), """Unclosed group near index 25
-hdfs://test/{ab,c{de, fg}
-                         ^""")
-          )
-        ) :: Nil)
-      }
-      case Right(_) => assert(false)
-    }     
-  }
-
   test("Test extraneous attributes") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
