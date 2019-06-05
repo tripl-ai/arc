@@ -13,5 +13,8 @@ pool:
 
 steps:
 - script: |
+    docker pull mozilla/sbt:8u212_1.2.8
+  displayName: 'Pull sbt image (mozilla/sbt:8u212_1.2.8) from Dockerhub'
+- script: |
     docker run --rm -v $(pwd):/app -w /app mozilla/sbt:8u212_1.2.8 sbt test
   displayName: 'Run arc test'
