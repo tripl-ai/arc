@@ -2,31 +2,31 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Arc</title>
-    <link>https://tripl-ai.github.io/arc/</link>
+    <link>https://arc.tripl.ai/</link>
     <description>Recent content on Arc</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 09 Mar 2016 00:11:02 +0100</lastBuildDate>
     
-	<atom:link href="https://tripl-ai.github.io/arc/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://arc.tripl.ai/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Tutorial</title>
-      <link>https://tripl-ai.github.io/arc/tutorial/</link>
+      <link>https://arc.tripl.ai/tutorial/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/tutorial/</guid>
+      <guid>https://arc.tripl.ai/tutorial/</guid>
       <description>This tutorial works through a real-world example using the New York City Taxi dataset which has been used heavliy around the web (see: Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance and A Billion Taxi Rides in Redshift) due to its 1 billion+ record count and scripted process available on github.
 It is a great dataset as it has a lot of the attributes of real-world data we want to demonstrate:</description>
     </item>
     
     <item>
       <title>Extract</title>
-      <link>https://tripl-ai.github.io/arc/extract/</link>
+      <link>https://arc.tripl.ai/extract/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/extract/</guid>
+      <guid>https://arc.tripl.ai/extract/</guid>
       <description>*Extract stages read in data from a database or file system.
 *Extract stages should meet this criteria:
  Read data from local or remote filesystems and return a DataFrame. Do not transform/mutate the data. Allow for Predicate Pushdown depending on data source.  File based *Extract stages can accept glob patterns as input filenames which can be very useful to load just a subset of data. For example delta processing:</description>
@@ -34,10 +34,10 @@ It is a great dataset as it has a lot of the attributes of real-world data we wa
     
     <item>
       <title>Transform</title>
-      <link>https://tripl-ai.github.io/arc/transform/</link>
+      <link>https://arc.tripl.ai/transform/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/transform/</guid>
+      <guid>https://arc.tripl.ai/transform/</guid>
       <description>*Transform stages apply a single transformation to one or more incoming datasets.
 Transformers should meet this criteria:
  Be logically pure. Perform only a single function. Utilise Spark internal functionality where possible.  DiffTransform Since: 1.0.8 - Supports Streaming: False The DiffTransform stage calculates the difference between two input datasets and produces three datasets:
@@ -46,10 +46,10 @@ Transformers should meet this criteria:
     
     <item>
       <title>Load</title>
-      <link>https://tripl-ai.github.io/arc/load/</link>
+      <link>https://arc.tripl.ai/load/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/load/</guid>
+      <guid>https://arc.tripl.ai/load/</guid>
       <description>*Load stages write out Spark datasets to a database or file system.
 *Load stages should meet this criteria:
  Take in a single dataset. Perform target specific validation that the dataset has been written correctly.  AvroLoad Since: 1.0.0 - Supports Streaming: False The AvroLoad writes an input DataFrame to a target Apache Avro file.
@@ -58,10 +58,10 @@ Parameters    Attribute Type Required Description     name String true Name of t
     
     <item>
       <title>Execute</title>
-      <link>https://tripl-ai.github.io/arc/execute/</link>
+      <link>https://arc.tripl.ai/execute/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/execute/</guid>
+      <guid>https://arc.tripl.ai/execute/</guid>
       <description>*Execute stages are used to execute arbitrary commands against external systems such as Databases and APIs.
 HTTPExecute Since: 1.0.0 - Supports Streaming: False The HTTPExecute takes an input Map[String, String] from the configuration and executes a POST request against a remote HTTP service. This could be used to initialise another process that depends on the output of data pipeline.
 Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
@@ -69,10 +69,10 @@ Parameters    Attribute Type Required Description     name String true Name of t
     
     <item>
       <title>Validate</title>
-      <link>https://tripl-ai.github.io/arc/validate/</link>
+      <link>https://arc.tripl.ai/validate/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/validate/</guid>
+      <guid>https://arc.tripl.ai/validate/</guid>
       <description>*Validate stages are used to perform validation and basic workflow controls..
 EqualityValidate Since: 1.0.0 - Supports Streaming: False The EqualityValidate takes two input DataFrame and will succeed if they are identical or fail if not. This stage is useful to use in automated testing as it can be used to validate a derived dataset equals a known &amp;lsquo;good&amp;rsquo; dataset.
 This stage will validate:
@@ -81,10 +81,10 @@ This stage will validate:
     
     <item>
       <title>Metadata</title>
-      <link>https://tripl-ai.github.io/arc/metadata/</link>
+      <link>https://arc.tripl.ai/metadata/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/metadata/</guid>
+      <guid>https://arc.tripl.ai/metadata/</guid>
       <description>The metadata format, consumed in the TypingTransform stage, is an opinionated format for specifying common data typing actions.
 It is designed to:
  Support common data typing conversions found in business datasets. Support limited &amp;lsquo;schema evolution&amp;rsquo; of source data in the form of allowed lists of accepted input formats. Collect errors into array columns so that a user can decide how to handle errors once all have been collected.  Common Attributes    Attribute Type Required Description     id String true A unique identifier for this field.</description>
@@ -92,30 +92,30 @@ It is designed to:
     
     <item>
       <title>Partials</title>
-      <link>https://tripl-ai.github.io/arc/partials/</link>
+      <link>https://arc.tripl.ai/partials/</link>
       <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/partials/</guid>
+      <guid>https://arc.tripl.ai/partials/</guid>
       <description>Authentication The Authentication map defines the authentication parameters for connecting to a remote service (e.g. HDFS, Blob Storage, etc.).
 Parameters    Attribute Type Required Description     method String true A value of AzureSharedKey, AzureSharedAccessSignature, AzureDataLakeStorageToken, AzureDataLakeStorageGen2AccountKey, AzureDataLakeStorageGen2OAuth, AmazonAccessKey, GoogleCloudStorageKeyFile which defines which method should be used to authenticate with the remote service.   accountName String false* Required for AzureSharedKey and AzureSharedAccessSignature.   signature String false* Required for AzureSharedKey.</description>
     </item>
     
     <item>
       <title>Patterns</title>
-      <link>https://tripl-ai.github.io/arc/patterns/</link>
+      <link>https://arc.tripl.ai/patterns/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/patterns/</guid>
+      <guid>https://arc.tripl.ai/patterns/</guid>
       <description>Database Inconsistency When writing data to targets like databases using the JDBCLoad raises a risk of &amp;lsquo;stale reads&amp;rsquo; where a client is reading a dataset which is either old or one which is in the process of being updated and so is internally inconsistent.
 Example  create a new table each run using a JDBCLoad stage with a dynamic destination table specified as the ${JOB_RUN_DATE} environment variable (easily created with GNU date like: $(date +%Y-%m-%d)) the JDBCLoad will only complete successfully once the record count of source and target data have been confirmed to match execute a JDBCExecute stage to perform a change to a view on the database to point to the new version of the table in a transaction-safe manner if the job fails during any of these stages then the users will be unaware and will continue to consume the customers view which has the latest successful data  { &amp;#34;type&amp;#34;: &amp;#34;JDBCLoad&amp;#34;, &amp;#34;name&amp;#34;: &amp;#34;load active customers to web server database&amp;#34;, &amp;#34;environments&amp;#34;: [ &amp;#34;production&amp;#34;, &amp;#34;test&amp;#34; ], &amp;#34;inputView&amp;#34;: &amp;#34;ative_customers&amp;#34;, &amp;#34;jdbcURL&amp;#34;: &amp;#34;jdbc:postgresql://localhost:5432/customer&amp;#34;, &amp;#34;tableName&amp;#34;: &amp;#34;customers_&amp;#34;${JOB_RUN_DATE}, &amp;#34;params&amp;#34;: { &amp;#34;user&amp;#34;: &amp;#34;mydbuser&amp;#34;, &amp;#34;password&amp;#34;: &amp;#34;mydbpassword&amp;#34; } }, { &amp;#34;type&amp;#34;: &amp;#34;JDBCExecute&amp;#34;, &amp;#34;name&amp;#34;: &amp;#34;update the current view to point to the latest version of the table&amp;#34;, &amp;#34;environments&amp;#34;: [ &amp;#34;production&amp;#34;, &amp;#34;test&amp;#34; ], &amp;#34;inputURI&amp;#34;: &amp;#34;hdfs://datalake/sql/update_customer_view.</description>
     </item>
     
     <item>
       <title>Deploy</title>
-      <link>https://tripl-ai.github.io/arc/deploy/</link>
+      <link>https://arc.tripl.ai/deploy/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/deploy/</guid>
+      <guid>https://arc.tripl.ai/deploy/</guid>
       <description>Arc has been packaged as a Docker image to simplify deployment as a stateless process on cloud infrastructure.
 Running a Job An example command to start a job is:
 docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&amp;quot; \ -it -p 4040:4040 triplai/arc:1.13.3 \ bin/spark-submit \ --master local[*] \ --class ai.tripl.arc.ARC \ /opt/spark/jars/arc.jar \ --etl.config.uri=file:///opt/tutorial/basic/job/0/basic.json  This job executes the following job file which is included in the docker image:</description>
@@ -123,10 +123,10 @@ docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_C
     
     <item>
       <title>Extend</title>
-      <link>https://tripl-ai.github.io/arc/extend/</link>
+      <link>https://arc.tripl.ai/extend/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/extend/</guid>
+      <guid>https://arc.tripl.ai/extend/</guid>
       <description>Arc can be exended in four ways by registering:
  Dynamic Configuration Plugins. Lifecycle Plugins. Pipeline Stage Plugins. User Defined Functions which extend the Spark SQL dialect.  Dynamic Configuration Plugins Since: 1.3.0 Dynamic vs Deterministic Configuration
 Use of this functionality is discouraged as it goes against the principles of Arc specifically around statelessness/deterministic behaviour but is inlcuded here for users who have not yet committed to a job orchestrator such as Apache Airflow and have dynamic configuration requirements.</description>
@@ -134,19 +134,19 @@ Use of this functionality is discouraged as it goes against the principles of Ar
     
     <item>
       <title>Contributing</title>
-      <link>https://tripl-ai.github.io/arc/contributing/</link>
+      <link>https://arc.tripl.ai/contributing/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/contributing/</guid>
+      <guid>https://arc.tripl.ai/contributing/</guid>
       <description></description>
     </item>
     
     <item>
       <title>License</title>
-      <link>https://tripl-ai.github.io/arc/license/</link>
+      <link>https://arc.tripl.ai/license/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tripl-ai.github.io/arc/license/</guid>
+      <guid>https://arc.tripl.ai/license/</guid>
       <description>Arc Arc is released under the MIT License.
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &amp;ldquo;Software&amp;rdquo;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</description>
     </item>
