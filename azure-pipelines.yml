@@ -13,9 +13,5 @@ pool:
 
 steps:
 - script: |
-    docker build . -t scala-sbt:latest -f BuildDockerfile 
-  displayName: 'Build the scala-sbt docker image'
-
-- script: |
-    docker run --rm -v $(pwd):/sbt scala-sbt:latest sbt test
+    docker run --rm -v $(pwd):/app -w /app mozilla/sbt:8u212_1.2.8 sbt test
   displayName: 'Run arc test'
