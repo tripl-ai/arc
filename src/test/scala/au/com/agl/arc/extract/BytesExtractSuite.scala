@@ -14,6 +14,7 @@ import org.apache.spark.sql.functions._
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
+import au.com.agl.arc.datasource.BinaryContent
 import au.com.agl.arc.util.log.LoggerFactory 
 
 import au.com.agl.arc.util._
@@ -26,6 +27,9 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
   val pathView = "pathView"
   val outputView = "outputView"
   val targetFile = getClass.getResource("/notes.xml.zip").toString
+  val emptyDirectory = FileUtils.getTempDirectoryPath() + "missing.binary" 
+  val missingDirectory = FileUtils.getTempDirectoryPath() + "/missing/missing.binary" 
+  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.binary" 
 
   before {
     implicit val spark = SparkSession
@@ -51,7 +55,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val extractDataset = extract.BytesExtract.extract(
       BytesExtract(
@@ -63,7 +67,8 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         contiguousIndex=true,
-        params=Map.empty
+        params=Map.empty,
+        failMode=FailModeTypeFailFast
       )
     ).get
 
@@ -75,7 +80,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val input = Seq(targetFile, targetFile).toDF("value")
     input.createOrReplaceTempView(pathView)
@@ -90,11 +95,95 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         contiguousIndex=true,
-        params=Map.empty
+        params=Map.empty,
+        failMode=FailModeTypeFailFast
       )
     ).get
 
     assert(extractDataset.count == 2)
   }    
+
+  test("BytesExtract: FailModeTypeFailFast") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    // try with wildcard
+    val thrown0 = intercept[Exception with DetailException] {
+      val extractDataset = extract.BytesExtract.extract(
+        BytesExtract(
+          name="dataset",
+          description=None,
+          outputView=outputView, 
+          input=Right(emptyWildcardDirectory),
+          authentication=None,
+          persist=false,
+          numPartitions=None,
+          contiguousIndex=true,
+          params=Map.empty,
+          failMode=FailModeTypeFailFast
+        )        
+      )
+    }
+    assert(thrown0.getMessage === "BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.")
+    
+    // try without providing column metadata
+    val thrown1 = intercept[Exception with DetailException] {
+      val extractDataset = extract.BytesExtract.extract(
+        BytesExtract(
+          name="dataset",
+          description=None,
+          outputView=outputView, 
+          input=Right(emptyDirectory),
+          authentication=None,
+          persist=false,
+          numPartitions=None,
+          contiguousIndex=true,
+          params=Map.empty,
+          failMode=FailModeTypeFailFast
+        )  
+      )
+    }
+    assert(thrown1.getMessage === "BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.")
+    
+    // try without providing column metadata
+    val thrown2 = intercept[Exception with DetailException] {
+      val extractDataset = extract.BytesExtract.extract(
+        BytesExtract(
+          name="dataset",
+          description=None,
+          outputView=outputView, 
+          input=Right(missingDirectory),
+          authentication=None,
+          persist=false,
+          numPartitions=None,
+          contiguousIndex=true,
+          params=Map.empty,
+          failMode=FailModeTypeFailFast
+        )  
+      )
+    }
+    assert(thrown2.getMessage === "BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.")
+
+    // try with column
+    val actual = extract.BytesExtract.extract(
+      BytesExtract(
+        name="dataset",
+        description=None,
+        outputView=outputView, 
+        input=Right(emptyWildcardDirectory),
+        authentication=None,
+        persist=false,
+        numPartitions=None,
+        contiguousIndex=true,
+        params=Map.empty,
+        failMode=FailModeTypePermissive
+      )  
+    ).get
+
+    val expected = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], BinaryContent.schema)
+    assert(TestDataUtils.datasetEquality(expected, actual))
+
+  }  
 
 }

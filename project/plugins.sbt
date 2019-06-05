@@ -6,3 +6,6 @@ addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "1.0.0")
 
 // versioninfo
 addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.9.0")
+
+// license
+addSbtPlugin("com.typesafe.sbt" % "sbt-license-report" % "1.2.0")

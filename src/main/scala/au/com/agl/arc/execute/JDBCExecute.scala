@@ -32,7 +32,7 @@ object JDBCExecute {
     stageDetail.put("sqlParams", exec.sqlParams.asJava)
 
     // replace sql parameters
-    val sqlToExecute = SQLUtils.injectParameters(exec.sql, exec.sqlParams)
+    val sqlToExecute = SQLUtils.injectParameters(exec.sql, exec.sqlParams, false)
     stageDetail.put("sql", sqlToExecute)     
 
     logger.info()

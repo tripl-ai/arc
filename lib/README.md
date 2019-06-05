@@ -1,3 +1,4 @@
-- azure-sqldb-spark-1.0.0.jar included as is not available on Maven
-- kafka_2.11-1.1.0.jar included to allow compilation of Kafka parts without conflicting inbuilt spark serializer
+- azure-cosmosdb-spark_2.4.0_2.11-1.3.5.jar included to prevent conflict with inbuilt jackson library
+- azure-documentdb-2.4.0.jar needed for azure-cosmosdb-spark
 - kafka-clients-1.1.0.jar included to allow compilation of Kafka parts without conflicting inbuilt spark serializer
+- kafka_2.11-1.1.0.jar included to allow compilation of Kafka parts without conflicting inbuilt spark serializer

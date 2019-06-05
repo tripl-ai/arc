@@ -195,6 +195,14 @@ If you just want to get the JAR you can extract it from the Dockerfile like (rep
 docker run -v $(pwd):/mnt seddonm1/arc:VERSION cp /opt/spark/jars/arc.jar /mnt
 ```
 
+### License Report
+
+To rebuild the license report run:
+
+```bash
+sbt -DassemblyTarget=databricks dumpLicenseReport
+```
+
 ### Documentation
 
 To generate the documentation you need to download [Hugo](https://gohugo.io/) to `/docs-src` and run `./hugo` in that  directory. The `/docs` directory is the output of the docuementation generation and should not be edited by hand. The `/docs` directory is automatically published by the Github Pages process on commit.

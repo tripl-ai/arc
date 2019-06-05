@@ -4,7 +4,6 @@ import java.net.URI
 
 import scala.io.Source
 import scala.collection.JavaConverters._
-
 import com.fasterxml.jackson.databind.ObjectMapper
 
 import org.scalatest.FunSuite
@@ -46,7 +45,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
@@ -149,7 +148,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(errors) => assert(false)
-      case Right( (pipeline, graph) ) => {
+      case Right( (pipeline, _, _) ) => {
         assert(pipeline === expected)
       }
     }    
@@ -160,7 +159,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Read documentation config files") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
@@ -210,7 +209,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test missing keys exception") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [
@@ -245,7 +244,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test rightFlatMap validation") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [
@@ -283,7 +282,7 @@ hdfs://test/{ab,c{de, fg}
   test("Test extraneous attributes") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [
@@ -332,7 +331,7 @@ hdfs://test/{ab,c{de, fg}
   test("Test invalid validValues") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [       
@@ -365,7 +364,7 @@ hdfs://test/{ab,c{de, fg}
   test("Test read custom delimiter") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [       
@@ -398,7 +397,7 @@ hdfs://test/{ab,c{de, fg}
   test("Test read custom delimiter success") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "stages": [       
@@ -441,7 +440,7 @@ hdfs://test/{ab,c{de, fg}
 
     pipelineEither match {
       case Left(errors) => assert(false)
-      case Right( (pipeline, graph) ) => {
+      case Right( (pipeline, _, _) ) => {
         assert(pipeline === expected)
       }
     }  
@@ -450,7 +449,7 @@ hdfs://test/{ab,c{de, fg}
   test("Test config substitutions") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = """{
       "common": {
@@ -492,7 +491,7 @@ hdfs://test/{ab,c{de, fg}
 
     pipelineEither match {
       case Left(errors) => assert(false)
-      case Right( (pl, graph) ) => {
+      case Right( (pl, _, _) ) => {
         assert(pl === expected)
       }
     } 

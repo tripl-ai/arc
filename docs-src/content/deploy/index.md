@@ -60,10 +60,13 @@ This example is included to demonstrate:
 |----------|----------|-------------|
 |ETL_CONF_JOB_ID|etl.config.job.id|A job identifier added to all the logging messages.|
 |ETL_CONF_JOB_NAME|etl.config.job.name|A job name added to all logging messages and Spark history server.|
+|ETL_CONF_TAGS|etl.config.tags|Custom key/value tags separated by space to add to all logging messages.<br><br>E.g. `ETL_CONF_TAGS=cost_center=123456 owner=jovyan`.|
 |ETL_CONF_ENV|etl.config.environment|The `environment` to run under.<br><br>E.g. if `ETL_CONF_ENV` is set to `production` then a stage with `"environments": ["production", "test"]` would be executed and one with `"environments": ["test"]` would not be executed.|
 |ETL_CONF_ENV_ID|etl.config.environment.id|An environment identifier to be added to all logging messages. Could be something like a [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) which allows joining to logs produced by ephemeral compute started by something like [Terraform](https://www.terraform.io/).|
 |ETL_CONF_URI|etl.config.uri|The URI of the job file to execute.|
 |ETL_CONF_STREAMING|etl.config.streaming|Run in [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html) mode or not. Boolean default `false`.|
+|ETL_CONF_DISABLE_DEPENDENCY_VALIDATION|etl.config.disableDependencyValidation|Disable config dependency graph validation in case of dependency resolution defects. Boolean default `false`.|
+
 
 Additionally there are permissions arguments that can be used to retrieve the job file from cloud storage:
 

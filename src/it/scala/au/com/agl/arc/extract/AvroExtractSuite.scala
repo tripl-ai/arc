@@ -20,8 +20,8 @@ import org.apache.spark.sql.functions._
 
 import au.com.agl.arc.api._
 import au.com.agl.arc.api.API._
-import au.com.agl.arc.util.log.LoggerFactory 
 import au.com.agl.arc.util.ConfigUtils._
+import au.com.agl.arc.util.log.LoggerFactory 
 
 import com.typesafe.config._
 
@@ -100,7 +100,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         contiguousIndex=true,
-        params=Map.empty
+        params=Map.empty,
+        failMode=FailModeTypeFailFast
       )
     )
 
@@ -129,7 +130,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   test("AvroExtract: Binary with Kafka Schema Registry") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
 
     val schema = new Schema.Parser().parse(CloudUtils.getTextBlob(new URI(schemaFile)))
@@ -183,7 +184,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         println(pipelineEither)  
         assert(false)
       }
-      case Right((pl, _)) => {
+      case Right((pl, _, _)) => {
         ARC.run(pl)
       }
     }
@@ -192,7 +193,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   test("AvroExtract: Binary with user.avsc") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val conf = s"""{
       "stages": [
@@ -232,7 +233,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         println(pipelineEither)  
         assert(false)
       }
-      case Right((pl, _)) => {
+      case Right((pl, _, _)) => {
         ARC.run(pl)
       }
     }

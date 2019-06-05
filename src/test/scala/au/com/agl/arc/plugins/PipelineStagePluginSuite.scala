@@ -33,14 +33,14 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val argsMap = collection.mutable.HashMap[String, String]()
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
 
     pipeline match {
-      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), graph) ) =>
+      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), _, _) ) =>
         assert(name === "custom plugin")
         val configParms = Map[String, String](
           "foo" -> "bar"

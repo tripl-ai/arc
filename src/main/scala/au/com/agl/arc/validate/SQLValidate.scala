@@ -31,7 +31,7 @@ object SQLValidate {
       .log()   
 
     // replace sql parameters
-    val stmt = SQLUtils.injectParameters(validate.sql, validate.sqlParams)
+    val stmt = SQLUtils.injectParameters(validate.sql, validate.sqlParams, false)
 
     val df = try {
       spark.sql(stmt)

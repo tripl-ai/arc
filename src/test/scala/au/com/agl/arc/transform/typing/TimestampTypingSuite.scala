@@ -509,4 +509,22 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     assert(!formatter.contains("(Era,"))
     assert(formatter.contains("(Year,"))
   }        
+
+  test("Type Timestamp Column: nanosecond") {
+    val datetimeValue = ZonedDateTime.of(2019, 5, 22, 12, 4, 0, 949903001, ZoneId.of("UTC"))
+    val timestampValue = Timestamp.from(datetimeValue.toInstant())    
+    val fmt = List("yyyy-MM-dd HH:mm:ss.SSSSSSSSS")
+    val col = TimestampColumn(id="1", name="timestamp", description=None, nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None, strict=false)
+
+    val value = "2019-05-22 12:04:00.949903001"
+    Typing.typeValue(value, col) match {
+      case (Some(res), err) => {
+        assert(res === timestampValue)
+        assert(err === None)
+      }
+      case (_,_) => assert(false)
+    }
+  }   
+
+
 }

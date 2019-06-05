@@ -30,7 +30,7 @@ class ElasticsearchExtractSuite extends FunSuite with BeforeAndAfter {
 
   val testData = getClass.getResource("/akc_breed_info.csv").toString
   val outputView = "actual"
-  val index = "index/dogs"
+  val index = "dogs"
   val esURL = "localhost"
   val port = "9200"
   val wanOnly = "true"
@@ -59,7 +59,7 @@ class ElasticsearchExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     val df0 = spark.read.option("header","true").csv(testData)
     df0.createOrReplaceTempView("expected")
@@ -75,6 +75,7 @@ class ElasticsearchExtractSuite extends FunSuite with BeforeAndAfter {
       .option("es.port",port)
       .option("es.net.ssl",ssl)
       .option("es.nodes", esURL)
+      .mode("overwrite")
       .save(index)
 
     extract.ElasticsearchExtract.extract(

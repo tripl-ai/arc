@@ -58,7 +58,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
   test("MetadataFilterTransform: end-to-end") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false)
+    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     // load csv
     val extractDataset = spark.read.csv(targetFile)
@@ -108,7 +108,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(_) => assert(false)
-      case Right((pipeline,_)) => ARC.run(pipeline)(spark, logger, arcContext)
+      case Right((pipeline, _, _)) => ARC.run(pipeline)(spark, logger, arcContext)
     }  
   }  
 

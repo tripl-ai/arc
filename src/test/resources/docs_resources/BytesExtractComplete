@@ -11,5 +11,6 @@
   "persist": false,
   "numPartitions": 10,
   "contiguousIndex": false,
-  "authentication": {}
+  "authentication": {},
+  "failMode": "permissive"
 }
