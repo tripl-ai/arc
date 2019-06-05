@@ -1,4 +1,4 @@
-baseurl = "https://aglenergy.github.io/arc/"
+baseurl = "https://tripl-ai.github.io/arc/"
 publishDir = "../docs"
 languageCode = "en-us"
 title = "Arc"
@@ -11,17 +11,17 @@ pygmentsUseClasses=true
 
 [params]
 	# General information
-	author = "au.com.agl.arc"
+	author = "ai.tripl.arc"
 	description = "Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable."
 	copyright = "Released under the MIT license"
 
 	# Repository
 	provider = "GitHub"
-	repo_url = "https://github.com/aglenergy/arc"
+	repo_url = "https://github.com/tripl-ai/arc"
 
-	image = "seddonm1/arc"
+	image = "triplai/arc"
 	version = "1.13.3"
-	arc_jupyter_image= "seddonm1/arc-jupyter"
+	arc_jupyter_image= "triplai/arc-jupyter"
 	arc_jupyter_version = "0.0.12"
 	spark_version = "2.4.3"
 	logo = "images/logo.png"

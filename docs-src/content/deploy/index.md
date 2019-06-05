@@ -17,7 +17,7 @@ docker run \
 -it -p 4040:4040 {{% docker_image %}} \
 bin/spark-submit \
 --master local[*] \
---class au.com.agl.arc.ARC \
+--class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///opt/tutorial/basic/job/0/basic.json
 ```
@@ -106,7 +106,7 @@ docker run \
 -it -p 4040:4040 {{% docker_image %}} \
 bin/spark-submit \
 --master local[*] \
---class au.com.agl.arc.ARC \
+--class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///opt/tutorial/streaming/job/0/streaming.json
 ```

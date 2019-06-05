@@ -343,7 +343,7 @@ bin/spark-submit \
 --master local[*] \
 --driver-memory=4G \
 --driver-java-options="-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
---class au.com.agl.arc.ARC \
+--class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///home/jovyan/tutorial/job/0/nyctaxi.json
 ```
