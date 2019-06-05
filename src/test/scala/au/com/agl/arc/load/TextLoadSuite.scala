@@ -82,38 +82,6 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     assert(TestDataUtils.datasetEquality(expected, actual))
   }  
 
-  test("TextLoad: numPartitions") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-    val dataset = TestDataUtils.getKnownDataset.select("stringDatum")
-    dataset.createOrReplaceTempView(outputView)
-    assert(dataset.select(spark_partition_id()).distinct.count === 1)      
-
-    load.TextLoad.load(
-      TextLoad(
-        name=outputView, 
-        description=None,
-        inputView=outputView, 
-        outputURI=new URI(targetFile), 
-        numPartitions=Option(1000),  
-        authentication=None, 
-        saveMode=SaveMode.Overwrite, 
-        params=Map.empty,
-        singleFile=false,
-        prefix="",
-        separator="",
-        suffix=""
-      )
-    )    
-
-    val actual = spark.read.text(targetFile)
-
-    // numPartitions = 1000 is large enough to avoid hash collisions but will force data to be on two rows
-    assert(actual.select(spark_partition_id()).distinct.count === 2)
-  }  
-
   test("TextLoad: singleFile") {
     implicit val spark = session
     import spark.implicits._
