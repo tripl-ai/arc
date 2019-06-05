@@ -1,4 +1,4 @@
-baseurl = "https://arc.tripl.ai"
+baseurl = "https://arc.tripl.ai/"
 publishDir = "../docs"
 languageCode = "en-us"
 title = "Arc"
