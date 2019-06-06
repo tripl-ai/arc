@@ -1,8 +1,14 @@
 Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.
 
+## Documentation
+
+Full documentation is available here: https://arc.tripl.ai
+
+## Index
+
 - [What is Arc?](#what-is-spark-etl-pipeline)
+- [Notebook](#what-is-spark-etl-pipeline)
 - [Principles](#principles)
-- [Documentation](#documentation)
 - [Not just for data engineers](#not-just-for-data-engineers)
 - [Why abstract from code?](#why-abstract-from-code)
 - [Why SQL first?](#why-sql-first)
@@ -19,6 +25,12 @@ Arc is an **opinionated** framework for defining **predictable**, **repeatable**
 - **repeatable** in that if a job is executed multiple times it will produce the same result.
 - **manageable** in that execution considerations and logging has been baked in from the start.
 
+## Notebook
+
+![Notebook](/docs-src/static/img/arc-starter.png)
+
+Arc has an interactive [Jupyter Notebook](https://jupyter.org/) extension to help with rapid development of jobs. This extension is available at [https://github.com/tripl-ai/arc-jupyter](https://github.com/tripl-ai/arc-jupyter).
+
 ## Principles
 
 Many of these principles have come from [12factor](https://12factor.net/):
@@ -27,10 +39,6 @@ Many of these principles have come from [12factor](https://12factor.net/):
 - **stateless** jobs where possible and use of [immutable](https://en.wikipedia.org/wiki/Immutable_object) datasets.
 - **precise logging** to allow management of jobs at scale.
 - **library dependencies** are to be limited or avoided where possible.
-
-## Documentation
-
-Full documentation is available here: https://tripl-ai.github.io/arc/
 
 ## Not just for data engineers
 
@@ -59,15 +67,13 @@ Currently the [HIVE](https://cwiki.apache.org/confluence/display/Hive/LanguageMa
 
 This is an example of a fairly standard pipeline:
 
-1. First load a set of CSV files from an input directory. Separator is a comma and the file does not have a header.
+1. First load a set of CSV files from an input directory. Separator is a comma and the file has a header.
 
 2. Convert the data to the correct datatypes using metadata defined in a separate JSON.
 
-3. Execute a SQL statement that will perform custom validation to ensure the data conversion in the previous step resulted in an acceptable data conversion error rate.
+3. Execute a SQL statement that will perform custom validation to ensure the data conversion in the previous step resulted in an acceptable data conversion error rate. If not successful the job will terminate.
 
-4. Calculate some aggregates using a SQL Transformation substituting the `${year}` variable with the value `2016`.
-
-5. Write out the aggreate resultset to a Parquet target.
+4. Write out the aggreate resultset to a Parquet target.
 
 ```json
 {
@@ -79,9 +85,8 @@ This is an example of a fairly standard pipeline:
         "production",
         "test"
       ],
-      "inputURI": "hdfs://datalake/input/green_tripdata/0/*.csv",
+      "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/0/*",
       "outputView": "green_tripdata0_raw",
-      "persist": false,
       "delimiter": "Comma",
       "quote": "DoubleQuote",
       "header": true
@@ -93,7 +98,7 @@ This is an example of a fairly standard pipeline:
         "production",
         "test"
       ],
-      "inputURI": "hdfs://datalake/metadata/green_tripdata.json",
+      "inputURI": ${ETL_CONF_BASE_URL}"/meta/green_tripdata/0/green_tripdata.json",
       "inputView": "green_tripdata0_raw",
       "outputView": "green_tripdata0",
       "persist": true
@@ -105,23 +110,9 @@ This is an example of a fairly standard pipeline:
         "production",
         "test"
       ],
-      "inputURI": "hdfs://datalake/sql/sqlvalidate_errors.sql",
+      "inputURI": ${ETL_CONF_BASE_URL}"/job/0/sqlvalidate_errors.sql",
       "sqlParams": {
         "table_name": "green_tripdata0"
-      }
-    },
-    {
-      "type": "SQLTransform",
-      "name": "merge *tripdata to create a full trips",
-      "environments": [
-        "production",
-        "test"
-      ],
-      "inputURI": "hdfs://datalake/sql/trips.sql",
-      "outputView": "trips",
-      "persist": true,
-      "sqlParams": {
-        "year": "2016"
       }
     },
     {
@@ -131,13 +122,10 @@ This is an example of a fairly standard pipeline:
         "production",
         "test"
       ],
-      "inputView": "trips",
-      "outputURI": ${ETL_CONF_BASE_URL}"/data/output/trips.parquet",
-      "numPartitions": 100,
-      "partitionBy": [
-        "vendor_id"
-      ]
-    }
+      "inputView": "green_tripdata0",
+      "outputURI": ${ETL_CONF_BASE_URL}"/data/output/green_tripdata0.parquet",
+      "saveMode": "Overwrite"
+    }    
   ]
 }
 ```
@@ -162,11 +150,10 @@ Example:
 sbt -DassemblyTarget=databricks assembly
 ```
 
-If you are having problems compiling it is likely due to environment setup. You can use these additional commands to build a predictable build environment with Docker which could also be used in a CICD pipeline:
+If you are having problems compiling it is likely due to environment setup. This command is executed in CICD and uses a predictable build environment pulled from Dockerhub:
 
 ```bash
-docker build . -t scala-sbt:latest -f BuildDockerfile 
-docker run --rm -v $(pwd):/sbt scala-sbt:latest sbt assembly
+docker run --rm -v $(pwd):/app -w /app mozilla/sbt:8u212_1.2.8 sbt assembly
 ```
 
 The compiled JAR is then copied into the Docker image in the `Dockerfile`.
@@ -192,7 +179,7 @@ docker-compose -f src/it/resources/docker-compose.yml down
 If you just want to get the JAR you can extract it from the Dockerfile like (replace `VERSION` with correct version) to the current directory:
 
 ```bash
-docker run -v $(pwd):/mnt seddonm1/arc:VERSION cp /opt/spark/jars/arc.jar /mnt
+docker run -v $(pwd):/mnt triplai/arc:VERSION cp /opt/spark/jars/arc.jar /mnt
 ```
 
 ### License Report
