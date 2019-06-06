@@ -14,10 +14,12 @@ pool:
 steps:
 # Download the pgp key from azure library secrets
 - task: DownloadSecureFile@1
+  displayName: 'Get secring.asc from Azure Secure Library'
   inputs:
     secureFile: "secring.asc"
 
 - task: DownloadSecureFile@1
+  displayName: 'Get pubring.asc from Azure Secure Library'
   inputs:
     secureFile: "pubring.asc"    
 
@@ -25,17 +27,19 @@ steps:
     docker pull mozilla/sbt:8u212_1.2.8
   displayName: 'Pull sbt image (mozilla/sbt:8u212_1.2.8) from Dockerhub'
 
-- script: |
-    docker run \
-    --rm \
-    -v $(pwd):/app \
-    -w /app \
-    mozilla/sbt:8u212_1.2.8 \
-    sbt test
-  displayName: 'Run sbt test'
+# - script: |
+#     docker run \
+#     --rm \
+#     -v $(pwd):/app \
+#     -w /app \
+#     mozilla/sbt:8u212_1.2.8 \
+#     sbt test
+#   displayName: 'Run sbt test'
 
 - script: |
-    mkdir -p /tmp/pgp && cp $env:DOWNLOADSECUREFILE1_SECUREFILEPATH /tmp/pgp && cp $env:DOWNLOADSECUREFILE2_SECUREFILEPATH /tmp/pgp
+    mkdir -p /tmp/pgp && \
+    cp $(DownloadSecureFile1.secureFilePath) /tmp/pgp && \
+    cp $(DownloadSecureFile2.secureFilePath) /tmp/pgp
   displayName: 'Move pgp keys'  
 
 - script: |
