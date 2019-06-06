@@ -17,7 +17,7 @@ steps:
   inputs:
     secureFile: "secring.asc"
 
-- task: DownloadSecureFile@2
+- task: DownloadSecureFile@1
   inputs:
     secureFile: "pubring.asc"    
 
