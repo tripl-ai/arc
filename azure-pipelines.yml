@@ -53,4 +53,4 @@ steps:
     -w /app \
     mozilla/sbt:8u212_1.2.8 \
     sbt publishSigned
-  displayName: 'Run sbt publishSigned'  
+  displayName: 'Run sbt publishSigned (push to https://oss.sonatype.org/content/groups/staging/)'
