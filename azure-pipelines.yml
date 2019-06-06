@@ -12,7 +12,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-# Download the pgp key from azure library secrets
+# Download the pgp keys from azure secure library
 - task: DownloadSecureFile@1
   displayName: 'Get secring.asc from Azure Secure Library'
   inputs:
