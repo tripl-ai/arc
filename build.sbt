@@ -17,7 +17,7 @@ lazy val root = (project in file(".")).
     buildInfoPackage := "ai.tripl.arc.ArcBuildInfo",
     Defaults.itSettings,
     publishTo := sonatypePublishTo.value,
-    pgpPassphrase := Some(sys.env.get("GPG_PASSPHRASE").getOrElse("").toCharArray),
+    pgpPassphrase := Some(sys.env.get("PGP_PASSPHRASE").getOrElse("").toCharArray),
     pgpSecretRing := file("/pgp/secring.asc"),
     pgpPublicRing := file("/pgp/pubring.asc"),
     updateOptions := updateOptions.value.withGigahorse(false)
