@@ -6,14 +6,21 @@ lazy val root = (project in file(".")).
   settings(
     name := "arc",
     organization := "ai.tripl",
+    organizationHomepage := Some(url("https://arc.tripl.ai")),
     scalaVersion := "2.11.12",
+    licenses := List("MIT" -> new URL("https://opensource.org/licenses/MIT")),
     scalastyleFailOnError := false,
     libraryDependencies ++= etlDeps,
     parallelExecution in Test := false,
     parallelExecution in IntegrationTest := false,
     buildInfoKeys := Seq[BuildInfoKey](version, scalaVersion),
     buildInfoPackage := "ai.tripl.arc.ArcBuildInfo",
-    Defaults.itSettings
+    Defaults.itSettings,
+    publishTo := sonatypePublishTo.value,
+    pgpPassphrase := Some(sys.env.get("GPG_PASSPHRASE").getOrElse("").toCharArray),
+    pgpSecretRing := file("/pgp/secring.asc"),
+    pgpPublicRing := file("/pgp/pubring.asc"),
+    updateOptions := updateOptions.value.withGigahorse(false)
   )
 
 fork in run := true  
@@ -45,3 +52,4 @@ assemblyMergeStrategy in assembly := {
     case x => MergeStrategy.first
    }
 }
+
