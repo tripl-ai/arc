@@ -5,7 +5,7 @@ function finish {
 }
 trap finish EXIT
 # start docker services
-docker-compose -f src/it/resources/docker-compose.yml up --build -d
+docker-compose -f src/it/resources/docker-compose.yml up --build -d && \
 # run the test
 docker run \
 --rm \
