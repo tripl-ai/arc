@@ -37,6 +37,10 @@ steps:
   displayName: 'Run sbt test'
 
 - script: |
+    ./it.sh
+  displayName: 'Start services and run sbt it:test'  
+
+- script: |
     mkdir -p /tmp/pgp && \
     cp $(DownloadSecureFile1.secureFilePath) /tmp/pgp && \
     cp $(DownloadSecureFile2.secureFilePath) /tmp/pgp

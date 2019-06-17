@@ -127,25 +127,4 @@ services:
     environment:
       MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
       MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-
-  arc:
-    image: triplai/arc:1.14.0
-    depends_on:
-      - zookeeper  
-      - kafka  
-      - kafka-rest
-      - kafka-schema-registry
-      - tensorflow_serving
-      - sqlserver
-      - postgres
-      - flask_serving
-      - elasticsearch
-      - minio
-    networks:
-      - arc-integration    
-    ports:
-      - 4040:4040   
-    command: "bin/spark-submit --master local[*] --driver-memory=2G --class ai.tripl.arc.ARC /opt/spark/jars/arc.jar"
-    environment:
-      ETL_CONF_ENV: test
-      ETL_CONF_URI: file:///opt/tutorial/it/job/0/job.json
+      

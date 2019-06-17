@@ -25,7 +25,7 @@ class KafkaCommitExecuteSuite extends FunSuite with BeforeAndAfter {
   val inputView1 = "inputView1"
   val outputView = "outputView"
   val bootstrapServers = "localhost:29092"
-  val timeout = 1000L
+  val timeout = 3000L
 
   before {
     implicit val spark = SparkSession
