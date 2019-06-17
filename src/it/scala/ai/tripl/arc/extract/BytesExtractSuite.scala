@@ -25,7 +25,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
 
   val outputView = "outputView"
   val dogImage = getClass.getResource("/flask_serving/dog.jpg").toString
-  val uri = s"http://localhost:5000/predict"
+  val uri = s"http://flask_serving:5000/predict"
 
   before {
     implicit val spark = SparkSession

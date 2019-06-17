@@ -27,8 +27,8 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _  
 
-  val sqlserverurl = "jdbc:sqlserver://localhost:1433"
-  val postgresurl = "jdbc:postgresql://localhost:5432/"
+  val sqlserverurl = "jdbc:sqlserver://sqlserver:1433"
+  val postgresurl = "jdbc:postgresql://postgres:5432/"
   val sqlserver_db = "hyphen-database"
   val sqlserver_schema = "dbo"
   val sqlserver_table = "hyphen-table"

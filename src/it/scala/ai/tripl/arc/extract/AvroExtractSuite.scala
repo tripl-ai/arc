@@ -137,7 +137,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     
     // POST the schema to kafka so we know it is there as ID=1
     val httpClient = HttpClients.createDefault
-    val httpPost = new HttpPost("http://localhost:8081/subjects/Kafka-value/versions");
+    val httpPost = new HttpPost("http://kafka:8081/subjects/Kafka-value/versions");
     httpPost.setEntity(new StringEntity(s"""{"schema": "${StringEscapeUtils.escapeJavaScript(schema.toString)}"}"""));
     httpPost.addHeader("Content-Type", "application/vnd.schemaregistry.v1+json") 
     val response = httpClient.execute(httpPost)
@@ -169,7 +169,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
           "outputView": "avro_extract_output",
           "persist": false,
           "inputField": "value",
-          "avroSchemaURI": "http://localhost:8081/schemas/ids/1"
+          "avroSchemaURI": "http://kafka-schema-registry:8081/schemas/ids/1"
         }        
       ]
     }"""
