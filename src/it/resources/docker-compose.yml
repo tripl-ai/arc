@@ -129,7 +129,7 @@ services:
       MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 
   arc:
-    image: seddonm1/arc:1.13.3
+    image: triplai/arc:1.14.0
     depends_on:
       - zookeeper  
       - kafka  
