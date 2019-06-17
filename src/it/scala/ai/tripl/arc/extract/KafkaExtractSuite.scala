@@ -25,7 +25,7 @@ class KafkaExtractSuite extends FunSuite with BeforeAndAfter {
   val inputView = "inputView"
   val outputView = "outputView"
   val bootstrapServers = "kafka:29092"
-  val timeout = 1000L
+  val timeout = 2000L
   val checkPointPath = "/tmp/checkpoint"
 
   before {

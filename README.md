@@ -177,9 +177,7 @@ sbt test
 To run integration tests (which have external service depenencies):
 
 ```bash
-docker-compose -f src/it/resources/docker-compose.yml up --build -d
-sbt it:test
-docker-compose -f src/it/resources/docker-compose.yml down
+./it.sh
 ```
 
 ### License Report

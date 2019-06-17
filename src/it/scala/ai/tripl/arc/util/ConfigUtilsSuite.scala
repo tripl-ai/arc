@@ -1,6 +1,7 @@
 package ai.tripl.arc
 
 import java.net.URI
+import java.net.InetAddress
 
 import scala.io.Source
 import scala.collection.JavaConverters._
@@ -26,7 +27,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   val outputView = "akita"
   val bucketName = "test"
 
-  val minioHostPort = "http://127.0.0.1:9400"
+  // minio seems to need ip address not hostname
+  val minioIPPort = s"http://${InetAddress.getByName("minio").getHostAddress}:9000"
   val minioAccessKey = "AKIAIOSFODNN7EXAMPLE"
   val minioSecretKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 
@@ -54,7 +56,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
     // point to local minio s3 rather than actual s3
-    spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", minioHostPort)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", minioIPPort)
 
     // note: initial files are created in the src/it/resources/minio/Dockerfile
     // then mounted in the minio command in src/it/resources/docker-compose.yml
@@ -73,7 +75,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
             "method": "AmazonAccessKey",
             "accessKeyID": "${minioAccessKey}",
             "secretAccessKey": "${minioSecretKey}"
-          }                 
+          },                 
           "outputView": "akc_breed_info",
           "delimiter": "Comma",
           "header": true          

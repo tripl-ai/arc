@@ -13,4 +13,6 @@ RUN apt-get update && \
 # copy in flask script
 COPY run.py .
 
+EXPOSE 5000
+
 ENTRYPOINT [ "python", "run.py" ]
