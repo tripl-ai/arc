@@ -161,7 +161,6 @@ docker run --rm -v $(pwd):/app -w /app mozilla/sbt:8u212_1.2.8 sbt assembly
 To build the docker image:
 
 ```bash
-sbt assembly
 export ARC_VERSION=$(awk -F'"' '$0=$2' version.sbt)
 docker build . --build-arg ARC_VERSION=${ARC_VERSION} -t triplai/arc:${ARC_VERSION}
 ```

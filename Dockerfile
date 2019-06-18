@@ -63,18 +63,31 @@ RUN mkdir -p ${SPARK_HOME} && \
   gunzip -c spark.tar.gz | tar -xf - -C $SPARK_HOME --strip-components=1 && \
   rm -f spark.tar.gz
 
-# copy in tutorial
-COPY tutorial /opt/tutorial
+# download etl library and dependencies
+RUN cd /tmp && \
+  wget -P /tmp https://git.io/coursier-cli && \
+  chmod +x /tmp/coursier-cli && \
+  /tmp/coursier-cli fetch \
+  --force-version com.fasterxml.jackson.core:jackson-databind:2.6.7.1 \
+  --force-version org.json4s:json4s-ast_${SCALA_VERSION}:3.5.3 \
+  --force-version org.json4s:json4s-core_${SCALA_VERSION}:3.5.3 \
+  --force-version org.json4s:json4s-jackson_${SCALA_VERSION}:3.5.3 \
+  --force-version org.json4s:json4s-scalap_${SCALA_VERSION}:3.5.3 \
+  --force-version org.json4s:json4s-scalap_${SCALA_VERSION}:3.5.3 \
+  --force-version org.slf4j:slf4j-log4j12:1.7.16 \
+  ai.tripl:arc_${SCALA_VERSION}:${ARC_VERSION} && \
+  find /root/.cache/coursier -name "*.jar" -print0 | xargs -0 -I {} mv {} ${SPARK_JARS}
 
-RUN chmod +x /opt/tutorial/nyctaxi/download_raw_data_small.sh
-RUN chmod +x /opt/tutorial/nyctaxi/download_raw_data_large.sh
+# symlink the library for easy invocation
+RUN ln -s ${SPARK_JARS}/arc_${SCALA_VERSION}-${ARC_VERSION}.jar ${SPARK_JARS}/arc.jar
 
 # copy in log4j.properties config file
 COPY log4j.properties ${SPARK_HOME}/conf/log4j.properties
 
-# copy in etl library
-COPY target/scala-2.11/arc-assembly-${ARC_VERSION}.jar ${SPARK_HOME}/jars
-RUN ln -s ${SPARK_HOME}/jars/arc-assembly-${ARC_VERSION}.jar ${SPARK_JARS}/arc.jar
+# copy in tutorial
+COPY tutorial /opt/tutorial
+RUN chmod +x /opt/tutorial/nyctaxi/download_raw_data_small.sh
+RUN chmod +x /opt/tutorial/nyctaxi/download_raw_data_large.sh
 
 WORKDIR $SPARK_HOME
 # EOF
