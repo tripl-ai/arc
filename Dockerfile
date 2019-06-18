@@ -74,7 +74,9 @@ RUN cd /tmp && \
   --force-version org.json4s:json4s-jackson_${SCALA_VERSION}:3.5.3 \
   --force-version org.json4s:json4s-scalap_${SCALA_VERSION}:3.5.3 \
   --force-version org.json4s:json4s-scalap_${SCALA_VERSION}:3.5.3 \
+  --force-version com.google.guava:guava:14.0.1 \
   --force-version org.slf4j:slf4j-log4j12:1.7.16 \
+  --exclude org.slf4j:slf4j-nop \
   ai.tripl:arc_${SCALA_VERSION}:${ARC_VERSION} && \
   find /root/.cache/coursier -name "*.jar" -print0 | xargs -0 -I {} mv {} ${SPARK_JARS}
 
