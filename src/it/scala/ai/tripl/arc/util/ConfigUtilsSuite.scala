@@ -28,7 +28,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   val bucketName = "test"
 
   // minio seems to need ip address not hostname
-  val minioIPPort = s"http://${InetAddress.getByName("minio").getHostAddress}:9000"
+  val minioHostPort = "http://minio:9000"
   val minioAccessKey = "AKIAIOSFODNN7EXAMPLE"
   val minioSecretKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 
@@ -55,9 +55,6 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
-    // point to local minio s3 rather than actual s3
-    spark.sparkContext.hadoopConfiguration.set("fs.s3a.endpoint", minioIPPort)
-
     // note: initial files are created in the src/it/resources/minio/Dockerfile
     // then mounted in the minio command in src/it/resources/docker-compose.yml
 
@@ -74,7 +71,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
           "authentication": {
             "method": "AmazonAccessKey",
             "accessKeyID": "${minioAccessKey}",
-            "secretAccessKey": "${minioSecretKey}"
+            "secretAccessKey": "${minioSecretKey}",
+            "endpoint": "${minioHostPort}"
           },                 
           "outputView": "akc_breed_info",
           "delimiter": "Comma",
@@ -95,7 +93,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
           "authentication": {
             "method": "AmazonAccessKey",
             "accessKeyID": "${minioAccessKey}",
-            "secretAccessKey": "${minioSecretKey}"
+            "secretAccessKey": "${minioSecretKey}",
+            "endpoint": "${minioHostPort}"
           }          
         }
       ]

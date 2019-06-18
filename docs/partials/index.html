@@ -537,6 +537,20 @@
 </tr>
 
 <tr>
+<td>endpoint</td>
+<td>String</td>
+<td>false</td>
+<td>Used for setting S3 endpoint for services like <code>Ceph Object Store</code> or <code>Minio</code>. Optional for <code>AmazonAccessKey</code>.</td>
+</tr>
+
+<tr>
+<td>sslEnabled</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Used to set whether to use SSL. Optional for <code>AmazonAccessKey</code>.</td>
+</tr>
+
+<tr>
 <td>projectID</td>
 <td>String</td>
 <td>false*</td>
@@ -586,6 +600,7 @@
         &quot;method&quot;: &quot;AmazonAccessKey&quot;,
         &quot;accessKeyID&quot;: &quot;AKIAIOSFODNN7EXAMPLE&quot;,
         &quot;secretAccessKey&quot;: &quot;wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY&quot;,
+        &quot;endpoint&quot;: &quot;http://minio:9000&quot;
     }
     ...
 }

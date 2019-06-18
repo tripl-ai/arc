@@ -1,6 +1,7 @@
 package ai.tripl.arc.util
 
 import java.net.URI
+import java.net.InetAddress
 import java.sql.DriverManager
 import java.util.ServiceLoader
 import java.util.{Map => JMap}
@@ -122,19 +123,11 @@ object ConfigUtils {
       }    
       // amazon s3
       case "s3a" => {
-        val s3aEndpoint: Option[String] = argsMap.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
-        val s3aConnectionSSLEnabled: Option[String] = argsMap.get("etl.config.fs.s3a.connection.ssl.enabled").orElse(envOrNone("ETL_CONF_S3A_CONNECTION_SSL_ENABLED"))
         val s3aAccessKey: Option[String] = argsMap.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY"))
         val s3aSecretKey: Option[String] = argsMap.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY"))
+        val s3aEndpoint: Option[String] = argsMap.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
+        val s3aConnectionSSLEnabled: Option[String] = argsMap.get("etl.config.fs.s3a.connection.ssl.enabled").orElse(envOrNone("ETL_CONF_S3A_CONNECTION_SSL_ENABLED"))        
 
-        val endpoint = s3aEndpoint match {
-          case Some(value) => value
-          case None => throw new IllegalArgumentException(s"AWS Endpoint not provided to for: ${uri}. Set etl.config.fs.s3a.endpoint property or ETL_CONF_S3A_ENDPOINT environment variable.")
-        }
-        val connectionSSLEnabled = s3aConnectionSSLEnabled match {
-          case Some(value) => value
-          case None => throw new IllegalArgumentException(s"AWS Connection SSL Enabled not provided for: ${uri}. Set etl.config.fs.s3a.connection.ssl.enabled property or ETL_CONF_S3A_CONNECTION_SSL_ENABLED environment variable.")
-        }
         val accessKey = s3aAccessKey match {
           case Some(value) => value
           case None => throw new IllegalArgumentException(s"AWS Access Key not provided for: ${uri}. Set etl.config.fs.s3a.access.key property or ETL_CONF_S3A_ACCESS_KEY environment variable.")
@@ -143,10 +136,18 @@ object ConfigUtils {
           case Some(value) => value
           case None => throw new IllegalArgumentException(s"AWS Secret Key not provided for: ${uri}. Set etl.config.fs.s3a.secret.key property or ETL_CONF_S3A_SECRET_KEY environment variable.")
         }
+        val connectionSSLEnabled = s3aConnectionSSLEnabled match {
+          case Some(value) => {
+            try {
+              Option(value.toBoolean)
+            } catch {
+              case e: Exception => throw new IllegalArgumentException(s"AWS SSL configuration incorrect for: ${uri}. Ensure etl.config.fs.s3a.connection.ssl.enabled or ETL_CONF_S3A_CONNECTION_SSL_ENABLED environment variables are boolean.")
+            }
+          }
+          case None => None
+        }        
 
-        val config = Map("fs_s3a_endpoint" -> endpoint, "fs_s3a_connection_ssl_enabled" -> connectionSSLEnabled, "fs_s3a_access_key" -> accessKey, "fs_s3a_secret_key" -> secretKey)
-
-        CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(accessKey, secretKey)))
+        CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(accessKey, secretKey, s3aEndpoint, connectionSSLEnabled)))
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
@@ -416,7 +417,27 @@ object ConfigUtils {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AmazonAccessKey' requires 'secretAccessKey' parameter.")
               }       
-              Right(Some(Authentication.AmazonAccessKey(accessKeyID, secretAccessKey)))
+              val endpoint = authentication.get("endpoint") match {
+                case Some(v) => {
+                  // try to resolve URI
+                  val uri = new URI(v)
+                  val inetAddress = InetAddress.getByName(uri.getHost)
+                  val replacedURI = new URI(uri.getScheme, uri.getUserInfo, inetAddress.getHostAddress, uri.getPort, uri.getPath, uri.getQuery, uri.getFragment)
+                  Option(replacedURI.toString)
+                }
+                case None => None
+              }
+              val sslEnabled = authentication.get("sslEnabled") match {
+                case Some(v) => {
+                  try {
+                    Option(v.toBoolean)
+                  } catch {
+                    case e: Exception => throw new IllegalArgumentException(s"Authentication method 'AmazonAccessKey' expects 'sslEnabled' parameter to be boolean.")
+                  }
+                }                
+                case None => None
+              }          
+              Right(Some(Authentication.AmazonAccessKey(accessKeyID, secretAccessKey, endpoint, sslEnabled)))
             }
             case Some("GoogleCloudStorageKeyFile") => {
               val projectID = authentication.get("projectID") match {

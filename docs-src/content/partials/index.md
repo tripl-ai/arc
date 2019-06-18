@@ -27,6 +27,8 @@ The `Authentication` map defines the authentication parameters for connecting to
 |directoryID|String|false*|Required for `AzureDataLakeStorageGen2OAuth`.|
 |accessKeyID|String|false*|Required for `AmazonAccessKey`.|
 |secretAccessKey|String|false*|Required for `AmazonAccessKey`.|
+|endpoint|String|false|Used for setting S3 endpoint for services like `Ceph Object Store` or `Minio`. Optional for `AmazonAccessKey`.|
+|sslEnabled|Boolean|false|Used to set whether to use SSL. Optional for `AmazonAccessKey`.|
 |projectID|String|false*|Required for `GoogleCloudStorageKeyFile`.|
 |keyFilePath|String|false*|Required for `GoogleCloudStorageKeyFile`.|
 
@@ -67,6 +69,7 @@ The `Authentication` map defines the authentication parameters for connecting to
         "method": "AmazonAccessKey",
         "accessKeyID": "AKIAIOSFODNN7EXAMPLE",
         "secretAccessKey": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+        "endpoint": "http://minio:9000"
     }
     ...
 }
