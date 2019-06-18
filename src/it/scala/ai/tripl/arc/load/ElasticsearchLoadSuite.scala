@@ -30,7 +30,7 @@ class ElasticsearchLoadSuite extends FunSuite with BeforeAndAfter {
   val testData = getClass.getResource("/akc_breed_info.csv").toString
   val inputView = "expected"
   val index = "dogs"
-  val esURL = "localhost"
+  val esURL = "elasticsearch"
   val port = "9200"
   val wanOnly = "true"
   val ssl = "false"

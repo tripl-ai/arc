@@ -136,10 +136,10 @@ A full worked example job is available [here](https://github.com/tripl-ai/arc/tr
 
 ### Library
 
-To compile the main library (which will produce `target/scala-2.11/arc.jar`) in  run:
+To compile the main library run:
 
 ```bash
-sbt assembly
+sbt package
 ```
 
 To build a library to use with a [Databricks Runtime](https://databricks.com/product/databricks-runtime) environment it is easiest to `assembly` Arc with all the dependencies into a single JAR to simplify the deployment.
@@ -147,7 +147,7 @@ To build a library to use with a [Databricks Runtime](https://databricks.com/pro
 Example:
 
 ```bash
-sbt -DassemblyTarget=databricks assembly
+sbt assembly
 ```
 
 If you are having problems compiling it is likely due to environment setup. This command is executed in CICD and uses a predictable build environment pulled from Dockerhub:
@@ -156,7 +156,15 @@ If you are having problems compiling it is likely due to environment setup. This
 docker run --rm -v $(pwd):/app -w /app mozilla/sbt:8u212_1.2.8 sbt assembly
 ```
 
-The compiled JAR is then copied into the Docker image in the `Dockerfile`.
+### Dockerfile
+
+To build the docker image:
+
+```bash
+sbt assembly
+export ARC_VERSION=$(awk -F'"' '$0=$2' version.sbt)
+docker build . --build-arg ARC_VERSION=${ARC_VERSION} -t triplai/arc:${ARC_VERSION}
+```
 
 ### Tests
 
@@ -169,17 +177,7 @@ sbt test
 To run integration tests (which have external service depenencies):
 
 ```bash
-docker-compose -f src/it/resources/docker-compose.yml up --build -d
-sbt it:test
-docker-compose -f src/it/resources/docker-compose.yml down
-```
-
-### JAR
-
-If you just want to get the JAR you can extract it from the Dockerfile like (replace `VERSION` with correct version) to the current directory:
-
-```bash
-docker run -v $(pwd):/mnt triplai/arc:VERSION cp /opt/spark/jars/arc.jar /mnt
+./it.sh
 ```
 
 ### License Report
@@ -187,7 +185,7 @@ docker run -v $(pwd):/mnt triplai/arc:VERSION cp /opt/spark/jars/arc.jar /mnt
 To rebuild the license report run:
 
 ```bash
-sbt -DassemblyTarget=databricks dumpLicenseReport
+sbt dumpLicenseReport
 ```
 
 ### Documentation

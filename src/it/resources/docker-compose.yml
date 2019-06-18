@@ -14,8 +14,6 @@ services:
     image: confluentinc/cp-zookeeper:5.0.2
     networks:
       - arc-integration
-    ports: 
-        - 32181:32181
     environment:
       ZOOKEEPER_CLIENT_PORT: 32181
       ZOOKEEPER_TICK_TIME: 2000
@@ -24,15 +22,13 @@ services:
     image: confluentinc/cp-kafka:5.0.2
     networks:
       - arc-integration
-    ports:
-        - 29092:29092
     depends_on:
       - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
-      KAFKA_LISTENERS: CLIENT://0.0.0.0:29092,PLAINTEXT://kafka:29093
-      KAFKA_ADVERTISED_LISTENERS: CLIENT://localhost:29092,PLAINTEXT://kafka:29093
+      KAFKA_LISTENERS: CLIENT://kafka:29092,PLAINTEXT://kafka:29093
+      KAFKA_ADVERTISED_LISTENERS: CLIENT://kafka:29092,PLAINTEXT://kafka:29093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLIENT:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -42,8 +38,6 @@ services:
     image: confluentinc/cp-kafka-rest:5.0.2
     networks:
       - arc-integration
-    ports:
-      - 8082:8082
     depends_on:
       - zookeeper
       - kafka
@@ -57,8 +51,6 @@ services:
     image: confluentinc/cp-schema-registry:5.0.2
     networks:
       - arc-integration
-    ports:
-      - 8081:8081
     depends_on:
       - zookeeper
       - kafka
@@ -71,16 +63,11 @@ services:
     networks:
       - arc-integration    
     build: tensorflow_serving/.
-    ports:
-      - 9000:9000
-      - 9001:9001
 
   sqlserver:
     image: microsoft/mssql-server-linux:2017-CU9
     networks:
       - arc-integration    
-    ports:
-      - 1433:1433
     environment:
       ACCEPT_EULA: Y
       SA_PASSWORD: "SecretPass!2018"
@@ -91,8 +78,6 @@ services:
     networks:
       - arc-integration    
     build: postgres/.
-    ports:
-      - 5432:5432
     environment:
       POSTGRES_USER: sa
       POSTGRES_PASSWORD: "SecretPass!2018"
@@ -102,16 +87,11 @@ services:
     networks:
       - arc-integration    
     build: flask_serving/.
-    ports:
-      - 5000:5000
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.0.1
     networks:
       - arc-integration
-    ports:
-      - 9200:9200
-      - 9300:9300
     environment:
       discovery.type: single-node
       network.host: 0.0.0.0
@@ -121,31 +101,7 @@ services:
     build: minio/.
     networks:
       - arc-integration    
-    ports:
-      - 9400:9000     
     command: server /it
     environment:
       MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
       MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-
-  arc:
-    image: seddonm1/arc:1.13.3
-    depends_on:
-      - zookeeper  
-      - kafka  
-      - kafka-rest
-      - kafka-schema-registry
-      - tensorflow_serving
-      - sqlserver
-      - postgres
-      - flask_serving
-      - elasticsearch
-      - minio
-    networks:
-      - arc-integration    
-    ports:
-      - 4040:4040   
-    command: "bin/spark-submit --master local[*] --driver-memory=2G --class ai.tripl.arc.ARC /opt/spark/jars/arc.jar"
-    environment:
-      ETL_CONF_ENV: test
-      ETL_CONF_URI: file:///opt/tutorial/it/job/0/job.json

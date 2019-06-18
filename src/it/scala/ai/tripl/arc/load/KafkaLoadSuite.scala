@@ -28,8 +28,8 @@ class KafkaLoadSuite extends FunSuite with BeforeAndAfter {
   var session: SparkSession = _  
   val inputView = "inputView"
   val outputView = "outputView"
-  val bootstrapServers = "localhost:29092"
-  val timeout = 1000L
+  val bootstrapServers = "kafka:29092"
+  val timeout = 2000L
   val checkPointPath = "/tmp/checkpoint"
 
   before {

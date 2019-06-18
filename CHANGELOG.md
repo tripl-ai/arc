@@ -1,7 +1,14 @@
 ## Change Log
 
+# 1.14.0
+
+- changed all dependencies to `intransitive()`. All tests pass however this may cause issues. Please raise issue if found.
+- removed reliance on `/lib` libraries.
+- added `endpoint` and `sslEnabled` variables to `AmazonAccessKey` authentication options to help connect to `Minio` or `Ceph Object Store`.
+
 # 1.13.3
 
+- Arc now available on Maven.
 - added configuration flag `ETL_CONF_DISABLE_DEPENDENCY_VALIDATION` and `etl.config.disableDependencyValidation` to disable config dependency graph validation in case of dependency resolution defects.
 
 # 1.13.2

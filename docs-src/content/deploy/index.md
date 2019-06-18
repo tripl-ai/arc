@@ -72,10 +72,10 @@ Additionally there are permissions arguments that can be used to retrieve the jo
 
 | Variable | Property | Description |
 |----------|----------|-------------|
-|ETL_CONF_S3A_ENDPOINT|etl.config.fs.s3a.endpoint|The endpoint for connecting to Amazon S3.|
-|ETL_CONF_S3A_CONNECTION_SSL_ENABLED|etl.config.fs.s3a.connection.ssl.enabled|Whether to enable SSL connection to Amazon S3.|
 |ETL_CONF_S3A_ACCESS_KEY|etl.config.fs.s3a.access.key|The access key for connecting to Amazon S3.|
 |ETL_CONF_S3A_SECRET_KEY|etl.config.fs.s3a.secret.key|The secret for connecting to Amazon S3.|
+|ETL_CONF_S3A_ENDPOINT|etl.config.fs.s3a.endpoint|The endpoint for connecting to Amazon S3.|
+|ETL_CONF_S3A_CONNECTION_SSL_ENABLED|etl.config.fs.s3a.connection.ssl.enabled|Whether to enable SSL connection to Amazon S3.|
 |ETL_CONF_AZURE_ACCOUNT_NAME|etl.config.fs.azure.account.name|The account name for connecting to Azure Blob Storage.|
 |ETL_CONF_AZURE_ACCOUNT_KEY|etl.config.fs.azure.account.key|The account key for connecting to Azure Blob Storage.|
 |ETL_CONF_ADL_OAUTH2_CLIENT_ID|etl.config.fs.adl.oauth2.client.id|The OAuth client identifier for connecting to Azure Data Lake.|

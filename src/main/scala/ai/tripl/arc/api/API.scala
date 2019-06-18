@@ -354,7 +354,7 @@ object API {
 
   sealed trait Authentication
   object Authentication {
-    case class AmazonAccessKey(accessKeyID: String, secretAccessKey: String) extends Authentication
+    case class AmazonAccessKey(accessKeyID: String, secretAccessKey: String, endpoint: Option[String], ssl: Option[Boolean]) extends Authentication
     case class AzureSharedKey(accountName: String, signature: String) extends Authentication
     case class AzureSharedAccessSignature(accountName: String, container: String, token: String) extends Authentication
     case class AzureDataLakeStorageToken(clientID: String, refreshToken: String) extends Authentication

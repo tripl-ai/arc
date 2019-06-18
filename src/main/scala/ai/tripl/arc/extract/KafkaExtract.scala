@@ -110,7 +110,7 @@ object KafkaExtract {
           val topicPartition = new TopicPartition(extract.topic, partitionId)
 
           def getKafkaRecord(): List[KafkaRecord] = {
-            kafkaConsumer.poll(extract.timeout).records(extract.topic).asScala.map(consumerRecord => {
+            kafkaConsumer.poll(java.time.Duration.ofMillis(extract.timeout)).records(extract.topic).asScala.map(consumerRecord => {
               KafkaRecord(consumerRecord.topic, consumerRecord.partition, consumerRecord.offset, consumerRecord.timestamp, consumerRecord.key, consumerRecord.value)
             }).toList
           }

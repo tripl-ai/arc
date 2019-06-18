@@ -22,7 +22,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
   var session: SparkSession = _  
   var connection: java.sql.Connection = _
 
-  val sqlserverurl = "jdbc:sqlserver://localhost:1433"
+  val sqlserverurl = "jdbc:sqlserver://sqlserver:1433"
   val dbtable = "sys_views"
   val outputView = "dataset"
   var testURI = FileUtils.getTempDirectoryPath()

@@ -27,7 +27,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   var session: SparkSession = _  
   val inputView = "inputView"
   val outputView = "outputView"
-  val uri = s"http://localhost:9001/v1/models/simple/versions/1:predict"
+  val uri = s"http://tensorflow_serving:9001/v1/models/simple/versions/1:predict"
   var logger: ai.tripl.arc.util.log.logger.Logger = _
 
   before {

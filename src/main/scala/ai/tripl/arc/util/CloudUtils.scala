@@ -22,9 +22,19 @@ object CloudUtils {
     import spark.sparkContext.{hadoopConfiguration => hc}
 
     authentication match {
-      case Some(API.Authentication.AmazonAccessKey(accessKeyID, secretAccessKey)) => {
+      case Some(API.Authentication.AmazonAccessKey(accessKeyID, secretAccessKey, endpoint, ssl)) => {
         hc.set("fs.s3a.access.key", accessKeyID)
         hc.set("fs.s3a.secret.key", secretAccessKey)        
+
+        endpoint match {
+          case Some(ep) => hc.set("fs.s3a.endpoint", ep)     
+          case None => 
+        }
+
+        ssl match {
+          case Some(s) => hc.set("fs.s3a.connection.ssl.enabled", s.toString)     
+          case None => 
+        }        
 
         logger.debug()
           .message("hadoopConfiguration.set()")

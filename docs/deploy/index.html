@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.13.3</span></strong>
+          <span class="version">1.14.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -430,7 +430,7 @@
 <pre><code class="language-json">docker run \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&quot; \
--it -p 4040:4040 triplai/arc:1.13.3 \
+-it -p 4040:4040 triplai/arc:1.14.0 \
 bin/spark-submit \
 --master local[*] \
 --class ai.tripl.arc.ARC \
@@ -546,18 +546,6 @@ bin/spark-submit \
 
 <tbody>
 <tr>
-<td>ETL_CONF_S3A_ENDPOINT</td>
-<td>etl.config.fs.s3a.endpoint</td>
-<td>The endpoint for connecting to Amazon S3.</td>
-</tr>
-
-<tr>
-<td>ETL_CONF_S3A_CONNECTION_SSL_ENABLED</td>
-<td>etl.config.fs.s3a.connection.ssl.enabled</td>
-<td>Whether to enable SSL connection to Amazon S3.</td>
-</tr>
-
-<tr>
 <td>ETL_CONF_S3A_ACCESS_KEY</td>
 <td>etl.config.fs.s3a.access.key</td>
 <td>The access key for connecting to Amazon S3.</td>
@@ -567,6 +555,18 @@ bin/spark-submit \
 <td>ETL_CONF_S3A_SECRET_KEY</td>
 <td>etl.config.fs.s3a.secret.key</td>
 <td>The secret for connecting to Amazon S3.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_S3A_ENDPOINT</td>
+<td>etl.config.fs.s3a.endpoint</td>
+<td>The endpoint for connecting to Amazon S3.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_S3A_CONNECTION_SSL_ENABLED</td>
+<td>etl.config.fs.s3a.connection.ssl.enabled</td>
+<td>Whether to enable SSL connection to Amazon S3.</td>
 </tr>
 
 <tr>
@@ -625,7 +625,7 @@ bin/spark-submit \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_STREAMING=true&quot; \
 -e &quot;ETL_CONF_ROWS_PER_SECOND=10&quot; \
--it -p 4040:4040 triplai/arc:1.13.3 \
+-it -p 4040:4040 triplai/arc:1.14.0 \
 bin/spark-submit \
 --master local[*] \
 --class ai.tripl.arc.ARC \

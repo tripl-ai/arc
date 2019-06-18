@@ -31,7 +31,8 @@ RUN set -x \
   openjdk8="$JAVA_ALPINE_VERSION" \
   && [ "$JAVA_HOME" = "$(docker-java-home)" ]
 
-# Spark Verison
+# Versions
+ARG ARC_VERSION
 ENV SPARK_VERSION         2.4.3
 ENV SCALA_VERSION         2.11
 ENV HADOOP_VERSION        2.7
@@ -62,52 +63,6 @@ RUN mkdir -p ${SPARK_HOME} && \
   gunzip -c spark.tar.gz | tar -xf - -C $SPARK_HOME --strip-components=1 && \
   rm -f spark.tar.gz
 
-# spark extensions
-RUN wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/databricks/spark-xml_2.11/0.5.0/spark-xml_2.11-0.5.0.jar && \    
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/spark/spark-avro_2.11/${SPARK_VERSION}/spark-avro_2.11-${SPARK_VERSION}.jar && \
-  # aws hadoop
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-aws/2.7.7/hadoop-aws-2.7.7.jar && \
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/amazonaws/aws-java-sdk/1.11.519/aws-java-sdk-1.11.519.jar && \
-  # azure hadoop
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/hadoop/hadoop-azure/2.7.4/hadoop-azure-2.7.4.jar && \
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-storage/3.1.0/azure-storage-3.1.0.jar && \   
-  # azure datalake store 
-  wget -P ${SPARK_JARS} http://repo.hortonworks.com/content/repositories/releases/org/apache/hadoop/hadoop-azure-datalake/2.7.3.2.6.5.3000-28/hadoop-azure-datalake-2.7.3.2.6.5.3000-28.jar && \
-  wget -P ${SPARK_JARS} http://central.maven.org/maven2/com/microsoft/azure/azure-data-lake-store-sdk/2.3.1/azure-data-lake-store-sdk-2.3.1.jar && \
-  # kafka
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/kafka/kafka_2.11/1.1.0/kafka_2.11-1.1.0.jar && \   
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/kafka/kafka-clients/1.1.0/kafka-clients-1.1.0.jar && \   
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.11/2.3.1/spark-sql-kafka-0-10_2.11-2.3.1.jar && \
-  # azure eventhub
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-eventhubs/1.2.0/azure-eventhubs-1.2.0.jar && \       
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/apache/qpid/proton-j/0.29.0/proton-j-0.29.0.jar && \   
-  # databases
-  wget -P ${SPARK_JARS} https://repository.mulesoft.org/nexus/content/repositories/public/com/amazon/redshift/redshift-jdbc4/1.2.10.1009/redshift-jdbc4-1.2.10.1009.jar && \
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/sqlserver/mssql-jdbc/7.2.1.jre8/mssql-jdbc-7.2.1.jre8.jar && \
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-sqldb-spark/1.0.2/azure-sqldb-spark-1.0.2.jar && \
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-cosmosdb-spark_2.4.0_2.11/1.3.5/azure-cosmosdb-spark_2.4.0_2.11-1.3.5.jar && \
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/azure-documentdb/2.4.0/azure-documentdb-2.4.0.jar && \
-  wget -P ${SPARK_JARS} https://jdbc.postgresql.org/download/postgresql-42.2.5.jar && \  
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/datastax/spark/spark-cassandra-connector_2.11/2.0.5/spark-cassandra-connector_2.11-2.0.5.jar && \
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/mysql/mysql-connector-java/5.1.45/mysql-connector-java-5.1.45.jar && \ 
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/facebook/presto/presto-jdbc/0.209/presto-jdbc-0.209.jar && \
-  # BigQueryJDBC uses difficult distribution mechanism
-  wget -P /tmp https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.1.6.1006.zip && \   
-  unzip -d ${SPARK_JARS} /tmp/SimbaJDBCDriverforGoogleBigQuery42_1.1.6.1006.zip *.jar && \
-  rm ${SPARK_JARS}/jackson-core-2.1.3.jar && \
-  rm /tmp/SimbaJDBCDriverforGoogleBigQuery42_1.1.6.1006.zip && \
-  # logging
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/applicationinsights-core/1.0.9/applicationinsights-core-1.0.9.jar && \           
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/microsoft/azure/applicationinsights-logging-log4j1_2/1.0.9/applicationinsights-logging-log4j1_2-1.0.9.jar && \
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/github/ptv-logistics/log4jala/1.0.4/log4jala-1.0.4.jar && \       
-  #geospark
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/datasyslab/geospark/1.2.0/geospark-1.2.0.jar && \       
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/datasyslab/geospark-sql_2.3/1.2.0/geospark-sql_2.3-1.2.0.jar && \
-  # google cloud
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/com/google/cloud/bigdataoss/gcs-connector/hadoop2-1.9.5/gcs-connector-hadoop2-1.9.5.jar && \ 
-  # elasticsearch
-  wget -P ${SPARK_JARS} https://repo.maven.apache.org/maven2/org/elasticsearch/elasticsearch-hadoop/7.0.1/elasticsearch-hadoop-7.0.1.jar
-
 # copy in tutorial
 COPY tutorial /opt/tutorial
 
@@ -118,7 +73,8 @@ RUN chmod +x /opt/tutorial/nyctaxi/download_raw_data_large.sh
 COPY log4j.properties ${SPARK_HOME}/conf/log4j.properties
 
 # copy in etl library
-COPY target/scala-2.11/arc.jar ${SPARK_HOME}/jars/arc.jar
+COPY target/scala-2.11/arc-assembly-${ARC_VERSION}.jar ${SPARK_HOME}/jars
+RUN ln -s ${SPARK_HOME}/jars/arc-assembly-${ARC_VERSION}.jar ${SPARK_JARS}/arc.jar
 
 WORKDIR $SPARK_HOME
 # EOF
