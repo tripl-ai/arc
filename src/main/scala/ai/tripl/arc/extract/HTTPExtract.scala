@@ -90,21 +90,35 @@ object HTTPExtract {
         // we are using a BufferedIterator so we can 'peek' at the first row to get column types without advancing the iterator
         // meaning we don't have to keep finding fieldIndex and dataType for each row (inefficient as they will not change)
         val bufferedPartition = partition.buffered
-        val uriFieldIndex = bufferedPartition.hasNext match {
-          case true => bufferedPartition.head.fieldIndex("value")
-          case false => 0
+        val (uriFieldIndex, bodyFieldIndex) = if (bufferedPartition.hasNext) {
+          val row = bufferedPartition.head
+          val uriFieldIndex = extract.uriField match {
+            case Some(uriField) => row.fieldIndex(uriField)
+            case None => 0
+          }
+          val bodyFieldIndex = extract.bodyField match {
+            case Some(bodyField) => Option(row.fieldIndex(bodyField))
+            case None => None
+          }
+          (uriFieldIndex, bodyFieldIndex)
+        } else {
+          (0, None)
         }
 
         bufferedPartition.map[RequestResponseRow] { row: Row =>
           val uri = row.getString(uriFieldIndex)
+          val body = (bodyFieldIndex, extract.body) match {
+            case (Some(bodyFieldIndex), None) => row.getString(bodyFieldIndex)
+            case (Some(bodyFieldIndex), Some(_)) => row.getString(bodyFieldIndex)
+            case (None, Some(body)) => body
+            case (None, None) => ""
+          } 
 
           val request = extract.method match {
             case "GET" => new HttpGet(uri)
             case "POST" => { 
               val post = new HttpPost(uri)
-              for (body <- extract.body) {
-                post.setEntity(new StringEntity(body))
-              }
+              post.setEntity(new StringEntity(body))
               post 
             }
           }

@@ -47,7 +47,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       if (HttpConnection.getCurrentConnection.getRequest.getMethod == "POST") {
         response.setContentType("text/html")
         response.setStatus(HttpServletResponse.SC_OK)
-        response.getWriter().println(payload)
+        response.getWriter().print(payload)
       } else {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN)
       }
@@ -58,7 +58,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   class PostPayloadHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
       if (HttpConnection.getCurrentConnection.getRequest.getMethod == "POST" ) {
-        if (Source.fromInputStream(request.getInputStream).mkString == body) {
+        if (Source.fromInputStream(request.getInputStream).mkString == body0) {
           response.setStatus(HttpServletResponse.SC_OK)
         } else {
           response.setStatus(HttpServletResponse.SC_FORBIDDEN)
@@ -69,6 +69,19 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
     }
   }   
+
+  class PostPayloadEchoHandler extends AbstractHandler {
+    override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
+      if (HttpConnection.getCurrentConnection.getRequest.getMethod == "POST" ) {
+        response.setContentType("text/html")
+        response.setStatus(HttpServletResponse.SC_OK)
+        response.getWriter().print(Source.fromInputStream(request.getInputStream).mkString)
+      } else {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN)
+      }
+      HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
+    }
+  }    
 
   class EmptyHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
@@ -88,8 +101,10 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   val get = "get"
   val post = "post"
   val payload = "payload"
+  val echo = "echo"
   val empty = "empty"
-  val body = "testpayload"
+  val body0 = "testpayload0"
+  val body1 = "testpayload1"
 
   before {
     implicit val spark = SparkSession
@@ -116,11 +131,14 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val postPayloadContext = new ContextHandler(s"/${payload}")
     postPayloadContext.setAllowNullPathInfo(false)   
     postPayloadContext.setHandler(new PostPayloadHandler)   
+    val postPayloadEchoContext = new ContextHandler(s"/${echo}")
+    postPayloadEchoContext.setAllowNullPathInfo(false)   
+    postPayloadEchoContext.setHandler(new PostPayloadEchoHandler)      
     val emptyContext = new ContextHandler(s"/${empty}")
     emptyContext.setAllowNullPathInfo(false)
     emptyContext.setHandler(new EmptyHandler)
     val contexts = new ContextHandlerCollection()
-    contexts.setHandlers(Array(getContext, postContext, postPayloadContext, emptyContext));
+    contexts.setHandlers(Array(getContext, postContext, postPayloadContext, postPayloadEchoContext, emptyContext));
     server.setHandler(contexts)
 
     // start http server
@@ -154,7 +172,9 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         method="GET",
-        body=None
+        body=None,
+        uriField=None,
+        bodyField=None        
       )
     ).get
 
@@ -191,7 +211,9 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         method="POST",
-        body=None
+        body=None,
+        uriField=None,
+        bodyField=None
       )
     ).get
 
@@ -208,31 +230,6 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       .drop($"nullDatum")
 
     assert(TestDataUtils.datasetEquality(expected, actual))
-  }  
-
-  test("HTTPExtract: Can post data (POST)") {
-    implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-    val extractDataset = extract.HTTPExtract.extract(
-      HTTPExtract(
-        name=outputView,
-        description=None,
-        input=Right(new URI(s"${uri}/${payload}/")),
-        headers=Map.empty,
-        validStatusCodes=200 :: Nil,
-        outputView=outputView,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil,
-        method="POST",
-        body=Option(body)
-      )
-    ).get
-
-    // assert HTTP_OK
-    assert(extractDataset.first.getInt(1) == 200)
   }  
 
   test("HTTPExtract: Can handle empty response") {
@@ -253,7 +250,9 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         method="GET",
-        body=None   
+        body=None,
+        uriField=None,
+        bodyField=None
       )
     ).get
 
@@ -282,7 +281,9 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           partitionBy=Nil,
           method="GET",
-          body=None   
+          body=None,
+          uriField=None,
+          bodyField=None
         )
       ).get.count
     }
@@ -308,7 +309,9 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           partitionBy=Nil,
           method="GET",
-          body=None   
+          body=None,
+          uriField=None,
+          bodyField=None
         )
       ).get.count
     }
@@ -334,7 +337,9 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           partitionBy=Nil,
           method="GET",
-          body=None   
+          body=None,
+          uriField=None,
+          bodyField=None 
         )
       ).get.count
     }
@@ -362,7 +367,9 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         method="GET",
-        body=None
+        body=None,
+        uriField=None,
+        bodyField=None
       )
     ).get
 
@@ -371,6 +378,135 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     // assert HTTP_OK
     assert(actual(0).getInt(1) == 200)
     assert(actual(1).getInt(1) == 200)
+  }      
+
+  test("HTTPExtract: Can post data (POST)") {
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val extractDataset = extract.HTTPExtract.extract(
+      HTTPExtract(
+        name=outputView,
+        description=None,
+        input=Right(new URI(s"${uri}/${echo}/")),
+        headers=Map.empty,
+        validStatusCodes=200 :: Nil,
+        outputView=outputView,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        method="POST",
+        body=Option(body0),
+        uriField=None,
+        bodyField=None        
+      )
+    ).get
+
+    // assert HTTP_OK
+    assert(extractDataset.first.getInt(1) == 200)
+    assert(extractDataset.first.getString(4) == body0)
+  }  
+
+  test("HTTPExtract: Can post data (POST) with URI from DataFrame by name") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val inputDF = Seq(("blah", s"${uri}/${echo}/", body0), ("blah", s"${uri}/${echo}/", body1)).toDF("ignore", "uri", "body")
+    inputDF.createOrReplaceTempView(inputView)
+
+    val extractDataset = extract.HTTPExtract.extract(
+      HTTPExtract(
+        name=outputView,
+        description=None,
+        input=Left(inputView),
+        headers=Map.empty,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
+        outputView=outputView,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        method="POST",
+        body=None,
+        uriField=Some("uri"),
+        bodyField=None
+      )
+    ).get
+
+    val actual = extractDataset.collect
+
+    // assert HTTP_OK
+    assert(actual(0).getInt(1) == 200)
+    assert(actual(1).getInt(1) == 200)
+  }   
+
+  test("HTTPExtract: Can post data (POST) with Body from DataFrame by name") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val inputDF = Seq(("blah", s"${uri}/${echo}/", body0), ("blah", s"${uri}/${echo}/", body1)).toDF("ignore", "uri", "body")
+    inputDF.createOrReplaceTempView(inputView)
+
+    val extractDataset = extract.HTTPExtract.extract(
+      HTTPExtract(
+        name=outputView,
+        description=None,
+        input=Left(inputView),
+        headers=Map.empty,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
+        outputView=outputView,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        method="POST",
+        body=None,
+        uriField=Some("uri"),
+        bodyField=Some("body")
+      )
+    ).get
+
+    val actual = extractDataset.collect
+
+    // assert body has been echoed
+    assert(actual(0).getString(4) == body0)
+    assert(actual(1).getString(4) == body1)
   }    
-       
+
+  test("HTTPExtract: Can post data (POST) with Body from DataFrame by name precedence") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+
+    val inputDF = Seq(("blah", s"${uri}/${echo}/", body0), ("blah", s"${uri}/${echo}/", body1)).toDF("ignore", "uri", "body")
+    inputDF.createOrReplaceTempView(inputView)
+
+    val extractDataset = extract.HTTPExtract.extract(
+      HTTPExtract(
+        name=outputView,
+        description=None,
+        input=Left(inputView),
+        headers=Map.empty,
+        validStatusCodes=200 :: 201 :: 202 :: Nil,
+        outputView=outputView,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        method="POST",
+        body=Some("notposted"),
+        uriField=Some("uri"),
+        bodyField=Some("body")
+      )
+    ).get
+
+    val actual = extractDataset.collect
+
+    // assert body has been echoed
+    assert(actual(0).getString(4) == body0)
+    assert(actual(1).getString(4) == body1)
+  }    
 }
