@@ -53,3 +53,4 @@ steps:
     sbt \
     sbt publishSigned
   displayName: 'sbt publishSigned (push to https://oss.sonatype.org/content/groups/staging/)'
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
