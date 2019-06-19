@@ -112,10 +112,6 @@ services:
     networks:
       - arc-integration     
     command: tail -f /dev/null
-    environment:
-      - SONATYPE_USERNAME
-      - SONATYPE_PASSWORD
-      - PGP_PASSPHRASE
     volumes:
       - ${PWD}:/app  
       - /tmp/pgp:/pgp

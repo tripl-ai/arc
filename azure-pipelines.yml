@@ -47,6 +47,9 @@ steps:
 
 - script: |
     docker exec \
+    -e SONATYPE_USERNAME=$(SONATYPE_USERNAME) \
+    -e SONATYPE_PASSWORD=$(SONATYPE_PASSWORD) \
+    -e PGP_PASSPHRASE=$(PGP_PASSPHRASE) \
     sbt \
     sbt publishSigned
   displayName: 'sbt publishSigned (push to https://oss.sonatype.org/content/groups/staging/)'
