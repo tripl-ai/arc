@@ -24,37 +24,32 @@ steps:
     secureFile: "pubring.asc"    
 
 - script: |
-    docker pull mozilla/sbt:8u212_1.2.8
-  displayName: 'Pull sbt image (mozilla/sbt:8u212_1.2.8) from Dockerhub'
-
-- script: |
-    docker run \
-    --rm \
-    -v $(pwd):/app \
-    -w /app \
-    mozilla/sbt:8u212_1.2.8 \
-    sbt test
-  displayName: 'Run sbt test'
-
-- script: |
-    ./it.sh
-  displayName: 'Start services and run sbt it:test'  
-
-- script: |
     mkdir -p /tmp/pgp && \
     cp $(DownloadSecureFile1.secureFilePath) /tmp/pgp && \
     cp $(DownloadSecureFile2.secureFilePath) /tmp/pgp
   displayName: 'Move pgp keys'  
 
 - script: |
-    docker run \
-    --rm \
-    -e SONATYPE_USERNAME=$(SONATYPE_USERNAME) \
-    -e SONATYPE_PASSWORD=$(SONATYPE_PASSWORD) \
-    -e PGP_PASSPHRASE=$(PGP_PASSPHRASE) \
-    -v /tmp/pgp:/pgp \
-    -v $(pwd):/app \
+    docker-compose -f src/it/resources/docker-compose.yml up --build -d
+  displayName: 'Create a docker-compose based testing environment'
+
+- script: |
+    docker exec \
     -w /app \
-    mozilla/sbt:8u212_1.2.8 \
+    sbt \
+    sbt test
+  displayName: 'Run sbt test'
+
+- script: |
+    docker exec \
+    -w /app \
+    sbt \
+    sbt it:test
+  displayName: 'Tun sbt it:test'  
+
+- script: |
+    docker exec \
+    -w /app \
+    sbt \
     sbt publishSigned
   displayName: 'Run sbt publishSigned (push to https://oss.sonatype.org/content/groups/staging/)'
