@@ -3,7 +3,8 @@ package ai.tripl.arc.api
 import java.net.URI
 import java.time.LocalTime
 
-import ai.tripl.arc.plugins.{LifecyclePlugin, PipelineStagePlugin}
+import org.apache.spark.sql.{DataFrame, SparkSession}
+
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.types._
@@ -11,6 +12,8 @@ import org.apache.spark.sql.types.MetadataBuilder
 import org.apache.spark.sql.SaveMode
 
 import com.microsoft.azure.cosmosdb.spark.config.Config
+
+import ai.tripl.arc.plugins.{LifecyclePlugin, PipelineStagePlugin}
 
 /** The API defines the model for a pipline. It is made up of stages,
   * extract, transform and load with their respective settings.
@@ -187,9 +190,24 @@ object API {
     def name: String
 
     def getType: String
+
+    def description: Option[String]
+
+    lazy val stageDetail: collection.mutable.Map[String, Object] = {
+      val detail = new collection.mutable.HashMap[String, Object]()
+      detail.put("name", name)
+      detail.put("type", getType)
+      for (d <- description) {
+        detail.put("description", d)
+      }
+      detail
+    }
+
+    def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = None
+
   }
 
-  case class CustomStage(name: String, params: Map[String, String], stage: PipelineStagePlugin) extends PipelineStage {
+  case class CustomStage(name: String, description: Option[String], params: Map[String, String], stage: PipelineStagePlugin) extends PipelineStage {
     val getType = stage.getClass().getName()
   }
 

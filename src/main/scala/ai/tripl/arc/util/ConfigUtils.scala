@@ -2878,7 +2878,7 @@ object ConfigUtils {
         // validate stage
         name match {
           case Right(n) =>
-            (Right(CustomStage(n, params, cs)), outputGraph)
+            (Right(CustomStage(n, None, params, cs)), outputGraph)
           case Left(e) =>
             val err = StageError(idx, s"unnamed stage: $stageType", c.origin.lineNumber, e)
             (Left(err :: Nil), graph)
