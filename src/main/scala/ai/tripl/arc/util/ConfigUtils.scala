@@ -1235,7 +1235,6 @@ object ConfigUtils {
 
     val description = getOptionalValue[String]("description")
 
-
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") |> graph.vertexExists("inputView") _ else Right("")
     val inputURI = if (!c.hasPath("inputView")) {
       getValue[String]("inputURI").rightFlatMap(glob => parseGlob("inputURI", glob))
@@ -1325,7 +1324,7 @@ object ConfigUtils {
   def readHTTPExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "body" :: "headers" :: "method" :: "numPartitions" :: "partitionBy" :: "persist" :: "validStatusCodes" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "body" :: "headers" :: "method" :: "numPartitions" :: "partitionBy" :: "persist" :: "validStatusCodes" :: "params" :: "uriField" :: "bodyField" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     val description = getOptionalValue[String]("description")
@@ -1348,16 +1347,18 @@ object ConfigUtils {
 
     val method = getValue[String]("method", default = Some("GET"), validValues = "GET" :: "POST" :: Nil)
 
+    val uriField = getOptionalValue[String]("uriField")
+    val bodyField = getOptionalValue[String]("bodyField")
     val body = getOptionalValue[String]("body")
 
-    (name, description, input, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys) match {
-      case (Right(n), Right(d), Right(in), Right(pu), Right(ov), Right(p), Right(np), Right(m), Right(b), Right(pb), Right(vsc), Right(_)) => 
+    (name, description, input, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys, uriField, bodyField) match {
+      case (Right(n), Right(d), Right(in), Right(pu), Right(ov), Right(p), Right(np), Right(m), Right(b), Right(pb), Right(vsc), Right(_), Right(uf), Right(bf)) => 
         val inp = if(c.hasPath("inputView")) Left(in) else Right(pu)
         var outputGraph = graph.addVertex(Vertex(idx, ov))
 
-        (Right(HTTPExtract(n, d, inp, m, headers, b, vsc, ov, params, p, np, pb)), outputGraph)
+        (Right(HTTPExtract(n, d, inp, m, headers, b, vsc, ov, params, p, np, pb, uf, bf)), outputGraph)
       case _ =>
-        val allErrors: Errors = List(name, description, input, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, input, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys, uriField, bodyField).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
         (Left(err :: Nil), graph)
