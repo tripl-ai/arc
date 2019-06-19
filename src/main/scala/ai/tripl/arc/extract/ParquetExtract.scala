@@ -22,6 +22,7 @@ import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.MetadataUtils
+import ai.tripl.arc.util.Utils
 
 case class ParquetExtract(name: String, description: Option[String], 
                           cols: Either[String, List[ExtractColumn]],
@@ -43,6 +44,8 @@ case class ParquetExtract(name: String, description: Option[String],
 }
 
 class ParquetExtractPlugin extends PipelineStagePlugin {
+
+  val version = Utils.getFrameworkVersion
 
   def validateConfig(index: Int, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
