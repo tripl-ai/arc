@@ -7,8 +7,10 @@ import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
 
-import ai.tripl.arc.util.ConfigUtils._
 import ai.tripl.arc.api.API._
+import ai.tripl.arc.config._
+import ai.tripl.arc.config.ConfigUtils._
+import ai.tripl.arc.config.Error._
 import ai.tripl.arc.util.EitherUtils._
 
 import com.typesafe.config._

@@ -9,9 +9,88 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.storage.StorageLevel
 
+import com.typesafe.config._
+
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util._
+import ai.tripl.arc.config._
+import ai.tripl.arc.config.ConfigUtils._
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.plugins.PipelineStagePlugin
+import ai.tripl.arc.util.CloudUtils
+import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.util.ExtractUtils
+import ai.tripl.arc.util.MetadataUtils
+
+case class ParquetExtract(name: String, description: Option[String], 
+                          cols: Either[String, List[ExtractColumn]],
+                          outputView: String, 
+                          input: String, 
+                          authentication: Option[Authentication],
+                          params: Map[String, String],
+                          persist: Boolean,
+                          numPartitions: Option[Int],
+                          partitionBy: List[String],
+                          contiguousIndex: Boolean,
+                          basePath: Option[String]) extends PipelineStage {
+
+  val getType = "ParquetExtract"
+
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    ParquetExtract.extract(this)
+  }
+}
+
+class ParquetExtractPlugin extends PipelineStagePlugin {
+
+  def validateConfig(index: Int, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+
+    implicit val c = config
+
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    val name: StringConfigValue = getValue[String]("name")
+    val params = readMap("params", c)
+    val environments = if (c.hasPath("environments")) c.getStringList("environments").asScala.toList else Nil
+
+    val description = getOptionalValue[String]("description")
+
+    val inputURI = getValue[String]("inputURI")
+    val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist", default = Some(false))
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
+    val authentication = readAuthentication("authentication")
+    val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
+
+    val uriKey = "schemaURI"
+    val stringURI = getOptionalValue[String](uriKey)
+    val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
+      optURI match { 
+        case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
+        case None => Right(None)
+      }
+    )
+    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")  
+    val basePath = getOptionalValue[String]("basePath")
+
+    (name, description, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys, basePath) match {
+      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(pb), Right(_), Right(bp)) => 
+        val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
+        Right(ParquetExtract(n, d, schema, ov, pg, auth, params, p, np, pb, ci, bp))
+      case _ =>
+        val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys, basePath).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+}
 
 object ParquetExtract {
 
@@ -24,7 +103,7 @@ object ParquetExtract {
     for (description <- extract.description) {
       stageDetail.put("description", description)    
     }     
-    stageDetail.put("input", extract.input)  
+    stageDetail.put("input", extract.input) 
     stageDetail.put("outputView", extract.outputView)  
     stageDetail.put("persist", Boolean.valueOf(extract.persist))
     stageDetail.put("contiguousIndex", Boolean.valueOf(extract.contiguousIndex))

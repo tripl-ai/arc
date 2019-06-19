@@ -881,7 +881,7 @@ object ConfigUtils {
     c.root().keySet.asScala.toSeq.diff(expectedKeys)
   }
 
-  private def parseURI(path: String, uri: String)(implicit c: Config): Either[Errors, URI] = {
+  def parseURI(path: String, uri: String)(implicit c: Config): Either[Errors, URI] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, URI] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
@@ -910,7 +910,7 @@ object ConfigUtils {
     }
   }
 
-  private def parseGlob(path: String, glob: String)(implicit c: Config): Either[Errors, String] = {
+  def parseGlob(path: String, glob: String)(implicit c: Config): Either[Errors, String] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
@@ -968,8 +968,8 @@ object ConfigUtils {
     }
   }    
 
-  private def getExtractColumns(parsedURI: Either[Errors, Option[URI]], uriKey: String, authentication: Either[Errors, Option[Authentication]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, List[ExtractColumn]] = {
-    val schema: Either[Errors, Option[String]] = parsedURI.rightFlatMap {
+  def getExtractColumns(parsedURI: Either[Errors, Option[URI]], uriKey: String, authentication: Either[Errors, Option[Authentication]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, List[ExtractColumn]] = {
+    /*val schema: Either[Errors, Option[String]] = parsedURI.rightFlatMap {
       case Some(uri) =>
         textContentForURI(uri, uriKey, authentication).rightFlatMap(text => Right(Option(text)))
       case None => Right(None)
@@ -982,7 +982,8 @@ object ConfigUtils {
         case Left(errs) => Left(errs.map( e => ConfigError("metadata error", None, Error.pipelineSimpleErrorMsg(e.errors)) ))
         case Right(extractColumns) => Right(extractColumns)
       }
-    }
+    }*/
+    ???
   }
 
   private def getJDBCDriver(path: String, uri: String)(implicit c: Config): Either[Errors, java.sql.Driver] = {
@@ -1571,48 +1572,6 @@ object ConfigUtils {
         (Left(err :: Nil), graph)
     }
   }  
-
-  def readParquetExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-    import ConfigReader._
-
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
-    val invalidKeys = checkValidKeys(c)(expectedKeys)
-
-    val description = getOptionalValue[String]("description")
-
-    val inputURI = getValue[String]("inputURI")
-    val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
-    val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
-    val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
-    val authentication = readAuthentication("authentication")
-    val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
-
-    val uriKey = "schemaURI"
-    val stringURI = getOptionalValue[String](uriKey)
-    val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
-      optURI match { 
-        case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
-        case None => Right(None)
-      }
-    )
-    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
-    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")  
-    val basePath = getOptionalValue[String]("basePath")
-
-    (name, description, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys, basePath) match {
-      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(pb), Right(_), Right(bp)) => 
-        val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        var outputGraph = graph.addVertex(Vertex(idx, ov))
-        (Right(ParquetExtract(n, d, schema, ov, pg, auth, params, p, np, pb, ci, bp)), outputGraph)
-      case _ =>
-        val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys, basePath).collect{ case Left(errs) => errs }.flatten
-        val stageName = stringOrDefault(name, "unnamed stage")
-        val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-        (Left(err :: Nil), graph)
-    }
-  }
 
   def readRateExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     import ConfigReader._
@@ -2961,7 +2920,6 @@ object ConfigUtils {
           case Right("JSONExtract") => readJSONExtract(idx, graph, name, params)
           case Right("KafkaExtract") => readKafkaExtract(idx, graph, name, params)
           case Right("ORCExtract") => readORCExtract(idx, graph, name, params)
-          case Right("ParquetExtract") => readParquetExtract(idx, graph, name, params)
           case Right("RateExtract") => readRateExtract(idx, graph, name, params)
           case Right("TextExtract") => readTextExtract(idx, graph, name, params)
           case Right("XMLExtract") => readXMLExtract(idx, graph, name, params)

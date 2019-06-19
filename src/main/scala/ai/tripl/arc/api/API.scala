@@ -186,7 +186,7 @@ object API {
   case class MetadataSchema(name: String, format: MetadataFormat)
 
   // A Pipeline has 1 or more stages
-  sealed trait PipelineStage {
+  trait PipelineStage {
     def name: String
 
     def getType: String
@@ -203,7 +203,7 @@ object API {
       detail
     }
 
-    def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = None
+    def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = None
 
   }
 
@@ -213,7 +213,7 @@ object API {
 
   /** An extract that provides its own schema e.g. parquet
     */
-  sealed trait Extract extends PipelineStage {
+  trait Extract extends PipelineStage {
   }
 
   object Extract {
@@ -225,13 +225,13 @@ object API {
 
   /** An extract that is persistable
     */
-  sealed trait PersistableExtract extends Extract {
+  trait PersistableExtract extends Extract {
     def persist: Boolean
   }
 
   /** A columnar extract requires a schema to be provided e.g. parquet vs Delimited.
     */
-  sealed trait ColumnarExtract extends PersistableExtract {
+  trait ColumnarExtract extends PersistableExtract {
     def cols: Either[String, List[ExtractColumn]]
   }
 
@@ -258,8 +258,6 @@ object API {
   case class KafkaExtract(name: String, description: Option[String], outputView: String, topic: String, bootstrapServers: String, groupID: String, maxPollRecords: Int, timeout: Long, autoCommit: Boolean, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "KafkaExtract" }
 
   case class ORCExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, basePath: Option[String]) extends ColumnarExtract { val getType = "ORCExtract" }
-
-  case class ParquetExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, basePath: Option[String]) extends ColumnarExtract { val getType = "ParquetExtract" }
 
   case class RateExtract(name: String,  description: Option[String], outputView: String, params: Map[String, String], rowsPerSecond: Int, rampUpTime: Int, numPartitions: Int) extends Extract { val getType = "RateExtract" }
 
