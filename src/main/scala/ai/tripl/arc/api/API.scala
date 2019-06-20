@@ -229,7 +229,7 @@ object API {
 
   case class ElasticsearchExtract(name: String, description: Option[String], input: String, outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "ElasticsearchExtract" }
 
-  case class HTTPExtract(name: String, description: Option[String], input: Either[String, URI], method: String, headers: Map[String, String], body: Option[String], validStatusCodes: List[Int], outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "HTTPExtract" }
+  case class HTTPExtract(name: String, description: Option[String], input: Either[String, URI], method: String, headers: Map[String, String], body: Option[String], validStatusCodes: List[Int], outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], uriField: Option[String], bodyField: Option[String]) extends Extract { val getType = "HTTPExtract" }
 
   case class ImageExtract(name: String, description: Option[String], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], dropInvalid: Boolean, basePath: Option[String]) extends Extract { val getType = "ImageExtract" }
 

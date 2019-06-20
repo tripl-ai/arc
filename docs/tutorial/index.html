@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.14.0</span></strong>
+          <span class="version">1.15.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -513,7 +513,7 @@ cd arc-starter
 -e JAVA_OPTS=&quot;-Xmx4096m&quot; \
 -p 4040:4040 \
 -p 8888:8888 \
-triplai/arc-jupyter:0.0.13 \
+triplai/arc-jupyter:0.0.14 \
 start-notebook.sh \
 --NotebookApp.password='' \
 --NotebookApp.token=''
@@ -824,7 +824,7 @@ FROM (
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_BASE_URL=/home/jovyan/tutorial&quot; \
 -p 4040:4040 \
-triplai/arc:1.14.0 \
+triplai/arc:1.15.0 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=4G \

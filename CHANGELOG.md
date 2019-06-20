@@ -1,5 +1,9 @@
 ## Change Log
 
+# 1.15.0
+
+- added `uriField` and `bodyField` to `HTTPExtract` allowing dynamic data to be generated and `POST`ed to endpoints when using an `inputView`.
+
 # 1.14.0
 
 - changed all dependencies to `intransitive()`. All tests pass however this may cause issues. Please raise issue if found.

@@ -6,6 +6,9 @@
     "production",
     "test"
   ],
+  "inputView": "customers",
+  "uriField": "uri",
+  "bodyField": "body",
   "inputURI": "https://endpoint:9000/customers",
   "outputView": "customer",
   "body": "",
