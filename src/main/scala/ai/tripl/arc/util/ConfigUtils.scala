@@ -2825,9 +2825,10 @@ object ConfigUtils {
 
   def readCustomStage(idx: Int, graph: Graph, stageType: String, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
     val loader = Utils.getContextOrSparkClassLoader
-    val serviceLoader = ServiceLoader.load(classOf[PipelineStagePlugin], loader)
 
-    val customStage = serviceLoader.iterator().asScala.find( _.getClass.getName == stageType)
+    val serviceLoader = ServiceLoader.load(classOf[PipelineStagePlugin], loader)
+    println(serviceLoader.iterator().asScala.toList.map(_.simpleName))
+    val customStage = serviceLoader.iterator().asScala.find(_.simpleName == stageType)
 
     // set containsPipelineStagePlugin true
     var outputGraph = Graph(graph.vertices, graph.edges, true)

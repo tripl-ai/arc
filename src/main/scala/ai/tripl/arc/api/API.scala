@@ -204,7 +204,6 @@ object API {
     }
 
     def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = None
-
   }
 
   case class CustomStage(name: String, description: Option[String], params: Map[String, String], stage: PipelineStagePlugin) extends PipelineStage {

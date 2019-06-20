@@ -24,7 +24,8 @@ import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
-case class ParquetExtract(name: String, description: Option[String], 
+case class ParquetExtract(name: String, 
+                          description: Option[String], 
                           cols: Either[String, List[ExtractColumn]],
                           outputView: String, 
                           input: String, 
@@ -44,6 +45,8 @@ case class ParquetExtract(name: String, description: Option[String],
 }
 
 class ParquetExtractPlugin extends PipelineStagePlugin {
+
+  val simpleName = "ParquetExtract"
 
   val version = Utils.getFrameworkVersion
 

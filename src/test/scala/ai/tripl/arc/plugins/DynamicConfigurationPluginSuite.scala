@@ -41,7 +41,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
 
     pipeline match {
-      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), _, _) ) =>
+      case Right( (ETLPipeline(CustomStage(name, None, params, stage) :: Nil), _, _) ) =>
         assert(name === "custom plugin")
         val configParms = Map[String, String](
           "foo" -> "baz",
@@ -64,7 +64,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin_precendence.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
 
     pipeline match {
-      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), _, _) ) =>
+      case Right( (ETLPipeline(CustomStage(name, None, params, stage) :: Nil), _, _) ) =>
         assert(name === "custom plugin")
         val configParms = Map[String, String](
           "foo" -> "beforeparamValueafter"
@@ -107,7 +107,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
 
     pipeline match {
-      case Right( (ETLPipeline(CustomStage(name, params, stage) :: Nil), _, _) ) =>
+      case Right( (ETLPipeline(CustomStage(name, None, params, stage) :: Nil), _, _) ) =>
         assert(name === "custom plugin")
         val configParms = Map[String, String](
           "foo" -> "baz",
