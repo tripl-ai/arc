@@ -9,7 +9,7 @@ import ai.tripl.arc.config.Error._
 
 trait PipelineStagePlugin {
 
-  val simpleName: String
+  def simpleName: String
 
   def version: String
 
