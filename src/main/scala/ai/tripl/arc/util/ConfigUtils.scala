@@ -2827,8 +2827,9 @@ object ConfigUtils {
     val loader = Utils.getContextOrSparkClassLoader
 
     val serviceLoader = ServiceLoader.load(classOf[PipelineStagePlugin], loader)
-    println(serviceLoader.iterator().asScala.toList.map(_.simpleName))
-    val customStage = serviceLoader.iterator().asScala.find(_.simpleName == stageType)
+    println(serviceLoader.iterator.asScala.toList)
+    println(serviceLoader.iterator.asScala.toList.map(_.simpleName))
+    val customStage = serviceLoader.iterator.asScala.find(_.simpleName == stageType)
 
     // set containsPipelineStagePlugin true
     var outputGraph = Graph(graph.vertices, graph.edges, true)

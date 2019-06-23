@@ -16,18 +16,8 @@ import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
-case class ArcCustomStage(name: String, 
-                          description: Option[String]) extends PipelineStage {
-
-  val getType = "ArcCustomStage"
-
-  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    ArcCustomStage.extract(this)
-  }
-}
-
 class ArcCustomStagePlugin extends PipelineStagePlugin {
-
+  
   val simpleName = "ArcCustomStage"
 
   val version = Utils.getFrameworkVersion
@@ -36,6 +26,16 @@ class ArcCustomStagePlugin extends PipelineStagePlugin {
     Right(ArcCustomStage("ArcCustomStage", None))
   }
 
+}
+
+case class ArcCustomStage(name: String, 
+                          description: Option[String]) extends PipelineStage {
+
+  val getType = "ArcCustomStage"
+
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    ArcCustomStage.extract(this)
+  }
 }
 
 object ArcCustomStage {

@@ -24,26 +24,6 @@ import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
-case class ParquetExtract(name: String, 
-                          description: Option[String], 
-                          cols: Either[String, List[ExtractColumn]],
-                          outputView: String, 
-                          input: String, 
-                          authentication: Option[Authentication],
-                          params: Map[String, String],
-                          persist: Boolean,
-                          numPartitions: Option[Int],
-                          partitionBy: List[String],
-                          contiguousIndex: Boolean,
-                          basePath: Option[String]) extends PipelineStage {
-
-  val getType = "ParquetExtract"
-
-  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    ParquetExtract.extract(this)
-  }
-}
-
 class ParquetExtractPlugin extends PipelineStagePlugin {
 
   val simpleName = "ParquetExtract"
@@ -95,6 +75,26 @@ class ParquetExtractPlugin extends PipelineStagePlugin {
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
     }
+  }
+}
+
+case class ParquetExtract(name: String, 
+                          description: Option[String], 
+                          cols: Either[String, List[ExtractColumn]],
+                          outputView: String, 
+                          input: String, 
+                          authentication: Option[Authentication],
+                          params: Map[String, String],
+                          persist: Boolean,
+                          numPartitions: Option[Int],
+                          partitionBy: List[String],
+                          contiguousIndex: Boolean,
+                          basePath: Option[String]) extends PipelineStage {
+
+  val getType = "ParquetExtract"
+
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    ParquetExtract.extract(this)
   }
 }
 
