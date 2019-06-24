@@ -101,7 +101,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     // parse json schema to List[ExtractColumn]
     val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
 
-    val extractDataset = extract.ParquetExtractStage.extract(
+    val extractDataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
         name=outputView,
@@ -140,7 +140,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // no cache
-    extract.ParquetExtractStage.extract(
+    extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
         name=outputView,
@@ -160,7 +160,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     assert(spark.catalog.isCached(outputView) === false)
 
     // cache
-    extract.ParquetExtractStage.extract(
+    extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
         name=outputView,
@@ -202,7 +202,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
-      val extractDataset = extract.ParquetExtractStage.extract(
+      val extractDataset = extract.ParquetExtractStage.execute(
         extract.ParquetExtractStage(
           plugin=new extract.ParquetExtract,
           name=outputView,
@@ -224,7 +224,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
-      val extractDataset = extract.ParquetExtractStage.extract(
+      val extractDataset = extract.ParquetExtractStage.execute(
         extract.ParquetExtractStage(
           plugin=new extract.ParquetExtract,
           name=outputView,
@@ -245,7 +245,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     assert(thrown1.getMessage === "ParquetExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
     
     // try with column
-    val extractDataset = extract.ParquetExtractStage.extract(
+    val extractDataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
         name=outputView,
@@ -280,7 +280,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     // parse json schema to List[ExtractColumn]
     val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
 
-    val extractDataset = extract.ParquetExtractStage.extract(
+    val extractDataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
         name=outputView,

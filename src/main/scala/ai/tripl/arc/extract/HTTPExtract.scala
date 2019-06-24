@@ -121,7 +121,7 @@ case class HTTPExtractStage(
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    HTTPExtractStage.extract(this)
+    HTTPExtractStage.execute(this)
   }
 }
 
@@ -139,7 +139,7 @@ object HTTPExtractStage {
     */
   type RequestResponseRow = Row
 
-  def extract(stage: HTTPExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def execute(stage: HTTPExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val stageDetail = stage.stageDetail
 

@@ -157,13 +157,13 @@ case class DelimitedExtractStage(
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    DelimitedExtractStage.extract(this)
+    DelimitedExtractStage.execute(this)
   }
 }
 
 object DelimitedExtractStage {
 
-  def extract(stage: DelimitedExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+  def execute(stage: DelimitedExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     val stageDetail = stage.stageDetail
    

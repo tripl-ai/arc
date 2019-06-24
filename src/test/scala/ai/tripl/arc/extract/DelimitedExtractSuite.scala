@@ -71,7 +71,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     // parse json schema to List[ExtractColumn]
     val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
 
-    val dataset = extract.DelimitedExtractStage.extract(
+    val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
         name=outputView,
@@ -134,7 +134,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
     payloadDataset.createOrReplaceTempView(inputView)
 
-    val dataset = extract.DelimitedExtractStage.extract(
+    val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
         name=outputView,
@@ -165,7 +165,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
   
     // no cache
-    extract.DelimitedExtractStage.extract(
+    extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
         name=outputView,
@@ -187,7 +187,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     assert(spark.catalog.isCached(outputView) === false)
 
     // cache
-    extract.DelimitedExtractStage.extract(
+    extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
         name=outputView,
@@ -231,7 +231,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
-      val dataset = extract.DelimitedExtractStage.extract(
+      val dataset = extract.DelimitedExtractStage.execute(
         extract.DelimitedExtractStage(
           plugin=new extract.DelimitedExtract,
           name=outputView,
@@ -255,7 +255,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
-      val dataset = extract.DelimitedExtractStage.extract(
+      val dataset = extract.DelimitedExtractStage.execute(
         extract.DelimitedExtractStage(
           plugin=new extract.DelimitedExtract,
           name=outputView,
@@ -278,7 +278,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     assert(thrown1.getMessage === "DelimitedExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
 
     // try with column
-    val dataset = extract.DelimitedExtractStage.extract(
+    val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
         name=outputView,
@@ -319,7 +319,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // incorrect delimiter
-    val dataset = extract.DelimitedExtractStage.extract(
+    val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
         name=outputView,
@@ -353,7 +353,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // incorrect delimiter
-    val dataset = extract.DelimitedExtractStage.extract(
+    val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
         name=outputView,
@@ -399,7 +399,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // incorrect header
-    val dataset = extract.DelimitedExtractStage.extract(
+    val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
         name=outputView,
@@ -432,7 +432,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // incorrect header
-    val dataset = extract.DelimitedExtractStage.extract(
+    val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
         name=outputView,
@@ -468,7 +468,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     // parse json schema to List[ExtractColumn]
     val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
 
-    val dataset = extract.DelimitedExtractStage.extract(
+    val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
         name=outputView,

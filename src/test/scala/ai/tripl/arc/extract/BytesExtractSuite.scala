@@ -57,7 +57,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val dataset = extract.BytesExtractStage.extract(
+    val dataset = extract.BytesExtractStage.execute(
       extract.BytesExtractStage(
         plugin=new extract.BytesExtract,
         name="dataset",
@@ -86,7 +86,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     val input = Seq(targetFile, targetFile).toDF("value")
     input.createOrReplaceTempView(pathView)
 
-    val dataset = extract.BytesExtractStage.extract(
+    val dataset = extract.BytesExtractStage.execute(
       extract.BytesExtractStage(
         plugin=new extract.BytesExtract,
         name="dataset",
@@ -113,7 +113,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
-      extract.BytesExtractStage.extract(
+      extract.BytesExtractStage.execute(
         extract.BytesExtractStage(
           plugin=new extract.BytesExtract,
           name="dataset",
@@ -133,7 +133,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
-      extract.BytesExtractStage.extract(
+      extract.BytesExtractStage.execute(
         extract.BytesExtractStage(
           plugin=new extract.BytesExtract,
           name="dataset",
@@ -153,7 +153,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     
     // try without providing column metadata
     val thrown2 = intercept[Exception with DetailException] {
-      extract.BytesExtractStage.extract(
+      extract.BytesExtractStage.execute(
         extract.BytesExtractStage(
           plugin=new extract.BytesExtract,
           name="dataset",
@@ -172,7 +172,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     assert(thrown2.getMessage === "BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.")
 
     // try with column
-    val actual = extract.BytesExtractStage.extract(
+    val actual = extract.BytesExtractStage.execute(
       extract.BytesExtractStage(
         plugin=new extract.BytesExtract,
         name="dataset",

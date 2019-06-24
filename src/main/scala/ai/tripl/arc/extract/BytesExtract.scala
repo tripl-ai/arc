@@ -100,13 +100,13 @@ case class BytesExtractStage(
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    BytesExtractStage.extract(this)
+    BytesExtractStage.execute(this)
   }
 }
 
 object BytesExtractStage {
 
-  def extract(stage: BytesExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def execute(stage: BytesExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
     val stageDetail = stage.stageDetail
 

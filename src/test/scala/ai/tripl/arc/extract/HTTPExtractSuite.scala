@@ -159,7 +159,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
-    val dataset = extract.HTTPExtractStage.extract(
+    val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,    
         name=outputView,
@@ -199,7 +199,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
-    val dataset = extract.HTTPExtractStage.extract(
+    val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,   
         name=outputView,
@@ -238,7 +238,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
-    val dataset = extract.HTTPExtractStage.extract(
+    val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,   
         name=outputView,
@@ -267,7 +267,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
-    val dataset = extract.HTTPExtractStage.extract(
+    val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,   
         name=outputView,
@@ -299,7 +299,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val thrown = intercept[Exception with DetailException] {
-      extract.HTTPExtractStage.extract(      
+      extract.HTTPExtractStage.execute(      
         extract.HTTPExtractStage(
           plugin=new extract.HTTPExtract, 
           name=outputView,
@@ -328,7 +328,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val thrown = intercept[Exception with DetailException] {
-      extract.HTTPExtractStage.extract(      
+      extract.HTTPExtractStage.execute(      
         extract.HTTPExtractStage(
           plugin=new extract.HTTPExtract, 
           name=outputView,
@@ -357,7 +357,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     val thrown = intercept[Exception with DetailException] {
-      extract.HTTPExtractStage.extract(      
+      extract.HTTPExtractStage.execute(      
         extract.HTTPExtractStage(
           plugin=new extract.HTTPExtract, 
           name=outputView,
@@ -388,7 +388,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val inputDF = Seq(s"${uri}/${get}/", s"${uri}/${get}/").toDF("value")
     inputDF.createOrReplaceTempView(inputView)
 
-    val dataset = extract.HTTPExtractStage.extract(
+    val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,  
         name=outputView,
@@ -423,7 +423,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val inputDF = Seq(("blah", s"${uri}/${echo}/", body0), ("blah", s"${uri}/${echo}/", body1)).toDF("ignore", "uri", "body")
     inputDF.createOrReplaceTempView(inputView)
 
-    val dataset = extract.HTTPExtractStage.extract(
+    val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,  
         name=outputView,
@@ -458,7 +458,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val inputDF = Seq(("blah", s"${uri}/${echo}/", body0), ("blah", s"${uri}/${echo}/", body1)).toDF("ignore", "uri", "body")
     inputDF.createOrReplaceTempView(inputView)
 
-    val dataset = extract.HTTPExtractStage.extract(
+    val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,  
         name=outputView,
