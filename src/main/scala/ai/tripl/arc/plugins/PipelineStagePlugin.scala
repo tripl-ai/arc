@@ -7,7 +7,7 @@ import com.typesafe.config._
 import ai.tripl.arc.api.API.{ARCContext, PipelineStage}
 import ai.tripl.arc.config.Error.StageError
 
-trait PipelineStagePlugin {
+trait PipelineStagePlugin extends Serializable {
 
   def version: String
 

@@ -23,8 +23,6 @@ import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
-
-
 class DelimitedExtract extends PipelineStagePlugin {
 
   val version = Utils.getFrameworkVersion
@@ -40,11 +38,7 @@ class DelimitedExtract extends PipelineStagePlugin {
     val params = readMap("params", c)
     val description = getOptionalValue[String]("description")
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
-    val parsedGlob = if (!c.hasPath("inputView")) {
-      getValue[String]("inputURI").rightFlatMap(glob => parseGlob("inputURI", glob))
-    } else {
-      Right("")
-    }
+    val parsedGlob = if (!c.hasPath("inputView")) getValue[String]("inputURI").rightFlatMap(glob => parseGlob("inputURI", glob)) else Right("")
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
