@@ -85,7 +85,7 @@ class AvroExtract extends PipelineStagePlugin {
           plugin=this,
           name=name,
           description=description,
-          cols=schema,
+          schema=schema,
           outputView=outputView,
           input=input,
           authentication=authentication,
@@ -99,10 +99,10 @@ class AvroExtract extends PipelineStagePlugin {
           inputField=inputField
         )
 
+        stage.stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
         stage.stageDetail.put("input", input)  
         stage.stageDetail.put("outputView", outputView)  
         stage.stageDetail.put("persist", Boolean.valueOf(persist))
-        stage.stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
 
         Right(stage)
       case _ =>
@@ -136,7 +136,7 @@ case class AvroExtractStage(
     plugin: PipelineStagePlugin,
     name: String,
     description: Option[String],
-    cols: Either[String, List[ExtractColumn]],
+    schema: Either[String, List[ExtractColumn]],
     outputView: String,
     input: Either[String, String],
     authentication: Option[Authentication],
@@ -163,7 +163,7 @@ object AvroExtractStage {
 
     // try to get the schema
     val optionSchema = try {
-      ExtractUtils.getSchema(stage.cols)(spark, logger)
+      ExtractUtils.getSchema(stage.schema)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          

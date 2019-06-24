@@ -84,12 +84,12 @@ class HTTPExtract extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
+        stage.stageDetail.put("headers", HTTPUtils.maskHeaders(stage.headers).asJava)
+        stage.stageDetail.put("input", if(c.hasPath("inputView")) inputView else parsedURI)  
+        stage.stageDetail.put("method", method)
         stage.stageDetail.put("outputView", outputView)  
         stage.stageDetail.put("persist", Boolean.valueOf(persist))
-        stage.stageDetail.put("method", method)
-        stage.stageDetail.put("headers", HTTPUtils.maskHeaders(stage.headers).asJava)
         stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
-        stage.stageDetail.put("input", if(c.hasPath("inputView")) inputView else parsedURI)  
 
         Right(stage)
       case _ =>

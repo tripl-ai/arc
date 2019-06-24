@@ -63,14 +63,14 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
 
     val dataset = extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
         name=outputView,
         description=None,
-        cols=Right(cols.right.getOrElse(Nil)),
+        schema=Right(schema.right.getOrElse(Nil)),
         outputView=outputView,
         input=Right(targetFileGlob),
         authentication=None,
@@ -113,7 +113,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.AvroExtract,
         name=outputView,
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         authentication=None,
@@ -135,7 +135,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.AvroExtract,
         name=outputView,
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         authentication=None,
@@ -158,7 +158,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val cols = 
+    val schema = 
       BooleanColumn(
         id="1",
         name="booleanDatum",
@@ -179,7 +179,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
           plugin=new extract.AvroExtract,
           name=outputView,
           description=None,
-          cols=Right(Nil),
+          schema=Right(Nil),
           outputView=outputView,
           input=Right(emptyWildcardDirectory),
           authentication=None,
@@ -203,7 +203,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
           plugin=new extract.AvroExtract,
           name=outputView,
           description=None,
-          cols=Right(Nil),
+          schema=Right(Nil),
           outputView=outputView,
           input=Right(emptyDirectory),
           authentication=None,
@@ -226,7 +226,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.AvroExtract,
         name=outputView,
         description=None,
-        cols=Right(cols),
+        schema=Right(schema),
         outputView=outputView,
         input=Right(emptyDirectory),
         authentication=None,

@@ -79,7 +79,7 @@ class DelimitedExtract extends PipelineStagePlugin {
           plugin=this,
           name=name,
           description=description,
-          cols=schema,
+          schema=schema,
           outputView=outputView,
           input=input,
           settings=new Delimited(header=header, sep=delimiter, quote=quote, customDelimiter=customDelimiter),
@@ -92,20 +92,18 @@ class DelimitedExtract extends PipelineStagePlugin {
           basePath=basePath,
           inputField=inputField  
         )
-        stage.stageDetail.put("persist", Boolean.valueOf(persist))
-        stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
 
+        stage.stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
+        stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("persist", Boolean.valueOf(persist))
         val options: Map[String, String] = stage.basePath match {
           case Some(basePath) => Delimited.toSparkOptions(stage.settings) + ("basePath" -> basePath)
           case None => Delimited.toSparkOptions(stage.settings)
         }
-
         val inputValue = stage.input match {
           case Left(view) => view
           case Right(glob) => glob
         }
-
         stage.stageDetail.put("input", inputValue)  
         stage.stageDetail.put("options", options.asJava)
 
@@ -118,31 +116,13 @@ class DelimitedExtract extends PipelineStagePlugin {
     }
   }
 
-  def parseDelimiter(path: String)(delim: String)(implicit c: Config): Either[Errors, Delimiter] = {
-    delim.toLowerCase.trim match {
-      case "comma" => Right(Delimiter.Comma)
-      case "defaulthive" => Right(Delimiter.DefaultHive)
-      case "pipe" => Right(Delimiter.Pipe)
-      case "custom" => Right(Delimiter.Custom)
-      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
-    }
-  }  
- 
-  def parseQuote(path: String)(quote: String)(implicit c: Config): Either[Errors, QuoteCharacter] = {
-    quote.toLowerCase.trim match {
-      case "doublequote" => Right(QuoteCharacter.DoubleQuote)
-      case "singlequote" => Right(QuoteCharacter.SingleQuote)
-      case "none" => Right(QuoteCharacter.Disabled)
-      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
-    }
-  }    
 }
 
 case class DelimitedExtractStage(
     plugin: PipelineStagePlugin,
     name: String, 
     description: Option[String], 
-    cols: Either[String, List[ExtractColumn]], 
+    schema: Either[String, List[ExtractColumn]], 
     outputView: String, 
     input: Either[String, String],
     settings: Delimited, 
@@ -179,7 +159,7 @@ object DelimitedExtractStage {
     
     // try to get the schema
     val optionSchema = try {
-      ExtractUtils.getSchema(stage.cols)(spark, logger)
+      ExtractUtils.getSchema(stage.schema)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stageDetail          

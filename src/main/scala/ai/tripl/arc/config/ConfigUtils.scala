@@ -2,6 +2,7 @@ package ai.tripl.arc.config
 
 import java.net.URI
 import java.net.InetAddress
+import java.sql.DriverManager
 
 import scala.collection.JavaConverters._
 
@@ -12,9 +13,8 @@ import com.typesafe.config._
 
 import org.apache.spark.sql.SparkSession
 
-import ai.tripl.arc.api.API.Authentication
-import ai.tripl.arc.api.API.{EncodingType, EncodingTypeBase64, EncodingTypeHexadecimal, FailModeType, FailModeTypeFailFast, FailModeTypePermissive}
-import ai.tripl.arc.api.API.ExtractColumn
+import ai.tripl.arc.api._
+import ai.tripl.arc.api.API._
 import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.ControlUtils._
 import ai.tripl.arc.util.EitherUtils._
@@ -294,6 +294,40 @@ object ConfigUtils {
       case "permissive" => Right(FailModeTypePermissive)
       case "failfast" => Right(FailModeTypeFailFast)
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }
+
+  def parseDelimiter(path: String)(delim: String)(implicit c: Config): Either[Errors, Delimiter] = {
+    delim.toLowerCase.trim match {
+      case "comma" => Right(Delimiter.Comma)
+      case "defaulthive" => Right(Delimiter.DefaultHive)
+      case "pipe" => Right(Delimiter.Pipe)
+      case "custom" => Right(Delimiter.Custom)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }  
+ 
+  def parseQuote(path: String)(quote: String)(implicit c: Config): Either[Errors, QuoteCharacter] = {
+    quote.toLowerCase.trim match {
+      case "doublequote" => Right(QuoteCharacter.DoubleQuote)
+      case "singlequote" => Right(QuoteCharacter.SingleQuote)
+      case "none" => Right(QuoteCharacter.Disabled)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }  
+  
+  def getJDBCDriver(path: String, uri: String)(implicit c: Config): Either[Errors, java.sql.Driver] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, java.sql.Driver] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    // without this line tests fail as drivers have not been registered yet
+    val drivers = DriverManager.getDrivers.asScala.toList.map(driver => s"""'${driver.toString}'""")
+
+    try {
+      Right(DriverManager.getDriver(uri))
+    } catch {
+      case e: Exception => {
+        err(Some(c.getValue(path).origin.lineNumber()), s"""Invalid driver for ('$uri'). Available JDBC drivers: ${drivers.mkString("[", ", ", "]")}.""")
+      }
     }
   }    
 }

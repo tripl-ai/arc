@@ -67,13 +67,13 @@ class ImageExtract extends PipelineStagePlugin {
         dropInvalid=dropInvalid
       )
 
-      stage.stageDetail.put("input", parsedGlob)  
-      stage.stageDetail.put("outputView", outputView)  
-      stage.stageDetail.put("persist", Boolean.valueOf(persist))
-      stage.stageDetail.put("dropInvalid", Boolean.valueOf(dropInvalid))
       for (bp <- basePath) {
         stage.stageDetail.put("basePath", bp)
       }
+      stage.stageDetail.put("dropInvalid", Boolean.valueOf(dropInvalid))
+      stage.stageDetail.put("input", parsedGlob)  
+      stage.stageDetail.put("outputView", outputView)  
+      stage.stageDetail.put("persist", Boolean.valueOf(persist))
 
       Right(stage)
 

@@ -69,14 +69,14 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
 
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
         name=outputView,
         description=None,
-        cols=Right(cols.right.getOrElse(Nil)),
+        schema=Right(schema.right.getOrElse(Nil)),
         outputView=outputView,
         input=Right(targetFileGlob),
         settings=new Delimited(header=true, sep=Delimiter.Comma),
@@ -139,7 +139,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.DelimitedExtract,
         name=outputView,
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=outputView,
         input=Left(inputView),
         settings=new Delimited(header=true, sep=Delimiter.Pipe),
@@ -170,7 +170,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.DelimitedExtract,
         name=outputView,
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         settings=new Delimited(),
@@ -192,7 +192,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.DelimitedExtract,
         name=outputView,
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         settings=new Delimited(header=true, sep=Delimiter.Comma),
@@ -215,7 +215,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val cols = 
+    val schema = 
       BooleanColumn(
         id="1",
         name="booleanDatum",
@@ -236,7 +236,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
           plugin=new extract.DelimitedExtract,
           name=outputView,
           description=None,
-          cols=Right(Nil),
+          schema=Right(Nil),
           outputView=outputView,
           input=Right(emptyWildcardDirectory),
           settings=new Delimited(),
@@ -260,7 +260,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
           plugin=new extract.DelimitedExtract,
           name=outputView,
           description=None,
-          cols=Right(Nil),
+          schema=Right(Nil),
           outputView=outputView,
           input=Right(emptyDirectory),
           settings=new Delimited(),
@@ -283,7 +283,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.DelimitedExtract,
         name=outputView,
         description=None,
-        cols=Right(cols),
+        schema=Right(schema),
         outputView=outputView,
         input=Right(emptyDirectory),
         settings=new Delimited(),
@@ -324,7 +324,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.DelimitedExtract,
         name=outputView,
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         settings=new Delimited(header=true, sep=Delimiter.Pipe, inferSchema=false),
@@ -358,7 +358,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.DelimitedExtract,
         name=outputView,
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=outputView,
         input=Right(customDelimiterTargetFile),
         settings=new Delimited(header=true, sep=Delimiter.Custom, inferSchema=false, customDelimiter="%"),
@@ -404,7 +404,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.DelimitedExtract,
         name=outputView,
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         settings=new Delimited(header=false, sep=Delimiter.Comma, inferSchema=false),
@@ -437,7 +437,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.DelimitedExtract,
         name=outputView,
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
         settings=new Delimited(header=true, sep=Delimiter.Comma, inferSchema=true),
@@ -466,14 +466,14 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     // parse json schema to List[ExtractColumn]
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
 
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
         name=outputView,
         description=None,
-        cols=Right(cols.right.getOrElse(Nil)),
+        schema=Right(schema.right.getOrElse(Nil)),
         outputView=outputView,
         input=Right(targetFileGlob),
         settings=new Delimited(header=true, sep=Delimiter.Comma),
