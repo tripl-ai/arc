@@ -2,11 +2,12 @@ package ai.tripl.arc.plugins
 
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.util.ConfigUtils
-import ai.tripl.arc.util.ConfigUtils._
 import ai.tripl.arc.util.log.LoggerFactory
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.util.TestUtils
+
 import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfter, FunSuite}
-
 
 class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
 
@@ -34,89 +35,69 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val argsMap = collection.mutable.HashMap[String, String]()
+    val commandLineArguments = collection.mutable.HashMap[String, String]()
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), commandLineArguments, arcContext)
+    val configParms = Map[String, String](
+      "foo" -> "baz",
+      "bar" -> "testValue"
+    )
 
     pipeline match {
-      case Right( (ETLPipeline(CustomStage(name, None, params, stage) :: Nil), _, _) ) =>
+      case Right( (ETLPipeline(ArcCustomStage(plugin, name, None, params) :: Nil), _) ) =>
         assert(name === "custom plugin")
-        val configParms = Map[String, String](
-          "foo" -> "baz",
-          "bar" -> "testValue"
-        )
         assert(params === configParms)
-        assert(stage.getClass.getName === "ai.tripl.arc.plugins.ArcCustomPipelineStage")
-      case _ => fail("expected CustomStage")
+        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.ArcCustom")
+      case _ => fail("expected PipelineStage")
     }
-    
   }
 
-  test("Test argsMap precedence") { 
+  test("Test commandLineArguments precedence") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val argsMap = collection.mutable.HashMap[String, String]("ARGS_MAP_VALUE" -> "before\"${arc.paramvalue}\"after")
+    val commandLineArguments = collection.mutable.HashMap[String, String]("ARGS_MAP_VALUE" -> "before\"${arc.paramvalue}\"after")
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin_precendence.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin_precendence.conf"), commandLineArguments, arcContext)
+    val configParms = Map[String, String](
+      "foo" -> "beforeparamValueafter"
+    )
 
     pipeline match {
-      case Right( (ETLPipeline(CustomStage(name, None, params, stage) :: Nil), _, _) ) =>
+      case Right( (ETLPipeline(ArcCustomStage(plugin, name, None, params) :: Nil), _) ) =>
         assert(name === "custom plugin")
-        val configParms = Map[String, String](
-          "foo" -> "beforeparamValueafter"
-        )
         assert(params === configParms)
-        assert(stage.getClass.getName === "ai.tripl.arc.plugins.ArcCustomPipelineStage")
-      case _ => fail("expected CustomStage")
+        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.ArcCustom")
+      case _ => {
+        println(pipeline)
+        fail("expected PipelineStage")
+      }
     } 
   }     
 
-  test("Test missing plugin") { 
-    implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
-
-    val argsMap = collection.mutable.HashMap[String, String]()
-
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_missing.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
-
-    pipeline match {
-      case Left(stageError) => {
-        assert(stageError == 
-        StageError(0, "unknown",3,List(
-            ConfigError("stages", Some(3), "Unknown stage type: 'ai.tripl.arc.plugins.ThisWillNotBeFound'")
-          )
-        ) :: Nil)
-      }
-      case Right(_) => assert(false)
-    } 
-  }   
-
-  test("Read config with dynamic configuration plugin environments true") {
+  test("Read config with dynamic configuration plugin environments ") {
     implicit val spark = session
 
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="production", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false, environment="production")
 
-    val argsMap = collection.mutable.HashMap[String, String]()
+    val commandLineArguments = collection.mutable.HashMap[String, String]()
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), argsMap, ConfigUtils.Graph(Nil, Nil, false), arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), commandLineArguments, arcContext)
+    val configParms = Map[String, String](
+      "foo" -> "baz",
+      "bar" -> "productionValue"
+    )
 
     pipeline match {
-      case Right( (ETLPipeline(CustomStage(name, None, params, stage) :: Nil), _, _) ) =>
+      case Right( (ETLPipeline(ArcCustomStage(plugin, name, None, params) :: Nil), _) ) =>
         assert(name === "custom plugin")
-        val configParms = Map[String, String](
-          "foo" -> "baz",
-          "bar" -> "productionValue"
-        )
         assert(params === configParms)
-        assert(stage.getClass.getName === "ai.tripl.arc.plugins.ArcCustomPipelineStage")
-      case _ => fail("expected CustomStage")
+        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.ArcCustom")
+      case _ => fail("expected PipelineStage")
     }
-    
   }    
 }

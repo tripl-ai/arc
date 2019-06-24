@@ -21,7 +21,6 @@ class DataFramePrinterLifecyclePlugin extends LifecyclePlugin {
     logger.trace()        
       .field("event", "before")
       .field("stage", stage.name)
-      .field("stageType", stage.getType)
       .log()  
   }
 
@@ -29,7 +28,6 @@ class DataFramePrinterLifecyclePlugin extends LifecyclePlugin {
     logger.trace()        
       .field("event", "after")
       .field("stage", stage.name)
-      .field("stageType", stage.getType)
       .field("isLast", java.lang.Boolean.valueOf(isLast))
       .log() 
 

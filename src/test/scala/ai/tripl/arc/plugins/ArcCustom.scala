@@ -16,22 +16,26 @@ import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
-class ArcCustomStagePlugin extends PipelineStagePlugin {
+class ArcCustom extends PipelineStagePlugin {
   
-  val simpleName = "ArcCustomStage"
-
   val version = Utils.getFrameworkVersion
 
-  def validateConfig(index: Int, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[StageError], PipelineStage] = {
-    Right(ArcCustomStage("ArcCustomStage", None))
-  }
+  def createStage(index: Int, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
 
+    val name = getValue[String]("name")
+    val params = readMap("params", c)
+
+    Right(ArcCustomStage(this, name.right.get, None, params))
+  }
 }
 
-case class ArcCustomStage(name: String, 
-                          description: Option[String]) extends PipelineStage {
-
-  val getType = "ArcCustomStage"
+case class ArcCustomStage(plugin: PipelineStagePlugin, 
+                          name: String, 
+                          description: Option[String],
+                          params: Map[String, String]) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     ArcCustomStage.extract(this)

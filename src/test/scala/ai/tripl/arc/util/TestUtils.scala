@@ -4,6 +4,8 @@ import java.io.File
 import java.sql.Date
 import java.sql.Timestamp
 import java.time.{ZoneId, ZonedDateTime}
+import java.util.ServiceLoader
+import scala.collection.JavaConverters._
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.core._
@@ -13,6 +15,9 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
+
+import ai.tripl.arc.api.API.ARCContext
+import ai.tripl.arc.plugins._
 
 case class KnownData(
     booleanDatum: Boolean, 
@@ -27,7 +32,25 @@ case class KnownData(
     nullDatum: Null
 )
 
-object TestDataUtils {
+object TestUtils {
+    def getARCContext(isStreaming: Boolean, environment: String = "test") = {
+      val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
+
+      ARCContext(
+        jobId=None, 
+        jobName=None, 
+        environment=environment, 
+        environmentId=None, 
+        configUri=None, 
+        isStreaming=isStreaming, 
+        ignoreEnvironments=false, 
+        dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
+        lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
+        enabledLifecyclePlugins=Nil,
+        pipelineStagePlugins=ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList,
+        udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList
+      )
+    }
 
     def datasetEquality(expected: DataFrame, actual: DataFrame)(implicit spark: SparkSession): Boolean = {
         import spark.implicits._
