@@ -62,9 +62,14 @@ class ParquetExtract extends PipelineStagePlugin {
     val basePath = getOptionalValue[String]("basePath")
 
     (name, description, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys, basePath) match {
-      case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(pb), Right(_), Right(bp)) => 
-        val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-        Right(ParquetExtractStage(this, n, d, schema, ov, pg, auth, params, p, np, pb, ci, bp))
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputURI), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(auth), Right(contiguousIndex), Right(partitionBy), Right(_), Right(basePath)) => 
+        val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
+        val stage = ParquetExtractStage(this, name, description, schema, outputView, parsedGlob, auth, params, persist, numPartitions, partitionBy, contiguousIndex, basePath)
+        stage.stageDetail.put("input", stage.input) 
+        stage.stageDetail.put("outputView", stage.outputView)  
+        stage.stageDetail.put("persist", Boolean.valueOf(stage.persist))
+        stage.stageDetail.put("contiguousIndex", Boolean.valueOf(stage.contiguousIndex))
+        Right(stage)
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys, basePath).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
@@ -99,10 +104,6 @@ object ParquetExtractStage {
   def extract(stage: ParquetExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     val stageDetail = stage.stageDetail
-    stageDetail.put("input", stage.input) 
-    stageDetail.put("outputView", stage.outputView)  
-    stageDetail.put("persist", Boolean.valueOf(stage.persist))
-    stageDetail.put("contiguousIndex", Boolean.valueOf(stage.contiguousIndex))
 
     // try to get the schema
     val optionSchema = try {
