@@ -38,8 +38,6 @@ class ParquetExtract extends PipelineStagePlugin {
 
     val name = getValue[String]("name")
     val params = readMap("params", c)
-    val environments = if (c.hasPath("environments")) c.getStringList("environments").asScala.toList else Nil
-
     val description = getOptionalValue[String]("description")
 
     val inputURI = getValue[String]("inputURI")
@@ -76,24 +74,24 @@ class ParquetExtract extends PipelineStagePlugin {
   }
 }
 
-case class ParquetExtractStage(plugin: PipelineStagePlugin, 
-                          name: String, 
-                          description: Option[String], 
-                          cols: Either[String, List[ExtractColumn]],
-                          outputView: String, 
-                          input: String, 
-                          authentication: Option[Authentication],
-                          params: Map[String, String],
-                          persist: Boolean,
-                          numPartitions: Option[Int],
-                          partitionBy: List[String],
-                          contiguousIndex: Boolean,
-                          basePath: Option[String]) extends PipelineStage {
+case class ParquetExtractStage(
+  plugin: PipelineStagePlugin, 
+  name: String, 
+  description: Option[String], 
+  cols: Either[String, List[ExtractColumn]],
+  outputView: String, 
+  input: String, 
+  authentication: Option[Authentication],
+  params: Map[String, String],
+  persist: Boolean,
+  numPartitions: Option[Int],
+  partitionBy: List[String],
+  contiguousIndex: Boolean,
+  basePath: Option[String]) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     ParquetExtractStage.extract(this)
   }
-
 }
 
 object ParquetExtractStage {
@@ -101,10 +99,10 @@ object ParquetExtractStage {
   def extract(stage: ParquetExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     val stageDetail = stage.stageDetail
-    stage.stageDetail.put("input", stage.input) 
-    stage.stageDetail.put("outputView", stage.outputView)  
-    stage.stageDetail.put("persist", Boolean.valueOf(stage.persist))
-    stage.stageDetail.put("contiguousIndex", Boolean.valueOf(stage.contiguousIndex))
+    stageDetail.put("input", stage.input) 
+    stageDetail.put("outputView", stage.outputView)  
+    stageDetail.put("persist", Boolean.valueOf(stage.persist))
+    stageDetail.put("contiguousIndex", Boolean.valueOf(stage.contiguousIndex))
 
     // try to get the schema
     val optionSchema = try {

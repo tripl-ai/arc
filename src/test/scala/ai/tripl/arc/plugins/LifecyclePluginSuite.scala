@@ -48,7 +48,10 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ConfigUtils.parsePipeline(Option("classpath://conf/lifecycle_plugin.conf"), argsMap, arcContext)
 
     pipelineEither match {
-      case Left(_) => assert(false)
+      case Left(_) => {
+        println(pipelineEither)
+        assert(false)
+      }
       case Right((pipeline, arcCtx)) => ARC.run(pipeline)(spark, logger, arcCtx)
     } 
     
