@@ -106,6 +106,9 @@ class DelimitedExtract extends PipelineStagePlugin {
         }
         stage.stageDetail.put("input", inputValue)  
         stage.stageDetail.put("options", options.asJava)
+        for (inputField <- inputField) {
+          stage.stageDetail.put("inputField", inputField)  
+        }
 
         Right(stage)            
       case _ =>

@@ -103,7 +103,10 @@ class AvroExtract extends PipelineStagePlugin {
         stage.stageDetail.put("input", input)  
         stage.stageDetail.put("outputView", outputView)  
         stage.stageDetail.put("persist", Boolean.valueOf(persist))
-
+        for (inputField <- inputField) {
+          stage.stageDetail.put("inputField", inputField)  
+        }
+        
         Right(stage)
       case _ =>
         val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys, basePath, inputField, avroSchemaURI, avroSchema).collect{ case Left(errs) => errs }.flatten
@@ -159,7 +162,7 @@ object AvroExtractStage {
 
   def execute(stage: AvroExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
-        val stageDetail = stage.stageDetail
+    val stageDetail = stage.stageDetail
 
     // try to get the schema
     val optionSchema = try {
