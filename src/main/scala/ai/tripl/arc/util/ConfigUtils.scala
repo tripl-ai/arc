@@ -616,75 +616,7 @@ object ConfigUtils {
   //   }
   // }  
 
-  // def readDelimitedExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config, ctx: ARCContext): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
-  //   import ai.tripl.arc.extract.DelimitedExtract._
-
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: "inputField" :: "basePath" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)
-
-  //   val description = getOptionalValue[String]("description")
-
-
-  //   val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") |> graph.vertexExists("inputView") _ else Right("")
-  //   val inputURI = if (!c.hasPath("inputView")) {
-  //     getValue[String]("inputURI").rightFlatMap(glob => parseGlob("inputURI", glob))
-  //   } else {
-  //     Right("")
-  //   }
-
-  //   val outputView = getValue[String]("outputView")
-  //   val persist = getValue[Boolean]("persist", default = Some(false))
-  //   val numPartitions = getOptionalValue[Int]("numPartitions")
-  //   val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
-  //   val authentication = readAuthentication("authentication")
-  //   val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
-
-  //   val uriKey = "schemaURI"
-  //   val stringURI = getOptionalValue[String](uriKey)
-  //   val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI =>
-  //     optURI match {
-  //       case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
-  //       case None => Right(None)
-  //     }
-  //   )
-  //   val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
-  //   val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
-
-  //   val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: "Custom" :: Nil) |> parseDelimiter("delimiter") _
-  //   val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
-  //   val header = getValue[Boolean]("header", Some(false))
-
-  //   val customDelimiter = delimiter match {
-  //     case Right(Delimiter.Custom) => {
-  //       getValue[String]("customDelimiter")
-  //     }
-  //     case _ => Right("")
-  //   }
-
-  //   val inputField = getOptionalValue[String]("inputField")
-  //   val basePath = getOptionalValue[String]("basePath")
-
-  //   (name, description, inputView, inputURI, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath) match {
-  //     case (Right(n), Right(d), Right(iv), Right(uri), Right(cols), Right(sv), Right(ov), Right(p), Right(np), Right(pb), Right(head), Right(auth), Right(ci), Right(delim), Right(q), Right(_), Right(cd), Right(ipf), Right(bp)) =>
-  //       var outputGraph = graph.addVertex(Vertex(idx, ov))
-
-  //       val input = if(c.hasPath("inputView")) {
-  //         outputGraph = outputGraph.addEdge(iv, ov)
-  //         Left(iv) 
-  //       } else {
-  //         Right(uri)
-  //       }
-  //       val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-  //       val extract = DelimitedExtract(n, d, schema, ov, input, Delimited(header=head, sep=delim, quote=q, customDelimiter=cd), auth, params, p, np, pb, ci, ipf, bp)
-  //       (Right(extract), outputGraph)
-  //     case _ =>
-  //       val allErrors: Errors = List(name, description, inputView, inputURI, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }  
+  
 
   // def readElasticsearchExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._
@@ -2218,22 +2150,29 @@ object ConfigUtils {
   def readPipelineStage(index: Int, stageType: String, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], PipelineStage] = {
     implicit val c: Config = config
 
-    // match on either full class name or just the simple name
-    val filteredPlugins = if (stageType contains ".") {
-      arcContext.pipelineStagePlugins.filter(_.getClass.getName == stageType).toList
+    // match on either full class name or just the simple name AND version or not
+    val splitStageType = stageType.split(":", 2)
+    val hasPackage = splitStageType(0) contains "."
+    val hasVersion = splitStageType.length > 1
+
+    val nameFilteredPlugins = if (hasPackage) {
+      arcContext.pipelineStagePlugins.filter(plugin => plugin.getClass.getName == splitStageType(0))
     } else {
-      arcContext.pipelineStagePlugins.filter(_.getClass.getSimpleName == stageType).toList
+      arcContext.pipelineStagePlugins.filter(plugin => plugin.getClass.getSimpleName == splitStageType(0))
+    }
+    val filteredPlugins = if (hasVersion) {
+      nameFilteredPlugins.filter(plugin => plugin.version == splitStageType(1))
+    } else {
+      nameFilteredPlugins
     }
     
-    // return nice errors if missing or duplicate
+    // return clean error messages if missing or duplicate
+    val availablePluginsMessage = s"""Available plugins: ${arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").mkString("[",",","]")}."""
     if (filteredPlugins.length == 0) {
-      Left(StageError(index, stageType, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"No plugins found with name '${stageType}'") :: Nil) :: Nil)
+      val versionMessage = if (hasVersion) s"name:version" else "name"
+      Left(StageError(index, stageType, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"No plugins found with ${versionMessage} ${stageType}. ${availablePluginsMessage}") :: Nil) :: Nil)
     } else if (filteredPlugins.length > 1) {
-      if (stageType contains ".") {
-        Left(StageError(index, stageType, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"Multiple plugins found with name '${stageType}'") :: Nil) :: Nil)
-      } else {
-        Left(StageError(index, stageType, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"Multiple plugins found with name '${stageType}'. Try using the full package name to differentiate duplicates.") :: Nil) :: Nil)
-      }
+      Left(StageError(index, stageType, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"Multiple plugins found with name ${splitStageType(0)}. ${availablePluginsMessage}") :: Nil) :: Nil)
     } else {
       filteredPlugins(0).createStage(index, config)
     }

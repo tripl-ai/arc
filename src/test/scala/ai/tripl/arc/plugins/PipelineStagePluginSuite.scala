@@ -31,7 +31,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  test("Read config with custom pipeline stage") {
+  test("PipelineStagePlugin: getName") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -55,8 +55,32 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("PipelineStagePlugin: getSimpleName") {
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-  test("Test missing plugin") { 
+    val argsMap = collection.mutable.HashMap[String, String]()
+
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_short.conf"), argsMap, arcContext)
+    val configParms = Map[String, String](
+      "foo" -> "bar"
+    )
+
+    pipeline match {
+      case Right( (ETLPipeline(ArcCustomStage(plugin, name, None, params) :: Nil), _) ) =>
+        assert(name === "custom plugin")
+        assert(params === configParms)
+        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.ArcCustom")
+      case _ => {
+        println(pipeline)
+        fail("expected CustomStage")
+      }
+    }
+  }  
+
+
+  test("PipelineStagePlugin: Missing") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -76,6 +100,67 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
       case Right(_) => assert(false)
     } 
   }   
+
+  test("PipelineStagePlugin: Version Correct") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val argsMap = collection.mutable.HashMap[String, String]()
+
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_correct.conf"), argsMap, arcContext)
+
+    pipeline match {
+      case Right( (ETLPipeline(ArcCustomStage(plugin, name, None, params) :: Nil), _) ) =>
+        assert(name === "custom plugin")
+        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.ArcCustom")
+      case _ => {
+        println(pipeline)
+        fail()
+      }
+    }
+  }    
+
+  test("PipelineStagePlugin: Version Correct Long") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val argsMap = collection.mutable.HashMap[String, String]()
+
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_correct_long.conf"), argsMap, arcContext)
+
+    pipeline match {
+      case Right( (ETLPipeline(ArcCustomStage(plugin, name, None, params) :: Nil), _) ) =>
+        assert(name === "custom plugin")
+        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.ArcCustom")
+      case _ => {
+        println(pipeline)
+        fail()
+      }
+    }
+  }      
+
+  test("PipelineStagePlugin: Version Incorrect") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val argsMap = collection.mutable.HashMap[String, String]()
+
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_incorrect.conf"), argsMap, arcContext)
+
+    pipeline match {
+      case Left(stageError) => {
+        assert(stageError == 
+        StageError(0,"ArcCustom",3,List(
+            ConfigError("stages", Some(3), "No plugins found with name 'ArcCustom:1.0.2'")
+          )
+        ) :: Nil)
+      }
+      case Right(_) => assert(false)
+    }
+  }     
 
 
 }

@@ -18,7 +18,7 @@ import ai.tripl.arc.util.Utils
 
 class ArcCustom extends PipelineStagePlugin {
   
-  val version = Utils.getFrameworkVersion
+  val version = "1.0.1"
 
   def createStage(index: Int, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
