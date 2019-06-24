@@ -91,11 +91,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
 
     pipeline match {
       case Left(stageError) => {
-        assert(stageError == 
-        StageError(0,"ai.tripl.arc.plugins.ThisWillNotBeFound",3,List(
-            ConfigError("stages", Some(3), "No plugins found with name 'ai.tripl.arc.plugins.ThisWillNotBeFound'")
-          )
-        ) :: Nil)
+        assert(stageError.toString contains "No plugins found with name ai.tripl.arc.plugins.ThisWillNotBeFound")
       }
       case Right(_) => assert(false)
     } 
@@ -152,11 +148,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
 
     pipeline match {
       case Left(stageError) => {
-        assert(stageError == 
-        StageError(0,"ArcCustom",3,List(
-            ConfigError("stages", Some(3), "No plugins found with name 'ArcCustom:1.0.2'")
-          )
-        ) :: Nil)
+        assert(stageError.toString contains "No plugins found with name:version ArcCustom:1.0.2. Available plugins:")
       }
       case Right(_) => assert(false)
     }
