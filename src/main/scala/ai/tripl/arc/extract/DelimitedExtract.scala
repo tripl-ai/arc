@@ -32,30 +32,25 @@ class DelimitedExtract extends PipelineStagePlugin {
   def createStage(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
     import ai.tripl.arc.config.ConfigUtils._
-
     implicit val c = config
 
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: "inputField" :: "basePath" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
-
     val name = getValue[String]("name")
     val params = readMap("params", c)
     val description = getOptionalValue[String]("description")
-
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
-    val inputURI = if (!c.hasPath("inputView")) {
+    val parsedGlob = if (!c.hasPath("inputView")) {
       getValue[String]("inputURI").rightFlatMap(glob => parseGlob("inputURI", glob))
     } else {
       Right("")
     }
-
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
-
     val uriKey = "schemaURI"
     val stringURI = getOptionalValue[String](uriKey)
     val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI =>
@@ -66,34 +61,46 @@ class DelimitedExtract extends PipelineStagePlugin {
     )
     val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
-
     val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: "Custom" :: Nil) |> parseDelimiter("delimiter") _
     val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
     val header = getValue[Boolean]("header", Some(false))
-
     val customDelimiter = delimiter match {
       case Right(Delimiter.Custom) => {
         getValue[String]("customDelimiter")
       }
       case _ => Right("")
     }
-
     val inputField = getOptionalValue[String]("inputField")
     val basePath = getOptionalValue[String]("basePath")
 
-    (name, description, inputView, inputURI, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath) match {
-      case (Right(name), Right(description), Right(inputView), Right(inputURI), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(header), Right(authentication), Right(contiguousIndex), Right(delimiter), Right(quote), Right(_), Right(customDelimiter), Right(inputField), Right(basePath)) =>
+    (name, description, inputView, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath) match {
+      case (Right(name), Right(description), Right(inputView), Right(parsedGlob), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(header), Right(authentication), Right(contiguousIndex), Right(delimiter), Right(quote), Right(_), Right(customDelimiter), Right(inputField), Right(basePath)) =>
         val input = if(c.hasPath("inputView")) {
           Left(inputView) 
         } else {
-          Right(inputURI)
+          Right(parsedGlob)
         }
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
-        val stage = DelimitedExtractStage(this, name, description, schema, outputView, input, Delimited(header=header, sep=delimiter, quote=quote, customDelimiter=customDelimiter), authentication, params, persist, numPartitions, partitionBy, contiguousIndex, inputField, basePath)
-
-        stage.stageDetail.put("persist", Boolean.valueOf(stage.persist))
-        stage.stageDetail.put("outputView", stage.outputView)
-        stage.stageDetail.put("contiguousIndex", Boolean.valueOf(stage.contiguousIndex))
+        val stage = DelimitedExtractStage(
+          plugin=this,
+          name=name,
+          description=description,
+          cols=schema,
+          outputView=outputView,
+          input=input,
+          settings=new Delimited(header=header, sep=delimiter, quote=quote, customDelimiter=customDelimiter),
+          authentication=authentication,
+          params=params,
+          persist=persist,
+          numPartitions=numPartitions,
+          partitionBy=partitionBy,
+          contiguousIndex=contiguousIndex,
+          basePath=basePath,
+          inputField=inputField  
+        )
+        stage.stageDetail.put("persist", Boolean.valueOf(persist))
+        stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
 
         val options: Map[String, String] = stage.basePath match {
           case Some(basePath) => Delimited.toSparkOptions(stage.settings) + ("basePath" -> basePath)
@@ -110,7 +117,7 @@ class DelimitedExtract extends PipelineStagePlugin {
 
         Right(stage)            
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, inputURI, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -138,21 +145,21 @@ class DelimitedExtract extends PipelineStagePlugin {
 }
 
 case class DelimitedExtractStage(
-  plugin: PipelineStagePlugin,
-  name: String, 
-  description: Option[String], 
-  cols: Either[String, List[ExtractColumn]], 
-  outputView: String, 
-  input: Either[String, String],
-  settings: Delimited, 
-  authentication: Option[Authentication], 
-  params: Map[String, String], 
-  persist: Boolean, 
-  numPartitions: Option[Int], 
-  partitionBy: List[String], 
-  contiguousIndex: Boolean, 
-  inputField: Option[String], 
-  basePath: Option[String]
+    plugin: PipelineStagePlugin,
+    name: String, 
+    description: Option[String], 
+    cols: Either[String, List[ExtractColumn]], 
+    outputView: String, 
+    input: Either[String, String],
+    settings: Delimited, 
+    authentication: Option[Authentication], 
+    params: Map[String, String], 
+    persist: Boolean, 
+    numPartitions: Option[Int], 
+    partitionBy: List[String], 
+    contiguousIndex: Boolean, 
+    inputField: Option[String], 
+    basePath: Option[String]
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {

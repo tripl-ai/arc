@@ -13,7 +13,7 @@ import com.typesafe.config._
 import org.apache.spark.sql.SparkSession
 
 import ai.tripl.arc.api.API.Authentication
-import ai.tripl.arc.api.API.{EncodingType, EncodingTypeBase64, EncodingTypeHexadecimal}
+import ai.tripl.arc.api.API.{EncodingType, EncodingTypeBase64, EncodingTypeHexadecimal, FailModeType, FailModeTypeFailFast, FailModeTypePermissive}
 import ai.tripl.arc.api.API.ExtractColumn
 import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.ControlUtils._
@@ -289,4 +289,11 @@ object ConfigUtils {
     }
   }  
 
+  def parseFailMode(path: String)(delim: String)(implicit c: Config): Either[Errors, FailModeType] = {
+    delim.toLowerCase.trim match {
+      case "permissive" => Right(FailModeTypePermissive)
+      case "failfast" => Right(FailModeTypeFailFast)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }    
 }

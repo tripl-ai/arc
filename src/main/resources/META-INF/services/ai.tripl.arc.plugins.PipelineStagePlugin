@@ -1,2 +1,4 @@
+ai.tripl.arc.extract.AvroExtract
+ai.tripl.arc.extract.BytesExtract
 ai.tripl.arc.extract.DelimitedExtract
 ai.tripl.arc.extract.ParquetExtract

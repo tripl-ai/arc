@@ -30,16 +30,13 @@ class ParquetExtract extends PipelineStagePlugin {
   def createStage(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
     import ai.tripl.arc.config.ConfigUtils._
-
     implicit val c = config
 
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
-
     val name = getValue[String]("name")
     val params = readMap("params", c)
     val description = getOptionalValue[String]("description")
-
     val inputURI = getValue[String]("inputURI")
     val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
     val outputView = getValue[String]("outputView")
@@ -48,7 +45,6 @@ class ParquetExtract extends PipelineStagePlugin {
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
-
     val uriKey = "schemaURI"
     val stringURI = getOptionalValue[String](uriKey)
     val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
@@ -62,13 +58,27 @@ class ParquetExtract extends PipelineStagePlugin {
     val basePath = getOptionalValue[String]("basePath")
 
     (name, description, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys, basePath) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputURI), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(auth), Right(contiguousIndex), Right(partitionBy), Right(_), Right(basePath)) => 
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputURI), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(_), Right(basePath)) => 
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
-        val stage = ParquetExtractStage(this, name, description, schema, outputView, parsedGlob, auth, params, persist, numPartitions, partitionBy, contiguousIndex, basePath)
-        stage.stageDetail.put("input", stage.input) 
-        stage.stageDetail.put("outputView", stage.outputView)  
-        stage.stageDetail.put("persist", Boolean.valueOf(stage.persist))
-        stage.stageDetail.put("contiguousIndex", Boolean.valueOf(stage.contiguousIndex))
+        val stage = ParquetExtractStage(
+          plugin=this,
+          name=name,
+          description=description,
+          cols=schema,
+          outputView=outputView,
+          input=parsedGlob,
+          authentication=authentication,
+          params=params,
+          persist=persist,
+          numPartitions=numPartitions,
+          partitionBy=partitionBy,
+          basePath=basePath,
+          contiguousIndex=contiguousIndex
+        )
+        stage.stageDetail.put("input", parsedGlob) 
+        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("persist", Boolean.valueOf(persist))
+        stage.stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
         Right(stage)
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys, basePath).collect{ case Left(errs) => errs }.flatten
