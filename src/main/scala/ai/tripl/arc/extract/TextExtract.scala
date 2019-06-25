@@ -96,7 +96,6 @@ class TextExtract extends PipelineStagePlugin {
 
 }
 
-
 case class TextExtractStage(
     plugin: PipelineStagePlugin,
     name: String,
