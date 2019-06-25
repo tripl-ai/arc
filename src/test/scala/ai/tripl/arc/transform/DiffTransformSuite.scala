@@ -55,6 +55,7 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     TestUtils.getKnownDataset.createOrReplaceTempView(inputLeftView)
     TestUtils.getKnownAlteredDataset.createOrReplaceTempView(inputRightView)
