@@ -1171,41 +1171,6 @@ object ConfigUtils {
 
 
 
-  // def readXMLLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
-
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)  
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val inputView = getValue[String]("inputView")
-  //   val outputURI = getValue[String]("outputURI")
-  //   val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
-  //   val numPartitions = getOptionalValue[Int]("numPartitions")
-  //   val authentication = readAuthentication("authentication")  
-  //   val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
-
-  //   (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
-  //     case (Right(n), Right(d), Right(iv), Right(out), Right(np), Right(auth), Right(sm), Right(pb), Right(_)) => 
-  //       val load = XMLLoad(n, d, iv, new URI(out), pb, np, auth, sm, params)
-
-  //       val ov = s"$idx:${load.getType}"
-  //       var outputGraph = graph
-  //       // add the vertices
-  //       outputGraph = outputGraph.addVertex(Vertex(idx, ov))
-  //       // add the edges
-  //       outputGraph = outputGraph.addEdge(iv, ov)
-
-  //       (Right(load), outputGraph)
-  //     case _ =>
-  //       val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }  
-
   // // execute
   // def readHTTPExecute(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._
