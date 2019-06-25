@@ -1170,42 +1170,6 @@ object ConfigUtils {
   // }   
 
 
-  // def readJDBCExecute(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
-
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "jdbcURL" :: "authentication" :: "params" :: "password" :: "sqlParams" :: "user" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)  
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val authentication = readAuthentication("authentication")  
-
-  //   val uriKey = "inputURI"
-  //   val inputURI = getValue[String](uriKey)
-  //   val parsedURI = inputURI.rightFlatMap(uri => parseURI(uriKey, uri))
-  //   val inputSQL = parsedURI.rightFlatMap { uri =>
-  //       authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))    
-  //       getBlob(uriKey, uri)
-  //   }
-
-  //   val jdbcURL = getValue[String]("jdbcURL")
-  //   val driver = jdbcURL.rightFlatMap(uri => getJDBCDriver("jdbcURL", uri))
-  //   val user = getOptionalValue[String]("user")
-  //   val password = getOptionalValue[String]("password")
-
-  //   val sqlParams = readMap("sqlParams", c)    
-
-  //   (name, description, inputURI, inputSQL, jdbcURL, user, password, driver, invalidKeys) match {
-  //     case (Right(n), Right(desc), Right(in), Right(sql), Right(url), Right(u), Right(p), Right(d), Right(_)) => 
-  //       (Right(JDBCExecute(n, desc, new URI(in), url, u, p, sql, sqlParams, params)), graph)
-  //     case _ =>
-  //       val allErrors: Errors = List(name, description, inputURI, parsedURI, inputSQL, jdbcURL, user, password, driver, invalidKeys).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }
-
   // def readKafkaCommitExecute(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._
 
