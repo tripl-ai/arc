@@ -45,11 +45,9 @@ class MetadataFilterTransform extends PipelineStagePlugin {
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val sqlParams = readMap("sqlParams", c)
+    val validSQL = inputSQL |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))    
-    val validSQL = inputSQL.rightFlatMap { sql =>
-      validateSQL("inputURI", SQLUtils.injectParameters(sql, sqlParams, false))
-    }
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
 

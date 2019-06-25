@@ -22,3 +22,11 @@ ai.tripl.arc.load.ORCLoad
 ai.tripl.arc.load.ParquetLoad
 ai.tripl.arc.load.TextLoad
 ai.tripl.arc.load.XMLLoad
+ai.tripl.arc.transform.DiffTransform
+ai.tripl.arc.transform.HTTPTransform
+ai.tripl.arc.transform.JSONTransform
+ai.tripl.arc.transform.MetadataFilterTransform
+ai.tripl.arc.transform.MLTransform
+ai.tripl.arc.transform.SQLTransform
+ai.tripl.arc.transform.TypingTransform
+

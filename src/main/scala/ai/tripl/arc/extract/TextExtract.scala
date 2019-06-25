@@ -44,7 +44,7 @@ class TextExtract extends PipelineStagePlugin {
     val multiLine = getValue[Boolean]("multiLine", default = Some(false))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
-    val extractColumns = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
+    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
     val basePath = getOptionalValue[String]("basePath")
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)

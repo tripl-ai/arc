@@ -20,7 +20,9 @@ import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.ControlUtils._
 import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.ExtractUtils
+import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.MetadataSchema
+
 
 import Error._
 
@@ -346,8 +348,19 @@ object ConfigUtils {
     }
   }
 
+  // inject params inline
+  def injectSQLParams(path: String, sqlParams: Map[String, String], allowMissing: Boolean)(sql: String)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, String] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+    
+    try {
+      Right(SQLUtils.injectParameters(sql, sqlParams, allowMissing))
+    } catch {
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
+    }
+  }    
+
   // validateSQL uses the parsePlan method to verify if the sql command is parseable/valid. it will not check table existence.
-  def validateSQL(path: String, sql: String)(implicit spark: SparkSession, c: Config): Either[Errors, String] = {
+  def validateSQL(path: String)(sql: String)(implicit spark: SparkSession, c: Config): Either[Errors, String] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
