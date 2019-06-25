@@ -1170,32 +1170,6 @@ object ConfigUtils {
   // }   
 
 
-
-  // // execute
-  // def readHTTPExecute(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
-
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "uri" :: "headers" :: "payloads" :: "validStatusCodes" :: "params" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)  
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val uri = getValue[String]("uri")
-  //   val headers = readMap("headers", c)
-  //   val payloads = readMap("payloads", c)
-  //   val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
-
-  //   (name, description, uri, validStatusCodes, invalidKeys) match {
-  //     case (Right(n), Right(d), Right(u), Right(vsc), Right(_)) => 
-  //       (Right(HTTPExecute(n, d, new URI(u), headers, payloads, vsc, params)), graph)
-  //     case _ =>
-  //       val allErrors: Errors = List(uri, description, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }
-
   // def readJDBCExecute(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._
 
