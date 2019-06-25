@@ -81,6 +81,9 @@ class ORCExtract extends PipelineStagePlugin {
         stage.stageDetail.put("input", parsedGlob)  
         stage.stageDetail.put("outputView", outputView)  
         stage.stageDetail.put("persist", Boolean.valueOf(persist))
+        for (basePath <- basePath) {
+          stage.stageDetail.put("basePath", basePath)  
+        }        
 
         Right(stage)
       case _ =>

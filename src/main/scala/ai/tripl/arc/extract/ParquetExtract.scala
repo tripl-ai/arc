@@ -60,6 +60,7 @@ class ParquetExtract extends PipelineStagePlugin {
     (name, description, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys, basePath) match {
       case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputURI), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(_), Right(basePath)) => 
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
+        
         val stage = ParquetExtractStage(
           plugin=this,
           name=name,
@@ -75,10 +76,15 @@ class ParquetExtract extends PipelineStagePlugin {
           basePath=basePath,
           contiguousIndex=contiguousIndex
         )
+
         stage.stageDetail.put("input", parsedGlob) 
         stage.stageDetail.put("outputView", outputView)  
         stage.stageDetail.put("persist", Boolean.valueOf(persist))
         stage.stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
+        for (basePath <- basePath) {
+          stage.stageDetail.put("basePath", basePath)  
+        } 
+
         Right(stage)
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys, basePath).collect{ case Left(errs) => errs }.flatten
