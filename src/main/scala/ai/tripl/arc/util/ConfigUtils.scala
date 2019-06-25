@@ -566,19 +566,6 @@ object ConfigUtils {
   //       (Left(err :: Nil), graph)
   //   }
   // }  
-
-
-
-  // // transform
-
-
-
-  
-
-  
-
-  // // load
-
  
 
   // def readAzureEventHubsLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
@@ -828,61 +815,7 @@ object ConfigUtils {
   // }
 
   // // validate
-  // def readEqualityValidate(idx: Int, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
 
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "leftView" :: "rightView" :: "params" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)    
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val leftView = getValue[String]("leftView")
-  //   val rightView = getValue[String]("rightView")
-
-  //   (name, description, leftView, rightView, invalidKeys) match {
-  //     case (Right(n), Right(d), Right(l), Right(r), Right(_)) => 
-  //       (Right(EqualityValidate(n, d, l, r, params)), graph)
-  //     case _ =>
-  //       val allErrors: Errors = List(name, description, leftView, rightView, invalidKeys).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }  
-  
-  // def readSQLValidate(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
-
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "authentication" :: "sqlParams" :: "params" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)    
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val authentication = readAuthentication("authentication")  
-
-  //   val uriKey = "inputURI"
-  //   val inputURI = getValue[String](uriKey)
-  //   val parsedURI = inputURI.rightFlatMap(uri => parseURI(uriKey, uri))
-  //   val inputSQL = parsedURI.rightFlatMap{ uri => textContentForURI(uri, uriKey, authentication) }
-
-  //   val sqlParams = readMap("sqlParams", c) 
-
-  //   // try to verify if sql is technically valid against HQL dialect (will not check dependencies)
-  //   val validSQL = inputSQL.rightFlatMap { sql =>
-  //     validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams, false))
-  //   }    
-
-  //   (name, description, parsedURI, inputSQL, validSQL, invalidKeys) match {
-  //     case (Right(n), Right(d), Right(uri), Right(sql), Right(vsql), Right(_)) => 
-  //       // pass the unreplaced input sql not the 'valid sql' as the paramenters will be replaced when the stage is executed for testing
-  //       (Right(SQLValidate(n, d, uri, sql, sqlParams, params)), graph)
-  //     case _ =>
-  //       val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }
 
   def readPipelineStage(index: Int, stageType: String, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], PipelineStage] = {
     implicit val c: Config = config

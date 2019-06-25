@@ -115,13 +115,12 @@ case class TypingTransformStage(
 object TypingTransformStage {
 
   def execute(stage: TypingTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    val stageDetail = stage.stageDetail
 
     val cols = stage.schema match {
       case Right(cols) => {
         cols match {
           case Nil => throw new Exception(s"""TypingTransform requires an input schema to define how to transform data but the provided schema has 0 columns.""") with DetailException {
-            override val detail = stageDetail          
+            override val detail = stage.stageDetail          
           } 
           case c => c
         }
@@ -131,12 +130,12 @@ object TypingTransformStage {
         parseResult match {
           case Right(cols) => cols
           case Left(errors) => throw new Exception(s"""Schema view '${view}' to cannot be parsed as it has errors: ${errors.mkString(", ")}.""") with DetailException {
-            override val detail = stageDetail          
+            override val detail = stage.stageDetail          
           }  
         }
       }
     }
-    stageDetail.put("columns", cols.map(_.name).asJava)
+    stage.stageDetail.put("columns", cols.map(_.name).asJava)
 
     val df = spark.table(stage.inputView)
 
@@ -146,11 +145,11 @@ object TypingTransformStage {
     }).length
 
     if (inputColumnCount != cols.length) {
-      stageDetail.put("schemaColumnCount", Integer.valueOf(cols.length))
-      stageDetail.put("inputColumnCount", Integer.valueOf(inputColumnCount))
+      stage.stageDetail.put("schemaColumnCount", Integer.valueOf(cols.length))
+      stage.stageDetail.put("inputColumnCount", Integer.valueOf(inputColumnCount))
 
       throw new Exception(s"TypingTransform can only be performed on tables with the same number of columns, but the schema has ${cols.length} columns and the data table has ${inputColumnCount} columns.") with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }    
     }
 
@@ -162,7 +161,7 @@ object TypingTransformStage {
       Typing.typeDataFrame(df, cols, stage.failMode, valueAccumulator, errorAccumulator)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }      
     }  
 
@@ -187,14 +186,14 @@ object TypingTransformStage {
     repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
-      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-        stageDetail.put("values", java.lang.Long.valueOf(valueAccumulator.value))
-        stageDetail.put("errors", java.lang.Long.valueOf(errorAccumulator.value))            
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("values", java.lang.Long.valueOf(valueAccumulator.value))
+        stage.stageDetail.put("errors", java.lang.Long.valueOf(errorAccumulator.value))            
       }      
     }    
 

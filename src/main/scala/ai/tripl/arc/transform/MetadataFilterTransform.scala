@@ -104,11 +104,10 @@ case class MetadataFilterTransformStage(
 object MetadataFilterTransformStage {
 
   def execute(stage: MetadataFilterTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    val stageDetail = stage.stageDetail
 
     // inject sql parameters
     val stmt = SQLUtils.injectParameters(stage.sql, stage.sqlParams, false)
-    stageDetail.put("sql", stmt)
+    stage.stageDetail.put("sql", stmt)
 
     val df = spark.table(stage.inputView)
     val metadataSchemaDF = MetadataUtils.createMetadataDataframe(df)
@@ -118,13 +117,13 @@ object MetadataFilterTransformStage {
       spark.sql(stmt)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }      
     }  
 
     if (!filterDF.columns.contains("name")) {
       throw new Exception("result does not contain field 'name' so cannot be filtered") with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }    
     }
 
@@ -133,8 +132,8 @@ object MetadataFilterTransformStage {
     val includeColumns = filterDF.collect.map(field => { field.getString(field.fieldIndex("name")) }).toSet
     val excldueColumns = inputFields.diff(includeColumns)
 
-    stageDetail.put("includedColumns", includeColumns.asJava)
-    stageDetail.put("excludedColumns", excldueColumns.asJava)
+    stage.stageDetail.put("includedColumns", includeColumns.asJava)
+    stage.stageDetail.put("excludedColumns", excldueColumns.asJava)
 
     // drop fields in the excluded set
     val transformedDF = df.drop(excldueColumns.toList:_*)
@@ -160,12 +159,12 @@ object MetadataFilterTransformStage {
     repartitionedDF.createOrReplaceTempView(stage.outputView)    
 
     if (!repartitionedDF.isStreaming) {
-      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
       }      
     }
 

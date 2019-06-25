@@ -92,12 +92,10 @@ case class RateExtractStage(
 object RateExtractStage {
 
   def execute(stage: RateExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    import spark.implicits._
-    val stageDetail = stage.stageDetail
 
     if (!arcContext.isStreaming) {
       throw new Exception("RateExtract can only be executed in streaming mode.") with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }
     }
 

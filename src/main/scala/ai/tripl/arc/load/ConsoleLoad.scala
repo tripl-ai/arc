@@ -81,13 +81,12 @@ case class ConsoleLoadStage(
 object ConsoleLoadStage {
 
   def execute(stage: ConsoleLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
-    val stageDetail = stage.stageDetail
 
     val df = spark.table(stage.inputView)   
 
     if (!df.isStreaming) {
       throw new Exception("ConsoleLoad can only be executed in streaming mode.") with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }
     }      
 

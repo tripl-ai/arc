@@ -123,7 +123,6 @@ case class MLTransformStage(
 
 object MLTransformStage {
   def execute(stage: MLTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    val stageDetail = stage.stageDetail
 
     val df = spark.table(stage.inputView)
 
@@ -139,7 +138,7 @@ object MLTransformStage {
       } 
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }      
     }             
 
@@ -148,7 +147,7 @@ object MLTransformStage {
       model.transform(df)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }      
     } 
 
@@ -195,12 +194,12 @@ object MLTransformStage {
     repartitionedDF.createOrReplaceTempView(stage.outputView)    
 
     if (!repartitionedDF.isStreaming) {
-      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
 
         // add percentiles to an list for logging
         var approxQuantileMap = new java.util.HashMap[String, Array[Double]]()
@@ -208,7 +207,7 @@ object MLTransformStage {
             approxQuantileMap.put(col.toString, repartitionedDF.stat.approxQuantile(col.toString, Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0), 0.1).map(col => Double.valueOf(col)))
         })
         if (approxQuantileMap.size > 0) {
-          stageDetail.put("percentiles", approxQuantileMap)
+          stage.stageDetail.put("percentiles", approxQuantileMap)
         }        
       }      
     }    

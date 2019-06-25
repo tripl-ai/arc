@@ -150,14 +150,13 @@ object JDBCLoadStage {
   val SaveModeIgnore = -1
 
   def execute(stage: JDBCLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    val stageDetail = stage.stageDetail
 
     val df = spark.table(stage.inputView)
 
     if (!df.isStreaming) {
       stage.numPartitions match {
-        case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-        case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+        case Some(partitions) => stage.stageDetail.put("numPartitions", Integer.valueOf(partitions))
+        case None => stage.stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
       }
     } 
 
@@ -226,7 +225,7 @@ object JDBCLoadStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail         
+        override val detail = stage.stageDetail         
       }
     }
 
@@ -245,11 +244,11 @@ object JDBCLoadStage {
       dropMap.put("NullType", nulls.asJava)
     }
 
-    stageDetail.put("drop", dropMap)    
+    stage.stageDetail.put("drop", dropMap)    
     
     val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)            
 
-    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+    val listener = ListenerUtils.addStageCompletedListener(stage.stageDetail)
 
     // if not table exists and SaveMode.Ignore
     val outputDF = if (nonNullDF.isStreaming) {
@@ -265,7 +264,7 @@ object JDBCLoadStage {
     } else {
       if (targetPreCount != SaveModeIgnore) {
         val sourceCount = df.count
-        stageDetail.put("count", Long.valueOf(sourceCount))
+        stage.stageDetail.put("count", Long.valueOf(sourceCount))
 
         val writtenDF =
           try {
@@ -343,9 +342,9 @@ object JDBCLoadStage {
             }
 
             // log counts
-            stageDetail.put("sourceCount", Long.valueOf(sourceCount))
-            stageDetail.put("targetPreCount", Long.valueOf(targetPreCount))
-            stageDetail.put("targetPostCount", Long.valueOf(targetPostCount))
+            stage.stageDetail.put("sourceCount", Long.valueOf(sourceCount))
+            stage.stageDetail.put("targetPreCount", Long.valueOf(targetPreCount))
+            stage.stageDetail.put("targetPostCount", Long.valueOf(targetPostCount))
 
             if (sourceCount != targetPostCount - targetPreCount) {
               throw new Exception(s"JDBCLoad should create same number of records in the target ('${tableName}') as exist in source ('${stage.inputView}') but source has ${sourceCount} records and target created ${targetPostCount-targetPreCount} records.")
@@ -354,7 +353,7 @@ object JDBCLoadStage {
             resultDF
           } catch {
             case e: Exception => throw new Exception(e) with DetailException {
-              override val detail = stageDetail
+              override val detail = stage.stageDetail
             }
           }
         Option(writtenDF)

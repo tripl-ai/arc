@@ -97,13 +97,11 @@ object XMLLoadStage {
     // force com.sun.xml.* implementation for writing xml to be compatible with spark-xml library
     System.setProperty("javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl")
 
-    val stageDetail = stage.stageDetail
-
     val df = spark.table(stage.inputView) 
 
     stage.numPartitions match {
-      case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-      case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+      case Some(partitions) => stage.stageDetail.put("numPartitions", Integer.valueOf(partitions))
+      case None => stage.stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
     }
 
     // set write permissions
@@ -117,9 +115,9 @@ object XMLLoadStage {
       dropMap.put("NullType", nulls.asJava)
     }
 
-    stageDetail.put("drop", dropMap) 
+    stage.stageDetail.put("drop", dropMap) 
 
-    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+    val listener = ListenerUtils.addStageCompletedListener(stage.stageDetail)
 
     try {
       stage.partitionBy match {
@@ -140,7 +138,7 @@ object XMLLoadStage {
       }    
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }      
     }        
 

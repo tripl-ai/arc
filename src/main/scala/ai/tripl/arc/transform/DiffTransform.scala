@@ -105,7 +105,6 @@ case class DiffTransformStage(
 object DiffTransformStage {
 
   def execute(stage: DiffTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    val stageDetail = stage.stageDetail
 
     val inputLeftDF = spark.table(stage.inputLeftView)   
     val inputRightDF = spark.table(stage.inputRightView)   

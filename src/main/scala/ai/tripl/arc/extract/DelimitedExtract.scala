@@ -140,8 +140,7 @@ object DelimitedExtractStage {
 
   def execute(stage: DelimitedExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
-    val stageDetail = stage.stageDetail
-   
+
     val options: Map[String, String] = stage.basePath match {
       case Some(basePath) => Delimited.toSparkOptions(stage.settings) + ("basePath" -> basePath)
       case None => Delimited.toSparkOptions(stage.settings)
@@ -157,7 +156,7 @@ object DelimitedExtractStage {
       ExtractUtils.getSchema(stage.schema)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }      
     }        
 
@@ -201,14 +200,14 @@ object DelimitedExtractStage {
       }      
     } catch { 
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }    
     }
 
     // if incoming dataset has 0 columns then create empty dataset with correct schema
     val emptyDataframeHandlerDF = try {
       if (df.schema.length == 0) {
-        stageDetail.put("records", Integer.valueOf(0))
+        stage.stageDetail.put("records", Integer.valueOf(0))
         optionSchema match {
           case Some(schema) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], schema)
           case None => throw new Exception(s"DelimitedExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
@@ -218,7 +217,7 @@ object DelimitedExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }      
     }      
 
@@ -251,13 +250,13 @@ object DelimitedExtractStage {
     repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
-      stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
-      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
+      stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
       }      
     }
 

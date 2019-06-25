@@ -95,14 +95,13 @@ case class ParquetLoadStage(
 object ParquetLoadStage {
 
   def execute(stage: ParquetLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    var stageDetail = stage.stageDetail
 
     val df = spark.table(stage.inputView)   
 
     if (!df.isStreaming) {
       stage.numPartitions match {
-        case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-        case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+        case Some(partitions) => stage.stageDetail.put("numPartitions", Integer.valueOf(partitions))
+        case None => stage.stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
       }
     }
 
@@ -117,11 +116,11 @@ object ParquetLoadStage {
       dropMap.put("NullType", nulls.asJava)
     }
 
-    stageDetail.put("drop", dropMap)
+    stage.stageDetail.put("drop", dropMap)
 
     val nonNullDF = df.drop(nulls:_*)
 
-    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+    val listener = ListenerUtils.addStageCompletedListener(stage.stageDetail)
 
     try {
       if (nonNullDF.isStreaming) {
@@ -152,7 +151,7 @@ object ParquetLoadStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail
+        override val detail = stage.stageDetail
       }
     }
 

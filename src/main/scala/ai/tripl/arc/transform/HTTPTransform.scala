@@ -139,7 +139,6 @@ object HTTPTransformStage {
 
   def execute(stage: HTTPTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
-    val stageDetail = stage.stageDetail
 
     val signature = s"HTTPTransform requires a field named '${stage.inputField}' of type 'string' or 'binary'."
 
@@ -150,7 +149,7 @@ object HTTPTransformStage {
       schema.fieldIndex(stage.inputField)
     } catch {
       case e: Exception => throw new Exception(s"""${signature} inputView has: [${df.schema.map(_.name).mkString(", ")}].""") with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }   
     }
 
@@ -158,7 +157,7 @@ object HTTPTransformStage {
       case _: StringType => 
       case _: BinaryType => 
       case _ => throw new Exception(s"""${signature} '${stage.inputField}' is of type: '${schema.fields(fieldIndex).dataType.simpleString}'.""") with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }  
     }
 
@@ -266,7 +265,7 @@ object HTTPTransformStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }
     } 
 
@@ -296,12 +295,12 @@ object HTTPTransformStage {
     repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
-      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
       }      
     }
 

@@ -111,11 +111,10 @@ case class JDBCExecuteStage(
 object JDBCExecuteStage {
 
   def execute(stage: JDBCExecuteStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    val stageDetail = stage.stageDetail 
 
     // replace sql parameters
     val sql = SQLUtils.injectParameters(stage.sql, stage.sqlParams, false)
-    stageDetail.put("sql", sql)
+    stage.stageDetail.put("sql", sql)
 
     try {
       using(getConnection(stage.jdbcURL, stage.user, stage.password, stage.params)) { conn =>
@@ -130,7 +129,7 @@ object JDBCExecuteStage {
 
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail         
+        override val detail = stage.stageDetail         
       }
     }
 

@@ -97,14 +97,12 @@ case class AvroLoadStage(
 object AvroLoadStage {
 
   def execute(stage: AvroLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
-    import spark.implicits._
-    val stageDetail = stage.stageDetail
 
     val df = spark.table(stage.inputView)      
 
     stage.numPartitions match {
-      case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-      case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+      case Some(partitions) => stage.stageDetail.put("numPartitions", Integer.valueOf(partitions))
+      case None => stage.stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
     }
 
     // set write permissions
@@ -118,9 +116,9 @@ object AvroLoadStage {
       dropMap.put("NullType", nulls.asJava)
     }
 
-    stageDetail.put("drop", dropMap) 
+    stage.stageDetail.put("drop", dropMap) 
 
-    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+    val listener = ListenerUtils.addStageCompletedListener(stage.stageDetail)
 
     // Avro will convert date and times to epoch milliseconds
     val outputDF = try {
@@ -147,7 +145,7 @@ object AvroLoadStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail
+        override val detail = stage.stageDetail
       }
     }
 

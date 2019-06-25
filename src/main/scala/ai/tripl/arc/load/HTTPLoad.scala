@@ -106,7 +106,6 @@ object HTTPLoadStage {
 
   def execute(stage: HTTPLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
-    val stageDetail = stage.stageDetail
 
     val signature = "HTTPLoad requires inputView to be dataset with [value: string] signature."
 
@@ -114,7 +113,7 @@ object HTTPLoadStage {
 
     if (df.schema.length != 1 || df.schema(0).dataType != StringType) {
         throw new Exception(s"${signature} inputView '${stage.inputView}' has ${df.schema.length} columns of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
-          override val detail = stageDetail          
+          override val detail = stage.stageDetail          
       }      
     }    
 
@@ -234,7 +233,7 @@ object HTTPLoadStage {
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         println("here")
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }
     }
     

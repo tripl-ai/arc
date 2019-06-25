@@ -132,8 +132,6 @@ case class JDBCExtractStage(
 object JDBCExtractStage {
 
   def execute(stage: JDBCExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    import spark.implicits._
-    val stageDetail = stage.stageDetail
 
     // override defaults https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases
     val connectionProperties = new Properties()
@@ -164,15 +162,15 @@ object JDBCExtractStage {
               val upperBound = statement.getResultSet.getLong(2)
 
               connectionProperties.put("lowerBound", lowerBound.toString)    
-              stageDetail.put("lowerBound", Long.valueOf(lowerBound))
+              stage.stageDetail.put("lowerBound", Long.valueOf(lowerBound))
               connectionProperties.put("upperBound", upperBound.toString)    
-              stageDetail.put("upperBound", Long.valueOf(upperBound))
+              stage.stageDetail.put("upperBound", Long.valueOf(upperBound))
             }
           }
         }
       } catch {
         case e: Exception => throw new Exception(e) with DetailException {
-          override val detail = stageDetail          
+          override val detail = stage.stageDetail          
         } 
       }
     }  
@@ -182,7 +180,7 @@ object JDBCExtractStage {
       ExtractUtils.getSchema(stage.schema)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }      
     }         
 
@@ -193,7 +191,7 @@ object JDBCExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }      
     }
 
@@ -222,12 +220,12 @@ object JDBCExtractStage {
     } 
     repartitionedDF.createOrReplaceTempView(stage.outputView)
     
-    stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-    stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+    stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+    stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (stage.persist) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+      stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
     }    
 
     Option(repartitionedDF)

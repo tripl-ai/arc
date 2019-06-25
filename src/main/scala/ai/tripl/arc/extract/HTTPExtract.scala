@@ -141,7 +141,6 @@ object HTTPExtractStage {
 
   def execute(stage: HTTPExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
     import spark.implicits._
-    val stageDetail = stage.stageDetail
 
     // create a StructType schema for RequestResponse
     val typedSchema = ScalaReflection.schemaFor[RequestResponse].dataType.asInstanceOf[StructType]      
@@ -232,7 +231,7 @@ object HTTPExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }
     }
 
@@ -257,12 +256,12 @@ object HTTPExtractStage {
     } 
     repartitionedDF.createOrReplaceTempView(stage.outputView)
 
-    stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-    stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+    stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+    stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (stage.persist) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+      stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
     }    
 
     Option(repartitionedDF)

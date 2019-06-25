@@ -91,7 +91,6 @@ case class JSONTransformStage(
 object JSONTransformStage {
 
   def execute(stage: JSONTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
-    val stageDetail = stage.stageDetail
 
     val df = spark.table(stage.inputView)
 
@@ -103,13 +102,13 @@ object JSONTransformStage {
       dropMap.put("NullType", nulls.asJava)
     }
 
-    stageDetail.put("drop", dropMap)   
+    stage.stageDetail.put("drop", dropMap)   
 
     val transformedDF = try {
       df.toJSON.toDF
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }      
     }  
 
@@ -134,12 +133,12 @@ object JSONTransformStage {
     repartitionedDF.createOrReplaceTempView(stage.outputView)    
 
     if (!repartitionedDF.isStreaming) {
-      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
       }      
     }
 

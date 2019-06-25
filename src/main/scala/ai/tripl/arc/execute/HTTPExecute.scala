@@ -95,7 +95,6 @@ case class HTTPExecuteStage(
 object HTTPExecuteStage {
 
   def execute(stage: HTTPExecuteStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    val stageDetail = stage.stageDetail
 
     val client = HttpClientBuilder.create.build
     val post = new HttpPost(stage.uri.toString)
@@ -123,12 +122,12 @@ object HTTPExecuteStage {
     val responseMap = new java.util.HashMap[String, Object]()
     responseMap.put("statusCode", new java.lang.Integer(response.getStatusLine.getStatusCode))
     responseMap.put("reasonPhrase", response.getStatusLine.getReasonPhrase)   
-    stageDetail.put("response", responseMap)   
+    stage.stageDetail.put("response", responseMap)   
 
     // verify status code is correct
     if (!stage.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
       throw new Exception(s"""HTTPExecute expects a response StatusCode in [${stage.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""") with DetailException {
-        override val detail = stageDetail
+        override val detail = stage.stageDetail
       }
     } 
 

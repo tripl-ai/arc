@@ -107,8 +107,6 @@ case class BytesExtractStage(
 object BytesExtractStage {
 
   def execute(stage: BytesExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
-    import spark.implicits._
-    val stageDetail = stage.stageDetail
 
     val signature = "BytesExtract requires pathView to be dataset with [value: string] signature."
 
@@ -124,18 +122,18 @@ object BytesExtractStage {
             schema.fieldIndex("value")
           } catch {
             case e: Exception => throw new Exception(s"""${signature} inputView has: [${pathView.schema.map(_.name).mkString(", ")}].""") with DetailException {
-              override val detail = stageDetail
+              override val detail = stage.stageDetail
             }
           }
 
           schema.fields(fieldIndex).dataType match {
             case _: StringType =>
             case _ => throw new Exception(s"""${signature} 'value' is of type: '${schema.fields(fieldIndex).dataType.simpleString}'.""") with DetailException {
-              override val detail = stageDetail
+              override val detail = stage.stageDetail
             }
           }
 
-          val path = pathView.select($"value").collect().map( _.getString(0) ).mkString(",")
+          val path = pathView.select(col("value")).collect().map( _.getString(0) ).mkString(",")
           spark.read.format("bytes").load(path)
         }
         case Right(glob) => {
@@ -149,12 +147,12 @@ object BytesExtractStage {
       case e: InvalidInputException => 
         if (stage.failMode == FailModeTypeFailFast) {
           throw new Exception("BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.") with DetailException {
-            override val detail = stageDetail          
+            override val detail = stage.stageDetail          
           }  
         }
         spark.createDataFrame(spark.sparkContext.emptyRDD[Row], BinaryContent.schema)
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }   
     }
 
@@ -167,13 +165,13 @@ object BytesExtractStage {
     }
     repartitionedDF.createOrReplaceTempView(stage.outputView)
 
-    stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
-    stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-    stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+    stage.stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
+    stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+    stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (stage.persist && !repartitionedDF.isStreaming) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
     }
 
     Option(repartitionedDF)

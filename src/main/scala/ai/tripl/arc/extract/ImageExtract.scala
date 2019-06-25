@@ -110,8 +110,6 @@ case class ImageExtractStage(
 object ImageExtractStage {
 
   def execute(stage: ImageExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    import spark.implicits._
-    val stageDetail = stage.stageDetail
 
     CloudUtils.setHadoopConfiguration(stage.authentication)
 
@@ -130,7 +128,7 @@ object ImageExtractStage {
         spark.createDataFrame(spark.sparkContext.emptyRDD[Row], ImageSchema.imageSchema)
       }
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       }
     }    
 
@@ -154,13 +152,13 @@ object ImageExtractStage {
     repartitionedDF.createOrReplaceTempView(stage.outputView)
     
     if (!repartitionedDF.isStreaming) {
-      stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
-      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
+      stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
       }      
     }
 

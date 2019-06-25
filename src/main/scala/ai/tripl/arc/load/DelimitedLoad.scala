@@ -110,15 +110,13 @@ case class DelimitedLoadStage(
 object DelimitedLoadStage {
 
   def execute(stage: DelimitedLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    import spark.implicits._
-    val stageDetail = stage.stageDetail
 
     val df = spark.table(stage.inputView)      
 
     if (!df.isStreaming) {
       stage.numPartitions match {
-        case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-        case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+        case Some(partitions) => stage.stageDetail.put("numPartitions", Integer.valueOf(partitions))
+        case None => stage.stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
       }
     }
 
@@ -139,13 +137,13 @@ object DelimitedLoadStage {
       dropMap.put("NullType", nulls.asJava)
     }  
 
-    stageDetail.put("drop", dropMap) 
+    stage.stageDetail.put("drop", dropMap) 
 
     val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)
 
     val options = Delimited.toSparkOptions(stage.settings)
 
-    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+    val listener = ListenerUtils.addStageCompletedListener(stage.stageDetail)
 
     try {
       if (nonNullDF.isStreaming) {
@@ -176,7 +174,7 @@ object DelimitedLoadStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail
+        override val detail = stage.stageDetail
       }
     }
 

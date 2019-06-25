@@ -106,20 +106,19 @@ case class TextLoadStage(
 object TextLoadStage {
 
   def execute(stage: TextLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    val stageDetail = stage.stageDetail
 
     val df = spark.table(stage.inputView)      
 
     if (!df.isStreaming) {
       stage.numPartitions match {
-        case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-        case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+        case Some(partitions) => stage.stageDetail.put("numPartitions", Integer.valueOf(partitions))
+        case None => stage.stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
       }
     }
 
     if (df.schema.length != 1 || df.schema.fields(0).dataType != StringType) {
       throw new Exception(s"""TextLoad supports only a single text column but the input view has ${df.schema.length} columns.""") with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail          
       } 
     }      
 
@@ -168,7 +167,7 @@ object TextLoadStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail
+        override val detail = stage.stageDetail
       }     
     }
 

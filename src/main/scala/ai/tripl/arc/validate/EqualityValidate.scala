@@ -1,100 +1,148 @@
-// package ai.tripl.arc.validate
+package ai.tripl.arc.validate
 
-// import java.lang._
+import java.lang._
 
-// import org.apache.spark.sql._
-// import org.apache.spark.sql.functions._
+import org.apache.spark.sql._
+import org.apache.spark.sql.functions._
 
-// import ai.tripl.arc.api.API._ 
-// import ai.tripl.arc.util._
+import com.typesafe.config._
 
-// object EqualityValidate {
+import ai.tripl.arc.api._
+import ai.tripl.arc.api.API._
+import ai.tripl.arc.config._
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.plugins.PipelineStagePlugin
+import ai.tripl.arc.util.CloudUtils
+import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.util.ExtractUtils
+import ai.tripl.arc.util.MetadataUtils
+import ai.tripl.arc.util.ListenerUtils
+import ai.tripl.arc.util.Utils
 
-//   def validate(validate: EqualityValidate)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
-//     val startTime = System.currentTimeMillis() 
-//     val stageDetail = new java.util.HashMap[String, Object]()
-//     stageDetail.put("type", validate.getType)
-//     stageDetail.put("name", validate.name)
-//     for (description <- validate.description) {
-//       stageDetail.put("description", description)    
-//     }    
-//     stageDetail.put("leftView", validate.leftView)      
-//     stageDetail.put("rightView", validate.rightView) 
+class EqualityValidate extends PipelineStagePlugin {
 
-//     logger.info()
-//       .field("event", "enter")
-//       .map("stage", stageDetail)
-//       .log()   
+  val version = Utils.getFrameworkVersion
 
-//     val rawLeftDF = spark.table(validate.leftView)   
-//     val rawRightDF = spark.table(validate.rightView)   
+  def createStage(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
 
-//     // remove any internal fields as some will be added by things like the ParquetExtract which includes filename
-//     val leftInternalFields = rawLeftDF.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-//     val rightInternalFields = rawRightDF.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-//     val leftDF = rawLeftDF.drop(leftInternalFields:_*) 
-//     val rightDF = rawRightDF.drop(rightInternalFields:_*) 
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "leftView" :: "rightView" :: "params" :: Nil
+    val name = getValue[String]("name")
+    val description = getOptionalValue[String]("description")
+    val leftView = getValue[String]("leftView")
+    val rightView = getValue[String]("rightView")
+    val params = readMap("params", c)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
-//     // test column count equality
-//     val leftExceptRightColumns = leftDF.columns diff rightDF.columns
-//     val rightExceptLeftColumns = rightDF.columns diff leftDF.columns
-//     if (leftExceptRightColumns.length != 0 || rightExceptLeftColumns.length != 0) {
-//       stageDetail.put("leftExceptRightColumns", leftExceptRightColumns)
-//       stageDetail.put("rightExceptLeftColumns", rightExceptLeftColumns)
+    (name, description, leftView, rightView, invalidKeys) match {
+      case (Right(name), Right(description), Right(leftView), Right(rightView), Right(invalidKeys)) => 
 
-//       throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${validate.leftView}' (${leftDF.columns.length} columns) contains columns: [${leftExceptRightColumns.map(fieldName => s"'${fieldName}'").mkString(", ")}] that are not in '${validate.rightView}' and '${validate.rightView}' (${rightDF.columns.length} columns) contains columns: [${rightExceptLeftColumns.map(fieldName => s"'${fieldName}'").mkString(", ")}] that are not in '${validate.leftView}'. Columns are not equal so cannot the data be compared.""") with DetailException {
-//         override val detail = stageDetail
-//       }      
-//     }      
+        val stage = EqualityValidateStage(
+          plugin=this,
+          name=name,
+          description=description,
+          leftView=leftView,
+          rightView=rightView,
+          params=params
+        )
 
-//     // test column order equality
-//     if (leftDF.schema.map(_.name).toArray.deep != rightDF.schema.map(_.name).toArray.deep) {
-//       stageDetail.put("leftColumns", leftDF.schema.map(_.name).toArray)
-//       stageDetail.put("rightColumns", rightDF.schema.map(_.name).toArray)
+        stage.stageDetail.put("leftView", leftView)      
+        stage.stageDetail.put("rightView", rightView)         
 
-//       throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${validate.leftView}' contains columns (ordered): [${leftDF.columns.map(fieldName => s"'${fieldName}'").mkString(", ")}] and '${validate.rightView}' contains columns (ordered): [${rightDF.columns.map(fieldName => s"'${fieldName}'").mkString(", ")}]. Columns are not equal so cannot the data be compared.""") with DetailException {
-//         override val detail = stageDetail
-//       }      
-//     }      
+        Right(stage)
+      case _ =>
+        val allErrors: Errors = List(name, description, leftView, rightView, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+}
 
-//     // test column type equality
-//     if (leftDF.schema.map(_.dataType).toArray.deep != rightDF.schema.map(_.dataType).toArray.deep) {
-//       stageDetail.put("leftColumnsTypes", leftDF.schema.map(_.dataType.typeName).toArray)
-//       stageDetail.put("rightColumnsTypes", rightDF.schema.map(_.dataType.typeName).toArray)
+case class EqualityValidateStage(
+    plugin: PipelineStagePlugin,
+    name: String, 
+    description: Option[String], 
+    leftView: String, 
+    rightView: String, 
+    params: Map[String, String]
+  ) extends PipelineStage {
 
-//       throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${validate.leftView}' contains column types (ordered): [${leftDF.schema.map(_.dataType.typeName).toArray.map(fieldType => s"'${fieldType}'").mkString(", ")}] and '${validate.rightView}' contains column types (ordered): [${rightDF.schema.map(_.dataType.typeName).toArray.map(fieldType => s"'${fieldType}'").mkString(", ")}]. Columns are not equal so cannot the data be compared.""") with DetailException {
-//         override val detail = stageDetail
-//       }      
-//     }   
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    EqualityValidateStage.execute(this)
+  }
+}
 
-//     // do not test column nullable equality
+object EqualityValidateStage {
 
-//     // do a full join on a calculated hash of all values in row on each dataset
-//     // trying to calculate the hash value inside the joinWith method produced an inconsistent result
-//     val leftHashDF = leftDF.withColumn("_hash", sha2(to_json(struct(leftDF.columns.map(col):_*)),512))
-//     val rightHashDF = rightDF.withColumn("_hash", sha2(to_json(struct(rightDF.columns.map(col):_*)),512))
-//     val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF("_hash") === rightHashDF("_hash"), "full")
+  def execute(stage: EqualityValidateStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-//     val leftExceptRight = transformedDF.filter(col("_2").isNull)
-//     val rightExceptLeft = transformedDF.filter(col("_1").isNull)
-//     val leftExceptRightCount = leftExceptRight.count
-//     val rightExceptLeftCount = rightExceptLeft.count     
+    val rawLeftDF = spark.table(stage.leftView)   
+    val rawRightDF = spark.table(stage.rightView)   
 
-//     if (leftExceptRightCount != 0 || rightExceptLeftCount != 0) {
-//       stageDetail.put("leftExceptRightCount", Long.valueOf(leftExceptRightCount))
-//       stageDetail.put("rightExceptLeftCount", Long.valueOf(rightExceptLeftCount))
+    // remove any internal fields as some will be added by things like the ParquetExtract which includes filename
+    val leftInternalFields = rawLeftDF.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val rightInternalFields = rawRightDF.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val leftDF = rawLeftDF.drop(leftInternalFields:_*) 
+    val rightDF = rawRightDF.drop(rightInternalFields:_*) 
 
-//       throw new Exception(s"EqualityValidate ensures the two input datasets are the same (including column order), but '${validate.leftView}' (${leftDF.count} rows) contains ${leftExceptRightCount} rows that are not in '${validate.rightView}' and '${validate.rightView}' (${rightDF.count} rows) contains ${rightExceptLeftCount} rows which are not in '${validate.leftView}'.") with DetailException {
-//         override val detail = stageDetail
-//       }
-//     }    
+    // test column count equality
+    val leftExceptRightColumns = leftDF.columns diff rightDF.columns
+    val rightExceptLeftColumns = rightDF.columns diff leftDF.columns
+    if (leftExceptRightColumns.length != 0 || rightExceptLeftColumns.length != 0) {
+      stage.stageDetail.put("leftExceptRightColumns", leftExceptRightColumns)
+      stage.stageDetail.put("rightExceptLeftColumns", rightExceptLeftColumns)
 
-//     logger.info()
-//       .field("event", "exit")
-//       .field("duration", System.currentTimeMillis() - startTime)
-//       .map("stage", stageDetail)
-//       .log()
+      throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${stage.leftView}' (${leftDF.columns.length} columns) contains columns: [${leftExceptRightColumns.map(fieldName => s"'${fieldName}'").mkString(", ")}] that are not in '${stage.rightView}' and '${stage.rightView}' (${rightDF.columns.length} columns) contains columns: [${rightExceptLeftColumns.map(fieldName => s"'${fieldName}'").mkString(", ")}] that are not in '${stage.leftView}'. Columns are not equal so cannot the data be compared.""") with DetailException {
+        override val detail = stage.stageDetail
+      }      
+    }      
 
-//     None
-//   }
-// }
+    // test column order equality
+    if (leftDF.schema.map(_.name).toArray.deep != rightDF.schema.map(_.name).toArray.deep) {
+      stage.stageDetail.put("leftColumns", leftDF.schema.map(_.name).toArray)
+      stage.stageDetail.put("rightColumns", rightDF.schema.map(_.name).toArray)
+
+      throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${stage.leftView}' contains columns (ordered): [${leftDF.columns.map(fieldName => s"'${fieldName}'").mkString(", ")}] and '${stage.rightView}' contains columns (ordered): [${rightDF.columns.map(fieldName => s"'${fieldName}'").mkString(", ")}]. Columns are not equal so cannot the data be compared.""") with DetailException {
+        override val detail = stage.stageDetail
+      }      
+    }      
+
+    // test column type equality
+    if (leftDF.schema.map(_.dataType).toArray.deep != rightDF.schema.map(_.dataType).toArray.deep) {
+      stage.stageDetail.put("leftColumnsTypes", leftDF.schema.map(_.dataType.typeName).toArray)
+      stage.stageDetail.put("rightColumnsTypes", rightDF.schema.map(_.dataType.typeName).toArray)
+
+      throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${stage.leftView}' contains column types (ordered): [${leftDF.schema.map(_.dataType.typeName).toArray.map(fieldType => s"'${fieldType}'").mkString(", ")}] and '${stage.rightView}' contains column types (ordered): [${rightDF.schema.map(_.dataType.typeName).toArray.map(fieldType => s"'${fieldType}'").mkString(", ")}]. Columns are not equal so cannot the data be compared.""") with DetailException {
+        override val detail = stage.stageDetail
+      }      
+    }   
+
+    // do not test column nullable equality
+
+    // do a full join on a calculated hash of all values in row on each dataset
+    // trying to calculate the hash value inside the joinWith method produced an inconsistent result
+    val leftHashDF = leftDF.withColumn("_hash", sha2(to_json(struct(leftDF.columns.map(col):_*)),512))
+    val rightHashDF = rightDF.withColumn("_hash", sha2(to_json(struct(rightDF.columns.map(col):_*)),512))
+    val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF("_hash") === rightHashDF("_hash"), "full")
+
+    val leftExceptRight = transformedDF.filter(col("_2").isNull)
+    val rightExceptLeft = transformedDF.filter(col("_1").isNull)
+    val leftExceptRightCount = leftExceptRight.count
+    val rightExceptLeftCount = rightExceptLeft.count     
+
+    if (leftExceptRightCount != 0 || rightExceptLeftCount != 0) {
+      stage.stageDetail.put("leftExceptRightCount", Long.valueOf(leftExceptRightCount))
+      stage.stageDetail.put("rightExceptLeftCount", Long.valueOf(rightExceptLeftCount))
+
+      throw new Exception(s"EqualityValidate ensures the two input datasets are the same (including column order), but '${stage.leftView}' (${leftDF.count} rows) contains ${leftExceptRightCount} rows that are not in '${stage.rightView}' and '${stage.rightView}' (${rightDF.count} rows) contains ${rightExceptLeftCount} rows which are not in '${stage.leftView}'.") with DetailException {
+        override val detail = stage.stageDetail
+      }
+    }
+
+    None
+  }
+}
