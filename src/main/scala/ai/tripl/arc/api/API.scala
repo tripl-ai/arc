@@ -31,7 +31,7 @@ object API {
 
     /** the running environment
       */    
-    environment: String,
+    environment: Option[String],
 
     /** the running environment identifier
       */    

@@ -134,18 +134,9 @@ object ARC {
     }
 
     val environment: Option[String] = commandLineArguments.get("etl.config.environment").orElse(envOrNone("ETL_CONF_ENV"))
-    val env = environment match {
-      case Some(value) => value
-      case None => {
-        logger.warn()
-          .field("event", "deprecation")
-          .field("message", "command line argument 'etl.config.environment' or 'ETL_CONF_ENV' will be required in next release. defaulting to 'prd'")        
-          .log()
-
-        "prd"      
-      }
-    }  
-    MDC.put("environment", env) 
+    for (environment <- environment) {
+      MDC.put("environment", environment) 
+    }
     
     val environmentId: Option[String] = commandLineArguments.get("etl.config.environment.id").orElse(envOrNone("ETL_CONF_ENV_ID"))
     for (e <- environmentId) {
@@ -160,7 +151,7 @@ object ARC {
     val arcContext = ARCContext(
       jobId=jobId, 
       jobName=jobName, 
-      environment=env, 
+      environment=environment, 
       environmentId=environmentId, 
       configUri=configUri, 
       isStreaming=isStreaming, 
@@ -179,7 +170,7 @@ object ARC {
       .field("frameworkVersion", frameworkVersion)
       .field("scalaVersion", scala.util.Properties.versionNumberString)
       .field("javaVersion", System.getProperty("java.runtime.version"))
-      .field("environment", env)
+      .field("environment", environment.getOrElse(""))
       .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => c.getClass.getName).asJava)
       .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => c.getClass.getName).asJava)
       .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)

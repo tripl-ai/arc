@@ -46,10 +46,15 @@ object ConfigUtils {
   }
 
   def parsePipeline(configUri: Option[String], commandLineArguments: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, ARCContext)] = {
-    configUri match {
-      case Some(uri) => parseConfig(Right(new URI(uri)), commandLineArguments, arcContext)
-      case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
-     }
+    arcContext.environment match {
+      case Some(_) => {
+        configUri match {
+          case Some(uri) => parseConfig(Right(new URI(uri)), commandLineArguments, arcContext)
+          case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
+        }
+      }  
+      case None => Left(ConfigError("file", None, s"No environment defined as a command line argument --etl.config.environment or ETL_CONF_ENVIRONMENT environment variable.") :: Nil)
+    }
   }
 
   def parseConfig(uri: Either[String, URI], commandLineArguments: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, ARCContext)] = {
@@ -257,11 +262,11 @@ object ConfigUtils {
               .field("event", "validateConfig")
               .field("type", _type)              
               .field("message", "skipping plugin due to environment configuration")       
-              .field("environment", arcContext.environment)               
+              .field("environment", arcContext.environment.get)               
               .list("environments", environments.asJava)               
               .log()   
 
-            if (arcContext.ignoreEnvironments || environments.contains(arcContext.environment)) {
+            if (arcContext.ignoreEnvironments || environments.contains(arcContext.environment.get)) {
               val params = ai.tripl.arc.config.ConfigUtils.readMap("params", plugin)
               DynamicConfigurationPlugin.resolveAndExecutePlugin(_type, params).map(_ :: Nil)
             } else {
@@ -290,11 +295,11 @@ object ConfigUtils {
               .field("event", "validateConfig")
               .field("type", _type)              
               .field("message", "skipping plugin due to environment configuration")       
-              .field("environment", arcContext.environment)               
+              .field("environment", arcContext.environment.get)               
               .list("environments", environments.asJava)               
               .log()   
 
-            if (arcContext.ignoreEnvironments || environments.contains(arcContext.environment)) {
+            if (arcContext.ignoreEnvironments || environments.contains(arcContext.environment.get)) {
               val params = ai.tripl.arc.config.ConfigUtils.readMap("params", plugin)
               LifecyclePlugin.resolve(_type, params).map(_ :: Nil)
             } else {
@@ -841,14 +846,14 @@ object ConfigUtils {
       val environments = if (config.hasPath("environments")) config.getStringList("environments").asScala.toList else Nil
 
       // skip stage if not in environment
-      if (!arcContext.ignoreEnvironments && !environments.contains(arcContext.environment)) {
+      if (!arcContext.ignoreEnvironments && !environments.contains(arcContext.environment.get)) {
         logger.trace()
           .field("event", "validateConfig")
           .field("type", stageType.right.getOrElse("unknown"))
           .field("stageIndex", index)
           .field("message", "skipping stage due to environment configuration")       
           .field("skipStage", true)
-          .field("environment", arcContext.environment)               
+          .field("environment", arcContext.environment.get)               
           .list("environments", environments.asJava)               
           .log()    
         
@@ -859,7 +864,7 @@ object ConfigUtils {
           .field("type", stageType.right.getOrElse("unknown"))              
           .field("stageIndex", index)
           .field("skipStage", false)
-          .field("environment", arcContext.environment)               
+          .field("environment", arcContext.environment.get)               
           .list("environments", environments.asJava)               
           .log()   
 

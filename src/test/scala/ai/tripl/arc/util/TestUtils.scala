@@ -39,7 +39,7 @@ object TestUtils {
       ARCContext(
         jobId=None, 
         jobName=None, 
-        environment=environment, 
+        environment=Option(environment), 
         environmentId=None, 
         configUri=None, 
         isStreaming=isStreaming, 
