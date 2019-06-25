@@ -240,62 +240,19 @@ object API {
 
   // case class KafkaExtract(name: String, description: Option[String], outputView: String, topic: String, bootstrapServers: String, groupID: String, maxPollRecords: Int, timeout: Long, autoCommit: Boolean, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "KafkaExtract" }
 
-
-
-
-
-  //   /** A transform
-  //   */
-  // trait Transform extends PipelineStage {
-  // }
-
-
-  
-
-
-
-
-
-
-
-  // sealed trait Load extends PipelineStage
-
-
   // case class AzureEventHubsLoad(name: String, description: Option[String], inputView: String, namespaceName: String, eventHubName: String, sharedAccessSignatureKeyName: String, sharedAccessSignatureKey: String, numPartitions: Option[Int], retryMinBackoff: Long, retryMaxBackoff: Long, retryCount: Int, params: Map[String, String]) extends Load { val getType = "AzureEventHubsLoad" }
-
 
   // case class DatabricksDeltaLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ParquetLoad" }
 
   // case class DatabricksSQLDWLoad(name: String, description: Option[String], inputView: String, jdbcURL: String, driver: java.sql.Driver, tempDir: String, dbTable: String, forwardSparkAzureStorageCredentials: Boolean, tableOptions: Option[String], maxStrLength: Int, authentication: Option[Authentication], params: Map[String, String]) extends Load { val getType = "DatabricksSQLDWLoad" }
 
-
   // case class ElasticsearchLoad(name: String, description: Option[String], inputView: String, output: String, partitionBy: List[String], numPartitions: Option[Int], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ElasticsearchLoad" }
 
-
-
-
   // case class KafkaLoad(name: String, description: Option[String], inputView: String, topic: String, bootstrapServers: String, acks: Int, numPartitions: Option[Int], retries: Int, batchSize: Int, params: Map[String, String]) extends Load { val getType = "KafkaLoad" }
-  
-
-
-
-
-
-  // sealed trait Execute extends PipelineStage
-
-
 
   // case class KafkaCommitExecute(name: String, description: Option[String], inputView: String, bootstrapServers: String, groupID: String, params: Map[String, String]) extends Execute  { val getType = "KafkaCommitExecute" }
 
   // case class PipelineExecute(name: String, description: Option[String], uri: URI, pipeline: ETLPipeline)
-
-
-  // sealed trait Validate extends PipelineStage
-
-  // case class EqualityValidate(name: String, description: Option[String], leftView: String, rightView: String, params: Map[String, String]) extends Validate { val getType = "EqualityValidate" }
-
-  // case class SQLValidate(name: String, description: Option[String], inputURI: URI, sql: String, sqlParams: Map[String, String], params: Map[String, String]) extends Validate { val getType = "SQLValidate" }
-
 
   sealed trait FailModeType {
     def sparkString(): String

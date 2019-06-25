@@ -357,24 +357,6 @@ object ConfigUtils {
     }
   }    
 
-  def getExtractColumns(parsedURI: Either[Errors, Option[URI]], uriKey: String, authentication: Either[Errors, Option[Authentication]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, List[ExtractColumn]] = {
-    /*val schema: Either[Errors, Option[String]] = parsedURI.rightFlatMap {
-      case Some(uri) =>
-        textContentForURI(uri, uriKey, authentication).rightFlatMap(text => Right(Option(text)))
-      case None => Right(None)
-    }
-
-    schema.rightFlatMap { sch =>
-      val cols = sch.map{ s => MetadataSchema.parseJsonMetadata(s) }.getOrElse(Right(Nil))
-
-      cols match {
-        case Left(errs) => Left(errs.map( e => ConfigError("metadata error", None, Error.pipelineSimpleErrorMsg(e.errors)) ))
-        case Right(extractColumns) => Right(extractColumns)
-      }
-    }*/
-    ???
-  }
-
   private def getJDBCDriver(path: String, uri: String)(implicit c: Config): Either[Errors, java.sql.Driver] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, java.sql.Driver] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
@@ -428,9 +410,6 @@ object ConfigUtils {
     }
   }    
 
-  // // extract
- 
-
   // def readAzureCosmosDBExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._
 
@@ -473,8 +452,6 @@ object ConfigUtils {
   //   }
   // }    
 
-  
-
   // def readDatabricksDeltaExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._
 
@@ -502,8 +479,6 @@ object ConfigUtils {
   //       (Left(err :: Nil), graph)
   //   }
   // }  
-
-  
 
   // def readElasticsearchExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._
@@ -678,8 +653,6 @@ object ConfigUtils {
   //   }
   // }   
 
-  
-
   // def readElasticsearchLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._
 
@@ -813,9 +786,6 @@ object ConfigUtils {
   //       Left(err :: Nil)
   //   }
   // }
-
-  // // validate
-
 
   def readPipelineStage(index: Int, stageType: String, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], PipelineStage] = {
     implicit val c: Config = config
