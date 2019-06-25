@@ -1130,48 +1130,7 @@ object ConfigUtils {
   
 
 
-  // def readJDBCLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
-
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "jdbcURL" :: "tableName" :: "params" :: "batchsize" :: "bulkload" :: "createTableColumnTypes" :: "createTableOptions" :: "isolationLevel" :: "numPartitions" :: "saveMode" :: "tablock" :: "truncate" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)     
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val inputView = getValue[String]("inputView")
-  //   val jdbcURL = getValue[String]("jdbcURL")
-  //   val driver = jdbcURL.rightFlatMap(uri => getJDBCDriver("jdbcURL", uri))
-  //   val tableName = getValue[String]("tableName")
-  //   val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
-  //   val numPartitions = getOptionalValue[Int]("numPartitions")
-  //   val isolationLevel = getValue[String]("isolationLevel", default = Some("READ_UNCOMMITTED"), validValues = "NONE" :: "READ_COMMITTED" :: "READ_UNCOMMITTED" :: "REPEATABLE_READ" :: "SERIALIZABLE" :: Nil) |> parseIsolationLevel("isolationLevel") _
-  //   val batchsize = getValue[Int]("batchsize", default = Some(1000))
-  //   val truncate = getValue[Boolean]("truncate", default = Some(false))
-  //   val createTableOptions = getOptionalValue[String]("createTableOptions")
-  //   val createTableColumnTypes = getOptionalValue[String]("createTableColumnTypes")
-  //   val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
-  //   val bulkload = getValue[Boolean]("bulkload", default = Some(false))
-  //   val tablock = getValue[Boolean]("tablock", default = Some(true))
-
-  //   (name, description, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock, partitionBy, invalidKeys) match {
-  //     case (Right(n), Right(desc), Right(iv), Right(ju), Right(d), Right(tn), Right(np), Right(il), Right(bs), Right(t), Right(cto), Right(ctct), Right(sm), Right(bl), Right(tl), Right(pb), Right(_)) => 
-  //       val load = JDBCLoad(n, desc, iv, ju, tn, pb, np, il, bs, t, cto, ctct, sm, d, bl, tl, params)
-
-  //       val ov = s"$idx:${load.getType}"
-  //       var outputGraph = graph
-  //       // add the vertices
-  //       outputGraph = outputGraph.addVertex(Vertex(idx, ov))
-  //       // add the edges
-  //       outputGraph = outputGraph.addEdge(iv, ov)
-
-  //       (Right(load), outputGraph)
-  //     case _ =>
-  //       val allErrors: Errors = List(name, description, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, bulkload, tablock, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }      
+    
 
   // def readJSONLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._
