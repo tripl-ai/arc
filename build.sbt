@@ -1,5 +1,9 @@
 import Dependencies._
 
+lazy val scala211 = "2.11.12"
+lazy val scala212 = "2.12.8"
+lazy val supportedScalaVersions = List(scala211, scala212)
+
 lazy val root = (project in file(".")).
   enablePlugins(BuildInfoPlugin).
   configs(IntegrationTest).
@@ -7,7 +11,7 @@ lazy val root = (project in file(".")).
     name := "arc",
     organization := "ai.tripl",
     organizationHomepage := Some(url("https://arc.tripl.ai")),
-    scalaVersion := "2.11.12",
+    crossScalaVersions := supportedScalaVersions,
     licenses := List("MIT" -> new URL("https://opensource.org/licenses/MIT")),
     scalastyleFailOnError := false,
     libraryDependencies ++= etlDeps,
