@@ -5,8 +5,6 @@ import java.time.LocalTime
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import org.apache.spark.ml.PipelineModel
-import org.apache.spark.ml.tuning.CrossValidatorModel
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.types.MetadataBuilder
 import org.apache.spark.sql.SaveMode
@@ -251,21 +249,15 @@ object API {
   // trait Transform extends PipelineStage {
   // }
 
-  // case class DiffTransform(name: String, description: Option[String], inputLeftView: String, inputRightView: String, outputIntersectionView: Option[String], outputLeftView: Option[String], outputRightView: Option[String], params: Map[String, String], persist: Boolean) extends Transform { val getType = "DiffTransform" }
 
-  // case class HTTPTransform(name: String, description: Option[String], uri: URI, headers: Map[String, String], validStatusCodes: List[Int], inputView: String, outputView: String, inputField: String, params: Map[String, String], persist: Boolean, batchSize: Int, delimiter: String, numPartitions: Option[Int], partitionBy: List[String], failMode: FailModeType) extends Transform { val getType = "HTTPTransform" }  
   
-  // case class JSONTransform(name: String, description: Option[String], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Transform { val getType = "JSONTransform" }
 
-  // case class MetadataFilterTransform(name: String, description: Option[String], inputView: String, inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Transform { val getType = "MetadataFilterTransform" }
 
-  // case class MLTransform(name: String, description: Option[String], inputURI: URI, model: Either[PipelineModel, CrossValidatorModel], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Transform { val getType = "MLTransform" }
 
   // case class SQLTransform(name: String, description: Option[String], inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Transform { val getType = "SQLTransform" }
 
   // case class TensorFlowServingTransform(name: String, description: Option[String], inputView: String, outputView: String, uri: URI, signatureName: Option[String], responseType: ResponseType, batchSize: Int, inputField: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Transform { val getType = "TensorFlowServingTransform" }
 
-  // case class TypingTransform(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, failMode: FailModeType, numPartitions: Option[Int], partitionBy: List[String]) extends Transform with ColumnarExtract { val getType = "TypingTransform" }
 
 
   // sealed trait Load extends PipelineStage
@@ -293,9 +285,7 @@ object API {
 
   // sealed trait Execute extends PipelineStage
 
-  // case class JDBCExecute(name: String, description: Option[String], inputURI: URI, jdbcURL: String, user: Option[String], password: Option[String], sql: String, sqlParams: Map[String, String], params: Map[String, String]) extends Execute { val getType = "JDBCExecute" }
 
-  // case class HTTPExecute(name: String, description: Option[String], uri: URI, headers: Map[String, String], payloads: Map[String, String], validStatusCodes: List[Int], params: Map[String, String]) extends Execute  { val getType = "HTTPExecute" }
 
   // case class KafkaCommitExecute(name: String, description: Option[String], inputView: String, bootstrapServers: String, groupID: String, params: Map[String, String]) extends Execute  { val getType = "KafkaCommitExecute" }
 

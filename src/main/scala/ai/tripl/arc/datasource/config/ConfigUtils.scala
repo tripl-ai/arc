@@ -248,8 +248,7 @@ object ConfigUtils {
     }
   }
 
-  def textContentForURI(uri: URI, uriKey: String, authentication: Either[Errors, Option[Authentication]])
-                               (implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, String] = {
+  def textContentForURI(uri: URI, uriKey: String, authentication: Either[Errors, Option[Authentication]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, String] = {
     uri.getScheme match {
       case "classpath" =>
         val path = s"/${uri.getHost}${uri.getPath}"
