@@ -571,36 +571,7 @@ object ConfigUtils {
 
   // // transform
 
-  // def readJSONTransform(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
-
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "persist" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)  
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val inputView = getValue[String]("inputView")
-  //   val outputView = getValue[String]("outputView")
-  //   val persist = getValue[Boolean]("persist", default = Some(false))
-  //   val numPartitions = getOptionalValue[Int]("numPartitions")
-  //   val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))  
-
-  //   (name, description, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy) match {
-  //     case (Right(n), Right(d), Right(iv), Right(ov), Right(p), Right(_), Right(np), Right(pb)) => 
-  //       var outputGraph = graph
-  //       // add the vertices
-  //       outputGraph = outputGraph.addVertex(Vertex(idx, ov))
-  //       // add the edges
-  //       outputGraph = outputGraph.addEdge(iv, ov)
-
-  //       (Right(JSONTransform(n, d, iv, ov, params, p, np, pb)), outputGraph)
-  //     case _ =>
-  //       val allErrors: Errors = List(name, description, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }  
+ 
 
   // def readMetadataFilterTransform(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._

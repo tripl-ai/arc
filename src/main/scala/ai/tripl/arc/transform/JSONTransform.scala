@@ -1,91 +1,149 @@
-// package ai.tripl.arc.transform
+package ai.tripl.arc.transform
 
-// import java.lang._
-// import scala.collection.JavaConverters._
+import java.lang._
+import scala.collection.JavaConverters._
 
-// import org.apache.spark.sql._
-// import org.apache.spark.sql.types._
-// import org.apache.spark.storage.StorageLevel
+import org.apache.spark.sql._
+import org.apache.spark.sql.types._
+import org.apache.spark.storage.StorageLevel
 
-// import ai.tripl.arc.api.API._
-// import ai.tripl.arc.util._
+import com.typesafe.config._
 
-// object JSONTransform {
+import ai.tripl.arc.api._
+import ai.tripl.arc.api.API._
+import ai.tripl.arc.config._
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.plugins.PipelineStagePlugin
+import ai.tripl.arc.util.CloudUtils
+import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.util.ExtractUtils
+import ai.tripl.arc.util.MetadataUtils
+import ai.tripl.arc.util.ListenerUtils
+import ai.tripl.arc.util.Utils
 
-//   def transform(transform: JSONTransform)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
-//     val startTime = System.currentTimeMillis() 
-//     val stageDetail = new java.util.HashMap[String, Object]()
-//     stageDetail.put("type", transform.getType)
-//     stageDetail.put("name", transform.name)
-//     for (description <- transform.description) {
-//       stageDetail.put("description", description)    
-//     }    
-//     stageDetail.put("inputView", transform.inputView)  
-//     stageDetail.put("outputView", transform.outputView)   
-//     stageDetail.put("persist", Boolean.valueOf(transform.persist))
+class JSONTransform extends PipelineStagePlugin {
 
-//     logger.info()
-//       .field("event", "enter")
-//       .map("stage", stageDetail)      
-//       .log()      
-    
-//     val df = spark.table(transform.inputView)
+  val version = Utils.getFrameworkVersion
 
-//     val dropMap = new java.util.HashMap[String, Object]()
+  def createStage(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
 
-//     // JSON does not need to deal with NullType as it is silenty dropped on write but we want logging to be explicit
-//     val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
-//     if (!nulls.isEmpty) {
-//       dropMap.put("NullType", nulls.asJava)
-//     }
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "persist" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val name = getValue[String]("name")
+    val description = getOptionalValue[String]("description")
+    val inputView = getValue[String]("inputView")
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist", default = Some(false))
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))  
+    val params = readMap("params", c)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
-//     stageDetail.put("drop", dropMap)   
+    (name, description, inputView, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) => 
 
-//     val transformedDF = try {
-//       df.toJSON.toDF
-//     } catch {
-//       case e: Exception => throw new Exception(e) with DetailException {
-//         override val detail = stageDetail          
-//       }      
-//     }  
+      val stage = JSONTransformStage(
+          plugin=this,
+          name=name,
+          description=description,
+          inputView=inputView,
+          outputView=outputView,
+          params=params,
+          persist=persist,
+          numPartitions=numPartitions,
+          partitionBy=partitionBy
+        )
 
-//     // repartition to distribute rows evenly
-//     val repartitionedDF = transform.partitionBy match {
-//       case Nil => { 
-//         transform.numPartitions match {
-//           case Some(numPartitions) => transformedDF.repartition(numPartitions)
-//           case None => transformedDF
-//         }   
-//       }
-//       case partitionBy => {
-//         // create a column array for repartitioning
-//         val partitionCols = partitionBy.map(col => transformedDF(col))
-//         transform.numPartitions match {
-//           case Some(numPartitions) => transformedDF.repartition(numPartitions, partitionCols:_*)
-//           case None => transformedDF.repartition(partitionCols:_*)
-//         }
-//       }
-//     }
+        stage.stageDetail.put("inputView", inputView)  
+        stage.stageDetail.put("outputView", outputView)   
+        stage.stageDetail.put("persist", Boolean.valueOf(persist))        
 
-//     repartitionedDF.createOrReplaceTempView(transform.outputView)    
+        Right(stage)
+      case _ =>
+        val allErrors: Errors = List(name, description, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+}
 
-//     if (!repartitionedDF.isStreaming) {
-//       stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-//       stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+case class JSONTransformStage(
+    plugin: PipelineStagePlugin,
+    name: String, 
+    description: Option[String], 
+    inputView: String, 
+    outputView: String, 
+    params: Map[String, String], 
+    persist: Boolean, 
+    numPartitions: Option[Int], 
+    partitionBy: List[String]
+  ) extends PipelineStage {
 
-//       if (transform.persist) {
-//         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-//         stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
-//       }      
-//     }
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    JSONTransformStage.execute(this)
+  }
+}
 
-//     logger.info()
-//       .field("event", "exit")
-//       .field("duration", System.currentTimeMillis() - startTime)
-//       .map("stage", stageDetail)      
-//       .log()  
+object JSONTransformStage {
 
-//     Option(repartitionedDF)
-//   }
+  def execute(stage: JSONTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+    val stageDetail = stage.stageDetail
 
-// }
+    val df = spark.table(stage.inputView)
+
+    val dropMap = new java.util.HashMap[String, Object]()
+
+    // JSON does not need to deal with NullType as it is silenty dropped on write but we want logging to be explicit
+    val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
+    if (!nulls.isEmpty) {
+      dropMap.put("NullType", nulls.asJava)
+    }
+
+    stageDetail.put("drop", dropMap)   
+
+    val transformedDF = try {
+      df.toJSON.toDF
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }      
+    }  
+
+    // repartition to distribute rows evenly
+    val repartitionedDF = stage.partitionBy match {
+      case Nil => { 
+        stage.numPartitions match {
+          case Some(numPartitions) => transformedDF.repartition(numPartitions)
+          case None => transformedDF
+        }   
+      }
+      case partitionBy => {
+        // create a column array for repartitioning
+        val partitionCols = partitionBy.map(col => transformedDF(col))
+        stage.numPartitions match {
+          case Some(numPartitions) => transformedDF.repartition(numPartitions, partitionCols:_*)
+          case None => transformedDF.repartition(partitionCols:_*)
+        }
+      }
+    }
+
+    repartitionedDF.createOrReplaceTempView(stage.outputView)    
+
+    if (!repartitionedDF.isStreaming) {
+      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+
+      if (stage.persist) {
+        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+      }      
+    }
+
+    Option(repartitionedDF)
+  }
+
+}
