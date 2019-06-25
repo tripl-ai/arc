@@ -297,7 +297,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
 
   } 
 
-  test("XMLExtract from Dataframe") {
+  test("XMLExtract: Dataframe") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)

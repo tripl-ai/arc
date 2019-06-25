@@ -11,9 +11,6 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.execution.datasources.jdbc._
 
-// sqlserver bulk import - not limited to azure hosted sqlserver instances
-import com.microsoft.azure.sqldb.spark.connect._
-
 import com.typesafe.config._
 
 import ai.tripl.arc.api._
@@ -268,69 +265,26 @@ object JDBCLoadStage {
 
         val writtenDF =
           try {
-            // switch to custom jdbc actions based on driver
-            val resultDF = stage.driver match {
-              // switch to custom sqlserver bulkloader
-              case _: com.microsoft.sqlserver.jdbc.SQLServerDriver if (stage.bulkload) => {
+            connectionProperties.put("truncate", stage.truncate.toString)
+            connectionProperties.put("isolationLevel", stage.isolationLevel.sparkString)
+            connectionProperties.put("batchsize", stage.batchsize.toString)
 
-                // ensure schemas align after dropping invalid columns
-                using(DriverManager.getConnection(stage.jdbcURL, connectionProperties)) { connection =>
-                  val inputSchema = nonNullDF.schema
-                  JdbcUtils.getSchemaOption(connection, jdbcOptions) match {
-                    case Some(targetSchema) => {
-                      // ensure column names, types and order on input and target align
-                      if (!inputSchema.zip(targetSchema).forall({ case (input, target) => input.name.toLowerCase == target.name.toLowerCase && input.dataType == target.dataType })) {
-                        throw new Exception(s"""Input dataset '${stage.inputView}' has schema [${inputSchema.map(field => s"${field.name}: ${field.dataType.simpleString}").mkString(", ")}] which does not match target table '${tableName}' which has schema [${targetSchema.map(field => s"${field.name}: ${field.dataType.simpleString}").mkString(", ")}]. Ensure names, types and field orders align.""")
-                      }                  
-                    }
-                    case None => throw new Exception(s"Table '${tableName}' does not exist in database '${databaseName}' and 'bulkload' equals 'true' so cannot continue.")
-                  }
-                }  
+            for (numPartitions <- stage.numPartitions) {
+              connectionProperties.put("numPartitions", numPartitions.toString)
+            }
+            for (createTableOptions <- stage.createTableOptions) {
+              connectionProperties.put("createTableOptions", createTableOptions)
+            }
+            for (createTableColumnTypes <- stage.createTableColumnTypes) {
+              connectionProperties.put("createTableColumnTypes", createTableColumnTypes)
+            }
 
-                // remove the "jdbc:" prefix
-                val uri = new URI(stage.jdbcURL.substring(5))
-
-                val bulkCopyConfig = com.microsoft.azure.sqldb.spark.config.Config(Map(
-                  "url"               -> s"${uri.getHost}:${uri.getPort}",
-                  "user"              -> stage.params.get("user").getOrElse(""),
-                  "password"          -> stage.params.get("password").getOrElse(""),
-                  "databaseName"      -> databaseName,
-                  "dbTable"           -> tableName,
-                  "bulkCopyBatchSize" -> stage.batchsize.toString,
-                  "bulkCopyTableLock" -> stage.tablock.toString,
-                  "bulkCopyTimeout"   -> "42300"
-                ))
-
-                val dfToWrite = stage.numPartitions.map(nonNullDF.repartition(_)).getOrElse(nonNullDF)
-                dfToWrite.bulkCopyToSqlDB(bulkCopyConfig)
-                dfToWrite
+            stage.partitionBy match {
+              case Nil => {
+                nonNullDF.write.mode(stage.saveMode).jdbc(stage.jdbcURL, tableName, connectionProperties)
               }
-
-              // default spark jdbc
-              case _ => {
-                connectionProperties.put("truncate", stage.truncate.toString)
-                connectionProperties.put("isolationLevel", stage.isolationLevel.sparkString)
-                connectionProperties.put("batchsize", stage.batchsize.toString)
-
-                for (numPartitions <- stage.numPartitions) {
-                  connectionProperties.put("numPartitions", numPartitions.toString)
-                }
-                for (createTableOptions <- stage.createTableOptions) {
-                  connectionProperties.put("createTableOptions", createTableOptions)
-                }
-                for (createTableColumnTypes <- stage.createTableColumnTypes) {
-                  connectionProperties.put("createTableColumnTypes", createTableColumnTypes)
-                }
-
-                stage.partitionBy match {
-                  case Nil => {
-                    nonNullDF.write.mode(stage.saveMode).jdbc(stage.jdbcURL, tableName, connectionProperties)
-                  }
-                  case partitionBy => {
-                    nonNullDF.write.partitionBy(partitionBy:_*).mode(stage.saveMode).jdbc(stage.jdbcURL, tableName, connectionProperties)
-                  }
-                }
-                nonNullDF
+              case partitionBy => {
+                nonNullDF.write.partitionBy(partitionBy:_*).mode(stage.saveMode).jdbc(stage.jdbcURL, tableName, connectionProperties)
               }
             }
 
@@ -350,7 +304,7 @@ object JDBCLoadStage {
               throw new Exception(s"JDBCLoad should create same number of records in the target ('${tableName}') as exist in source ('${stage.inputView}') but source has ${sourceCount} records and target created ${targetPostCount-targetPreCount} records.")
             }
 
-            resultDF
+            nonNullDF
           } catch {
             case e: Exception => throw new Exception(e) with DetailException {
               override val detail = stage.stageDetail

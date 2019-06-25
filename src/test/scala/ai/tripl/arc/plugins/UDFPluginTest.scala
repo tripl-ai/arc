@@ -6,6 +6,9 @@ import org.apache.spark.sql.SQLContext
 import ai.tripl.arc.util.log.logger.Logger
 
 class UDFPluginTest extends UDFPlugin {
+
+  val version = "0.0.1"
+
   // one udf plugin can register multiple user defined functions
   override def register(sqlContext: SQLContext)(implicit logger: ai.tripl.arc.util.log.logger.Logger): Seq[String] = {
 
@@ -14,7 +17,7 @@ class UDFPluginTest extends UDFPlugin {
     sqlContext.udf.register("add_twenty", UDFPluginTest.addTwenty _ )     // SELECT add_twenty(1) AS one_plus_twenty
     
     // return the list of udf names that were registered for logging
-    Seq("add_ten", "add_twenty")
+    Seq(s"add_ten:${version}", s"add_twenty:${version}")
   }
 }
 

@@ -5,6 +5,6 @@
     "production",
     "test"
   ],
-  "inputURI": "hdfs://input_data/customer/vehicles/*.jpg",
+  "inputURI": "hdfs://datalake/customer/vehicles/*.jpg",
   "outputView": "customer_vehicles_photos"
 }

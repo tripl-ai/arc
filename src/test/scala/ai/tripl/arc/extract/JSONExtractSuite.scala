@@ -158,7 +158,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     assert(timeDatumMetadata.getLong("securityLevel") == 8)        
   }  
 
-  test("JSONExtract inputView") {
+  test("JSONExtract: inputView") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)

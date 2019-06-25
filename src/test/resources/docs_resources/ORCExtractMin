@@ -5,6 +5,6 @@
     "production",
     "test"
   ],
-  "inputURI": "hdfs://input_data/customer/*.orc",
+  "inputURI": "hdfs://datalake/customer/*.orc",
   "outputView": "customer"
 }
