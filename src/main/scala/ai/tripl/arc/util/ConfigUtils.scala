@@ -567,47 +567,7 @@ object ConfigUtils {
   //   }
   // }  
 
-  // def readORCExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
-
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val inputURI = getValue[String]("inputURI")
-  //   val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
-  //   val outputView = getValue[String]("outputView")
-  //   val persist = getValue[Boolean]("persist", default = Some(false))
-  //   val numPartitions = getOptionalValue[Int]("numPartitions")
-  //   val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
-  //   val authentication = readAuthentication("authentication")
-  //   val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
-
-  //   val uriKey = "schemaURI"
-  //   val stringURI = getOptionalValue[String](uriKey)
-  //   val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
-  //     optURI match { 
-  //       case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
-  //       case None => Right(None)
-  //     }
-  //   )
-  //   val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
-  //   val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
-  //   val basePath = getOptionalValue[String]("basePath")
-
-  //   (name, description, extractColumns, schemaView, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, invalidKeys, partitionBy, basePath) match {
-  //     case (Right(n), Right(d), Right(cols), Right(sv), Right(in), Right(pg), Right(ov), Right(p), Right(np), Right(auth), Right(ci), Right(_), Right(pb), Right(bp)) => 
-  //       val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-  //       var outputGraph = graph.addVertex(Vertex(idx, ov))
-  //       (Right(ORCExtract(n, d, schema, ov, pg, auth, params, p, np, pb, ci, bp)), outputGraph)
-  //     case _ =>
-  //       val allErrors: Errors = List(name, description, inputURI, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, invalidKeys, partitionBy, basePath).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }  
+ 
 
   // def readRateExtract(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._

@@ -101,7 +101,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     // parse json schema to List[ExtractColumn]
     val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
 
-    val extractDataset = extract.ParquetExtractStage.execute(
+    val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
         name=outputView,
@@ -120,10 +120,10 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     // test that the filename is correctly populated
-    assert(extractDataset.filter($"_filename".contains(targetFile)).count != 0)
+    assert(dataset.filter($"_filename".contains(targetFile)).count != 0)
 
-    val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val actual = extractDataset.drop(internal:_*)
+    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = dataset.drop(internal:_*)
 
     val expected = TestUtils.getKnownDataset.drop($"nullDatum")
 
@@ -202,7 +202,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
-      val extractDataset = extract.ParquetExtractStage.execute(
+      extract.ParquetExtractStage.execute(
         extract.ParquetExtractStage(
           plugin=new extract.ParquetExtract,
           name=outputView,
@@ -224,7 +224,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
-      val extractDataset = extract.ParquetExtractStage.execute(
+      extract.ParquetExtractStage.execute(
         extract.ParquetExtractStage(
           plugin=new extract.ParquetExtract,
           name=outputView,
@@ -245,7 +245,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     assert(thrown1.getMessage === "ParquetExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
     
     // try with column
-    val extractDataset = extract.ParquetExtractStage.execute(
+    val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
         name=outputView,
@@ -263,8 +263,8 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val actual = extractDataset.drop(internal:_*)
+    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = dataset.drop(internal:_*)
 
     val expected = TestUtils.getKnownDataset.select($"booleanDatum").limit(0)
 
@@ -280,7 +280,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     // parse json schema to List[ExtractColumn]
     val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
 
-    val extractDataset = extract.ParquetExtractStage.execute(
+    val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
         name=outputView,
@@ -298,7 +298,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    val writeStream = extractDataset
+    val writeStream = dataset
       .writeStream
       .queryName("extract") 
       .format("memory")
