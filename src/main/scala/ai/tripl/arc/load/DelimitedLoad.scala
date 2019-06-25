@@ -109,7 +109,7 @@ case class DelimitedLoadStage(
 
 object DelimitedLoadStage {
 
-  def execute(stage: DelimitedLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def execute(stage: DelimitedLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
     val stageDetail = stage.stageDetail
 

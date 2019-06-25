@@ -93,7 +93,7 @@ case class ORCLoadStage(
 
 object ORCLoadStage {
 
-  def execute(stage: ORCLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def execute(stage: ORCLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     val stageDetail = stage.stageDetail
 
     val df = spark.table(stage.inputView)      
