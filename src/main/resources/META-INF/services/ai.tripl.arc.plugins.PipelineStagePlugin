@@ -22,4 +22,3 @@ ai.tripl.arc.load.ORCLoad
 ai.tripl.arc.load.ParquetLoad
 ai.tripl.arc.load.TextLoad
 ai.tripl.arc.load.XMLLoad
-
