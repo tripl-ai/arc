@@ -1,105 +1,177 @@
-// package ai.tripl.arc.load
+package ai.tripl.arc.load
 
-// import org.apache.hadoop.fs.FileSystem
-// import org.apache.hadoop.fs.Path
+import java.lang._
+import java.net.URI
+import scala.collection.JavaConverters._
 
-// import scala.collection.JavaConverters._
+import org.apache.spark.sql._
+import org.apache.spark.sql.types._
 
-// import org.apache.spark.sql._
-// import org.apache.spark.sql.types._
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
 
-// import ai.tripl.arc.api.API._
-// import ai.tripl.arc.util._
+import com.typesafe.config._
 
-// object TextLoad {
+import ai.tripl.arc.api._
+import ai.tripl.arc.api.API._
+import ai.tripl.arc.config._
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.plugins.PipelineStagePlugin
+import ai.tripl.arc.util.CloudUtils
+import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.util.ExtractUtils
+import ai.tripl.arc.util.MetadataUtils
+import ai.tripl.arc.util.ListenerUtils
+import ai.tripl.arc.util.Utils
 
-//   def load(load: TextLoad)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
-//     val startTime = System.currentTimeMillis() 
-//     val stageDetail = new java.util.HashMap[String, Object]()
-//     stageDetail.put("type", load.getType)
-//     stageDetail.put("name", load.name)
-//     for (description <- load.description) {
-//       stageDetail.put("description", description)    
-//     }    
-//     stageDetail.put("inputView", load.inputView)  
-//     stageDetail.put("outputURI", load.outputURI.toString)  
-//     stageDetail.put("saveMode", load.saveMode.toString.toLowerCase)
+class TextLoad extends PipelineStagePlugin {
 
-//     val df = spark.table(load.inputView)      
+  val version = Utils.getFrameworkVersion
 
-//     if (!df.isStreaming) {
-//       load.numPartitions match {
-//         case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-//         case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
-//       }
-//     }
+  def createStage(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
 
-//     logger.info()
-//       .field("event", "enter")
-//       .map("stage", stageDetail)      
-//       .log()
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: "singleFile" :: "prefix" :: "separator" :: "suffix" :: Nil
+    val name = getValue[String]("name")
+    val description = getOptionalValue[String]("description")
+    val inputView = getValue[String]("inputView")
+    val outputURI = getValue[String]("outputURI") |> parseURI("outputURI") _
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val authentication = readAuthentication("authentication")  
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
+    val singleFile = getValue[Boolean]("singleFile", default = Some(false))
+    val prefix = getValue[String]("prefix", default = Some(""))
+    val separator = getValue[String]("separator", default = Some(""))
+    val suffix = getValue[String]("suffix", default = Some(""))
+    val params = readMap("params", c)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
-//     if (df.schema.length != 1 || df.schema.fields(0).dataType != StringType) {
-//       throw new Exception(s"""TextLoad supports only a single text column but the input view has ${df.schema.length} columns.""") with DetailException {
-//         override val detail = stageDetail          
-//       } 
-//     }      
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(singleFile), Right(prefix), Right(separator), Right(suffix), Right(invalidKeys)) => 
+        
+        val stage = TextLoadStage(
+          plugin=this,
+          name=name,
+          description=description,
+          inputView=inputView,
+          outputURI=outputURI,
+          numPartitions=numPartitions,
+          authentication=authentication,
+          saveMode=saveMode,
+          params=params,
+          singleFile=singleFile,
+          prefix=prefix,
+          separator=separator,
+          suffix=suffix
+        )
 
-//     // set write permissions
-//     CloudUtils.setHadoopConfiguration(load.authentication)
+        stage.stageDetail.put("inputView", inputView)  
+        stage.stageDetail.put("outputURI", outputURI.toString)  
+        stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
 
-//     try {
-//       if (load.singleFile) {
-//         val fs = FileSystem.get(spark.sparkContext.hadoopConfiguration)
-//         val path = new Path(load.outputURI)
+        Right(stage)
+      case _ =>
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+}
 
-//         val outputStream = if (fs.exists(path)) {
-//           load.saveMode match {
-//             case SaveMode.ErrorIfExists => {
-//               throw new Exception(s"File '${path}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
-//             }
-//             case SaveMode.Ignore => {
-//               None
-//             }          
-//             case SaveMode.Overwrite => {
-//               Option(fs.create(path, true))
-//             }
-//             case SaveMode.Append => {
-//               throw new Exception(s"File '${path}' already exists and 'saveMode' equals 'Append' which is not supported with 'singleFile' mode.")
-//             }
-//           }
-//         } else {
-//           Option(fs.create(path))
-//         }
+case class TextLoadStage(
+    plugin: PipelineStagePlugin,
+    name: String, 
+    description: Option[String], 
+    inputView: String, 
+    outputURI: URI, 
+    numPartitions: Option[Int], 
+    authentication: Option[Authentication], 
+    saveMode: SaveMode, 
+    params: Map[String, String], 
+    singleFile: Boolean, 
+    prefix: String, 
+    separator: String, 
+    suffix: String
+  ) extends PipelineStage {
 
-//         outputStream match {
-//           case Some(os) => {
-//             os.writeBytes(df.collect.map(_.getString(0)).mkString(load.prefix, load.separator, load.suffix))
-//             os.close
-//           }
-//           case None =>
-//         }
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    TextLoadStage.execute(this)
+  }
+}
 
-//         fs.close
-//       } else {
-//         // spark does not allow partitionBy when only single column dataframe
-//         load.numPartitions match {
-//           case Some(n) => df.repartition(n).write.mode(load.saveMode).text(load.outputURI.toString)
-//           case None => df.write.mode(load.saveMode).text(load.outputURI.toString)
-//         }
-//       }
-//     } catch {
-//       case e: Exception => throw new Exception(e) with DetailException {
-//         override val detail = stageDetail
-//       }     
-//     }
+object TextLoadStage {
 
-//     logger.info()
-//       .field("event", "exit")
-//       .field("duration", System.currentTimeMillis() - startTime)
-//       .map("stage", stageDetail)      
-//       .log()
+  def execute(stage: TextLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    val stageDetail = stage.stageDetail
 
-//     Option(df)
-//   }
-// }
+    val df = spark.table(stage.inputView)      
+
+    if (!df.isStreaming) {
+      stage.numPartitions match {
+        case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
+        case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+      }
+    }
+
+    if (df.schema.length != 1 || df.schema.fields(0).dataType != StringType) {
+      throw new Exception(s"""TextLoad supports only a single text column but the input view has ${df.schema.length} columns.""") with DetailException {
+        override val detail = stageDetail          
+      } 
+    }      
+
+    // set write permissions
+    CloudUtils.setHadoopConfiguration(stage.authentication)
+
+    try {
+      if (stage.singleFile) {
+        val fs = FileSystem.get(spark.sparkContext.hadoopConfiguration)
+        val path = new Path(stage.outputURI)
+
+        val outputStream = if (fs.exists(path)) {
+          stage.saveMode match {
+            case SaveMode.ErrorIfExists => {
+              throw new Exception(s"File '${path}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
+            }
+            case SaveMode.Ignore => {
+              None
+            }          
+            case SaveMode.Overwrite => {
+              Option(fs.create(path, true))
+            }
+            case SaveMode.Append => {
+              throw new Exception(s"File '${path}' already exists and 'saveMode' equals 'Append' which is not supported with 'singleFile' mode.")
+            }
+          }
+        } else {
+          Option(fs.create(path))
+        }
+
+        outputStream match {
+          case Some(os) => {
+            os.writeBytes(df.collect.map(_.getString(0)).mkString(stage.prefix, stage.separator, stage.suffix))
+            os.close
+          }
+          case None =>
+        }
+
+        fs.close
+      } else {
+        // spark does not allow partitionBy when only single column dataframe
+        stage.numPartitions match {
+          case Some(n) => df.repartition(n).write.mode(stage.saveMode).text(stage.outputURI.toString)
+          case None => df.write.mode(stage.saveMode).text(stage.outputURI.toString)
+        }
+      }
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail
+      }     
+    }
+
+    Option(df)
+  }
+}
