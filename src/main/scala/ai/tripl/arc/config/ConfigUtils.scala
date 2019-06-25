@@ -12,6 +12,7 @@ import org.apache.spark.unsafe.types.UTF8String
 import com.typesafe.config._
 
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.SaveMode
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
@@ -223,7 +224,7 @@ object ConfigUtils {
     }
   }
 
-  def parseURI(path: String, uri: String)(implicit c: Config): Either[Errors, URI] = {
+  def parseURI(path: String)(uri: String)(implicit c: Config): Either[Errors, URI] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, URI] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
@@ -289,13 +290,32 @@ object ConfigUtils {
     }
   }  
 
+  def parseSaveMode(path: String)(delim: String)(implicit c: Config): Either[Errors, SaveMode] = {
+    delim.toLowerCase.trim match {
+      case "append" => Right(SaveMode.Append)
+      case "errorifexists" => Right(SaveMode.ErrorIfExists)
+      case "ignore" => Right(SaveMode.Ignore)
+      case "overwrite" => Right(SaveMode.Overwrite)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }  
+
+  def parseOutputModeType(path: String)(delim: String)(implicit c: Config): Either[Errors, OutputModeType] = {
+    delim.toLowerCase.trim match {
+      case "append" => Right(OutputModeTypeAppend)
+      case "complete" => Right(OutputModeTypeComplete)
+      case "update" => Right(OutputModeTypeUpdate)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }    
+
   def parseFailMode(path: String)(delim: String)(implicit c: Config): Either[Errors, FailModeType] = {
     delim.toLowerCase.trim match {
       case "permissive" => Right(FailModeTypePermissive)
       case "failfast" => Right(FailModeTypeFailFast)
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
-  }
+  } 
 
   def parseDelimiter(path: String)(delim: String)(implicit c: Config): Either[Errors, Delimiter] = {
     delim.toLowerCase.trim match {

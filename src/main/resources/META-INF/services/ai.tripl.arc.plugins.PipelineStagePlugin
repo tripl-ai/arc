@@ -1,4 +1,12 @@
 ai.tripl.arc.extract.AvroExtract
 ai.tripl.arc.extract.BytesExtract
 ai.tripl.arc.extract.DelimitedExtract
+ai.tripl.arc.extract.HTTPExtract
+ai.tripl.arc.extract.ImageExtract
+ai.tripl.arc.extract.JDBCExtract
+ai.tripl.arc.extract.JSONExtract
+ai.tripl.arc.extract.ORCExtract
 ai.tripl.arc.extract.ParquetExtract
+ai.tripl.arc.extract.RateExtract
+ai.tripl.arc.extract.TextExtract
+ai.tripl.arc.extract.XMLExtract

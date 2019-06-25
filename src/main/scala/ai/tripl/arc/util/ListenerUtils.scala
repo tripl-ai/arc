@@ -39,7 +39,7 @@ object ListenerUtils {
     listener
   }
 
-  def addStageCompletedListener(stageDetail: java.util.HashMap[String, Object])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): SparkListener = {
+  def addStageCompletedListener(stageDetail: scala.collection.mutable.Map[String,Object])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): SparkListener = {
 
     val listener = new SparkListener() {
               

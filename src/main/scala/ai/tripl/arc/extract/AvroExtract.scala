@@ -53,10 +53,10 @@ class AvroExtract extends PipelineStagePlugin {
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
     val uriKey = "schemaURI"
-    val stringURI = getOptionalValue[String](uriKey)
-    val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
+    val schemaURI = getOptionalValue[String](uriKey)
+    val parsedURI: Either[Errors, Option[URI]] = schemaURI.rightFlatMap(optURI => 
       optURI match { 
-        case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
+        case Some(uri) => parseURI(uriKey)(uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
         case None => Right(None)
       }
     )
@@ -68,7 +68,7 @@ class AvroExtract extends PipelineStagePlugin {
     val avroSchema: Either[Errors, Option[org.apache.avro.Schema]] = avroSchemaURI.rightFlatMap(optAvroSchemaURI => 
       optAvroSchemaURI match { 
         case Some(uri) => {
-          parseURI("avroSchemaURI", uri)
+          parseURI("avroSchemaURI")(uri)
           .rightFlatMap(uri => textContentForURI(uri, "avroSchemaURI", Right(None) ))
           .rightFlatMap(schemaString => parseAvroSchema("avroSchemaURI", schemaString))
         }
@@ -106,7 +106,7 @@ class AvroExtract extends PipelineStagePlugin {
         for (inputField <- inputField) {
           stage.stageDetail.put("inputField", inputField)  
         }
-        
+
         Right(stage)
       case _ =>
         val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys, basePath, inputField, avroSchemaURI, avroSchema).collect{ case Left(errs) => errs }.flatten

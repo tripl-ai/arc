@@ -47,7 +47,7 @@ class HTTPExtract extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
-    val parsedURI = if (!c.hasPath("inputView")) inputView.rightFlatMap(uri => parseURI("inputURI", uri)) else Right(new URI(""))
+    val parsedURI = if (!c.hasPath("inputView")) inputView.rightFlatMap(uri => parseURI("inputURI")(uri)) else Right(new URI(""))
     val headers = readMap("headers", c)
     val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
     val outputView = getValue[String]("outputView")

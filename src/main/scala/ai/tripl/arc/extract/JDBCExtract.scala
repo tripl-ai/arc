@@ -54,7 +54,7 @@ class JDBCExtract extends PipelineStagePlugin {
     val stringURI = getOptionalValue[String](uriKey)
     val parsedURI: Either[Errors, Option[URI]] = stringURI.rightFlatMap(optURI => 
       optURI match { 
-        case Some(uri) => parseURI(uriKey, uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
+        case Some(uri) => parseURI(uriKey)(uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
         case None => Right(None)
       }
     )
