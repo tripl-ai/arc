@@ -573,52 +573,6 @@ object ConfigUtils {
 
  
 
-  // def readMetadataFilterTransform(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
-
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)  
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val uriKey = "inputURI"
-  //   val inputURI = getValue[String](uriKey)
-  //   val parsedURI = inputURI.rightFlatMap(uri => parseURI(uriKey, uri))
-  //   val authentication = readAuthentication("authentication")  
-  //   val inputSQL = parsedURI.rightFlatMap { uri =>
-  //       authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))  
-  //       getBlob(uriKey, uri)
-  //   }
-  //   val inputView = getValue[String]("inputView")
-  //   val outputView = getValue[String]("outputView")
-  //   val persist = getValue[Boolean]("persist", default = Some(false))
-  //   val sqlParams = readMap("sqlParams", c)
-  //   val numPartitions = getOptionalValue[Int]("numPartitions")
-  //   val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))    
-
-  //   // try to verify if sql is technically valid against HQL dialect (will not check dependencies)
-  //   val validSQL = inputSQL.rightFlatMap { sql =>
-  //     validateSQL(uriKey, SQLUtils.injectParameters(sql, sqlParams, false))
-  //   }
-
-  //   (name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy) match {
-  //     case (Right(n), Right(d), Right(uri), Right(sql), Right(vsql), Right(iv), Right(ov), Right(p), Right(_), Right(np), Right(pb)) => 
-  //       var outputGraph = graph
-  //       // add the vertices
-  //       outputGraph = outputGraph.addVertex(Vertex(idx, ov))
-  //       // add the edges
-  //       outputGraph = outputGraph.addEdge(iv, ov)
-
-  //       // pass the unreplaced input sql not the 'valid sql' as the paramenters will be replaced when the stage is executed for testing
-  //       (Right(MetadataFilterTransform(n, d, iv, uri, sql, ov, params, sqlParams, p, np, pb)), outputGraph)
-  //     case _ =>
-  //       val allErrors: Errors = List(name, description, inputURI, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }   
-
   // def readMLTransform(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._
 
@@ -833,48 +787,7 @@ object ConfigUtils {
   //   }
   // }
 
-  // def readTypingTransform(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
-
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "failMode" :: "persist" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)  
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val uriKey = "inputURI"
-  //   val inputURI = getValue[String](uriKey)
-  //   val parsedURI = inputURI.rightFlatMap(uri => parseURI(uriKey, uri)).rightFlatMap(uri => Right(Option(uri)))
-  //   val authentication = readAuthentication("authentication")  
-
-  //   val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
-  //   val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
-
-  //   val inputView = getValue[String]("inputView")
-  //   val outputView = getValue[String]("outputView")
-  //   val persist = getValue[Boolean]("persist", default = Some(false))
-
-  //   val failMode = getValue[String]("failMode", default = Some("permissive"), validValues = "permissive" :: "failfast" :: Nil) |> parseFailMode("failMode") _
-  //   val numPartitions = getOptionalValue[Int]("numPartitions")
-  //   val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))        
-
-  //   (name, description, extractColumns, schemaView, inputView, outputView, persist, failMode, invalidKeys, numPartitions, partitionBy) match {
-  //     case (Right(n), Right(d), Right(cols), Right(sv), Right(iv), Right(ov), Right(p), Right(fm), Right(_), Right(np), Right(pb)) => 
-  //       val schema = if(c.hasPath("schemaView")) Left(sv) else Right(cols)
-
-  //       var outputGraph = graph
-  //       // add the vertices
-  //       outputGraph = outputGraph.addVertex(Vertex(idx, ov))
-  //       // add the edges
-  //       outputGraph = outputGraph.addEdge(iv, ov)
-
-  //       (Right(TypingTransform(n, d, schema, iv, ov, params, p, fm, np, pb)), outputGraph)
-  //     case _ =>
-  //       val allErrors: Errors = List(name, description, inputURI, parsedURI, extractColumns, schemaView, inputView, outputView, persist, authentication, failMode, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }   
+  
 
   // // load
 

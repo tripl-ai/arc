@@ -128,6 +128,38 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     assert(thrown.getMessage == "java.sql.SQLException: Database 'invalid' not found.")
   }  
 
+  test("JDBCExecute: sqlParams") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    ai.tripl.arc.execute.JDBCExecuteStage.execute(
+      ai.tripl.arc.execute.JDBCExecuteStage(
+        plugin=new ai.tripl.arc.execute.JDBCExecute,
+        name=outputView, 
+        description=None,
+        inputURI=new URI(testURI), 
+        jdbcURL = url,
+        user = None,
+        password = None,
+        sql=s"CREATE TABLE ${newTable} (${newColumn} VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
+        params= Map.empty, 
+        sqlParams=Map("column_name" -> "COLUMN0")
+      )
+    )
+
+    // read back to ensure execute has happened
+    val actual = { spark.read
+      .format("jdbc")
+      .option("url", url)
+      .option("dbtable", s"${newTable}")
+      .load()
+    }
+
+    assert(actual.count == 0)
+  }    
+
   test("JDBCExecute: Bad sqlserver connection parameters") {
     implicit val spark = session
     import spark.implicits._

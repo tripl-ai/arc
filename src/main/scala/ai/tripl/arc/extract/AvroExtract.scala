@@ -52,15 +52,7 @@ class AvroExtract extends PipelineStagePlugin {
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
-    val uriKey = "schemaURI"
-    val schemaURI = getOptionalValue[String](uriKey)
-    val parsedURI: Either[Errors, Option[URI]] = schemaURI.rightFlatMap(optURI => 
-      optURI match { 
-        case Some(uri) => parseURI(uriKey)(uri).rightFlatMap(parsedURI => Right(Option(parsedURI)))
-        case None => Right(None)
-      }
-    )
-    val extractColumns = if(!c.hasPath("schemaView")) getExtractColumns(parsedURI, uriKey, authentication) else Right(List.empty)
+    val extractColumns = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val basePath = getOptionalValue[String]("basePath")
     val inputField = getOptionalValue[String]("inputField")

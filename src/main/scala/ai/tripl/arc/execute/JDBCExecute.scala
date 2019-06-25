@@ -63,9 +63,6 @@ class JDBCExecute extends PipelineStagePlugin {
 
     (name, description, parsedURI, inputSQL, jdbcURL, user, password, driver, invalidKeys) match {
       case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(jdbcURL), Right(user), Right(password), Right(driver), Right(invalidKeys)) => 
-        // replace sql parameters
-        val injectedSQL = SQLUtils.injectParameters(inputSQL, sqlParams, false)
-
         val stage = JDBCExecuteStage(
           plugin=this,
           name=name,
@@ -74,13 +71,13 @@ class JDBCExecute extends PipelineStagePlugin {
           jdbcURL=jdbcURL,
           user=user,
           password=password,
-          sql=injectedSQL,
+          sql=inputSQL,
           sqlParams=sqlParams,
           params=params
         )
   
         stage.stageDetail.put("inputURI", inputURI.toString)     
-        stage.stageDetail.put("sql", injectedSQL)    
+        stage.stageDetail.put("sql", inputSQL)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
 
         Right(stage)
@@ -116,10 +113,14 @@ object JDBCExecuteStage {
   def execute(stage: JDBCExecuteStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     val stageDetail = stage.stageDetail 
 
+    // replace sql parameters
+    val sql = SQLUtils.injectParameters(stage.sql, stage.sqlParams, false)
+    stageDetail.put("sql", sql)
+
     try {
       using(getConnection(stage.jdbcURL, stage.user, stage.password, stage.params)) { conn =>
         using(conn.createStatement) { stmt =>
-          val res = stmt.execute(stage.sql)
+          val res = stmt.execute(sql)
           // try to get results to throw error if one exists
           if (res) {
             stmt.getResultSet.next

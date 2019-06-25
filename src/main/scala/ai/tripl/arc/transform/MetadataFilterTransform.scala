@@ -1,100 +1,177 @@
-// package ai.tripl.arc.transform
+package ai.tripl.arc.transform
 
-// import java.lang._
-// import scala.collection.JavaConverters._
+import java.lang._
+import java.net.URI
+import scala.collection.JavaConverters._
 
-// import org.apache.spark.sql._
-// import org.apache.spark.storage.StorageLevel
+import org.apache.spark.sql._
+import org.apache.spark.storage.StorageLevel
 
-// import ai.tripl.arc.api.API._
-// import ai.tripl.arc.util._
+import com.typesafe.config._
 
-// object MetadataFilterTransform {
+import ai.tripl.arc.api._
+import ai.tripl.arc.api.API._
+import ai.tripl.arc.config._
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.plugins.PipelineStagePlugin
+import ai.tripl.arc.util.CloudUtils
+import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.util.ExtractUtils
+import ai.tripl.arc.util.MetadataUtils
+import ai.tripl.arc.util.ListenerUtils
+import ai.tripl.arc.util.SQLUtils
+import ai.tripl.arc.util.Utils
 
-//   def transform(transform: MetadataFilterTransform)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
-//     val startTime = System.currentTimeMillis() 
-//     val stageDetail = new java.util.HashMap[String, Object]()
-//     stageDetail.put("type", transform.getType)
-//     stageDetail.put("name", transform.name)
-//     for (description <- transform.description) {
-//       stageDetail.put("description", description)    
-//     }    
+class MetadataFilterTransform extends PipelineStagePlugin {
 
-//     // inject sql parameters
-//     val stmt = SQLUtils.injectParameters(transform.sql, transform.sqlParams, false)
-//     stageDetail.put("sql", stmt)
+  val version = Utils.getFrameworkVersion
 
-//     logger.info()
-//       .field("event", "enter")
-//       .map("stage", stageDetail)      
-//       .log()      
-    
-//     val df = spark.table(transform.inputView)
-//     val metadataSchemaDF = MetadataUtils.createMetadataDataframe(df)
-//     metadataSchemaDF.createOrReplaceTempView("metadata")
+  def createStage(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
 
-//     val filterDF = try {
-//       spark.sql(stmt)
-//     } catch {
-//       case e: Exception => throw new Exception(e) with DetailException {
-//         override val detail = stageDetail          
-//       }      
-//     }  
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val name = getValue[String]("name")
+    val description = getOptionalValue[String]("description")
+    val inputURI = getValue[String]("inputURI") |> parseURI("inputURI") _
+    val authentication = readAuthentication("authentication")  
+    val inputSQL = inputURI.rightFlatMap { uri =>
+        authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))  
+        getBlob("inputURI", uri)
+    }
+    val inputView = getValue[String]("inputView")
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[Boolean]("persist", default = Some(false))
+    val sqlParams = readMap("sqlParams", c)
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))    
+    val validSQL = inputSQL.rightFlatMap { sql =>
+      validateSQL("inputURI", SQLUtils.injectParameters(sql, sqlParams, false))
+    }
+    val params = readMap("params", c)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
-//     if (!filterDF.columns.contains("name")) {
-//       throw new Exception("result does not contain field 'name' so cannot be filtered") with DetailException {
-//         override val detail = stageDetail          
-//       }    
-//     }
+    (name, description, inputURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy) match {
+      case (Right(name), Right(description), Right(inputURI), Right(inputSQL), Right(validSQL), Right(inputView), Right(outputView), Right(persist), Right(invalidKeys), Right(numPartitions), Right(partitionBy)) => 
+        
+        val stage = MetadataFilterTransformStage(
+          plugin=this,
+          name=name,
+          description=description,
+          inputView=inputView,
+          inputURI=inputURI,
+          sql=inputSQL,
+          outputView=outputView,
+          params=params,
+          sqlParams=sqlParams,
+          persist=persist,
+          numPartitions=numPartitions,
+          partitionBy=partitionBy
+        )
 
-//     // get fields that meet condition from query result
-//     val inputFields = df.columns.toSet
-//     val includeColumns = filterDF.collect.map(field => { field.getString(field.fieldIndex("name")) }).toSet
-//     val excldueColumns = inputFields.diff(includeColumns)
+        Right(stage)
+      case _ =>
+        val allErrors: Errors = List(name, description, inputURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
 
-//     stageDetail.put("includedColumns", includeColumns.asJava)
-//     stageDetail.put("excludedColumns", excldueColumns.asJava)
+}
 
-//     // drop fields in the excluded set
-//     val transformedDF = df.drop(excldueColumns.toList:_*)
+case class MetadataFilterTransformStage(
+    plugin: PipelineStagePlugin,
+    name: String, 
+    description: Option[String], 
+    inputView: String, 
+    inputURI: URI, 
+    sql: String, 
+    outputView: String, 
+    params: Map[String, String], 
+    sqlParams: Map[String, String], 
+    persist: Boolean, 
+    numPartitions: Option[Int], 
+    partitionBy: List[String]
+  ) extends PipelineStage {
 
-//     // repartition to distribute rows evenly
-//     val repartitionedDF = transform.partitionBy match {
-//       case Nil => { 
-//         transform.numPartitions match {
-//           case Some(numPartitions) => transformedDF.repartition(numPartitions)
-//           case None => transformedDF
-//         }   
-//       }
-//       case partitionBy => {
-//         // create a column array for repartitioning
-//         val partitionCols = partitionBy.map(col => transformedDF(col))
-//         transform.numPartitions match {
-//           case Some(numPartitions) => transformedDF.repartition(numPartitions, partitionCols:_*)
-//           case None => transformedDF.repartition(partitionCols:_*)
-//         }
-//       }
-//     }
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    MetadataFilterTransformStage.execute(this)
+  }
+}
 
-//     repartitionedDF.createOrReplaceTempView(transform.outputView)    
 
-//     if (!repartitionedDF.isStreaming) {
-//       stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-//       stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+object MetadataFilterTransformStage {
 
-//       if (transform.persist) {
-//         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-//         stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
-//       }      
-//     }
+  def execute(stage: MetadataFilterTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    val stageDetail = stage.stageDetail
 
-//     logger.info()
-//       .field("event", "exit")
-//       .field("duration", System.currentTimeMillis() - startTime)
-//       .map("stage", stageDetail)      
-//       .log()  
+    // inject sql parameters
+    val stmt = SQLUtils.injectParameters(stage.sql, stage.sqlParams, false)
+    stageDetail.put("sql", stmt)
 
-//     Option(repartitionedDF)
-//   }
+    val df = spark.table(stage.inputView)
+    val metadataSchemaDF = MetadataUtils.createMetadataDataframe(df)
+    metadataSchemaDF.createOrReplaceTempView("metadata")
 
-// }
+    val filterDF = try {
+      spark.sql(stmt)
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail          
+      }      
+    }  
+
+    if (!filterDF.columns.contains("name")) {
+      throw new Exception("result does not contain field 'name' so cannot be filtered") with DetailException {
+        override val detail = stageDetail          
+      }    
+    }
+
+    // get fields that meet condition from query result
+    val inputFields = df.columns.toSet
+    val includeColumns = filterDF.collect.map(field => { field.getString(field.fieldIndex("name")) }).toSet
+    val excldueColumns = inputFields.diff(includeColumns)
+
+    stageDetail.put("includedColumns", includeColumns.asJava)
+    stageDetail.put("excludedColumns", excldueColumns.asJava)
+
+    // drop fields in the excluded set
+    val transformedDF = df.drop(excldueColumns.toList:_*)
+
+    // repartition to distribute rows evenly
+    val repartitionedDF = stage.partitionBy match {
+      case Nil => { 
+        stage.numPartitions match {
+          case Some(numPartitions) => transformedDF.repartition(numPartitions)
+          case None => transformedDF
+        }   
+      }
+      case partitionBy => {
+        // create a column array for repartitioning
+        val partitionCols = partitionBy.map(col => transformedDF(col))
+        stage.numPartitions match {
+          case Some(numPartitions) => transformedDF.repartition(numPartitions, partitionCols:_*)
+          case None => transformedDF.repartition(partitionCols:_*)
+        }
+      }
+    }
+
+    repartitionedDF.createOrReplaceTempView(stage.outputView)    
+
+    if (!repartitionedDF.isStreaming) {
+      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
+      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+
+      if (stage.persist) {
+        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+      }      
+    }
+
+    Option(repartitionedDF)
+  }
+
+}
