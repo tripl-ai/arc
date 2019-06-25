@@ -1091,52 +1091,7 @@ object ConfigUtils {
   //   }
   // }   
 
-  // def readDelimitedLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
-
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "delimiter" :: "header" :: "numPartitions" :: "partitionBy" :: "quote" :: "saveMode" :: "params"  :: "customDelimiter" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)  
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val inputView = getValue[String]("inputView")
-  //   val outputURI = getValue[String]("outputURI")
-  //   val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil    
-  //   val numPartitions = getOptionalValue[Int]("numPartitions")
-  //   val authentication = readAuthentication("authentication")  
-  //   val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
-
-  //   val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: "Custom" :: Nil) |> parseDelimiter("delimiter") _
-  //   val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
-  //   val header = getValue[Boolean]("header", Some(false))   
-
-  //   val customDelimiter = delimiter match {
-  //     case Right(Delimiter.Custom) => {
-  //       getValue[String]("customDelimiter")
-  //     }
-  //     case _ => Right("")
-  //   }     
-
-  //   (name, description, inputView, outputURI, numPartitions, authentication, saveMode, delimiter, quote, header, invalidKeys, customDelimiter) match {
-  //     case (Right(n), Right(desc), Right(iv), Right(out),  Right(np), Right(auth), Right(sm), Right(d), Right(q), Right(h), Right(_), Right(cd)) => 
-  //       val uri = new URI(out)
-  //       val load = DelimitedLoad(n, desc, iv, uri, Delimited(header=h, sep=d, quote=q, customDelimiter=cd), partitionBy, np, auth, sm, params)
-
-  //       val ov = s"$idx:${load.getType}"
-  //       var outputGraph = graph
-  //       // add the vertices
-  //       outputGraph = outputGraph.addVertex(Vertex(idx, ov))
-  //       // add the edges
-  //       outputGraph = outputGraph.addEdge(iv, ov)
-
-  //       (Right(load), outputGraph)
-  //     case _ =>
-  //       val allErrors: Errors = List(name, description, inputView, outputURI, authentication, numPartitions, saveMode, delimiter, quote, header, invalidKeys, customDelimiter).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }    
+  
 
   // def readElasticsearchLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._
@@ -1173,39 +1128,7 @@ object ConfigUtils {
   //   }
   // }      
   
-  // def readHTTPLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
-  //   import ConfigReader._
 
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "headers" :: "validStatusCodes" :: "params" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)     
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val inputView = getValue[String]("inputView")
-  //   val inputURI = getValue[String]("outputURI")
-  //   val parsedURI = inputURI.rightFlatMap(uri => parseURI("outputURI", uri))
-  //   val headers = readMap("headers", c)
-  //   val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
-
-  //   (name, description, inputURI, parsedURI, inputView, invalidKeys, validStatusCodes) match {
-  //     case (Right(n), Right(d), Right(iuri), Right(uri), Right(iv), Right(_), Right(vsc)) => 
-  //       val load = HTTPLoad(n, d, iv, uri, headers, vsc, params)
-
-  //       val ov = s"$idx:${load.getType}"
-  //       var outputGraph = graph
-  //       // add the vertices
-  //       outputGraph = outputGraph.addVertex(Vertex(idx, ov))
-  //       // add the edges
-  //       outputGraph = outputGraph.addEdge(iv, ov)
-
-  //       (Right(load), outputGraph)
-  //     case _ =>
-  //       val allErrors: Errors = List(name, description, parsedURI, inputView, invalidKeys, validStatusCodes).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       (Left(err :: Nil), graph)
-  //   }
-  // }  
 
   // def readJDBCLoad(idx: Int, graph: Graph, name: StringConfigValue, params: Map[String, String])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): (Either[List[StageError], PipelineStage], Graph) = {
   //   import ConfigReader._
