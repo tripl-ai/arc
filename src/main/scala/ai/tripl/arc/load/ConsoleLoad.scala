@@ -1,51 +1,101 @@
-// package ai.tripl.arc.load
+package ai.tripl.arc.load
 
-// import java.net.URI
-// import scala.collection.JavaConverters._
+import java.net.URI
+import scala.collection.JavaConverters._
 
-// import org.apache.spark.sql._
-// import org.apache.spark.sql.types._
+import org.apache.spark.sql._
+import org.apache.spark.sql.types._
 
-// import ai.tripl.arc.api.API._
-// import ai.tripl.arc.util._
+import com.typesafe.config._
 
-// object ConsoleLoad {
+import ai.tripl.arc.api._
+import ai.tripl.arc.api.API._
+import ai.tripl.arc.config._
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.plugins.PipelineStagePlugin
+import ai.tripl.arc.util.CloudUtils
+import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.util.ExtractUtils
+import ai.tripl.arc.util.MetadataUtils
+import ai.tripl.arc.util.ListenerUtils
+import ai.tripl.arc.util.Utils
 
-//   def load(load: ConsoleLoad)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
-//     val startTime = System.currentTimeMillis() 
-//     val stageDetail = new java.util.HashMap[String, Object]()
-//     stageDetail.put("type", load.getType)
-//     stageDetail.put("name", load.name)
-//     for (description <- load.description) {
-//       stageDetail.put("description", description)    
-//     }    
-//     stageDetail.put("inputView", load.inputView)  
-//     stageDetail.put("outputMode", load.outputMode.sparkString)  
+class ConsoleLoad extends PipelineStagePlugin {
 
-//     logger.info()
-//       .field("event", "enter")
-//       .map("stage", stageDetail)      
-//       .log()    
+  val version = Utils.getFrameworkVersion
 
-//     val df = spark.table(load.inputView)   
+  def createStage(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
 
-//     if (!df.isStreaming) {
-//       throw new Exception("ConsoleLoad can only be executed in streaming mode.") with DetailException {
-//         override val detail = stageDetail          
-//       }
-//     }      
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputMode" :: "params" :: Nil
+    val name = getValue[String]("name")
+    val description = getOptionalValue[String]("description")
+    val inputView = getValue[String]("inputView")
+    val outputMode = getValue[String]("outputMode", default = Some("Append"), validValues = "Append" :: "Complete" :: "Update" :: Nil) |> parseOutputModeType("outputMode") _
+    val params = readMap("params", c)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
-//     df.writeStream
-//         .format("console")
-//         .outputMode(load.outputMode.sparkString)
-//         .start
+    (name, description, inputView, outputMode, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputMode), Right(invalidKeys)) => 
+        val stage = ConsoleLoadStage(
+          plugin=this,
+          name=name,
+          description=description,
+          inputView=inputView,
+          outputMode=outputMode,
+          params=params
+        )
 
-//     logger.info()
-//       .field("event", "exit")
-//       .field("duration", System.currentTimeMillis() - startTime)
-//       .map("stage", stageDetail)      
-//       .log()
+        stage.stageDetail.put("inputView", stage.inputView)  
+        stage.stageDetail.put("outputMode", stage.outputMode.sparkString)  
 
-//     Option(df)
-//   }
-// }
+        Right(stage)
+      case _ =>
+        val allErrors: Errors = List(name, description, inputView, outputMode, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+
+}
+
+case class ConsoleLoadStage(
+    plugin: PipelineStagePlugin,
+    name: String, 
+    description: Option[String], 
+    inputView: String, 
+    outputMode: OutputModeType, 
+    params: Map[String, String]
+  ) extends PipelineStage {
+
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    ConsoleLoadStage.execute(this)
+  }
+}
+
+
+object ConsoleLoadStage {
+
+  def execute(stage: ConsoleLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+    val stageDetail = stage.stageDetail
+
+    val df = spark.table(stage.inputView)   
+
+    if (!df.isStreaming) {
+      throw new Exception("ConsoleLoad can only be executed in streaming mode.") with DetailException {
+        override val detail = stageDetail          
+      }
+    }      
+
+    df.writeStream
+        .format("console")
+        .outputMode(stage.outputMode.sparkString)
+        .start
+
+    Option(df)
+  }
+}
