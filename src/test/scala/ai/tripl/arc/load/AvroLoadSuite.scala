@@ -52,6 +52,7 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(outputView)
@@ -84,6 +85,7 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(outputView)
