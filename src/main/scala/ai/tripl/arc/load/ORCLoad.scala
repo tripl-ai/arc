@@ -1,100 +1,162 @@
-// package ai.tripl.arc.load
+package ai.tripl.arc.load
 
-// import scala.collection.JavaConverters._
+import java.lang._
+import java.net.URI
+import scala.collection.JavaConverters._
 
-// import org.apache.spark.sql._
-// import org.apache.spark.sql.types._
+import org.apache.spark.sql._
+import org.apache.spark.sql.types._
 
-// import ai.tripl.arc.api.API._
-// import ai.tripl.arc.util._
+import com.typesafe.config._
 
-// object ORCLoad {
+import ai.tripl.arc.api._
+import ai.tripl.arc.api.API._
+import ai.tripl.arc.config._
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.plugins.PipelineStagePlugin
+import ai.tripl.arc.util.CloudUtils
+import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.util.ExtractUtils
+import ai.tripl.arc.util.MetadataUtils
+import ai.tripl.arc.util.ListenerUtils
+import ai.tripl.arc.util.Utils
 
-//   def load(load: ORCLoad)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
-//     val startTime = System.currentTimeMillis() 
-//     val stageDetail = new java.util.HashMap[String, Object]()
-//     stageDetail.put("type", load.getType)
-//     stageDetail.put("name", load.name)
-//     for (description <- load.description) {
-//       stageDetail.put("description", description)    
-//     }    
-//     stageDetail.put("inputView", load.inputView)  
-//     stageDetail.put("outputURI", load.outputURI.toString)  
-//     stageDetail.put("partitionBy", load.partitionBy.asJava)
-//     stageDetail.put("saveMode", load.saveMode.toString.toLowerCase)
+class ORCLoad extends PipelineStagePlugin {
 
-//     val df = spark.table(load.inputView)      
+  val version = Utils.getFrameworkVersion
 
-//     if (!df.isStreaming) {
-//       load.numPartitions match {
-//         case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-//         case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
-//       }
-//     }
+  def createStage(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
 
-//     logger.info()
-//       .field("event", "enter")
-//       .map("stage", stageDetail)      
-//       .log()
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
+    val name = getValue[String]("name")
+    val description = getOptionalValue[String]("description")
+    val inputView = getValue[String]("inputView")
+    val outputURI = getValue[String]("outputURI") |> parseURI("outputURI") _
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val authentication = readAuthentication("authentication")  
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
+    val params = readMap("params", c)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)     
 
-//     // set write permissions
-//     CloudUtils.setHadoopConfiguration(load.authentication)
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(partitionBy), Right(invalidKeys)) => 
+        val stage = ORCLoadStage(
+          plugin=this,
+          name=name,
+          description=description,
+          inputView=inputView,
+          outputURI=outputURI,
+          partitionBy=partitionBy,
+          numPartitions=numPartitions,
+          authentication=authentication,
+          saveMode=saveMode,
+          params=params
+        )
 
-//     val dropMap = new java.util.HashMap[String, Object]()
+        stage.stageDetail.put("inputView", inputView)  
+        stage.stageDetail.put("outputURI", outputURI.toString)  
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
+        stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
 
-//     // ORC cannot handle a column of NullType
-//     val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
-//     if (!nulls.isEmpty) {
-//       dropMap.put("NullType", nulls.asJava)
-//     }
+        Right(stage)
+      case _ =>
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+}
 
-//     stageDetail.put("drop", dropMap) 
+case class ORCLoadStage(
+    plugin: PipelineStagePlugin,
+    name: String, 
+    description: Option[String], 
+    inputView: String, 
+    outputURI: URI, 
+    partitionBy: List[String], 
+    numPartitions: Option[Int], 
+    authentication: Option[Authentication], 
+    saveMode: SaveMode, 
+    params: Map[String, String]
+  ) extends PipelineStage {
 
-//     val nonNullDF = df.drop(nulls:_*)
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    ORCLoadStage.execute(this)
+  }
+}
 
-//     val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+object ORCLoadStage {
 
-//     try {
-//       if (nonNullDF.isStreaming) {
-//         load.partitionBy match {
-//           case Nil => nonNullDF.writeStream.format("orc").option("path", load.outputURI.toString).start
-//           case partitionBy => {
-//             val partitionCols = partitionBy.map(col => nonNullDF(col))
-//             nonNullDF.writeStream.partitionBy(partitionBy:_*).format("orc").option("path", load.outputURI.toString).start
-//           }
-//         }
-//       } else {
-//         load.partitionBy match {
-//           case Nil => {
-//             load.numPartitions match {
-//               case Some(n) => nonNullDF.repartition(n).write.mode(load.saveMode).orc(load.outputURI.toString)
-//               case None => nonNullDF.write.mode(load.saveMode).orc(load.outputURI.toString)
-//             }
-//           }
-//           case partitionBy => {
-//             // create a column array for repartitioning
-//             val partitionCols = partitionBy.map(col => nonNullDF(col))
-//             load.numPartitions match {
-//               case Some(n) => nonNullDF.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(load.saveMode).orc(load.outputURI.toString)
-//               case None => nonNullDF.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(load.saveMode).orc(load.outputURI.toString)
-//             }
-//           }
-//         }
-//       }
-//     } catch {
-//       case e: Exception => throw new Exception(e) with DetailException {
-//         override val detail = stageDetail
-//       }
-//     }    
+  def execute(stage: ORCLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+    val stageDetail = stage.stageDetail
 
-//     spark.sparkContext.removeSparkListener(listener)           
+    val df = spark.table(stage.inputView)      
 
-//     logger.info()
-//       .field("event", "exit")
-//       .field("duration", System.currentTimeMillis() - startTime)
-//       .map("stage", stageDetail)      
-//       .log()
+    if (!df.isStreaming) {
+      stage.numPartitions match {
+        case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
+        case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+      }
+    }
 
-//     Option(nonNullDF)
-//   }
-// }
+    // set write permissions
+    CloudUtils.setHadoopConfiguration(stage.authentication)
+
+    val dropMap = new java.util.HashMap[String, Object]()
+
+    // ORC cannot handle a column of NullType
+    val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
+    if (!nulls.isEmpty) {
+      dropMap.put("NullType", nulls.asJava)
+    }
+
+    stageDetail.put("drop", dropMap) 
+
+    val nonNullDF = df.drop(nulls:_*)
+
+    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+
+    try {
+      if (nonNullDF.isStreaming) {
+        stage.partitionBy match {
+          case Nil => nonNullDF.writeStream.format("orc").option("path", stage.outputURI.toString).start
+          case partitionBy => {
+            val partitionCols = partitionBy.map(col => nonNullDF(col))
+            nonNullDF.writeStream.partitionBy(partitionBy:_*).format("orc").option("path", stage.outputURI.toString).start
+          }
+        }
+      } else {
+        stage.partitionBy match {
+          case Nil => {
+            stage.numPartitions match {
+              case Some(n) => nonNullDF.repartition(n).write.mode(stage.saveMode).orc(stage.outputURI.toString)
+              case None => nonNullDF.write.mode(stage.saveMode).orc(stage.outputURI.toString)
+            }
+          }
+          case partitionBy => {
+            // create a column array for repartitioning
+            val partitionCols = partitionBy.map(col => nonNullDF(col))
+            stage.numPartitions match {
+              case Some(n) => nonNullDF.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(stage.saveMode).orc(stage.outputURI.toString)
+              case None => nonNullDF.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(stage.saveMode).orc(stage.outputURI.toString)
+            }
+          }
+        }
+      }
+    } catch {
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stageDetail
+      }
+    }    
+
+    spark.sparkContext.removeSparkListener(listener)           
+
+    Option(nonNullDF)
+  }
+}
