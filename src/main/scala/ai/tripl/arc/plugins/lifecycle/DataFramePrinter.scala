@@ -26,12 +26,11 @@ class DataFramePrinter extends LifecyclePlugin {
 
     (numRows, truncate, invalidKeys) match {
       case (Right(numRows), Right(truncate), Right(invalidKeys)) => 
-        val instance = DataFramePrinterInstance(
+        Right(DataFramePrinterInstance(
           plugin=this,
           numRows=numRows,
           truncate=truncate
-        )
-        Right(instance)
+        ))
       case _ =>
         val allErrors: Errors = List(numRows, truncate, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val err = StageError(index, this.getClass.getName, c.origin.lineNumber, allErrors)
@@ -47,24 +46,13 @@ case class DataFramePrinterInstance(
   ) extends LifecyclePluginInstance {
 
   override def before(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
-    DataFramePrinterInstance.before(this, stage)
-  }
-
-  override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
-    DataFramePrinterInstance.after(this, stage, result, isLast)
-  } 
-}
-
-object DataFramePrinterInstance {
-
-  def before(instance: DataFramePrinterInstance, stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
     logger.trace()        
       .field("event", "before")
       .field("stage", stage.name)
       .log()  
   }
 
-  def after(instance: DataFramePrinterInstance, stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
+  override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
     logger.trace()        
       .field("event", "after")
       .field("stage", stage.name)
@@ -72,9 +60,8 @@ object DataFramePrinterInstance {
       .log() 
 
     result match {
-      case Some(df) => df.show(instance.numRows, instance.truncate)
+      case Some(df) => df.show(numRows, truncate)
       case None =>
     }
-  }
-
+  } 
 }
