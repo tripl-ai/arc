@@ -50,21 +50,21 @@ case class DataFramePrinterInstance(
     DataFramePrinterInstance.before(this, stage)
   }
 
-  override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger) {
+  override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
     DataFramePrinterInstance.after(this, stage, result, isLast)
   } 
 }
 
 object DataFramePrinterInstance {
 
-  def before(instance: DataFramePrinterInstance, stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger) = {
+  def before(instance: DataFramePrinterInstance, stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
     logger.trace()        
       .field("event", "before")
       .field("stage", stage.name)
       .log()  
   }
 
-  def after(instance: DataFramePrinterInstance, stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger) = {
+  def after(instance: DataFramePrinterInstance, stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
     logger.trace()        
       .field("event", "after")
       .field("stage", stage.name)
