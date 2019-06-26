@@ -40,12 +40,10 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
     import spark.implicits._
 
-    val argsMap = collection.mutable.HashMap[String, String]()
-
     val df = Seq((s"testKey,testValue")).toDF("value")
     df.createOrReplaceTempView("inputView")
 
-    val pipelineEither = ConfigUtils.parsePipeline(Option("classpath://conf/lifecycle_plugin.conf"), argsMap, arcContext)
+    val pipelineEither = ConfigUtils.parsePipeline(Option("classpath://conf/lifecycle_plugin.conf"), arcContext)
 
     pipelineEither match {
       case Left(_) => {

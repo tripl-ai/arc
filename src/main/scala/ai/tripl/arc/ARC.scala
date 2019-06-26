@@ -29,7 +29,7 @@ object ARC {
 
     // read command line arguments into a map
     // must be in --key=value format
-    val commandLineArguments = collection.mutable.Map[String, String]()
+    val clArgs = collection.mutable.Map[String, String]()
     val (opts, vals) = args.partition {
       _.startsWith("--")
     }
@@ -37,9 +37,10 @@ object ARC {
       // regex split on only single = signs not at start or end of line
       val pair = x.split("=(?!=)(?!$)", 2)
       if (pair.length == 2) {
-        commandLineArguments += (pair(0).split("-{1,2}")(1) -> pair(1))
+        clArgs += (pair(0).split("-{1,2}")(1) -> pair(1))
       }
     }
+    val commandLineArguments = clArgs.toMap
 
     val jobName: Option[String] = commandLineArguments.get("etl.config.job.name").orElse(envOrNone("ETL_CONF_JOB_NAME"))
     for (j <- jobName) {
@@ -156,6 +157,7 @@ object ARC {
       configUri=configUri, 
       isStreaming=isStreaming, 
       ignoreEnvironments=ignoreEnvironments, 
+      commandLineArguments=commandLineArguments,
       dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
       lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
       enabledLifecyclePlugins=Nil,
@@ -215,7 +217,7 @@ object ARC {
 
     // try to parse config
     val pipelineConfig = try {
-      ai.tripl.arc.util.ConfigUtils.parsePipeline(configUri, commandLineArguments, arcContext)(spark, logger)
+      ai.tripl.arc.util.ConfigUtils.parsePipeline(configUri, arcContext)(spark, logger)
     } catch {
       case e: Exception => 
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala

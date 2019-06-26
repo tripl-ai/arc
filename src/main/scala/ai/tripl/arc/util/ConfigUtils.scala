@@ -45,11 +45,11 @@ object ConfigUtils {
       params.filter{ case (k,v) => options.contains(k) }
   }
 
-  def parsePipeline(configUri: Option[String], commandLineArguments: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, ARCContext)] = {
+  def parsePipeline(configUri: Option[String], arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, ARCContext)] = {
     arcContext.environment match {
       case Some(_) => {
         configUri match {
-          case Some(uri) => parseConfig(Right(new URI(uri)), commandLineArguments, arcContext)
+          case Some(uri) => parseConfig(Right(new URI(uri)), arcContext)
           case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
         }
       }  
@@ -57,12 +57,12 @@ object ConfigUtils {
     }
   }
 
-  def parseConfig(uri: Either[String, URI], commandLineArguments: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, ARCContext)] = {
+  def parseConfig(uri: Either[String, URI], arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, ARCContext)] = {
     val base = ConfigFactory.load()
 
     val etlConfString = uri match {
       case Left(str) => Right(str)
-      case Right(uri) => getConfigString(uri, commandLineArguments, arcContext)
+      case Right(uri) => getConfigString(uri, arcContext)
     }
 
     val uriString = uri match {
@@ -77,7 +77,7 @@ object ConfigUtils {
       val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
       // convert to json string so that parameters can be correctly parsed
-      val commandLineArgumentsJson = new ObjectMapper().writeValueAsString(commandLineArguments.asJava).replace("\\", "")
+      val commandLineArgumentsJson = new ObjectMapper().writeValueAsString(arcContext.commandLineArguments.asJava).replace("\\", "")
       val commandLineArgumentsConf = ConfigFactory.parseString(commandLineArgumentsJson, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
       // try to read objects in the plugins.config path
@@ -107,6 +107,7 @@ object ConfigUtils {
         configUri=arcContext.configUri, 
         isStreaming=arcContext.isStreaming, 
         ignoreEnvironments=arcContext.ignoreEnvironments, 
+        commandLineArguments=arcContext.commandLineArguments,
         dynamicConfigurationPlugins=arcContext.dynamicConfigurationPlugins,
         lifecyclePlugins=arcContext.lifecyclePlugins,
         enabledLifecyclePlugins=resolveLifecyclePlugins(resolvedConfig, arcContext),
@@ -114,11 +115,11 @@ object ConfigUtils {
         udfPlugins=arcContext.udfPlugins
       )      
 
-      readPipeline(resolvedConfig, etlConfStringHash, uriString, commandLineArguments, ctx)
+      readPipeline(resolvedConfig, etlConfStringHash, uriString, ctx)
     }
   }  
 
-  def getConfigString(uri: URI, commandLineArguments: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], String] = {
+  def getConfigString(uri: URI, arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], String] = {
     uri.getScheme match {
       case "local" => {
         val filePath = new URI(SparkFiles.get(uri.getPath))
@@ -143,10 +144,10 @@ object ConfigUtils {
       }    
       // amazon s3
       case "s3a" => {
-        val s3aAccessKey: Option[String] = commandLineArguments.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY"))
-        val s3aSecretKey: Option[String] = commandLineArguments.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY"))
-        val s3aEndpoint: Option[String] = commandLineArguments.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
-        val s3aConnectionSSLEnabled: Option[String] = commandLineArguments.get("etl.config.fs.s3a.connection.ssl.enabled").orElse(envOrNone("ETL_CONF_S3A_CONNECTION_SSL_ENABLED"))        
+        val s3aAccessKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY"))
+        val s3aSecretKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY"))
+        val s3aEndpoint: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
+        val s3aConnectionSSLEnabled: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.connection.ssl.enabled").orElse(envOrNone("ETL_CONF_S3A_CONNECTION_SSL_ENABLED"))        
 
         val accessKey = s3aAccessKey match {
           case Some(value) => value
@@ -173,8 +174,8 @@ object ConfigUtils {
       }
       // azure blob
       case "wasb" | "wasbs" => {
-        val azureAccountName: Option[String] = commandLineArguments.get("etl.config.fs.azure.account.name").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_NAME"))
-        val azureAccountKey: Option[String] = commandLineArguments.get("etl.config.fs.azure.account.key").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_KEY"))
+        val azureAccountName: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.azure.account.name").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_NAME"))
+        val azureAccountKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.azure.account.key").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_KEY"))
 
         val accountName = azureAccountName match {
           case Some(value) => value
@@ -191,8 +192,8 @@ object ConfigUtils {
       }
       // azure data lake storage
       case "adl" => {
-        val adlClientID: Option[String] = commandLineArguments.get("etl.config.fs.adl.oauth2.client.id").orElse(envOrNone("ETL_CONF_ADL_OAUTH2_CLIENT_ID"))
-        val adlRefreshToken: Option[String] = commandLineArguments.get("etl.config.fs.adl.oauth2.refresh.token").orElse(envOrNone("ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN"))
+        val adlClientID: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.adl.oauth2.client.id").orElse(envOrNone("ETL_CONF_ADL_OAUTH2_CLIENT_ID"))
+        val adlRefreshToken: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.adl.oauth2.refresh.token").orElse(envOrNone("ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN"))
 
         val clientID = adlClientID match {
           case Some(value) => value
@@ -209,8 +210,8 @@ object ConfigUtils {
       }
       // azure data lake storage gen 2
       case "abfs" | "abfss" => {
-        val dfAccountName: Option[String] = commandLineArguments.get("etl.config.fs.dfs.account.name").orElse(envOrNone("ETL_CONF_DFS_ACCOUNT_NAME"))
-        val dfAccessKey: Option[String] = commandLineArguments.get("etl.config.fs.dfs.access.key").orElse(envOrNone("ETL_CONF_DFS_ACCESS_KEY"))
+        val dfAccountName: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.dfs.account.name").orElse(envOrNone("ETL_CONF_DFS_ACCOUNT_NAME"))
+        val dfAccessKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.dfs.access.key").orElse(envOrNone("ETL_CONF_DFS_ACCESS_KEY"))
 
         val accountName = dfAccountName match {
           case Some(value) => value
@@ -227,8 +228,8 @@ object ConfigUtils {
       }      
       // google cloud
       case "gs" => {
-        val gsProjectID: Option[String] = commandLineArguments.get("etl.config.fs.gs.project.id").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_PROJECT_ID"))
-        val gsKeyfilePath: Option[String] = commandLineArguments.get("etl.config.fs.google.cloud.auth.service.account.json.keyfile").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE"))
+        val gsProjectID: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.gs.project.id").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_PROJECT_ID"))
+        val gsKeyfilePath: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.google.cloud.auth.service.account.json.keyfile").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE"))
 
         val projectID = gsProjectID match {
           case Some(value) => value
@@ -315,40 +316,6 @@ object ConfigUtils {
     }
   }  
 
-  // def readPipelineExecute(idx: Int, config: Config, argsMap: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[StageError], PipelineStage] = {
-  //   import ConfigReader._
-
-  //   implicit val c: Config = config
-
-  //   val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "uri" :: "authentication" :: "params" :: Nil
-  //   val invalidKeys = checkValidKeys(c)(expectedKeys)      
-
-  //   val description = getOptionalValue[String]("description")
-
-  //   val name = getValue[String]("name")
-  //   val uri = getValue[String]("uri")
-  //   val authentication = readAuthentication("authentication")  
-  //   authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))    
-
-  //   (name, description, uri, invalidKeys) match {
-  //     case (Right(n), Right(d), Right(u), Right(_)) => 
-  //       val uri = new URI(u)
-  //       val subPipeline = parseConfig(Right(uri), argsMap, arcContext)
-  //       subPipeline match {
-  //         case Right(etl) => Right(PipelineExecute(n, d, uri, etl._1))
-  //         case Left(errors) => {
-  //           val stageErrors = errors.collect { case s: StageError => s }
-  //           Left(stageErrors)
-  //         }
-  //       }
-  //     case _ =>
-  //       val allErrors: Errors = List(uri, description, invalidKeys).collect{ case Left(errs) => errs }.flatten
-  //       val stageName = stringOrDefault(name, "unnamed stage")
-  //       val err = StageError(idx, stageName, c.origin.lineNumber, allErrors)
-  //       Left(err :: Nil)
-  //   }
-  // }
-
   def readPipelineStage(index: Int, stageType: String, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], PipelineStage] = {
     implicit val c: Config = config
 
@@ -376,11 +343,11 @@ object ConfigUtils {
     } else if (filteredPlugins.length > 1) {
       Left(StageError(index, stageType, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"Multiple plugins found with name ${splitStageType(0)}. ${availablePluginsMessage}") :: Nil) :: Nil)
     } else {
-      filteredPlugins(0).createStage(index, config)
+      filteredPlugins.head.createStage(index, config)
     }
   }
 
-  def readPipeline(c: Config, configMD5: String, uri: String, commandLineArguments: collection.mutable.Map[String, String], arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, ARCContext)] = {
+  def readPipeline(c: Config, configMD5: String, uri: String, arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, ARCContext)] = {
     import ConfigReader._
 
     val startTime = System.currentTimeMillis() 
@@ -431,7 +398,7 @@ object ConfigUtils {
         }
 
         stageOrError match {
-          // case Right(PipelineExecute(_, _, _, subPipeline)) => (subPipeline.stages.reverse ::: stages, errs)
+          case Right(ai.tripl.arc.execute.PipelineExecuteStage(_, _, _, _, subPipeline)) => (subPipeline.stages.reverse ::: stages, errs)
           case Right(s) => (s :: stages, errs)
           case Left(stageErrors) => (stages, stageErrors ::: errs)
         }

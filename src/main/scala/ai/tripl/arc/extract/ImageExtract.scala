@@ -37,8 +37,7 @@ class ImageExtract extends PipelineStagePlugin {
 
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val inputURI = getValue[String]("inputURI")
-    val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
+    val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _ 
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
@@ -49,8 +48,8 @@ class ImageExtract extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
 
-    (name, description, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, basePath, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputURI), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(dropInvalid), Right(basePath), Right(invalidKeys)) => 
+    (name, description, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, basePath, invalidKeys) match {
+      case (Right(name), Right(description), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(dropInvalid), Right(basePath), Right(invalidKeys)) => 
 
       val stage = ImageExtractStage(
         plugin=this,
@@ -78,7 +77,7 @@ class ImageExtract extends PipelineStagePlugin {
       Right(stage)
 
       case _ =>
-        val allErrors: Errors = List(name, description, inputURI, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, basePath, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, basePath, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

@@ -112,8 +112,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
     
-    val commandLineArguments = collection.mutable.Map[String, String]()
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), commandLineArguments, arcContext)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(_) => {

@@ -66,8 +66,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
     
-    val argsMap = collection.mutable.Map[String, String]()
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, arcContext)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(_) => assert(false)

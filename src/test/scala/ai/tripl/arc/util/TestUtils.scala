@@ -33,7 +33,7 @@ case class KnownData(
 )
 
 object TestUtils {
-    def getARCContext(isStreaming: Boolean, environment: String = "test") = {
+    def getARCContext(isStreaming: Boolean, environment: String = "test", commandLineArguments: Map[String,String] = Map[String,String]()) = {
       val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
 
       ARCContext(
@@ -44,6 +44,7 @@ object TestUtils {
         configUri=None, 
         isStreaming=isStreaming, 
         ignoreEnvironments=false, 
+        commandLineArguments=commandLineArguments,
         dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
         lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
         enabledLifecyclePlugins=Nil,

@@ -36,8 +36,8 @@ class JSONExtract extends PipelineStagePlugin {
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "inputField" :: "basePath" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
-    val parsedGlob = if (!c.hasPath("inputView")) inputView.rightFlatMap(glob => parseGlob("inputURI", glob)) else Right("")
+    val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
+    val parsedGlob = if (!c.hasPath("inputView")) getValue[String]("inputURI") |> parseGlob("inputURI") _ else Right("")
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")

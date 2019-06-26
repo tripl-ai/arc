@@ -165,9 +165,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Read documentation config files") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-    val commandLineArguments = collection.mutable.HashMap[String, String]()
+    var commandLineArguments = Map[String, String]("JOB_RUN_DATE" -> "0", "ETL_CONF_BASE_URL" -> "")
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false, commandLineArguments=commandLineArguments)
 
     val resourcesDir = getClass.getResource("/docs_resources/").getPath
 
@@ -191,8 +190,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val metaConf = mlConf.replaceAll("hdfs://datalake/metadata/", getClass.getResource("/conf/metadata/").toString)
 
       try {
-        var commandLineArguments = collection.mutable.Map[String, String]("JOB_RUN_DATE" -> "0", "ETL_CONF_BASE_URL" -> "")
-        val pipelineEither = ConfigUtils.parseConfig(Left(metaConf), commandLineArguments, arcContext)
+        val pipelineEither = ConfigUtils.parseConfig(Left(metaConf), arcContext)
 
         pipelineEither match {
           case Left(errors) => {
@@ -229,8 +227,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
     
-    val commandLineArguments = collection.mutable.Map[String, String]()
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), commandLineArguments, arcContext)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(stageError) => {
@@ -276,8 +273,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val commandLineArguments = collection.mutable.Map[String, String]()
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), commandLineArguments, arcContext)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(stageError) => {
@@ -314,8 +310,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val commandLineArguments = collection.mutable.Map[String, String]()
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), commandLineArguments, arcContext)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(stageError) => {
@@ -346,8 +341,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val commandLineArguments = collection.mutable.Map[String, String]()
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), commandLineArguments, arcContext)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(stageError) => {
@@ -379,8 +373,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val commandLineArguments = collection.mutable.Map[String, String]()
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), commandLineArguments, arcContext)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(errors) => assert(false)
@@ -420,8 +413,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }"""
 
 
-    val commandLineArguments = collection.mutable.Map[String, String]()
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), commandLineArguments, arcContext)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(errors) => assert(false)

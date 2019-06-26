@@ -103,8 +103,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
     
-    val commandLineArgs = collection.mutable.Map[String, String]()
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), commandLineArgs, arcContext)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(_) => assert(false)

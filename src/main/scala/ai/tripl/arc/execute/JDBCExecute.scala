@@ -12,8 +12,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.Properties
 
-import com.microsoft.sqlserver.jdbc.SQLServerDataSource
-
 import org.apache.spark.sql._
 
 import com.typesafe.config._

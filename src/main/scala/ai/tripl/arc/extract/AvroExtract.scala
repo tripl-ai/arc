@@ -40,12 +40,8 @@ class AvroExtract extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val params = readMap("params", c)
     val description = getOptionalValue[String]("description")
-    val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else getValue[String]("inputURI")
-    val parsedGlob = if (!c.hasPath("inputView")) {
-      inputView.rightFlatMap(glob => parseGlob("inputURI", glob))
-    } else {
-      Right("")
-    }    
+    val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
+    val parsedGlob = if(!c.hasPath("inputView")) getValue[String]("inputURI") |> parseGlob("inputURI") _ else Right("")   
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")

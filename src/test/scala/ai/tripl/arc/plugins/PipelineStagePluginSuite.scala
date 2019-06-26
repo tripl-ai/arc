@@ -36,9 +36,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val argsMap = collection.mutable.HashMap[String, String]()
-
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin.conf"), argsMap, arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin.conf"), arcContext)
     val configParms = Map[String, String](
       "foo" -> "bar"
     )
@@ -60,9 +58,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val argsMap = collection.mutable.HashMap[String, String]()
-
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_short.conf"), argsMap, arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_short.conf"), arcContext)
     val configParms = Map[String, String](
       "foo" -> "bar"
     )
@@ -85,9 +81,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val argsMap = collection.mutable.HashMap[String, String]()
-
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_missing.conf"), argsMap, arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_missing.conf"), arcContext)
 
     pipeline match {
       case Left(stageError) => {
@@ -102,9 +96,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val argsMap = collection.mutable.HashMap[String, String]()
-
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_correct.conf"), argsMap, arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_correct.conf"), arcContext)
 
     pipeline match {
       case Right( (ETLPipeline(ArcCustomStage(plugin, name, None, params) :: Nil), _) ) =>
@@ -122,9 +114,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val argsMap = collection.mutable.HashMap[String, String]()
-
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_correct_long.conf"), argsMap, arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_correct_long.conf"), arcContext)
 
     pipeline match {
       case Right( (ETLPipeline(ArcCustomStage(plugin, name, None, params) :: Nil), _) ) =>
@@ -142,9 +132,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val argsMap = collection.mutable.HashMap[String, String]()
-
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_incorrect.conf"), argsMap, arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_incorrect.conf"), arcContext)
 
     pipeline match {
       case Left(stageError) => {

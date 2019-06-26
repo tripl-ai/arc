@@ -78,7 +78,7 @@ object ConfigUtils {
     } yield k
   } 
 
-  def parseGlob(path: String, glob: String)(implicit c: Config): Either[Errors, String] = {
+  def parseGlob(path: String)(glob: String)(implicit c: Config): Either[Errors, String] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {

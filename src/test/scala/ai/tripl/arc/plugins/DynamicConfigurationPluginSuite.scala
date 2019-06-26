@@ -37,9 +37,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val commandLineArguments = collection.mutable.HashMap[String, String]()
-
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), commandLineArguments, arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), arcContext)
     val configParms = Map[String, String](
       "foo" -> "baz",
       "bar" -> "testValue"
@@ -57,11 +55,10 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
   test("Test commandLineArguments precedence") { 
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    val commandLineArguments = Map[String, String]("ARGS_MAP_VALUE" -> "before\"${arc.paramvalue}\"after")
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false, commandLineArguments=commandLineArguments)
 
-    val commandLineArguments = collection.mutable.HashMap[String, String]("ARGS_MAP_VALUE" -> "before\"${arc.paramvalue}\"after")
-
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin_precendence.conf"), commandLineArguments, arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin_precendence.conf"), arcContext)
     val configParms = Map[String, String](
       "foo" -> "beforeparamValueafter"
     )
@@ -84,9 +81,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false, environment="production")
 
-    val commandLineArguments = collection.mutable.HashMap[String, String]()
-
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), commandLineArguments, arcContext)
+    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), arcContext)
     val configParms = Map[String, String](
       "foo" -> "baz",
       "bar" -> "productionValue"

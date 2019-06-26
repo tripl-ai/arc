@@ -47,6 +47,10 @@ object API {
       */    
     ignoreEnvironments: Boolean,  
 
+    /** the command line arguments
+      */   
+    commandLineArguments: Map[String, String],
+
     /** a list of dynamic configuration plugins which are resolved before parsing the config
       */    
     dynamicConfigurationPlugins: List[DynamicConfigurationPlugin],
@@ -102,7 +106,14 @@ object API {
     def metadata(): Option[String]
   }
 
-  object ExtractColumn {
+  object Extract {
+    def toStructType(cols: List[ExtractColumn]): StructType = {
+      val fields = cols.map(c => ExtractColumn.toStructField(c))
+      StructType(fields)
+    }
+  } 
+
+  object ExtractColumn {     
 
     /** Converts an ExtractColumn to a Spark StructField in order to create a 
       * Schema. Adds additional internal metadata that will be persisted in
@@ -216,20 +227,6 @@ object API {
     def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = None
 
   }
-
-  /** An extract that provides its own schema e.g. parquet
-    */
-  trait Extract extends PipelineStage {
-  }
-
-  object Extract {
-    def toStructType(cols: List[ExtractColumn]): StructType = {
-      val fields = cols.map(c => ExtractColumn.toStructField(c))
-      StructType(fields)
-    }
-  }  
-
-  // case class PipelineExecute(name: String, description: Option[String], uri: URI, pipeline: ETLPipeline)
 
   sealed trait FailModeType {
     def sparkString(): String

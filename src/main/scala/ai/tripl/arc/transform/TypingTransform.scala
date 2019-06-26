@@ -271,7 +271,7 @@ object Typing {
         // cast to a TypedRow to fit the Dataset map method requirements
         Row(rowValues.reverse:_*).asInstanceOf[TypedRow]
     }
-  }
+  } 
 
   def typeDataFrame(untypedDataframe: DataFrame, cols: List[ExtractColumn], failMode: FailModeType, valueAccumulator: LongAccumulator, errorAccumulator: LongAccumulator)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
     val schema = Extract.toStructType(cols)

@@ -38,7 +38,7 @@ class DelimitedExtract extends PipelineStagePlugin {
     val params = readMap("params", c)
     val description = getOptionalValue[String]("description")
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
-    val parsedGlob = if (!c.hasPath("inputView")) getValue[String]("inputURI").rightFlatMap(glob => parseGlob("inputURI", glob)) else Right("")
+    val parsedGlob = if(!c.hasPath("inputView")) getValue[String]("inputURI") |> parseGlob("inputURI") _ else Right("")
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")

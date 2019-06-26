@@ -36,8 +36,7 @@ class TextExtract extends PipelineStagePlugin {
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val inputURI = getValue[String]("inputURI")
-    val parsedGlob = inputURI.rightFlatMap(glob => parseGlob("inputURI", glob))
+    val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _     
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
@@ -49,8 +48,8 @@ class TextExtract extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, inputURI, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(inputURI), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(basePath), Right(invalidKeys)) => 
+    (name, description, extractColumns, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys) match {
+      case (Right(name), Right(description), Right(extractColumns), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(basePath), Right(invalidKeys)) => 
         
       val stage = TextExtractStage(
           plugin=this,
@@ -79,7 +78,7 @@ class TextExtract extends PipelineStagePlugin {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, inputURI, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, extractColumns, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
