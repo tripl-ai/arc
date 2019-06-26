@@ -59,9 +59,9 @@ object API {
       */    
     lifecyclePlugins: List[LifecyclePlugin],
 
-    /** a list of lifecycle plugins which are called before and after each stage
+    /** a list of active lifecycle plugins which are called before and after each stage
       */    
-    enabledLifecyclePlugins: List[LifecyclePlugin],    
+    activeLifecyclePlugins: List[LifecyclePluginInstance],    
 
     /** a list of pipeline stage plugins which are executed in the pipeline
       */    
@@ -203,6 +203,20 @@ object API {
 
   case class MetadataSchema(name: String, format: MetadataFormat)
 
+  // a VersionedPlugin requires the version argument
+  trait VersionedPlugin extends Serializable {
+
+    def version: String
+
+  }
+
+  // a ConfigPlugin reads a typesafe config and produces a plugin instance
+  trait ConfigPlugin extends VersionedPlugin {
+
+    def instantiate[T](index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], T]
+
+  }
+
   // A Pipeline has 1 or more stages
   trait PipelineStage {
 
@@ -227,6 +241,18 @@ object API {
     def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = None
 
   }
+
+  // A LifecyclePluginInstance executes before and after PipelineStage execution
+  trait LifecyclePluginInstance {
+
+    def plugin: LifecyclePlugin
+
+    def before(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext)
+
+    def after(stage: PipelineStage, result: Option[DataFrame], isLast: scala.Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext)
+
+  }
+
 
   sealed trait FailModeType {
     def sparkString(): String

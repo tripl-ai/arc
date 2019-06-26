@@ -5,6 +5,7 @@ import ai.tripl.arc.util.ConfigUtils
 import ai.tripl.arc.util.log.LoggerFactory
 import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfter, FunSuite}
+import ai.tripl.arc.util.TestUtils
 
 import ai.tripl.arc.udf.UDF
 
@@ -27,9 +28,10 @@ class UDFPluginSuite extends FunSuite with BeforeAndAfter {
     session = spark
 
     logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // register udf
-    UDF.registerUDFs(spark.sqlContext)(logger)    
+    UDF.registerUDFs()(spark,logger,arcContext)    
   }
 
   after {

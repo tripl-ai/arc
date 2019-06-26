@@ -1,13 +1,12 @@
 package ai.tripl.arc.plugins
 
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
 
-trait UDFPlugin {
+import ai.tripl.arc.api.API.{ARCContext, VersionedPlugin}
 
-  def version: String
-  
-  // return the list of udf names that were registered for logging
-  def register(sqlContext: SQLContext)(implicit logger: ai.tripl.arc.util.log.logger.Logger): Seq[String]
+trait UDFPlugin extends VersionedPlugin {
+
+  def register()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext)
 
 }
 

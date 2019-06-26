@@ -160,30 +160,30 @@ object ARC {
       commandLineArguments=commandLineArguments,
       dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
       lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
-      enabledLifecyclePlugins=Nil,
+      activeLifecyclePlugins=Nil,
       pipelineStagePlugins=ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList,
       udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList
     )
 
-    logger.info()
-      .field("event", "enter")
-      .field("config", sparkConf)
-      .field("sparkVersion", spark.version)
-      .field("frameworkVersion", frameworkVersion)
-      .field("scalaVersion", scala.util.Properties.versionNumberString)
-      .field("javaVersion", System.getProperty("java.runtime.version"))
-      .field("environment", environment.getOrElse(""))
-      .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => c.getClass.getName).asJava)
-      .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => c.getClass.getName).asJava)
-      .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
-      .field("udfPlugins", arcContext.udfPlugins.map(c => c.getClass.getName).asJava)
-      .log()   
-
-    // add spark listeners
+    // add spark listeners and register udfs
     try {
       if (logger.isTraceEnabled) {
         ListenerUtils.addExecutorListener()(spark, logger)
       }
+      val registeredUDFs = UDF.registerUDFs()(spark, logger, arcContext)
+      logger.info()
+        .field("event", "enter")
+        .field("config", sparkConf)
+        .field("sparkVersion", spark.version)
+        .field("frameworkVersion", frameworkVersion)
+        .field("scalaVersion", scala.util.Properties.versionNumberString)
+        .field("javaVersion", System.getProperty("java.runtime.version"))
+        .field("environment", environment.getOrElse(""))
+        .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => c.getClass.getName).asJava)
+        .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => c.getClass.getName).asJava)
+        .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
+        .field("udfPlugins", registeredUDFs)
+        .log()           
     } catch {
       case e: Exception => 
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
@@ -197,6 +197,14 @@ object ARC {
 
         logger.error()
           .field("event", "exit")
+          .field("sparkVersion", spark.version)
+          .field("frameworkVersion", frameworkVersion)
+          .field("scalaVersion", scala.util.Properties.versionNumberString)
+          .field("javaVersion", System.getProperty("java.runtime.version"))
+          .field("environment", environment.getOrElse(""))
+          .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => c.getClass.getName).asJava)
+          .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => c.getClass.getName).asJava)
+          .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)          
           .field("status", "failure")
           .field("success", Boolean.valueOf(false))
           .field("duration", System.currentTimeMillis() - startTime)
@@ -252,7 +260,6 @@ object ARC {
     val error: Boolean = pipelineConfig match {
       case Right((pipeline, ctx)) =>
         try {
-          UDF.registerUDFs(spark.sqlContext)
           ARC.run(pipeline)(spark, logger, ctx)
           false
         } catch {
@@ -376,14 +383,14 @@ object ARC {
   (implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     def before(stage: PipelineStage): Unit = {
-      for (p <- arcContext.enabledLifecyclePlugins) {
+      for (p <- arcContext.activeLifecyclePlugins) {
         logger.trace().message(s"Executing before() on LifecyclePlugin: ${p.getClass.getName}")
         p.before(stage)
       }
     }
 
     def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean): Unit = {
-      for (p <- arcContext.enabledLifecyclePlugins) {
+      for (p <- arcContext.activeLifecyclePlugins) {
         logger.trace().message(s"Executing after(last = $isLast) on LifecyclePlugin: ${p.getClass.getName}")
         p.after(stage, result, isLast)
       }

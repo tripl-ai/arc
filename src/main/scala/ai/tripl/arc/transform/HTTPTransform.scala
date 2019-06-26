@@ -40,7 +40,7 @@ class HTTPTransform extends PipelineStagePlugin {
 
   val version = Utils.getFrameworkVersion
 
-  def createStage(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+  def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
@@ -85,16 +85,16 @@ class HTTPTransform extends PipelineStagePlugin {
           failMode=failMode
         )
 
-    stage.stageDetail.put("inputView", inputView)  
-    stage.stageDetail.put("inputField", inputField)  
-    stage.stageDetail.put("outputView", outputView) 
-    stage.stageDetail.put("uri", uri.toString)      
-    stage.stageDetail.put("headers", HTTPUtils.maskHeaders(headers).asJava)
-    stage.stageDetail.put("persist", Boolean.valueOf(persist))
-    stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
-    stage.stageDetail.put("batchSize", Integer.valueOf(batchSize))
-    stage.stageDetail.put("delimiter", delimiter)
-    stage.stageDetail.put("failMode", failMode.sparkString)
+        stage.stageDetail.put("inputView", inputView)  
+        stage.stageDetail.put("inputField", inputField)  
+        stage.stageDetail.put("outputView", outputView) 
+        stage.stageDetail.put("uri", uri.toString)      
+        stage.stageDetail.put("headers", HTTPUtils.maskHeaders(headers).asJava)
+        stage.stageDetail.put("persist", Boolean.valueOf(persist))
+        stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
+        stage.stageDetail.put("batchSize", Integer.valueOf(batchSize))
+        stage.stageDetail.put("delimiter", delimiter)
+        stage.stageDetail.put("failMode", failMode.sparkString)
 
         Right(stage)
       case _ =>

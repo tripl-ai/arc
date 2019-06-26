@@ -65,14 +65,19 @@ object ConfigUtils {
       case Right(uri) => getConfigString(uri, arcContext)
     }
 
-    val uriString = uri match {
-      case Left(str) => ""
-      case Right(uri) => uri.toString
-    }    
-
     etlConfString.rightFlatMap { str =>
       // calculate hash of raw string so that logs can be used to detect changes
       val etlConfStringHash = DigestUtils.md5Hex(str.getBytes)
+      val uriString = uri match {
+        case Left(str) => ""
+        case Right(uri) => uri.toString
+      }    
+
+      logger.info()
+        .field("event", "validateConfig")
+        .field("uri", uriString)        
+        .field("content-md5", etlConfStringHash)
+        .log()         
 
       val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
@@ -81,41 +86,47 @@ object ConfigUtils {
       val commandLineArgumentsConf = ConfigFactory.parseString(commandLineArgumentsJson, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
       // try to read objects in the plugins.config path
-      val resolvedConfigPlugins = resolveDynamicConfigPlugins(etlConf, base, arcContext)
-      
-      val pluginConfs: List[Config] = resolvedConfigPlugins.map( c => ConfigFactory.parseMap(c) )
+      val dynamicConfigsOrErrors = resolveDynamicConfigPlugins(etlConf, base, arcContext)
+            // val pluginConfs: List[Config] = resolvedConfigPlugins.map( c => ConfigFactory.parseMap(c) )
+      dynamicConfigsOrErrors match {
+        case Left(errors) => Left(errors)
+        case Right(dynamicConfigs) => {
+          val resolvedConfig = dynamicConfigs match {
+            case Nil =>
+              etlConf.resolveWith(commandLineArgumentsConf.withFallback(etlConf).withFallback(base)).resolve()
+            case _ =>
+              val pluginConf = dynamicConfigs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
+              val pluginValues = pluginConf.root().unwrapped()
+              logger.debug()
+                .message("Found additional config values from plugins")
+                .field("pluginConf", pluginValues)
+                .log()           
+              etlConf.resolveWith(commandLineArgumentsConf.withFallback(pluginConf).withFallback(etlConf).withFallback(base)).resolve()
+          }
 
-      val resolvedConfig: Config = pluginConfs match {
-        case Nil =>
-          etlConf.resolveWith(commandLineArgumentsConf.withFallback(etlConf).withFallback(base)).resolve()
-        case _ =>
-          val pluginConf = pluginConfs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
-          val pluginValues = pluginConf.root().unwrapped()
-          logger.debug()
-            .message("Found additional config values from plugins")
-            .field("pluginConf", pluginValues)
-            .log()           
-          etlConf.resolveWith(commandLineArgumentsConf.withFallback(pluginConf).withFallback(etlConf).withFallback(base)).resolve()
+          implicit val arcCtx = arcContext
+          // val lifecyclePlugins=resolveLifecyclePlugins(resolvedConfig)
+
+          // used the resolved config to find plugins.lifestyle and create objects and replace the context
+          val ctx = ARCContext(
+            jobId=arcContext.jobId, 
+            jobName=arcContext.jobName, 
+            environment=arcContext.environment, 
+            environmentId=arcContext.environmentId, 
+            configUri=arcContext.configUri, 
+            isStreaming=arcContext.isStreaming, 
+            ignoreEnvironments=arcContext.ignoreEnvironments, 
+            commandLineArguments=arcContext.commandLineArguments,
+            dynamicConfigurationPlugins=arcContext.dynamicConfigurationPlugins,
+            lifecyclePlugins=arcContext.lifecyclePlugins,
+            activeLifecyclePlugins=Nil,
+            pipelineStagePlugins=arcContext.pipelineStagePlugins,
+            udfPlugins=arcContext.udfPlugins
+          )      
+
+          readPipeline(resolvedConfig, ctx)
+        }
       }
-
-      // used the resolved config to find plugins.lifestyle and create objects and replace the context
-      val ctx = ARCContext(
-        jobId=arcContext.jobId, 
-        jobName=arcContext.jobName, 
-        environment=arcContext.environment, 
-        environmentId=arcContext.environmentId, 
-        configUri=arcContext.configUri, 
-        isStreaming=arcContext.isStreaming, 
-        ignoreEnvironments=arcContext.ignoreEnvironments, 
-        commandLineArguments=arcContext.commandLineArguments,
-        dynamicConfigurationPlugins=arcContext.dynamicConfigurationPlugins,
-        lifecyclePlugins=arcContext.lifecyclePlugins,
-        enabledLifecyclePlugins=resolveLifecyclePlugins(resolvedConfig, arcContext),
-        pipelineStagePlugins=arcContext.pipelineStagePlugins,
-        udfPlugins=arcContext.udfPlugins
-      )      
-
-      readPipeline(resolvedConfig, etlConfStringHash, uriString, ctx)
     }
   }  
 
@@ -250,116 +261,131 @@ object ConfigUtils {
     }
   }
 
-  def resolveDynamicConfigPlugins(c: Config, base: Config, arcContext: ARCContext)(implicit logger: ai.tripl.arc.util.log.logger.Logger): List[JMap[String, Object]] = {
+  def resolveDynamicConfigPlugins(c: Config, base: Config, arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], List[Config]] = {
     if (c.hasPath("plugins.config")) {
-      val plugins =
-        (for (p <- c.getObjectList("plugins.config").asScala) yield {
-          val plugin = p.toConfig.withFallback(base).resolve()
-          if (plugin.hasPath("type")) {
-            val _type =  plugin.getString("type")
+      val (errors, configs) = c.getObjectList("plugins.config").asScala.zipWithIndex.foldLeft[(List[StageError], List[Config])]( (Nil, Nil) ) { case ( (errors, configs), (stage, index) ) =>
+        import ConfigReader._
+        val config = stage.toConfig
 
-            val environments = if (plugin.hasPath("environments")) plugin.getStringList("environments").asScala.toList else Nil
-            logger.trace()
-              .field("event", "validateConfig")
-              .field("type", _type)              
-              .field("message", "skipping plugin due to environment configuration")       
-              .field("environment", arcContext.environment.get)               
-              .list("environments", environments.asJava)               
-              .log()   
+        implicit val c = config
+        implicit val ctx = arcContext
 
-            if (arcContext.ignoreEnvironments || environments.contains(arcContext.environment.get)) {
-              val params = ai.tripl.arc.config.ConfigUtils.readMap("params", plugin)
-              DynamicConfigurationPlugin.resolveAndExecutePlugin(_type, params).map(_ :: Nil)
-            } else {
-              None
-            }
-          } else {
-            None
+        val pluginType = getValue[String]("type")
+        val environments = if (config.hasPath("environments")) config.getStringList("environments").asScala.toList else Nil
+
+        // skip stage if not in environment
+        if (!arcContext.ignoreEnvironments && !environments.contains(arcContext.environment.get)) {
+          logger.trace()
+            .field("event", "validateConfig")
+            .field("type", pluginType.right.getOrElse("unknown"))
+            .field("stageIndex", index)
+            .field("message", "skipping stage due to environment configuration")       
+            .field("skipPlugin", true)
+            .field("environment", arcContext.environment.get)               
+            .list("environments", environments.asJava)               
+            .log()    
+          
+          (errors, configs)
+        } else {
+          logger.trace()
+            .field("event", "validateConfig")
+            .field("type", pluginType.right.getOrElse("unknown"))              
+            .field("stageIndex", index)
+            .field("skipPlugin", false)
+            .field("environment", arcContext.environment.get)               
+            .list("environments", environments.asJava)               
+            .log()   
+
+          val configOrError: Either[List[StageError], Config] = pluginType match {
+            case Left(errors) => Left(StageError(index, "plugins.config", stage.origin.lineNumber, errors) :: Nil)
+            case Right(pluginType) => resolvePlugin[Config](index, pluginType, config, arcContext.dynamicConfigurationPlugins)
           }
-        }).toList
-      plugins.flatMap( p => p.getOrElse(Nil) )
+
+          configOrError match {
+            case Left(pluginErrors) => (pluginErrors ::: errors, configs)
+            case Right(pluginConfig) => (errors, pluginConfig :: configs)
+          }
+        }
+      }
+
+      errors match {
+        case Nil => Right(configs.reverse)
+        case _ => Left(errors.reverse)
+      }
     } else {
-      Nil
+      Right(Nil)
     }
   }
 
-  def resolveLifecyclePlugins(c: Config, arcContext: ARCContext)(implicit logger: ai.tripl.arc.util.log.logger.Logger): List[LifecyclePlugin] = {
-    if (c.hasPath("plugins.lifecycle")) {
-      val plugins =
-        (for (p <- c.getObjectList("plugins.lifecycle").asScala) yield {
-          val plugin = p.toConfig
-          if (plugin.hasPath("type")) {
-            val _type =  plugin.getString("type")
+  // def resolveLifecyclePlugins(c: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): List[Either[List[StageError],LifecyclePlugin]] = {
+  //   if (c.hasPath("plugins.lifecycle")) {
+  //     c.getObjectList("plugins.lifecycle").asScala.zipWithIndex.map { 
+  //       case (plugin, index) => {
+  //         val config = plugin.toConfig
 
-            val environments = if (plugin.hasPath("environments")) plugin.getStringList("environments").asScala.toList else Nil
-            logger.trace()
-              .field("event", "validateConfig")
-              .field("type", _type)              
-              .field("message", "skipping plugin due to environment configuration")       
-              .field("environment", arcContext.environment.get)               
-              .list("environments", environments.asJava)               
-              .log()   
+  //         if (!config.hasPath("type")) {
+  //           Nil
+  //         } else {
+  //           val pluginType = config.getString("type")
+  //           val environments = if (config.hasPath("environments")) config.getStringList("environments").asScala.toList else Nil
+  //           logger.trace()
+  //             .field("event", "validateConfig")
+  //             .field("type", pluginType)              
+  //             .field("message", "skipping plugin due to environment configuration")       
+  //             .field("environment", arcContext.environment.get)               
+  //             .list("environments", environments.asJava)               
+  //             .log() 
 
-            if (arcContext.ignoreEnvironments || environments.contains(arcContext.environment.get)) {
-              val params = ai.tripl.arc.config.ConfigUtils.readMap("params", plugin)
-              LifecyclePlugin.resolve(_type, params).map(_ :: Nil)
-            } else {
-              None
-            }
-          } else {
-            None
-          }
-        }).toList
-      plugins.flatMap( p => p.getOrElse(Nil) )
-    } else {
-      Nil
-    }
-  }  
+  //           if (arcContext.ignoreEnvironments || environments.contains(arcContext.environment.get)) {
+  //             resolvePlugin[LifecyclePluginInstance](index, pluginType, config, arcContext.lifecyclePlugins)
+  //           } else {
+  //             Nil
+  //           }
+  //         }
+  //       }
+  //     }
+  //   } else {
+  //     Nil
+  //   }
+  // }  
 
-  def readPipelineStage(index: Int, stageType: String, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], PipelineStage] = {
-    implicit val c: Config = config
-
+  def resolvePlugin[T](index: Int, name: String, config: Config, plugins: List[ConfigPlugin])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], T] = {
     // match on either full class name or just the simple name AND version or not
-    val splitStageType = stageType.split(":", 2)
-    val hasPackage = splitStageType(0) contains "."
-    val hasVersion = splitStageType.length > 1
+    val splitPlugin = name.split(":", 2)
+    val hasPackage = splitPlugin(0) contains "."
+    val hasVersion = splitPlugin.length > 1
 
     val nameFilteredPlugins = if (hasPackage) {
-      arcContext.pipelineStagePlugins.filter(plugin => plugin.getClass.getName == splitStageType(0))
+      plugins.filter(plugin => plugin.getClass.getName == splitPlugin(0))
     } else {
-      arcContext.pipelineStagePlugins.filter(plugin => plugin.getClass.getSimpleName == splitStageType(0))
+      plugins.filter(plugin => plugin.getClass.getSimpleName == splitPlugin(0))
     }
     val filteredPlugins = if (hasVersion) {
-      nameFilteredPlugins.filter(plugin => plugin.version == splitStageType(1))
+      nameFilteredPlugins.filter(plugin => plugin.version == splitPlugin(1))
     } else {
       nameFilteredPlugins
     }
-    
+
+    val availablePluginsMessage = s"""Available plugins: ${plugins.map(c => s"${c.getClass.getName}:${c.version}").mkString("[",",","]")}."""
+    val versionMessage = if (hasVersion) s"name:version" else "name"
+
     // return clean error messages if missing or duplicate
-    val availablePluginsMessage = s"""Available plugins: ${arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").mkString("[",",","]")}."""
     if (filteredPlugins.length == 0) {
-      val versionMessage = if (hasVersion) s"name:version" else "name"
-      Left(StageError(index, stageType, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"No plugins found with ${versionMessage} ${stageType}. ${availablePluginsMessage}") :: Nil) :: Nil)
+      Left(StageError(index, name, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"No plugins found with ${versionMessage} ${name}. ${availablePluginsMessage}") :: Nil) :: Nil)
     } else if (filteredPlugins.length > 1) {
-      Left(StageError(index, stageType, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"Multiple plugins found with name ${splitStageType(0)}. ${availablePluginsMessage}") :: Nil) :: Nil)
+      Left(StageError(index, name, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"Multiple plugins found with name ${splitPlugin(0)}. ${availablePluginsMessage}") :: Nil) :: Nil)
     } else {
-      filteredPlugins.head.createStage(index, config)
+      filteredPlugins.head.instantiate(index, config)
     }
   }
 
-  def readPipeline(c: Config, configMD5: String, uri: String, arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, ARCContext)] = {
+
+  def readPipeline(c: Config, arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, ARCContext)] = {
     import ConfigReader._
 
-    val startTime = System.currentTimeMillis() 
-    val configStages = c.getObjectList("stages")
+    val startTime = System.currentTimeMillis()  
 
-    logger.info()
-      .field("event", "validateConfig")
-      .field("uri", uri)        
-      .field("content-md5", configMD5)
-      .log()    
-
-    val (stages, errors) = configStages.asScala.zipWithIndex.foldLeft[(List[PipelineStage], List[StageError])]( (Nil, Nil) ) { case ( (stages, errs), (stage, index) ) =>
+    val (stages, errors) = c.getObjectList("stages").asScala.zipWithIndex.foldLeft[(List[PipelineStage], List[StageError])]( (Nil, Nil) ) { case ( (stages, errs), (stage, index) ) =>
       import ConfigReader._
       val config = stage.toConfig
 
@@ -394,7 +420,7 @@ object ConfigUtils {
 
         val stageOrError: Either[List[StageError], PipelineStage] = stageType match {
           case Left(_) => Left(StageError(index, "unknown", stage.origin.lineNumber, ConfigError("stages", Some(stage.origin.lineNumber), s"Unknown stage type: '${stageType}'") :: Nil) :: Nil)
-          case Right(stageType) => readPipelineStage(index, stageType, config)
+          case Right(stageType) => resolvePlugin[PipelineStage](index, stageType, config, arcContext.pipelineStagePlugins)
         }
 
         stageOrError match {
