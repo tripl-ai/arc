@@ -6,7 +6,7 @@ import ai.tripl.arc.api.API.ARCContext
 
 import ai.tripl.arc.util.log.logger.Logger
 
-class UDFPluginTest extends UDFPlugin {
+class TestUDFPlugin extends UDFPlugin {
 
   val version = "0.0.1"
 
@@ -14,13 +14,13 @@ class UDFPluginTest extends UDFPlugin {
   override def register()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
 
     // register the functions so they can be accessed via Spark SQL
-    spark.sqlContext.udf.register("add_ten", UDFPluginTest.addTen _ )           // SELECT add_ten(1) AS one_plus_ten
-    spark.sqlContext.udf.register("add_twenty", UDFPluginTest.addTwenty _ )     // SELECT add_twenty(1) AS one_plus_twenty
+    spark.sqlContext.udf.register("add_ten", TestUDFPlugin.addTen _ )           // SELECT add_ten(1) AS one_plus_ten
+    spark.sqlContext.udf.register("add_twenty", TestUDFPlugin.addTwenty _ )     // SELECT add_twenty(1) AS one_plus_twenty
 
   }
 }
 
-object UDFPluginTest {
+object TestUDFPlugin {
   // add 10 to an incoming integer - DO NOT DO THIS IN PRODUCTION INSTEAD USE SPARK SQL DIRECTLY
   def addTen(input: Int): Int = {
     input + 10

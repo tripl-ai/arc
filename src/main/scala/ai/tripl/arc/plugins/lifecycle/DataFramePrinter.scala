@@ -19,7 +19,7 @@ class DataFramePrinter extends LifecyclePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "numRows" :: "truncate" :: Nil
+    val expectedKeys = "type" :: "environments" :: "numRows" :: "truncate" :: Nil
     val numRows = getValue[Int]("numRows", default = Some(20))
     val truncate = getValue[java.lang.Boolean]("truncate", default = Some(true))
     val invalidKeys = checkValidKeys(c)(expectedKeys)

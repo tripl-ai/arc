@@ -13,6 +13,10 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _
 
+  val configParms = Map[String, String](
+    "foo" -> "bar"
+  )
+
   before {
     val spark = SparkSession
       .builder()
@@ -37,15 +41,12 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin.conf"), arcContext)
-    val configParms = Map[String, String](
-      "foo" -> "bar"
-    )
 
     pipeline match {
-      case Right( (ETLPipeline(ArcCustomStage(plugin, name, None, params) :: Nil), _) ) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
         assert(params === configParms)
-        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.ArcCustom")
       case _ => {
         println(pipeline)
         fail("expected CustomStage")
@@ -59,15 +60,12 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_short.conf"), arcContext)
-    val configParms = Map[String, String](
-      "foo" -> "bar"
-    )
 
     pipeline match {
-      case Right( (ETLPipeline(ArcCustomStage(plugin, name, None, params) :: Nil), _) ) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
         assert(params === configParms)
-        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.ArcCustom")
       case _ => {
         println(pipeline)
         fail("expected CustomStage")
@@ -99,9 +97,10 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_correct.conf"), arcContext)
 
     pipeline match {
-      case Right( (ETLPipeline(ArcCustomStage(plugin, name, None, params) :: Nil), _) ) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
-        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.ArcCustom")
+        assert(params === configParms)
       case _ => {
         println(pipeline)
         fail()
@@ -117,9 +116,10 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_correct_long.conf"), arcContext)
 
     pipeline match {
-      case Right( (ETLPipeline(ArcCustomStage(plugin, name, None, params) :: Nil), _) ) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
-        assert(plugin.getClass.getName === "ai.tripl.arc.plugins.ArcCustom")
+        assert(params === configParms)
       case _ => {
         println(pipeline)
         fail()
@@ -136,7 +136,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
 
     pipeline match {
       case Left(stageError) => {
-        assert(stageError.toString contains "No plugins found with name:version ArcCustom:1.0.2. Available plugins:")
+        assert(stageError.toString contains "No plugins found with name:version TestPipelineStagePlugin:1.0.2. Available plugins:")
       }
       case Right(_) => assert(false)
     }
