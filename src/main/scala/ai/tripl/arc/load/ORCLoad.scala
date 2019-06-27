@@ -26,7 +26,7 @@ class ORCLoad extends PipelineStagePlugin {
 
   val version = Utils.getFrameworkVersion
 
-  def createStage(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+  def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
@@ -74,7 +74,7 @@ class ORCLoad extends PipelineStagePlugin {
 }
 
 case class ORCLoadStage(
-    plugin: PipelineStagePlugin,
+    plugin: ORCLoad,
     name: String, 
     description: Option[String], 
     inputView: String, 

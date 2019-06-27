@@ -211,9 +211,9 @@ object API {
   }
 
   // a ConfigPlugin reads a typesafe config and produces a plugin instance
-  trait ConfigPlugin extends VersionedPlugin {
+  trait ConfigPlugin[T] extends VersionedPlugin {
 
-    def instantiate[T](index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], T]
+    def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], T]
 
   }
 

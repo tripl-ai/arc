@@ -33,7 +33,7 @@ class MLTransform extends PipelineStagePlugin {
 
   val version = Utils.getFrameworkVersion
 
-  def createStage(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], ai.tripl.arc.api.API.PipelineStage] = {
+  def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], ai.tripl.arc.api.API.PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
@@ -103,7 +103,7 @@ class MLTransform extends PipelineStagePlugin {
 }
 
 case class MLTransformStage(
-    plugin: PipelineStagePlugin,
+    plugin: MLTransform,
     name: String, 
     description: Option[String], 
     inputURI: URI, 

@@ -108,7 +108,7 @@ class HTTPTransform extends PipelineStagePlugin {
 
 
 case class HTTPTransformStage(
-    plugin: PipelineStagePlugin,
+    plugin: HTTPTransform,
     name: String, 
     description: Option[String], 
     uri: URI, 

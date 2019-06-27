@@ -349,7 +349,7 @@ object ConfigUtils {
   //   }
   // }  
 
-  def resolvePlugin[T](index: Int, name: String, config: Config, plugins: List[ConfigPlugin])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], T] = {
+  def resolvePlugin[T](index: Int, name: String, config: Config, plugins: List[ConfigPlugin[T]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], T] = {
     // match on either full class name or just the simple name AND version or not
     val splitPlugin = name.split(":", 2)
     val hasPackage = splitPlugin(0) contains "."
