@@ -1,6 +1,5 @@
 package ai.tripl.arc.extract
 
-import java.lang._
 import java.net.URI
 import java.util.Properties
 import scala.collection.JavaConverters._

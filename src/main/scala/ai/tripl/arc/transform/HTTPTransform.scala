@@ -1,6 +1,5 @@
 package ai.tripl.arc.transform
 
-import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 
@@ -53,7 +52,7 @@ class HTTPTransform extends PipelineStagePlugin {
     val headers = readMap("headers", c)
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
     val batchSize = getValue[Int]("batchSize", default = Some(1))
     val delimiter = getValue[String]("delimiter", default = Some("\n"))
@@ -90,9 +89,9 @@ class HTTPTransform extends PipelineStagePlugin {
         stage.stageDetail.put("outputView", outputView) 
         stage.stageDetail.put("uri", uri.toString)      
         stage.stageDetail.put("headers", HTTPUtils.maskHeaders(headers).asJava)
-        stage.stageDetail.put("persist", Boolean.valueOf(persist))
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
-        stage.stageDetail.put("batchSize", Integer.valueOf(batchSize))
+        stage.stageDetail.put("batchSize", java.lang.Integer.valueOf(batchSize))
         stage.stageDetail.put("delimiter", delimiter)
         stage.stageDetail.put("failMode", failMode.sparkString)
 
@@ -295,12 +294,12 @@ object HTTPTransformStage {
     repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
-      stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
       }      
     }
 

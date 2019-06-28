@@ -1,6 +1,5 @@
 package ai.tripl.arc.extract
 
-import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 
@@ -39,11 +38,11 @@ class ParquetExtract extends PipelineStagePlugin {
     val description = getOptionalValue[String]("description")
     val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _     
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
-    val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
+    val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
     val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")  
     val basePath = getOptionalValue[String]("basePath")
@@ -70,8 +69,8 @@ class ParquetExtract extends PipelineStagePlugin {
 
         stage.stageDetail.put("input", parsedGlob) 
         stage.stageDetail.put("outputView", outputView)  
-        stage.stageDetail.put("persist", Boolean.valueOf(persist))
-        stage.stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
+        stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
         for (basePath <- basePath) {
           stage.stageDetail.put("basePath", basePath)  
         } 
@@ -194,7 +193,7 @@ object ParquetExtractStage {
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
       }      
     }
 

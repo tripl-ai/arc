@@ -1,6 +1,5 @@
 package ai.tripl.arc.transform
 
-import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 
@@ -42,7 +41,7 @@ class SQLTransform extends PipelineStagePlugin {
     val sqlParams = readMap("sqlParams", c)
     val validSQL = inputSQL |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))        
     val params = readMap("params", c)
@@ -94,7 +93,7 @@ class SQLTransform extends PipelineStagePlugin {
 
         stage.stageDetail.put("inputURI", parsedURI.toString)  
         stage.stageDetail.put("outputView", outputView)   
-        stage.stageDetail.put("persist", Boolean.valueOf(persist))
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("sql", inputSQL)   
         stage.stageDetail.put("sqlParams", sqlParams.asJava)   
 
@@ -166,12 +165,12 @@ object SQLTransformStage {
       // add partition and predicate pushdown detail to logs
       stage.stageDetail.put("partitionFilters", QueryExecutionUtils.getPartitionFilters(repartitionedDF.queryExecution.executedPlan).toArray)
       stage.stageDetail.put("dataFilters", QueryExecutionUtils.getDataFilters(repartitionedDF.queryExecution.executedPlan).toArray)
-      stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
       }      
     }
 

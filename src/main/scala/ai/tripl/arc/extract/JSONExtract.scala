@@ -1,6 +1,5 @@
 package ai.tripl.arc.extract
 
-import java.lang._
 import java.net.URI
 import java.util.Properties
 import scala.collection.JavaConverters._
@@ -39,12 +38,12 @@ class JSONExtract extends PipelineStagePlugin {
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
     val parsedGlob = if (!c.hasPath("inputView")) getValue[String]("inputURI") |> parseGlob("inputURI") _ else Right("")
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
-    val multiLine = getValue[Boolean]("multiLine", default = Some(true))
+    val multiLine = getValue[java.lang.Boolean]("multiLine", default = Some(true))
     val authentication = readAuthentication("authentication")
-    val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
+    val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
     val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val inputField = getOptionalValue[String]("inputField")
@@ -75,10 +74,10 @@ class JSONExtract extends PipelineStagePlugin {
           inputField=inputField
         )
 
-        stage.stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
+        stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
         stage.stageDetail.put("input", input)  
         stage.stageDetail.put("outputView", outputView)  
-        stage.stageDetail.put("persist", Boolean.valueOf(persist))
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("options", JSON.toSparkOptions(stage.settings).asJava)
         for (basePath <- basePath) {
           stage.stageDetail.put("basePath", basePath)  
@@ -219,7 +218,7 @@ object JSONExtractStage {
     // if incoming dataset has 0 columns then create empty dataset with correct schema
     val emptyDataframeHandlerDF = try {
       if (df.schema.length == 0) {
-        stage.stageDetail.put("records", Integer.valueOf(0))
+        stage.stageDetail.put("records", java.lang.Integer.valueOf(0))
         optionSchema match {
           case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
           case None => throw new Exception(s"JSONExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
@@ -262,13 +261,13 @@ object JSONExtractStage {
     repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
-      stage.stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
-      stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("inputFiles", java.lang.Integer.valueOf(repartitionedDF.inputFiles.length))
+      stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
       }      
     }
 

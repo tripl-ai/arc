@@ -1,6 +1,5 @@
 package ai.tripl.arc.extract
 
-import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 
@@ -40,16 +39,16 @@ class DelimitedExtract extends PipelineStagePlugin {
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
     val parsedGlob = if(!c.hasPath("inputView")) getValue[String]("inputURI") |> parseGlob("inputURI") _ else Right("")
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
-    val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
+    val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
     val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: "Custom" :: Nil) |> parseDelimiter("delimiter") _
     val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
-    val header = getValue[Boolean]("header", Some(false))
+    val header = getValue[java.lang.Boolean]("header", Some(false))
     val customDelimiter = delimiter match {
       case Right(Delimiter.Custom) => getValue[String]("customDelimiter")
       case _ => Right("")
@@ -83,9 +82,9 @@ class DelimitedExtract extends PipelineStagePlugin {
           inputField=inputField  
         )
 
-        stage.stageDetail.put("contiguousIndex", Boolean.valueOf(contiguousIndex))
+        stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
         stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", Boolean.valueOf(persist))
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         val options: Map[String, String] = stage.basePath match {
           case Some(basePath) => Delimited.toSparkOptions(stage.settings) + ("basePath" -> basePath)
           case None => Delimited.toSparkOptions(stage.settings)

@@ -5,7 +5,6 @@ import ai.tripl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, Pipeli
 
 object ARC {
 
-  import java.lang._
   import java.util.UUID
   import java.util.ServiceLoader
   import org.apache.commons.lang3.exception.ExceptionUtils
@@ -94,7 +93,7 @@ object ARC {
         logger.error()
           .field("event", "exit")
           .field("status", "failure")
-          .field("success", Boolean.valueOf(false))
+          .field("success", java.lang.Boolean.valueOf(false))
           .field("duration", System.currentTimeMillis() - startTime)
           .field("reason", detail)
           .log()   
@@ -206,7 +205,7 @@ object ARC {
           .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => c.getClass.getName).asJava)
           .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)          
           .field("status", "failure")
-          .field("success", Boolean.valueOf(false))
+          .field("success", java.lang.Boolean.valueOf(false))
           .field("duration", System.currentTimeMillis() - startTime)
           .field("reason", detail)
           .log()   
@@ -240,7 +239,7 @@ object ARC {
         logger.error()
           .field("event", "exit")
           .field("status", "failure")
-          .field("success", Boolean.valueOf(false))
+          .field("success", java.lang.Boolean.valueOf(false))
           .field("duration", System.currentTimeMillis() - startTime)
           .field("reason", detail)
           .log()   
@@ -275,7 +274,7 @@ object ARC {
             logger.error()
               .field("event", "exit")
               .field("status", "failure")
-              .field("success", Boolean.valueOf(false))
+              .field("success", java.lang.Boolean.valueOf(false))
               .field("duration", System.currentTimeMillis() - startTime)
               .map("stage", e.detail.asJava)
               .log()       
@@ -295,7 +294,7 @@ object ARC {
             logger.error()
               .field("event", "exit")
               .field("status", "failure")
-              .field("success", Boolean.valueOf(false))
+              .field("success", java.lang.Boolean.valueOf(false))
               .field("duration", System.currentTimeMillis() - startTime)
               .field("reason", detail)
               .log()   
@@ -307,7 +306,7 @@ object ARC {
         logger.error()
           .field("event", "exit")
           .field("status", "failure")
-          .field("success", Boolean.valueOf(false))
+          .field("success", java.lang.Boolean.valueOf(false))
           .field("duration", System.currentTimeMillis() - startTime)        
           .list("reason", ai.tripl.arc.config.Error.pipelineErrorJSON(errors))
           .log()   
@@ -323,7 +322,7 @@ object ARC {
         logger.info()
           .field("event", "exit")
           .field("status", "success")
-          .field("success", Boolean.valueOf(true))
+          .field("success", java.lang.Boolean.valueOf(true))
           .field("duration", System.currentTimeMillis() - startTime)
           .log()   
       }

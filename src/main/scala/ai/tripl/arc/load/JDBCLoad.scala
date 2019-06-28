@@ -1,6 +1,5 @@
 package ai.tripl.arc.load
 
-import java.lang._
 import java.net.URI
 import java.sql.DriverManager
 import java.sql.Connection
@@ -48,12 +47,12 @@ class JDBCLoad extends PipelineStagePlugin {
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val isolationLevel = getValue[String]("isolationLevel", default = Some("READ_UNCOMMITTED"), validValues = "NONE" :: "READ_COMMITTED" :: "READ_UNCOMMITTED" :: "REPEATABLE_READ" :: "SERIALIZABLE" :: Nil) |> parseIsolationLevel("isolationLevel") _
     val batchsize = getValue[Int]("batchsize", default = Some(1000))
-    val truncate = getValue[Boolean]("truncate", default = Some(false))
+    val truncate = getValue[java.lang.Boolean]("truncate", default = Some(false))
     val createTableOptions = getOptionalValue[String]("createTableOptions")
     val createTableColumnTypes = getOptionalValue[String]("createTableColumnTypes")
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
-    val bulkload = getValue[Boolean]("bulkload", default = Some(false))
-    val tablock = getValue[Boolean]("tablock", default = Some(true))
+    val bulkload = getValue[java.lang.Boolean]("bulkload", default = Some(false))
+    val tablock = getValue[java.lang.Boolean]("tablock", default = Some(true))
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)     
 
@@ -84,14 +83,14 @@ class JDBCLoad extends PipelineStagePlugin {
         stage.stageDetail.put("inputView", inputView)  
         stage.stageDetail.put("jdbcURL", jdbcURL)  
         stage.stageDetail.put("tableName", tableName)  
-        stage.stageDetail.put("batchsize", Integer.valueOf(batchsize))
-        stage.stageDetail.put("bulkload", Boolean.valueOf(bulkload))
+        stage.stageDetail.put("batchsize", java.lang.Integer.valueOf(batchsize))
+        stage.stageDetail.put("bulkload", java.lang.Boolean.valueOf(bulkload))
         stage.stageDetail.put("driver", driver.getClass.toString)  
         stage.stageDetail.put("isolationLevel", isolationLevel.sparkString)
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
-        stage.stageDetail.put("tablock", Boolean.valueOf(tablock))
-        stage.stageDetail.put("truncate", Boolean.valueOf(truncate))
+        stage.stageDetail.put("tablock", java.lang.Boolean.valueOf(tablock))
+        stage.stageDetail.put("truncate", java.lang.Boolean.valueOf(truncate))
         stage.stageDetail.put("createTableOptions", createTableOptions)  
         stage.stageDetail.put("createTableColumnTypes", createTableColumnTypes)  
 
@@ -152,8 +151,8 @@ object JDBCLoadStage {
 
     if (!df.isStreaming) {
       stage.numPartitions match {
-        case Some(partitions) => stage.stageDetail.put("numPartitions", Integer.valueOf(partitions))
-        case None => stage.stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+        case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
+        case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
       }
     } 
 
@@ -261,7 +260,7 @@ object JDBCLoadStage {
     } else {
       if (targetPreCount != SaveModeIgnore) {
         val sourceCount = df.count
-        stage.stageDetail.put("count", Long.valueOf(sourceCount))
+        stage.stageDetail.put("count", java.lang.Long.valueOf(sourceCount))
 
         val writtenDF =
           try {
@@ -296,9 +295,9 @@ object JDBCLoadStage {
             }
 
             // log counts
-            stage.stageDetail.put("sourceCount", Long.valueOf(sourceCount))
-            stage.stageDetail.put("targetPreCount", Long.valueOf(targetPreCount))
-            stage.stageDetail.put("targetPostCount", Long.valueOf(targetPostCount))
+            stage.stageDetail.put("sourceCount", java.lang.Long.valueOf(sourceCount))
+            stage.stageDetail.put("targetPreCount", java.lang.Long.valueOf(targetPreCount))
+            stage.stageDetail.put("targetPostCount", java.lang.Long.valueOf(targetPostCount))
 
             if (sourceCount != targetPostCount - targetPreCount) {
               throw new Exception(s"JDBCLoad should create same number of records in the target ('${tableName}') as exist in source ('${stage.inputView}') but source has ${sourceCount} records and target created ${targetPostCount-targetPreCount} records.")

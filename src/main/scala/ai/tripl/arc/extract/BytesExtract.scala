@@ -1,6 +1,5 @@
 package ai.tripl.arc.extract
 
-import java.lang._
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
@@ -39,10 +38,10 @@ class BytesExtract extends PipelineStagePlugin {
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
     val parsedGlob = if(!c.hasPath("inputView")) getValue[String]("inputURI") |> parseGlob("inputURI") _ else Right("")
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")
-    val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
+    val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
     val failMode = getValue[String]("failMode", default = Some("failfast"), validValues = "permissive" :: "failfast" :: Nil) |> parseFailMode("failMode") _
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
@@ -72,7 +71,7 @@ class BytesExtract extends PipelineStagePlugin {
         stage.stageDetail.put("failMode", stage.failMode.sparkString)
         stage.stageDetail.put("input", if (c.hasPath("inputView")) inputView else parsedGlob)    
         stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", Boolean.valueOf(stage.persist))
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(stage.persist))
 
         Right(stage)
       case _ =>
@@ -164,9 +163,9 @@ object BytesExtractStage {
     }
     repartitionedDF.createOrReplaceTempView(stage.outputView)
 
-    stage.stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
-    stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-    stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+    stage.stageDetail.put("inputFiles", java.lang.Integer.valueOf(repartitionedDF.inputFiles.length))
+    stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
+    stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (stage.persist && !repartitionedDF.isStreaming) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)

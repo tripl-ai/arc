@@ -51,5 +51,3 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
   }
 
 }
-
-

@@ -1,6 +1,5 @@
 package ai.tripl.arc.load
 
-import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 
@@ -100,8 +99,8 @@ object AvroLoadStage {
     val df = spark.table(stage.inputView)      
 
     stage.numPartitions match {
-      case Some(partitions) => stage.stageDetail.put("numPartitions", Integer.valueOf(partitions))
-      case None => stage.stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+      case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
+      case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
     }
 
     // set write permissions

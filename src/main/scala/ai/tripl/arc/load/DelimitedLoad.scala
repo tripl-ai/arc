@@ -1,6 +1,5 @@
 package ai.tripl.arc.load
 
-import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 
@@ -42,7 +41,7 @@ class DelimitedLoad extends PipelineStagePlugin {
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
     val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: "Custom" :: Nil) |> parseDelimiter("delimiter") _
     val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
-    val header = getValue[Boolean]("header", default = Some(false))   
+    val header = getValue[java.lang.Boolean]("header", default = Some(false))   
     val customDelimiter = delimiter match {
       case Right(Delimiter.Custom) => getValue[String]("customDelimiter")
       case _ => Right("")
@@ -112,8 +111,8 @@ object DelimitedLoadStage {
 
     if (!df.isStreaming) {
       stage.numPartitions match {
-        case Some(partitions) => stage.stageDetail.put("numPartitions", Integer.valueOf(partitions))
-        case None => stage.stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+        case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
+        case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
       }
     }
 

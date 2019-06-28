@@ -1,6 +1,5 @@
 package ai.tripl.arc.extract
 
-import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 
@@ -39,11 +38,11 @@ class ImageExtract extends PipelineStagePlugin {
     val description = getOptionalValue[String]("description")
     val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _ 
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil
     val authentication = readAuthentication("authentication")
-    val dropInvalid = getValue[Boolean]("dropInvalid", default = Some(true))
+    val dropInvalid = getValue[java.lang.Boolean]("dropInvalid", default = Some(true))
     val basePath = getOptionalValue[String]("basePath")
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)    
@@ -69,10 +68,10 @@ class ImageExtract extends PipelineStagePlugin {
       for (bp <- basePath) {
         stage.stageDetail.put("basePath", bp)
       }
-      stage.stageDetail.put("dropInvalid", Boolean.valueOf(dropInvalid))
+      stage.stageDetail.put("dropInvalid", java.lang.Boolean.valueOf(dropInvalid))
       stage.stageDetail.put("input", parsedGlob)  
       stage.stageDetail.put("outputView", outputView)  
-      stage.stageDetail.put("persist", Boolean.valueOf(persist))
+      stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
 
       Right(stage)
 
@@ -157,7 +156,7 @@ object ImageExtractStage {
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
       }      
     }
 

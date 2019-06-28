@@ -1,6 +1,5 @@
 package ai.tripl.arc.load
 
-import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 
@@ -42,7 +41,7 @@ class TextLoad extends PipelineStagePlugin {
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")  
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
-    val singleFile = getValue[Boolean]("singleFile", default = Some(false))
+    val singleFile = getValue[java.lang.Boolean]("singleFile", default = Some(false))
     val prefix = getValue[String]("prefix", default = Some(""))
     val separator = getValue[String]("separator", default = Some(""))
     val suffix = getValue[String]("suffix", default = Some(""))
@@ -111,8 +110,8 @@ object TextLoadStage {
 
     if (!df.isStreaming) {
       stage.numPartitions match {
-        case Some(partitions) => stage.stageDetail.put("numPartitions", Integer.valueOf(partitions))
-        case None => stage.stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+        case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
+        case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
       }
     }
 

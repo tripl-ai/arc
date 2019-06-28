@@ -99,8 +99,8 @@ object JSONLoadStage {
 
     if (!df.isStreaming) {
       stage.numPartitions match {
-        case Some(partitions) => stage.stageDetail.put("numPartitions", Integer.valueOf(partitions))
-        case None => stage.stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+        case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
+        case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
       }
     }
 

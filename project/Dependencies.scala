@@ -3,7 +3,6 @@ import sbt._
 object Dependencies {
   // versions
   lazy val sparkVersion = "2.4.3"
-  lazy val scalaTestVersion = "3.0.7"
 
   // arc
   val typesafeConfig = "com.typesafe" % "config" % "1.3.1" intransitive()  
@@ -12,7 +11,7 @@ object Dependencies {
   val scala_graph_json = "org.scala-graph" %% "graph-json" % "1.11.0" intransitive()  
 
   // testing
-  val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion % "test,it"
+  val scalaTest = "org.scalatest" %% "scalatest" % "3.0.7" % "test,it"
   val jetty = "org.mortbay.jetty" % "jetty" % "6.1.26" % "test,it"
   val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % "2.7.7" % "test,it"
   val awsJavaSDK = "com.amazonaws" % "aws-java-sdk" % "1.7.4" % "test,it"
@@ -27,7 +26,6 @@ object Dependencies {
 
   // spark XML
   val sparkXML = "com.databricks" %% "spark-xml" % "0.5.0" intransitive()
-
 
   // Project
   val etlDeps = Seq(

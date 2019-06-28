@@ -1,6 +1,5 @@
 package ai.tripl.arc.transform
 
-import java.lang._
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
@@ -40,7 +39,7 @@ class DiffTransform extends PipelineStagePlugin {
     val outputIntersectionView = getOptionalValue[String]("outputIntersectionView")
     val outputLeftView = getOptionalValue[String]("outputLeftView")
     val outputRightView = getOptionalValue[String]("outputRightView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
@@ -62,7 +61,7 @@ class DiffTransform extends PipelineStagePlugin {
 
         stage.stageDetail.put("inputLeftView", inputLeftView)  
         stage.stageDetail.put("inputRightView", inputRightView)   
-        stage.stageDetail.put("persist", Boolean.valueOf(persist))      
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))      
         for (outputIntersectionView <- outputIntersectionView) {
           stage.stageDetail.put("outputIntersectionView", outputIntersectionView)  
         }  

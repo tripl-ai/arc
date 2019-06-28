@@ -1,6 +1,5 @@
 package ai.tripl.arc.transform
 
-import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 
@@ -40,7 +39,7 @@ class MetadataFilterTransform extends PipelineStagePlugin {
     val inputSQL = parsedURI |> textContentForURI("inputURI", authentication) _
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val sqlParams = readMap("sqlParams", c)
     val validSQL = inputSQL |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
     val numPartitions = getOptionalValue[Int]("numPartitions")
@@ -156,12 +155,12 @@ object MetadataFilterTransformStage {
     repartitionedDF.createOrReplaceTempView(stage.outputView)    
 
     if (!repartitionedDF.isStreaming) {
-      stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
       }      
     }
 

@@ -1,6 +1,5 @@
 package ai.tripl.arc.extract
 
-import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 
@@ -51,10 +50,10 @@ class HTTPExtract extends PipelineStagePlugin {
     val headers = readMap("headers", c)
     val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
-    val contiguousIndex = getValue[Boolean]("contiguousIndex", default = Some(true))
+    val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
     val method = getValue[String]("method", default = Some("GET"), validValues = "GET" :: "POST" :: Nil)
     val uriField = getOptionalValue[String]("uriField")
     val bodyField = getOptionalValue[String]("bodyField")
@@ -88,7 +87,7 @@ class HTTPExtract extends PipelineStagePlugin {
         stage.stageDetail.put("input", if(c.hasPath("inputView")) inputView else parsedURI)  
         stage.stageDetail.put("method", method)
         stage.stageDetail.put("outputView", outputView)  
-        stage.stageDetail.put("persist", Boolean.valueOf(persist))
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
 
         Right(stage)
@@ -256,12 +255,12 @@ object HTTPExtractStage {
     } 
     repartitionedDF.createOrReplaceTempView(stage.outputView)
 
-    stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-    stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+    stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
+    stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (stage.persist) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+      stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
     }    
 
     Option(repartitionedDF)

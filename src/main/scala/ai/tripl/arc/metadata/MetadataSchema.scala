@@ -1,6 +1,5 @@
 package ai.tripl.arc.util
 
-import java.lang._
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -48,8 +47,8 @@ object MetadataSchema {
       val name = ConfigReader.getValue[String]("name")
       val description = ConfigReader.getOptionalValue[String]("description")
       val _type = ConfigReader.getValue[String]("type", validValues = "boolean" :: "date" :: "decimal" :: "double" :: "integer" :: "long" :: "string" :: "time" :: "timestamp" :: "binary" :: Nil)
-      val trim = ConfigReader.getValue[Boolean]("trim", default = Some(false))
-      val nullable = ConfigReader.getValue[Boolean]("nullable")
+      val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
+      val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
       val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
       val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
 

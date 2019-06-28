@@ -1,6 +1,5 @@
 package ai.tripl.arc.execute
 
-import java.lang._
 import java.net.URI
 import scala.collection.JavaConverters._
 

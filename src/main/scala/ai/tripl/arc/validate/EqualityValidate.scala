@@ -1,7 +1,5 @@
 package ai.tripl.arc.validate
 
-import java.lang._
-
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
@@ -135,8 +133,8 @@ object EqualityValidateStage {
     val rightExceptLeftCount = rightExceptLeft.count     
 
     if (leftExceptRightCount != 0 || rightExceptLeftCount != 0) {
-      stage.stageDetail.put("leftExceptRightCount", Long.valueOf(leftExceptRightCount))
-      stage.stageDetail.put("rightExceptLeftCount", Long.valueOf(rightExceptLeftCount))
+      stage.stageDetail.put("leftExceptRightCount", java.lang.Long.valueOf(leftExceptRightCount))
+      stage.stageDetail.put("rightExceptLeftCount", java.lang.Long.valueOf(rightExceptLeftCount))
 
       throw new Exception(s"EqualityValidate ensures the two input datasets are the same (including column order), but '${stage.leftView}' (${leftDF.count} rows) contains ${leftExceptRightCount} rows that are not in '${stage.rightView}' and '${stage.rightView}' (${rightDF.count} rows) contains ${rightExceptLeftCount} rows which are not in '${stage.leftView}'.") with DetailException {
         override val detail = stage.stageDetail

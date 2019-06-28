@@ -1,6 +1,5 @@
 package ai.tripl.arc.extract
 
-import java.lang._
 import java.net.URI
 import java.sql.DriverManager
 import java.util.Properties
@@ -39,7 +38,7 @@ class JDBCExtract extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val outputView = getValue[String]("outputView")
-    val persist = getValue[Boolean]("persist", default = Some(false))
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val jdbcURL = getValue[String]("jdbcURL")
     val driver = jdbcURL |> getJDBCDriver("jdbcURL") _
     val tableName = getValue[String]("tableName")
@@ -81,7 +80,7 @@ class JDBCExtract extends PipelineStagePlugin {
         stage.stageDetail.put("driver", driver.getClass.toString)  
         stage.stageDetail.put("jdbcURL", jdbcURL)
         stage.stageDetail.put("outputView", outputView)  
-        stage.stageDetail.put("persist", Boolean.valueOf(persist))
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("tableName", tableName)
         for (partitionColumn <- partitionColumn) {
           stage.stageDetail.put("partitionColumn", partitionColumn)
@@ -91,7 +90,7 @@ class JDBCExtract extends PipelineStagePlugin {
           case predicates => stage.stageDetail.put("predicates", predicates.asJava)
         }
         for (fetchsize <- fetchsize) {
-          stage.stageDetail.put("fetchsize", Integer.valueOf(fetchsize))
+          stage.stageDetail.put("fetchsize", java.lang.Integer.valueOf(fetchsize))
         }             
 
         Right(stage)
@@ -162,9 +161,9 @@ object JDBCExtractStage {
               val upperBound = statement.getResultSet.getLong(2)
 
               connectionProperties.put("lowerBound", lowerBound.toString)    
-              stage.stageDetail.put("lowerBound", Long.valueOf(lowerBound))
+              stage.stageDetail.put("lowerBound", java.lang.Long.valueOf(lowerBound))
               connectionProperties.put("upperBound", upperBound.toString)    
-              stage.stageDetail.put("upperBound", Long.valueOf(upperBound))
+              stage.stageDetail.put("upperBound", java.lang.Long.valueOf(upperBound))
             }
           }
         }
@@ -220,12 +219,12 @@ object JDBCExtractStage {
     } 
     repartitionedDF.createOrReplaceTempView(stage.outputView)
     
-    stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-    stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+    stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
+    stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (stage.persist) {
       repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-      stage.stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
+      stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
     }    
 
     Option(repartitionedDF)

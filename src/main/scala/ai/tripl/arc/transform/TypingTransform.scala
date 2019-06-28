@@ -144,8 +144,8 @@ object TypingTransformStage {
     }).length
 
     if (inputColumnCount != cols.length) {
-      stage.stageDetail.put("schemaColumnCount", Integer.valueOf(cols.length))
-      stage.stageDetail.put("inputColumnCount", Integer.valueOf(inputColumnCount))
+      stage.stageDetail.put("schemaColumnCount", java.lang.Integer.valueOf(cols.length))
+      stage.stageDetail.put("inputColumnCount", java.lang.Integer.valueOf(inputColumnCount))
 
       throw new Exception(s"TypingTransform can only be performed on tables with the same number of columns, but the schema has ${cols.length} columns and the data table has ${inputColumnCount} columns.") with DetailException {
         override val detail = stage.stageDetail          
@@ -185,8 +185,8 @@ object TypingTransformStage {
     repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
-      stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
         repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
