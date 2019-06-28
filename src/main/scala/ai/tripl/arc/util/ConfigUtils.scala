@@ -137,7 +137,7 @@ object ConfigUtils {
                 udfPlugins=arcContext.udfPlugins
               ) 
 
-              Right((ETLPipeline(flatPipelineInstances.reverse), ctx))
+              Right((ETLPipeline(flatPipelineInstances), ctx))
             }
           }
         }

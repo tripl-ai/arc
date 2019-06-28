@@ -460,5 +460,29 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     } 
   }  
 
+  // this test reads a pipeline of sqltransforms which depend on the previous stage being run (including subpiplines)
+  // this is to ensure that the stages are executed in the correct order
+  test("Test read correct order") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val df = TestUtils.getKnownDataset
+    df.createOrReplaceTempView("start")
+
+    val pipelineEither = ConfigUtils.parseConfig(Right(new URI("classpath://conf/pipeline.conf")), arcContext)
+
+    pipelineEither match {
+      case Left(errors) => {
+        println(errors)
+        assert(false)
+      }
+      case Right((pipeline, _)) => {
+        ARC.run(pipeline)
+        assert(spark.sql("SELECT * FROM stage4").count == 2)
+      }
+    } 
+
+  }  
 
 }
