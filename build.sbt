@@ -11,7 +11,6 @@ lazy val root = (project in file(".")).
     name := "arc",
     organization := "ai.tripl",
     organizationHomepage := Some(url("https://arc.tripl.ai")),
-    scalaVersion := "2.11.12",
     crossScalaVersions := supportedScalaVersions,
     licenses := List("MIT" -> new URL("https://opensource.org/licenses/MIT")),
     scalastyleFailOnError := false,

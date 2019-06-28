@@ -23,15 +23,11 @@ object Dependencies {
   val sparkSql = "org.apache.spark" %% "spark-sql" % sparkVersion % "provided"
   val sparkHive = "org.apache.spark" %% "spark-hive" % sparkVersion % "provided" 
   val sparkMl = "org.apache.spark" %% "spark-mllib" % sparkVersion % "provided"
+  val sparkAvro = "org.apache.spark" %% "spark-avro" % sparkVersion % "provided"
 
   // spark XML
   val sparkXML = "com.databricks" %% "spark-xml" % "0.5.0" intransitive()
 
-  // spark AVRO
-  val sparkAvro = "org.apache.spark" %% "spark-avro" % sparkVersion 
-
-  // delta
-  val deltaLake = "io.delta" %% "delta-core" % "0.2.0" intransitive()
 
   // Project
   val etlDeps = Seq(
@@ -47,8 +43,7 @@ object Dependencies {
     sparkSql,
     sparkHive,
     sparkMl,
-    sparkXML,
     sparkAvro,    
-    deltaLake
+    sparkXML
   )
 }
