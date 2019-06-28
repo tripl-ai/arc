@@ -238,7 +238,7 @@ object ConfigUtils {
   }
 
   def getExtractColumns(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, List[ExtractColumn]] = {
-    val schema = textContentForURI(uri, uriKey, authentication).rightFlatMap(text => Right(Option(text)))
+    val schema = textContentForURI(uriKey, authentication)(uri).rightFlatMap(text => Right(Option(text)))
 
     schema.rightFlatMap { sch =>
       val cols = sch.map{ s => MetadataSchema.parseJsonMetadata(s) }.getOrElse(Right(Nil))
@@ -250,7 +250,7 @@ object ConfigUtils {
     }
   }
 
-  def textContentForURI(uri: URI, uriKey: String, authentication: Either[Errors, Option[Authentication]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, String] = {
+  def textContentForURI(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, String] = {
     uri.getScheme match {
       case "classpath" =>
         val path = s"/${uri.getHost}${uri.getPath}"
@@ -333,7 +333,7 @@ object ConfigUtils {
     }
   }  
   
-  def getJDBCDriver(path: String, uri: String)(implicit c: Config): Either[Errors, java.sql.Driver] = {
+  def getJDBCDriver(path: String)(uri: String)(implicit c: Config): Either[Errors, java.sql.Driver] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, java.sql.Driver] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     // without this line tests fail as drivers have not been registered yet

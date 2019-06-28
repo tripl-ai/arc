@@ -37,34 +37,34 @@ class SQLValidate extends PipelineStagePlugin {
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "authentication" :: "sqlParams" :: "params" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val inputURI = getValue[String]("inputURI") |> parseURI("inputURI") _
+    val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
     val authentication = readAuthentication("authentication")  
-    val inputSQL = inputURI.rightFlatMap{ uri => textContentForURI(uri, "inputURI", authentication) }
+    val inputSQL = parsedURI |> textContentForURI("inputURI", authentication) _
     val sqlParams = readMap("sqlParams", c)
     val validSQL = inputSQL |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
-    (name, description, inputURI, inputSQL, validSQL, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputURI), Right(inputSQL), Right(validSQL), Right(invalidKeys)) => 
+    (name, description, parsedURI, inputSQL, validSQL, invalidKeys) match {
+      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(invalidKeys)) => 
 
         val stage = SQLValidateStage(
           plugin=this,
           name=name,
           description=description,
-          inputURI=inputURI,
+          inputURI=parsedURI,
           sql=inputSQL,
           sqlParams=sqlParams,
           params=params
         )
 
-        stage.stageDetail.put("inputURI", inputURI.toString)  
+        stage.stageDetail.put("inputURI", parsedURI.toString)  
         stage.stageDetail.put("sql", inputSQL)   
         stage.stageDetail.put("sqlParams", sqlParams.asJava)           
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputURI, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

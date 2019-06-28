@@ -42,7 +42,7 @@ class JDBCLoad extends PipelineStagePlugin {
     val description = getOptionalValue[String]("description")
     val inputView = getValue[String]("inputView")
     val jdbcURL = getValue[String]("jdbcURL")
-    val driver = jdbcURL.rightFlatMap(uri => getJDBCDriver("jdbcURL", uri))
+    val driver = jdbcURL |> getJDBCDriver("jdbcURL") _
     val tableName = getValue[String]("tableName")
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")

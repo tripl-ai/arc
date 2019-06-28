@@ -42,17 +42,17 @@ class PipelineExecute extends PipelineStagePlugin {
 
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val uri = getValue[String]("uri") |> parseURI("uri") _
+    val uri = getValue[String]("uri") |> parseURI("uri") _ 
     val authentication = readAuthentication("authentication")  
-    authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))    
+    val textContent = uri |> textContentForURI("uri", authentication) _
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, uri, invalidKeys) match {
-      case (Right(name), Right(description), Right(uri), Right(invalidKeys)) => 
+    (name, description, uri, textContent, invalidKeys) match {
+      case (Right(name), Right(description), Right(uri), Right(textContent), Right(invalidKeys)) => 
 
         // try and read the nested pipeline
-        val subPipeline = ai.tripl.arc.util.ConfigUtils.parseConfig(Right(uri), arcContext)
+        val subPipeline = ai.tripl.arc.util.ConfigUtils.parseConfig(Left(textContent), arcContext)
 
         subPipeline match {
           case Right((pipeline, ctx)) => {
@@ -73,7 +73,7 @@ class PipelineExecute extends PipelineStagePlugin {
           }
         }
       case _ =>
-        val allErrors: Errors = List(name, description, uri, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, uri, textContent, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

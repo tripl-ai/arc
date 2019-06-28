@@ -35,12 +35,9 @@ class MetadataFilterTransform extends PipelineStagePlugin {
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val inputURI = getValue[String]("inputURI") |> parseURI("inputURI") _
+    val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
     val authentication = readAuthentication("authentication")  
-    val inputSQL = inputURI.rightFlatMap { uri =>
-        authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))  
-        getBlob("inputURI", uri)
-    }
+    val inputSQL = parsedURI |> textContentForURI("inputURI", authentication) _
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
     val persist = getValue[Boolean]("persist", default = Some(false))
@@ -51,15 +48,15 @@ class MetadataFilterTransform extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
-    (name, description, inputURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy) match {
-      case (Right(name), Right(description), Right(inputURI), Right(inputSQL), Right(validSQL), Right(inputView), Right(outputView), Right(persist), Right(invalidKeys), Right(numPartitions), Right(partitionBy)) => 
+    (name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy) match {
+      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(inputView), Right(outputView), Right(persist), Right(invalidKeys), Right(numPartitions), Right(partitionBy)) => 
         
         val stage = MetadataFilterTransformStage(
           plugin=this,
           name=name,
           description=description,
           inputView=inputView,
-          inputURI=inputURI,
+          inputURI=parsedURI,
           sql=inputSQL,
           outputView=outputView,
           params=params,
@@ -71,7 +68,7 @@ class MetadataFilterTransform extends PipelineStagePlugin {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

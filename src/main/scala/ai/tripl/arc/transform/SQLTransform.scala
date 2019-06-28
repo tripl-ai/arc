@@ -36,9 +36,9 @@ class SQLTransform extends PipelineStagePlugin {
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val inputURI = getValue[String]("inputURI") |> parseURI("inputURI") _
+    val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
     val authentication = readAuthentication("authentication")  
-    val inputSQL = inputURI.rightFlatMap{ uri => textContentForURI(uri, "inputURI", authentication) }
+    val inputSQL = parsedURI |> textContentForURI("inputURI", authentication) _
     val sqlParams = readMap("sqlParams", c)
     val validSQL = inputSQL |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
     val outputView = getValue[String]("outputView")
@@ -48,8 +48,8 @@ class SQLTransform extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
-    (name, description, inputURI, inputSQL, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputURI), Right(inputSQL), Right(validSQL), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) => 
+    (name, description, parsedURI, inputSQL, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
+      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) => 
 
         if (validSQL.toLowerCase() contains "now") {
           logger.warn()
@@ -82,7 +82,7 @@ class SQLTransform extends PipelineStagePlugin {
           plugin=this,
           name=name,
           description=description,
-          inputURI=inputURI,
+          inputURI=parsedURI,
           sql=inputSQL,
           outputView=outputView,
           params=params,
@@ -92,7 +92,7 @@ class SQLTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        stage.stageDetail.put("inputURI", inputURI.toString)  
+        stage.stageDetail.put("inputURI", parsedURI.toString)  
         stage.stageDetail.put("outputView", outputView)   
         stage.stageDetail.put("persist", Boolean.valueOf(persist))
         stage.stageDetail.put("sql", inputSQL)   
@@ -100,7 +100,7 @@ class SQLTransform extends PipelineStagePlugin {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputURI, inputSQL, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

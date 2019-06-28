@@ -52,20 +52,10 @@ class AvroExtract extends PipelineStagePlugin {
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val basePath = getOptionalValue[String]("basePath")
     val inputField = getOptionalValue[String]("inputField")
-    val avroSchemaURI = getOptionalValue[String]("avroSchemaURI")
-    val avroSchema: Either[Errors, Option[org.apache.avro.Schema]] = avroSchemaURI.rightFlatMap(optAvroSchemaURI => 
-      optAvroSchemaURI match { 
-        case Some(uri) => {
-          parseURI("avroSchemaURI")(uri)
-          .rightFlatMap(uri => textContentForURI(uri, "avroSchemaURI", Right(None) ))
-          .rightFlatMap(schemaString => parseAvroSchema("avroSchemaURI", schemaString))
-        }
-        case None => Right(None)
-      }
-    )    
+    val avroSchema = if (c.hasPath("avroSchemaURI")) getValue[String]("avroSchemaURI") |> parseURI("avroSchemaURI") _ |> textContentForURI("avroSchemaURI", authentication) _ |> parseAvroSchema("avroSchemaURI") _  else Right(None)
 
-    (name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, invalidKeys, basePath, inputField, avroSchemaURI, avroSchema) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(authentication), Right(contiguousIndex), Right(invalidKeys), Right(basePath), Right(inputField), Right(avroSchemaURI), Right(avroSchema)) =>
+    (name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, invalidKeys, basePath, inputField, avroSchema) match {
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(authentication), Right(contiguousIndex), Right(invalidKeys), Right(basePath), Right(inputField), Right(avroSchema)) =>
         val input = if(c.hasPath("inputView")) Left(inputView) else Right(parsedGlob)
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
@@ -97,14 +87,14 @@ class AvroExtract extends PipelineStagePlugin {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys, basePath, inputField, avroSchemaURI, avroSchema).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys, basePath, inputField, avroSchema).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
     }
   }
 
-  def parseAvroSchema(path: String, schemaString: String)(implicit c: Config): Either[Errors, Option[org.apache.avro.Schema]] = {
+  def parseAvroSchema(path: String)(schemaString: String)(implicit c: Config): Either[Errors, Option[org.apache.avro.Schema]] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, Option[org.apache.avro.Schema]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
     try {
       // if schema contains backslash it might have come from the kafka schema registry therefore try to get the data out of the returned object

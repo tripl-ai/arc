@@ -51,9 +51,7 @@ class DelimitedExtract extends PipelineStagePlugin {
     val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
     val header = getValue[Boolean]("header", Some(false))
     val customDelimiter = delimiter match {
-      case Right(Delimiter.Custom) => {
-        getValue[String]("customDelimiter")
-      }
+      case Right(Delimiter.Custom) => getValue[String]("customDelimiter")
       case _ => Right("")
     }
     val inputField = getOptionalValue[String]("inputField")

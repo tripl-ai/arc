@@ -189,8 +189,11 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       // replace meta directory with config so that the examples read correctly but have resource to validate
       val metaConf = mlConf.replaceAll("hdfs://datalake/metadata/", getClass.getResource("/conf/metadata/").toString)
 
+      // replace job directory with config so that the examples read correctly but have resource to validate
+      val jobConf = metaConf.replaceAll("hdfs://datalake/job/", getClass.getResource("/conf/job/").toString)
+
       try {
-        val pipelineEither = ConfigUtils.parseConfig(Left(metaConf), arcContext)
+        val pipelineEither = ConfigUtils.parseConfig(Left(jobConf), arcContext)
 
         pipelineEither match {
           case Left(errors) => {
@@ -202,7 +205,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         }
       } catch {
         case e: Exception => {
-          println(s"error in: ${filename}\nerror: ${e}\ncontents: ${metaConf}")
+          println(s"error in: ${filename}\nerror: ${e}\ncontents: ${jobConf}")
           assert(false)
         }
       }

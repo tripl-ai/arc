@@ -36,7 +36,7 @@ class DelimitedLoad extends PipelineStagePlugin {
     val description = getOptionalValue[String]("description")
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI") |> parseURI("outputURI") _
-    val partitionBy = if (c.hasPath("partitionBy")) c.getStringList("partitionBy").asScala.toList else Nil    
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")  
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
@@ -44,16 +44,14 @@ class DelimitedLoad extends PipelineStagePlugin {
     val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
     val header = getValue[Boolean]("header", default = Some(false))   
     val customDelimiter = delimiter match {
-      case Right(Delimiter.Custom) => {
-        getValue[String]("customDelimiter")
-      }
+      case Right(Delimiter.Custom) => getValue[String]("customDelimiter")
       case _ => Right("")
     }     
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
-    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, delimiter, quote, header, customDelimiter, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(delimiter), Right(quote), Right(header), Right(customDelimiter), Right(invalidKeys)) => 
+    (name, description, inputView, outputURI, partitionBy, numPartitions, authentication, saveMode, delimiter, quote, header, customDelimiter, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(partitionBy), Right(numPartitions), Right(authentication), Right(saveMode), Right(delimiter), Right(quote), Right(header), Right(customDelimiter), Right(invalidKeys)) => 
         val settings = new Delimited(header=header, sep=delimiter, quote=quote, customDelimiter=customDelimiter)
 
         val stage = DelimitedLoadStage(
@@ -78,7 +76,7 @@ class DelimitedLoad extends PipelineStagePlugin {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, delimiter, quote, header, customDelimiter, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputURI, partitionBy, numPartitions, authentication, saveMode, delimiter, quote, header, customDelimiter, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

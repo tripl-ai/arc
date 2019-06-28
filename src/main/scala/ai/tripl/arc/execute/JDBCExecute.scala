@@ -44,15 +44,10 @@ class JDBCExecute extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val authentication = readAuthentication("authentication")  
-    val uriKey = "inputURI"
-    val inputURI = getValue[String](uriKey)
     val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
-    val inputSQL = parsedURI.rightFlatMap { uri =>
-        authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))    
-        getBlob(uriKey, uri)
-    }
+    val inputSQL = parsedURI |> textContentForURI("inputURI", authentication) _
     val jdbcURL = getValue[String]("jdbcURL")
-    val driver = jdbcURL.rightFlatMap(uri => getJDBCDriver("jdbcURL", uri))
+    val driver = jdbcURL |> getJDBCDriver("jdbcURL") _
     val user = getOptionalValue[String]("user")
     val password = getOptionalValue[String]("password")
     val sqlParams = readMap("sqlParams", c)    
@@ -74,13 +69,13 @@ class JDBCExecute extends PipelineStagePlugin {
           params=params
         )
   
-        stage.stageDetail.put("inputURI", inputURI.toString)     
+        stage.stageDetail.put("inputURI", parsedURI.toString)     
         stage.stageDetail.put("sql", inputSQL)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputURI, parsedURI, inputSQL, jdbcURL, user, password, driver, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, inputSQL, jdbcURL, user, password, driver, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
