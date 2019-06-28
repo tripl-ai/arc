@@ -423,5 +423,39 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     } 
   }
 
+  test("Test not List[Object]") { 
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = """{
+      "stages": 
+      {
+        "type": "RateExtract",
+        "name": "RateExtract",
+        "environments": [
+          "production",
+          "test"
+        ],          
+        "outputView": "stream",
+        "rowsPerSecond": 1,
+        "rampUpTime": 1,
+        "numPartitions": 1
+      }
+    }"""
+
+
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(errors) => {
+        assert(errors.toString contains "Expected stages to be a List of Objects")
+      }
+      case Right((pipeline, _)) => {
+        assert(false)
+      }
+    } 
+  }  
+
 
 }

@@ -280,9 +280,15 @@ object ConfigUtils {
   def resolveConfigPlugins[T](c: Config, path: String, plugins: List[ConfigPlugin[T]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[Error], List[T]] = {
     if (c.hasPath(path)) {
 
-      //TODO CHECK THAT ITT IS OBJECTLIST
+      // check valid type
+      val objectList = try {
+        c.getObjectList(path)
+      } catch {
+        case e: com.typesafe.config.ConfigException.WrongType => return Left(StageError(0, path, c.origin.lineNumber, ConfigError(path, Some(c.origin.lineNumber), s"Expected ${path} to be a List of Objects.") :: Nil) :: Nil)
+        case e: Exception => return Left(StageError(0, path, c.origin.lineNumber, ConfigError(path, Some(c.origin.lineNumber), e.getMessage) :: Nil) :: Nil)
+      }
 
-      val (errors, instances) = c.getObjectList(path).asScala.zipWithIndex.foldLeft[(List[StageError], List[T])]( (Nil, Nil) ) { case ( (errors, instances), (plugin, index) ) =>
+      val (errors, instances) = objectList.asScala.zipWithIndex.foldLeft[(List[StageError], List[T])]( (Nil, Nil) ) { case ( (errors, instances), (plugin, index) ) =>
         import ConfigReader._
         val config = plugin.toConfig
 
