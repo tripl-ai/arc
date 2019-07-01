@@ -84,8 +84,6 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
         description=None,
         inputURI=new URI(testURI), 
         jdbcURL = url,
-        user = None,
-        password = None,
         sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
         params= Map.empty, 
         sqlParams=Map.empty
@@ -117,8 +115,6 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
           description=None,
           inputURI=new URI(testURI), 
           jdbcURL = "jdbc:derby:invalid",
-          user = None,
-          password = None,
           sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
           params= Map.empty, 
           sqlParams=Map.empty
@@ -141,8 +137,6 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
         description=None,
         inputURI=new URI(testURI), 
         jdbcURL = url,
-        user = None,
-        password = None,
         sql=s"CREATE TABLE ${newTable} (${newColumn} VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
         params= Map.empty, 
         sqlParams=Map("column_name" -> "COLUMN0")
@@ -174,8 +168,6 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
           description=None,
           inputURI=new URI(testURI), 
           jdbcURL = "0.0.0.0",
-          user = None,
-          password = None,
           sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
           params= Map.empty, 
           sqlParams=Map.empty
@@ -199,8 +191,6 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
           description=None,
           inputURI=new URI(testURI), 
           jdbcURL = "",
-          user = None,
-          password = None,
           sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
           params= Map.empty, 
           sqlParams=Map.empty
@@ -224,8 +214,6 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
           description=None,
           inputURI=new URI(testURI), 
           jdbcURL = "jdbc:derby:memory:JDBCExecuteSuite/connectionParamsTestDB",
-          user = None,
-          password = None,
           sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
           params=Map.empty, 
           sqlParams=Map.empty
@@ -241,8 +229,6 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
         description=None,
         inputURI=new URI(testURI), 
         jdbcURL = "jdbc:derby:memory:JDBCExecuteSuite/connectionParamsTestDB",
-        user = None,
-        password = None,
         sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
         params=Map("create" -> "true"), 
         sqlParams=Map.empty

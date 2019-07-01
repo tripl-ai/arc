@@ -337,7 +337,7 @@ object ConfigUtils {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, java.sql.Driver] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     // without this line tests fail as drivers have not been registered yet
-    val drivers = DriverManager.getDrivers.asScala.toList.map(driver => s"""'${driver.toString}'""")
+    val drivers = DriverManager.getDrivers.asScala.toList.map(driver => driver.getClass.getName)
 
     try {
       Right(DriverManager.getDriver(uri))

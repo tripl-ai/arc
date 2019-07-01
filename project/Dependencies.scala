@@ -3,19 +3,18 @@ import sbt._
 object Dependencies {
   // versions
   lazy val sparkVersion = "2.4.3"
+  lazy val hadoopVersion = "2.9.2"
 
   // arc
   val typesafeConfig = "com.typesafe" % "config" % "1.3.1" intransitive()  
-  val scala_graph_core = "org.scala-graph" %% "graph-core" % "1.11.5" intransitive()
-  val scala_graph_dot = "org.scala-graph" %% "graph-dot" % "1.11.5" intransitive()
-  val scala_graph_json = "org.scala-graph" %% "graph-json" % "1.11.0" intransitive()  
 
   // testing
   val scalaTest = "org.scalatest" %% "scalatest" % "3.0.7" % "test,it"
   val jetty = "org.mortbay.jetty" % "jetty" % "6.1.26" % "test,it"
-  val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % "2.7.7" % "test,it"
-  val awsJavaSDK = "com.amazonaws" % "aws-java-sdk" % "1.7.4" % "test,it"
   val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.5" % "test,it" 
+  val hadoopCommon =  "org.apache.hadoop" % "hadoop-common" % hadoopVersion % "it"
+  val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % hadoopVersion % "it"
+  val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "7.2.1.jre8" % "it" 
 
   // spark
   val sparkCore = "org.apache.spark" %% "spark-core" % sparkVersion % "provided"
@@ -30,13 +29,12 @@ object Dependencies {
   // Project
   val etlDeps = Seq(
     typesafeConfig,
-    scala_graph_core,
-    scala_graph_dot,
     scalaTest,
     jetty,
+    hadoopCommon,
     hadoopAWS,
-    awsJavaSDK,    
     postgresJDBC,
+    sqlServerJDBC,
     sparkCore,
     sparkSql,
     sparkHive,

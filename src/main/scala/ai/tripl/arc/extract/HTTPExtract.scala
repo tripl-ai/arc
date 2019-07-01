@@ -83,7 +83,7 @@ class HTTPExtract extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        stage.stageDetail.put("headers", HTTPUtils.maskHeaders(stage.headers).asJava)
+        stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
         stage.stageDetail.put("input", if(c.hasPath("inputView")) inputView else parsedURI)  
         stage.stageDetail.put("method", method)
         stage.stageDetail.put("outputView", outputView)  

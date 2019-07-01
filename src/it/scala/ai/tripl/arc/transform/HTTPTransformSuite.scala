@@ -29,6 +29,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   val outputView = "outputView"
   val uri = s"http://tensorflow_serving:9001/v1/models/simple/versions/1:predict"
   var logger: ai.tripl.arc.util.log.logger.Logger = _
+  implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
   before {
     implicit val spark = SparkSession
@@ -48,7 +49,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     // register udf
-    UDF.registerUDFs(spark.sqlContext)(logger)
+    UDF.registerUDFs()(spark, logger, arcContext)
   }
 
   after {
@@ -58,7 +59,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can call TensorflowServing via REST" ) {
     implicit val spark = session
     implicit val l = logger
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -71,8 +72,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     """)
     payloadDataset.createOrReplaceTempView(inputView)
 
-    val transformDataset = transform.HTTPTransform.transform(
-      HTTPTransform(
+    transform.HTTPTransformStage.execute(
+      transform.HTTPTransformStage(
+        plugin=new transform.HTTPTransform,
         description=None,
         name=outputView,
         uri=new URI(uri),
@@ -103,7 +105,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can call TensorflowServing via REST: inputField" ) {
     implicit val spark = session
     implicit val l = logger
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -116,8 +118,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     """)
     payloadDataset.createOrReplaceTempView(inputView)
 
-    val transformDataset = transform.HTTPTransform.transform(
-      HTTPTransform(
+    transform.HTTPTransformStage.execute(
+      transform.HTTPTransformStage(
+        plugin=new transform.HTTPTransform,
         description=None,
         name=outputView,
         uri=new URI(uri),

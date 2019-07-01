@@ -1,5 +1,9 @@
 ## Change Log
 
+# 2.0.0
+
+- remove `bulkload` mode from `JDBCLoad`. This can be implemented by a custom plugin if required.
+
 # 1.14.0
 
 - changed all dependencies to `intransitive()`. All tests pass however this may cause issues. Please raise issue if found.

@@ -28,6 +28,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
   var testURI = FileUtils.getTempDirectoryPath()
   val user = "sa"
   val password = "SecretPass!2018" // see docker-compose.yml for password  
+  val fullsqlserverurl = s"jdbc:sqlserver://sqlserver:1433;user=${user};password=${password};"
 
   before {
     implicit val spark = SparkSession
@@ -56,6 +57,8 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
 
     val transaction = s"""
     |SET XACT_ABORT ON;
@@ -71,16 +74,15 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     |COMMIT;
     """.stripMargin
 
-    ai.tripl.arc.execute.JDBCExecute.execute(
-      JDBCExecute(
+    ai.tripl.arc.execute.JDBCExecuteStage.execute(
+      ai.tripl.arc.execute.JDBCExecuteStage(
+        plugin=new ai.tripl.arc.execute.JDBCExecute,
         name=outputView, 
         description=None,
         inputURI=new URI(testURI), 
         jdbcURL=sqlserverurl,
-        user=Option(user),
-        password=Option(password),
         sql=transaction, 
-        params=Map.empty, 
+        params=Map("user" -> user, "password" -> password),
         sqlParams=Map.empty
       )
     )
@@ -98,10 +100,58 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     assert(actual.count == 1)
   }
 
+  test("JDBCExecute: sqlserver succeed connection string") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+
+    val transaction = s"""
+    |SET XACT_ABORT ON;
+    |
+    |BEGIN TRANSACTION;
+    |
+    |DROP TABLE IF EXISTS master.dbo.sys_views;
+    |
+    |SELECT * 
+    |INTO master.dbo.sys_views
+    |FROM INFORMATION_SCHEMA.VIEWS;
+    |
+    |COMMIT;
+    """.stripMargin
+
+    ai.tripl.arc.execute.JDBCExecuteStage.execute(
+      ai.tripl.arc.execute.JDBCExecuteStage(
+        plugin=new ai.tripl.arc.execute.JDBCExecute,
+        name=outputView, 
+        description=None,
+        inputURI=new URI(testURI), 
+        jdbcURL=fullsqlserverurl,
+        sql=transaction, 
+        params=Map.empty,
+        sqlParams=Map.empty
+      )
+    )
+
+    // read back to ensure execute has happened
+    val actual = { spark.read
+      .format("jdbc")
+      .option("url", sqlserverurl)
+      .option("user", user)
+      .option("password", password)
+      .option("dbtable", s"${dbtable}")
+      .load()
+    }
+
+    assert(actual.count == 1)
+  }  
+
   test("JDBCExecute: sqlserver failure statement") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val transaction = s"""
     |SET XACT_ABORT ON;
@@ -112,16 +162,15 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     """.stripMargin
 
     val thrown = intercept[Exception with DetailException] {
-      ai.tripl.arc.execute.JDBCExecute.execute(
-        JDBCExecute(
+    ai.tripl.arc.execute.JDBCExecuteStage.execute(
+      ai.tripl.arc.execute.JDBCExecuteStage(
+        plugin=new ai.tripl.arc.execute.JDBCExecute,
           name=outputView, 
           description=None,
           inputURI=new URI(testURI), 
           jdbcURL=sqlserverurl,
-          user=Option(user),
-          password=Option(password),
           sql=transaction, 
-          params=Map.empty, 
+          params=Map("user" -> user, "password" -> password),
           sqlParams=Map.empty
         )
       )

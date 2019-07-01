@@ -45,9 +45,6 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     session = spark
 
     logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-    // register udf
-    UDF.registerUDFs(spark.sqlContext)(logger)
   }
 
   after {
@@ -56,7 +53,8 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPTransform: Can call TensorFlowServing via REST: integer" ) {
     implicit val spark = session
-    implicit val l = logger
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -69,8 +67,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     """).repartition(1)
     payloadDataset.createOrReplaceTempView(inputView)
 
-    val transformDataset = transform.TensorFlowServingTransform.transform(
-      TensorFlowServingTransform(
+    val dataset = transform.TensorFlowServingTransformStage.execute(
+      transform.TensorFlowServingTransformStage(
+        plugin=new transform.TensorFlowServingTransform,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -87,13 +86,14 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    assert(transformDataset.first.getInt(2) == 11)
+    assert(dataset.first.getInt(2) == 11)
   }  
 
   test("HTTPTransform: Can call TensorFlowServing via REST: double" ) {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -106,8 +106,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     """).repartition(1)
     payloadDataset.createOrReplaceTempView(inputView)
 
-    val transformDataset = transform.TensorFlowServingTransform.transform(
-      TensorFlowServingTransform(
+    val dataset = transform.TensorFlowServingTransformStage.execute(
+      transform.TensorFlowServingTransformStage(
+        plugin=new transform.TensorFlowServingTransform,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -124,13 +125,14 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    assert(transformDataset.first.getDouble(2) == 11.0)
+    assert(dataset.first.getDouble(2) == 11.0)
   }   
 
   test("HTTPTransform: Can call TensorFlowServing via REST: string" ) {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -143,8 +145,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     """).repartition(1)
     payloadDataset.createOrReplaceTempView(inputView)
 
-    val transformDataset = transform.TensorFlowServingTransform.transform(
-      TensorFlowServingTransform(
+    val dataset = transform.TensorFlowServingTransformStage.execute(
+      transform.TensorFlowServingTransformStage(
+        plugin=new transform.TensorFlowServingTransform,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -161,13 +164,14 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    assert(transformDataset.first.getString(2) == "11")
+    assert(dataset.first.getString(2) == "11")
   } 
 
   test("HTTPTransform: Can call TensorFlowServing via REST: inputField" ) {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -180,8 +184,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     payloadDataset.createOrReplaceTempView(inputView)
 
     val thrown = intercept[Exception with DetailException] {
-      transform.TensorFlowServingTransform.transform(
-        TensorFlowServingTransform(
+      transform.TensorFlowServingTransformStage.execute(
+        transform.TensorFlowServingTransformStage(
+          plugin=new transform.TensorFlowServingTransform,
           name=outputView,
           description=None,
           uri=new URI(uri),
@@ -200,8 +205,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     }
     assert(thrown.getMessage.contains("""inputField 'value' is not present in inputView 'inputView' which has: [id] columns."""))  
 
-    val transformDataset = transform.TensorFlowServingTransform.transform(
-      TensorFlowServingTransform(
+    val dataset = transform.TensorFlowServingTransformStage.execute(
+      transform.TensorFlowServingTransformStage(
+        plugin=new transform.TensorFlowServingTransform,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -218,13 +224,14 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    assert(transformDataset.first.getInt(1) == 11)
+    assert(dataset.first.getInt(1) == 11)
   }     
 
   test("HTTPTransform: Can call TensorFlowServing via Structured Streaming" ) {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val readStream = spark
       .readStream
@@ -234,8 +241,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
 
     readStream.createOrReplaceTempView(inputView)
 
-    val transformDataset = transform.TensorFlowServingTransform.transform(
-      TensorFlowServingTransform(
+    val dataset = transform.TensorFlowServingTransformStage.execute(
+      transform.TensorFlowServingTransformStage(
+        plugin=new transform.TensorFlowServingTransform,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -252,7 +260,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    val writeStream = transformDataset
+    val writeStream = dataset
       .writeStream
       .queryName("transformed") 
       .format("memory")

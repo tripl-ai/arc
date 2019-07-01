@@ -27,15 +27,6 @@ services:
       - arc-integration    
     build: tensorflow_serving/.
 
-  sqlserver:
-    image: microsoft/mssql-server-linux:2017-CU9
-    networks:
-      - arc-integration    
-    environment:
-      ACCEPT_EULA: Y
-      SA_PASSWORD: "SecretPass!2018"
-      MSSQL_PID: Express
-
   postgres:
     image: postgres:10.4-alpine-init
     networks:

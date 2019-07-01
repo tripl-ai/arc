@@ -5,6 +5,7 @@ import java.net.URI
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
+import org.apache.avro.Schema
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.apache.spark.sql._
@@ -24,6 +25,10 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.avro" 
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.avro.gz" 
   val outputView = "dataset"
+
+  val targetBinarySchemaFile = getClass.getResource("/avro/users.avro").toString 
+  val targetBinaryFile = getClass.getResource("/avro/users.avrobinary").toString 
+  val schemaFile = getClass.getResource("/avro/user.avsc").toString
 
   before {
     implicit val spark = SparkSession
@@ -248,4 +253,127 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
 
     assert(TestUtils.datasetEquality(expected, actual))
   }  
+
+  test("AvroExtract: Binary with user.avsc") {
+    implicit val spark = session
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "BytesExtract",
+          "name": "get the binary avro file without header",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${targetBinaryFile}",
+          "outputView": "bytes_extract_output"
+        },
+        {
+          "type": "AvroExtract",
+          "name": "try to parse",
+          "description": "load customer avro extract",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "bytes_extract_output",
+          "outputView": "avro_extract_output",
+          "persist": false,
+          "inputField": "value",
+          "avroSchemaURI": "${schemaFile}"
+        }        
+      ]
+    }"""
+
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(_) => {
+        println(pipelineEither)  
+        assert(false)
+      }
+      case Right((pipeline, _)) => {
+        ARC.run(pipeline)
+      }
+    }
+  }  
+
+  test("AvroExtract: Schema Included Avro") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)  
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val dataset = extract.AvroExtractStage.execute(
+      extract.AvroExtractStage(
+        plugin=new extract.AvroExtract,
+        name=outputView,
+        description=None,
+        schema=Right(Nil),
+        outputView=outputView,
+        input=Right(targetBinarySchemaFile),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        basePath=None,
+        contiguousIndex=true,
+        avroSchema=None,
+        inputField=None        
+      )
+    ).get
+
+    assert(dataset.first.getString(0) == "Alyssa")
+  }  
+
+  test("AvroExtract: Binary only Avro") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)  
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val schema = new Schema.Parser().parse(CloudUtils.getTextBlob(new URI(schemaFile)))
+
+    extract.BytesExtractStage.execute(
+      extract.BytesExtractStage(
+        plugin=new extract.BytesExtract,
+        name="dataset",
+        description=None,
+        outputView=outputView, 
+        input=Right(targetBinaryFile),
+        authentication=None,
+        persist=false,
+        numPartitions=None,
+        contiguousIndex=true,
+        params=Map.empty,
+        failMode=FailModeTypeFailFast
+      )
+    )
+
+    val dataset = extract.AvroExtractStage.execute(
+      extract.AvroExtractStage(
+        plugin=new extract.AvroExtract,
+        name=outputView,
+        description=None,
+        schema=Right(Nil),
+        outputView=outputView,
+        input=Left(outputView),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        basePath=None,
+        contiguousIndex=true,
+        avroSchema=Option(schema),
+        inputField=None
+      )
+    ).get
+
+    assert(dataset.select("value.*").first.getString(0) == "Alyssa")
+  }     
 }

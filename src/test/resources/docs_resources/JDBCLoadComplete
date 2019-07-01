@@ -10,7 +10,6 @@
   "jdbcURL": "jdbc:postgresql://localhost:5432/customer",
   "tableName": "mydatabase.myschema.customer",
   "batchsize": 10000,
-  "bulkload": false,
   "createTableColumnTypes": "name CHAR(64), comments VARCHAR(1024)",
   "createTableOptions": "CREATE TABLE t (name string) ENGINE=InnoDB",
   "isolationLevel": "READ_COMMITTED",

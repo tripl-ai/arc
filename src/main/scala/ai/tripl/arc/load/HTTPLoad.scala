@@ -67,7 +67,7 @@ class HTTPLoad extends PipelineStagePlugin {
 
       stage.stageDetail.put("inputView", inputView)  
       stage.stageDetail.put("outputURI", outputURI.toString)  
-      stage.stageDetail.put("headers", HTTPUtils.maskHeaders(stage.headers).asJava)
+      stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
 
         Right(stage)
       case _ =>

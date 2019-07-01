@@ -10,6 +10,15 @@ import com.fasterxml.jackson.core._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 
+import java.util.ServiceLoader
+import scala.collection.JavaConverters._
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.core._
+
+import ai.tripl.arc.api.API.ARCContext
+import ai.tripl.arc.plugins._
+
 case class KnownData(
     booleanDatum: Boolean, 
     dateDatum: Date, 
@@ -23,7 +32,27 @@ case class KnownData(
     nullDatum: Null
 )
 
-object TestDataUtils {
+object TestUtils {
+
+    def getARCContext(isStreaming: Boolean, environment: String = "test", commandLineArguments: Map[String,String] = Map[String,String]()) = {
+      val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
+
+      ARCContext(
+        jobId=None, 
+        jobName=None, 
+        environment=Option(environment), 
+        environmentId=None, 
+        configUri=None, 
+        isStreaming=isStreaming, 
+        ignoreEnvironments=false, 
+        commandLineArguments=commandLineArguments,
+        dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
+        lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
+        activeLifecyclePlugins=Nil,
+        pipelineStagePlugins=ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList,
+        udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList
+      )
+    }    
 
     def getKnownDataset()(implicit spark: SparkSession): DataFrame = {
         import spark.implicits._

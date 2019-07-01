@@ -51,10 +51,11 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    extract.BytesExtract.extract(
-      BytesExtract(
+    extract.BytesExtractStage.execute(
+      extract.BytesExtractStage(
+        plugin=new extract.BytesExtract,
         name="dataset",
         description=None,
         outputView=outputView, 
@@ -68,8 +69,9 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       )
     )
 
-    val actual = transform.HTTPTransform.transform(
-      HTTPTransform(
+    transform.HTTPTransformStage.execute(
+      transform.HTTPTransformStage(
+        plugin=new transform.HTTPTransform,
         name="transform",
         description=None,
         uri=new URI(uri),

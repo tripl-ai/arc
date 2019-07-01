@@ -77,13 +77,14 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val dataset = TestDataUtils.getKnownDataset
+    val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
 
-    load.JDBCLoad.load(
-      JDBCLoad(
+    load.JDBCLoadStage.execute(
+      load.JDBCLoadStage(
+        plugin=new load.JDBCLoad,
         name="dataset",
         description=None,
         inputView=dbtable, 
@@ -98,7 +99,6 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         createTableOptions=None,
         createTableColumnTypes=None,        
         saveMode=SaveMode.Overwrite, 
-        bulkload=false,
         tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
@@ -116,407 +116,18 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     assert(actual.first.getInt(0) == 2)
   }    
 
-  test("JDBCLoad: sqlserver bulk SaveMode.Overwrite") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
-
-    val dataset = TestDataUtils.getKnownDataset
-    dataset.createOrReplaceTempView(dbtable)
-
-    try {
-      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
-      connection.createStatement.execute(s"""
-      DROP TABLE IF EXISTS [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]
-      """)
-      connection.createStatement.execute(s"""
-      CREATE TABLE [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}] (
-        [booleanDatum] [bit] NOT NULL,
-        [dateDatum] [date] NULL,
-        [decimalDatum] [decimal](38, 18) NULL,
-        [doubleDatum] [float] NOT NULL,
-        [integerDatum] [int] NULL,
-        [longDatum] [bigint] NOT NULL,
-        [stringDatum] [nvarchar](max) NULL,
-        [timeDatum] [nvarchar](max) NULL,
-        [timestampDatum] [datetime] NULL
-      )
-      """)
-    } catch {
-      case e: Exception =>
-    } finally {
-      connection.close
-    }    
-
-    load.JDBCLoad.load(
-      JDBCLoad(
-        name="dataset",
-        description=None,
-        inputView=dbtable, 
-        jdbcURL=sqlserverurl, 
-        driver=DriverManager.getDriver(sqlserverurl),
-        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-        partitionBy=Nil, 
-        numPartitions=None, 
-        isolationLevel=IsolationLevelReadCommitted,
-        batchsize=1000, 
-        truncate=false,
-        createTableOptions=None,
-        createTableColumnTypes=None,        
-        saveMode=SaveMode.Overwrite, 
-        bulkload=true,
-        tablock=true,
-        params=Map("user" -> user, "password" -> password)
-      )
-    )
-
-    val actual = { spark.read
-      .format("jdbc")
-      .option("url", sqlserverurl)
-      .option("user", user)
-      .option("password", password)      
-      .option("dbtable", s"(SELECT COUNT(*) AS count FROM [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]) result")
-      .load()
-    }
-
-    assert(actual.first.getInt(0) == 2)
-  }     
-
-  test("JDBCLoad: sqlserver bulk SaveMode.Overwrite truncate") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
-
-    val dataset = TestDataUtils.getKnownDataset
-    dataset.createOrReplaceTempView(dbtable)
-
-    try {
-      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
-      connection.createStatement.execute(s"""
-      DROP TABLE IF EXISTS [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]
-      """)
-      connection.createStatement.execute(s"""
-      CREATE TABLE [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}] (
-        [booleanDatum] [bit] NOT NULL,
-        [dateDatum] [date] NULL,
-        [decimalDatum] [decimal](38, 18) NULL,
-        [doubleDatum] [float] NOT NULL,
-        [integerDatum] [int] NULL,
-        [longDatum] [bigint] NOT NULL,
-        [stringDatum] [nvarchar](max) NULL,
-        [timeDatum] [nvarchar](max) NULL,
-        [timestampDatum] [datetime] NULL
-      )
-      """)
-    } catch {
-      case e: Exception =>
-    } finally {
-      connection.close
-    }     
-
-    load.JDBCLoad.load(
-      JDBCLoad(
-        name="dataset",
-        description=None,
-        inputView=dbtable, 
-        jdbcURL=sqlserverurl, 
-        driver=DriverManager.getDriver(sqlserverurl),
-        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-        partitionBy=Nil, 
-        numPartitions=None, 
-        isolationLevel=IsolationLevelReadCommitted,
-        batchsize=1000, 
-        truncate=true,
-        createTableOptions=None,
-        createTableColumnTypes=None,        
-        saveMode=SaveMode.Append, 
-        bulkload=true,
-        tablock=true,
-        params=Map("user" -> user, "password" -> password)
-      )
-    )
-
-    val actual = { spark.read
-      .format("jdbc")
-      .option("url", sqlserverurl)
-      .option("user", user)
-      .option("password", password)      
-      .option("dbtable", s"(SELECT COUNT(*) AS count FROM [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]) result")
-      .load()
-    }
-
-    assert(actual.first.getInt(0) == 2)
-  }     
-
-  test("JDBCLoad: sqlserver bulk no table") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
-
-    val dataset = TestDataUtils.getKnownDataset
-    dataset.createOrReplaceTempView(dbtable)
-
-    try {
-      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
-      connection.createStatement.execute(s"""
-      DROP TABLE IF EXISTS [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]
-      """)
-    } catch {
-      case e: Exception =>
-    } finally {
-      connection.close
-    }     
-
-    val thrown = intercept[Exception with DetailException] {
-      load.JDBCLoad.load(
-        JDBCLoad(
-          name="dataset",
-          description=None,
-          inputView=dbtable, 
-          jdbcURL=sqlserverurl, 
-          driver=DriverManager.getDriver(sqlserverurl),
-          tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-          partitionBy=Nil, 
-          numPartitions=None, 
-          isolationLevel=IsolationLevelReadCommitted,
-          batchsize=1000, 
-          truncate=true,
-          createTableOptions=None,
-          createTableColumnTypes=None,        
-          saveMode=SaveMode.Overwrite, 
-          bulkload=true,
-          tablock=true,
-          params=Map("user" -> user, "password" -> password)
-        )
-      )
-    }
-
-    assert(thrown.getMessage.contains(s"""java.lang.Exception: Table 'dbo.[hyphen-table]' does not exist in database 'hyphen-database' and 'bulkLoad' equals 'true' so cannot continue."""))      
-  }     
-
-  test("JDBCLoad: sqlserver bulk wrong schema column names") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
-
-    try {
-      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
-      connection.createStatement.execute(s"""
-      DROP TABLE IF EXISTS [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]
-      """)
-      connection.createStatement.execute(s"""
-      CREATE TABLE [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}] (
-        [booleanDatum] [bit] NOT NULL,
-        [dateDatum] [date] NULL,
-        [decimalDatum] [decimal](38, 18) NULL,
-        [doubleDatum] [float] NOT NULL,
-        [integerDatum] [int] NULL,
-        [longDatum] [bigint] NOT NULL,
-        [stringDatum] [nvarchar](max) NULL,
-        [timeDatum] [nvarchar](max) NULL,
-        [timestampDatum] [datetime] NULL
-      )
-      """)
-    } catch {
-      case e: Exception =>
-    } finally {
-      connection.close
-    }    
-
-    val dataset = TestDataUtils.getKnownDataset.withColumnRenamed("booleanDatum", "renamedBooleanDatum")
-    dataset.createOrReplaceTempView(dbtable)
-
-    val thrown = intercept[Exception with DetailException] {
-      load.JDBCLoad.load(
-        JDBCLoad(
-          name="dataset",
-          description=None,
-          inputView=dbtable, 
-          jdbcURL=sqlserverurl, 
-          driver=DriverManager.getDriver(sqlserverurl),
-          tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-          partitionBy=Nil, 
-          numPartitions=None, 
-          isolationLevel=IsolationLevelReadCommitted,
-          batchsize=1000, 
-          truncate=false,
-          createTableOptions=None,
-          createTableColumnTypes=None,        
-          saveMode=SaveMode.Overwrite, 
-          bulkload=true,
-          tablock=true,
-          params=Map("user" -> user, "password" -> password)
-        )
-      )
-    }
-
-    assert(thrown.getMessage.contains(s"""java.lang.Exception: Input dataset 'output' has schema [renamedBooleanDatum: boolean, dateDatum: date, decimalDatum: decimal(38,18), doubleDatum: double, integerDatum: int, longDatum: bigint, stringDatum: string, timeDatum: string, timestampDatum: timestamp] which does not match target table 'dbo.[hyphen-table]' which has schema [booleanDatum: boolean, dateDatum: date, decimalDatum: decimal(38,18), doubleDatum: double, integerDatum: int, longDatum: bigint, stringDatum: string, timeDatum: string, timestampDatum: timestamp]. Ensure names, types and field orders align."""))          
-  }     
-
-  test("JDBCLoad: sqlserver bulk wrong schema column types") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
-
-    try {
-      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
-      connection.createStatement.execute(s"""
-      DROP TABLE IF EXISTS [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]
-      """)
-      connection.createStatement.execute(s"""
-      CREATE TABLE [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}] (
-        [booleanDatum] [int] NOT NULL,
-        [dateDatum] [date] NULL,
-        [decimalDatum] [decimal](38, 18) NULL,
-        [doubleDatum] [float] NOT NULL,
-        [integerDatum] [int] NULL,
-        [longDatum] [bigint] NOT NULL,
-        [stringDatum] [nvarchar](max) NULL,
-        [timeDatum] [nvarchar](max) NULL,
-        [timestampDatum] [datetime] NULL
-      )
-      """)
-    } catch {
-      case e: Exception =>
-    } finally {
-      connection.close
-    }    
-
-    val dataset = TestDataUtils.getKnownDataset
-    dataset.createOrReplaceTempView(dbtable)
-
-    val thrown = intercept[Exception with DetailException] {
-      load.JDBCLoad.load(
-        JDBCLoad(
-          name="dataset",
-          description=None,
-          inputView=dbtable, 
-          jdbcURL=sqlserverurl, 
-          driver=DriverManager.getDriver(sqlserverurl),
-          tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-          partitionBy=Nil, 
-          numPartitions=None, 
-          isolationLevel=IsolationLevelReadCommitted,
-          batchsize=1000, 
-          truncate=false,
-          createTableOptions=None,
-          createTableColumnTypes=None,        
-          saveMode=SaveMode.Overwrite, 
-          bulkload=true,
-          tablock=true,
-          params=Map("user" -> user, "password" -> password)
-        )
-      )
-    }
-
-    assert(thrown.getMessage.contains(s"""java.lang.Exception: Input dataset 'output' has schema [booleanDatum: boolean, dateDatum: date, decimalDatum: decimal(38,18), doubleDatum: double, integerDatum: int, longDatum: bigint, stringDatum: string, timeDatum: string, timestampDatum: timestamp] which does not match target table 'dbo.[hyphen-table]' which has schema [booleanDatum: int, dateDatum: date, decimalDatum: decimal(38,18), doubleDatum: double, integerDatum: int, longDatum: bigint, stringDatum: string, timeDatum: string, timestampDatum: timestamp]. Ensure names, types and field orders align."""))          
-  }  
-
-  test("JDBCLoad: sqlserver bulk SaveMode.Append") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
-
-    val dataset = TestDataUtils.getKnownDataset
-    dataset.createOrReplaceTempView(dbtable)
-
-    try {
-      connection = DriverManager.getConnection(sqlserverurl, connectionProperties)    
-      connection.createStatement.execute(s"""
-      DROP TABLE IF EXISTS [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]
-      """)
-      connection.createStatement.execute(s"""
-      CREATE TABLE [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}] (
-        [booleanDatum] [bit] NOT NULL,
-        [dateDatum] [date] NULL,
-        [decimalDatum] [decimal](38, 18) NULL,
-        [doubleDatum] [float] NOT NULL,
-        [integerDatum] [int] NULL,
-        [longDatum] [bigint] NOT NULL,
-        [stringDatum] [nvarchar](max) NULL,
-        [timeDatum] [nvarchar](max) NULL,
-        [timestampDatum] [datetime] NULL
-      )
-      """)
-    } catch {
-      case e: Exception =>
-    } finally {
-      connection.close
-    }  
-
-    load.JDBCLoad.load(
-      JDBCLoad(
-        name="dataset",
-        description=None,
-        inputView=dbtable, 
-        jdbcURL=sqlserverurl, 
-        driver=DriverManager.getDriver(sqlserverurl),
-        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-        partitionBy=Nil, 
-        numPartitions=None, 
-        isolationLevel=IsolationLevelReadCommitted,
-        batchsize=1000, 
-        truncate=false,
-        createTableOptions=None,
-        createTableColumnTypes=None,        
-        saveMode=SaveMode.Overwrite, 
-        bulkload=true,
-        tablock=true,
-        params=Map("user" -> user, "password" -> password)
-      )
-    )
-
-    load.JDBCLoad.load(
-      JDBCLoad(
-        name="dataset",
-        description=None,
-        inputView=dbtable, 
-        jdbcURL=sqlserverurl, 
-        driver=DriverManager.getDriver(sqlserverurl),
-        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-        partitionBy=Nil, 
-        numPartitions=None, 
-        isolationLevel=IsolationLevelReadCommitted,
-        batchsize=1000, 
-        truncate=false,
-        createTableOptions=None,
-        createTableColumnTypes=None,        
-        saveMode=SaveMode.Append, 
-        bulkload=true,
-        tablock=true,
-        params=Map("user" -> user, "password" -> password)
-      )
-    )
-
-    val actual = { spark.read
-      .format("jdbc")
-      .option("url", sqlserverurl)
-      .option("user", user)
-      .option("password", password)      
-      .option("dbtable", s"(SELECT COUNT(*) AS count FROM [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]) result")
-      .load()
-    }
-
-    assert(actual.first.getInt(0) == 4)
-  }          
-
   test("JDBCLoad: postgres normal") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val dataset = TestDataUtils.getKnownDataset
+    val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
 
-    load.JDBCLoad.load(
-      JDBCLoad(
+    load.JDBCLoadStage.execute(
+      load.JDBCLoadStage(
+        plugin=new load.JDBCLoad,
         name="dataset",
         description=None,
         inputView=dbtable, 
@@ -531,7 +142,6 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         createTableOptions=None,
         createTableColumnTypes=None,        
         saveMode=SaveMode.Overwrite, 
-        bulkload=false,
         tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
@@ -553,7 +163,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit var arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val uuid = s"""a${UUID.randomUUID.toString.replace("-","")}"""
 
@@ -581,8 +191,9 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
 
     readStream.createOrReplaceTempView(dbtable)    
 
-    load.JDBCLoad.load(
-      JDBCLoad(
+    load.JDBCLoadStage.execute(
+      load.JDBCLoadStage(
+        plugin=new load.JDBCLoad,
         name="dataset",
         description=None,
         inputView=dbtable, 
@@ -597,7 +208,6 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         createTableOptions=None,
         createTableColumnTypes=None,        
         saveMode=SaveMode.Overwrite, 
-        bulkload=false,
         tablock=true,
         params=Map("user" -> user, "password" -> password)
       )

@@ -88,7 +88,7 @@ class HTTPTransform extends PipelineStagePlugin {
         stage.stageDetail.put("inputField", inputField)  
         stage.stageDetail.put("outputView", outputView) 
         stage.stageDetail.put("uri", uri.toString)      
-        stage.stageDetail.put("headers", HTTPUtils.maskHeaders(headers).asJava)
+        stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(headers).asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
         stage.stageDetail.put("batchSize", java.lang.Integer.valueOf(batchSize))

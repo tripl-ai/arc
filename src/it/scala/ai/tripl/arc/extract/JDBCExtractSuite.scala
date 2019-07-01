@@ -77,13 +77,14 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val dataset = TestDataUtils.getKnownDataset
+    val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
 
-    val expected = load.JDBCLoad.load(
-      JDBCLoad(
+    val expected = load.JDBCLoadStage.execute(
+      load.JDBCLoadStage(
+        plugin=new load.JDBCLoad,
         name="dataset",
         description=None,
         inputView=dbtable, 
@@ -98,17 +99,17 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         createTableOptions=None,
         createTableColumnTypes=None,        
         saveMode=SaveMode.Overwrite, 
-        bulkload=false,
         tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
     ).get
 
-    val actual = extract.JDBCExtract.extract(
-      JDBCExtract(
+    val actual = extract.JDBCExtractStage.execute(
+      extract.JDBCExtractStage(
+        plugin=new extract.JDBCExtract,
         name="dataset",
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -133,13 +134,14 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val dataset = TestDataUtils.getKnownDataset
+    val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
 
-    val expected = load.JDBCLoad.load(
-      JDBCLoad(
+    val expected = load.JDBCLoadStage.execute(
+      load.JDBCLoadStage(
+        plugin=new load.JDBCLoad,
         name="dataset",
         description=None,
         inputView=dbtable, 
@@ -154,17 +156,17 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         createTableOptions=None,
         createTableColumnTypes=None,        
         saveMode=SaveMode.Overwrite, 
-        bulkload=false,
         tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
     ).get
 
-    val actual = extract.JDBCExtract.extract(
-      JDBCExtract(
+    val actual = extract.JDBCExtractStage.execute(
+      extract.JDBCExtractStage(
+        plugin=new extract.JDBCExtract,
         name="dataset",
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -188,13 +190,14 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val dataset = TestDataUtils.getKnownDataset
+    val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
 
-    val expected = load.JDBCLoad.load(
-      JDBCLoad(
+    val expected = load.JDBCLoadStage.execute(
+      load.JDBCLoadStage(
+        plugin=new load.JDBCLoad,
         name="dataset",
         description=None,
         inputView=dbtable, 
@@ -209,17 +212,17 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         createTableOptions=None,
         createTableColumnTypes=None,        
         saveMode=SaveMode.Overwrite, 
-        bulkload=false,
         tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
     ).get
 
-    val actual = extract.JDBCExtract.extract(
-      JDBCExtract(
+    val actual = extract.JDBCExtractStage.execute(
+      extract.JDBCExtractStage(
+        plugin=new extract.JDBCExtract,
         name="dataset",
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=dbtable, 
         jdbcURL=sqlserverurl, 
         driver=DriverManager.getDriver(sqlserverurl),
@@ -243,14 +246,15 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val actual = extract.JDBCExtract.extract(
-      JDBCExtract(
+    val actual = extract.JDBCExtractStage.execute(
+      extract.JDBCExtractStage(
+        plugin=new extract.JDBCExtract,
         name="meta",
         description=None,
-        cols=Right(Nil),
-        outputView="meta", 
+        schema=Right(Nil),
+        outputView="meta",
         jdbcURL=postgresurl, 
         driver=DriverManager.getDriver(postgresurl),
         tableName=s"(SELECT * FROM meta WHERE dataset = 'known_dataset' AND version = 0 ORDER BY index) meta", 
@@ -267,8 +271,8 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
 
     // test metadata
     val meta = ai.tripl.arc.util.MetadataSchema.parseDataFrameMetadata(actual).right.getOrElse(Nil)
-    val schema = Extract.toStructType(meta)
-    val timestampDatumMetadata = schema.fields(schema.fieldIndex("timestampDatum")).metadata    
+    val metaSchema = Extract.toStructType(meta)
+    val timestampDatumMetadata = metaSchema.fields(metaSchema.fieldIndex("timestampDatum")).metadata    
     assert(timestampDatumMetadata.getLong("securityLevel") == 7)    
 
   }   

@@ -11,16 +11,17 @@ import org.apache.spark.storage.StorageLevel
 
 import com.typesafe.config._
 
-import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.config._
+import ai.tripl.arc.api._
 import ai.tripl.arc.config.Error._
+import ai.tripl.arc.config._
 import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.CloudUtils
+import ai.tripl.arc.util.ControlUtils._
 import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.ExtractUtils
-import ai.tripl.arc.util.ControlUtils._
+import ai.tripl.arc.util.JDBCUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
@@ -78,7 +79,7 @@ class JDBCExtract extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("driver", driver.getClass.toString)  
-        stage.stageDetail.put("jdbcURL", jdbcURL)
+        stage.stageDetail.put("jdbcURL", JDBCUtils.maskPassword(jdbcURL))
         stage.stageDetail.put("outputView", outputView)  
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("tableName", tableName)
@@ -132,10 +133,11 @@ object JDBCExtractStage {
 
   def execute(stage: JDBCExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    // override defaults https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases
+    // override defaults https://spark.apache.org/docs/latest/sql-data-sources-jdbc.html
     val connectionProperties = new Properties()
-    connectionProperties.put("user", stage.params.get("user").getOrElse(""))
-    connectionProperties.put("password", stage.params.get("password").getOrElse(""))
+    for ((key, value) <- stage.params) {
+      connectionProperties.put(key, value)
+    }
 
     for (numPartitions <- stage.numPartitions) {
       connectionProperties.put("numPartitions", numPartitions.toString)    

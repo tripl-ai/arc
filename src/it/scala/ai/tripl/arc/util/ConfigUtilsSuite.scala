@@ -17,6 +17,7 @@ import ai.tripl.arc.api.{Delimited, Delimiter, QuoteCharacter}
 import ai.tripl.arc.util.log.LoggerFactory
 import ai.tripl.arc.util.ConfigUtils
 import ai.tripl.arc.util.ConfigUtils._
+import ai.tripl.arc.util._
 
 import com.typesafe.config._
 
@@ -53,7 +54,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("ConfigUtilsSuite: Ensure remote data and config references can be parsed") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // note: initial files are created in the src/it/resources/minio/Dockerfile
     // then mounted in the minio command in src/it/resources/docker-compose.yml
@@ -100,17 +101,15 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val argsMap = collection.mutable.Map[String, String]()
-    val graph = ConfigUtils.Graph(Nil, Nil, false)
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(_) => {
         println(pipelineEither)  
         assert(false)
       }
-      case Right((pl, _, _)) => {
-        ARC.run(pl)
+      case Right((pipeline, _)) => {
+        ARC.run(pipeline)
       }
     }
 
