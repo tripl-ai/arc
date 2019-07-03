@@ -61,6 +61,7 @@ class ORCLoad extends PipelineStagePlugin {
         stage.stageDetail.put("outputURI", outputURI.toString)  
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>

@@ -61,6 +61,7 @@ class SQLValidate extends PipelineStagePlugin {
         stage.stageDetail.put("inputURI", parsedURI.toString)  
         stage.stageDetail.put("sql", inputSQL)   
         stage.stageDetail.put("sqlParams", sqlParams.asJava)           
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>

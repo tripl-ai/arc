@@ -66,7 +66,8 @@ This example is included to demonstrate:
 |ETL_CONF_URI|etl.config.uri|The URI of the job file to execute.|
 |ETL_CONF_STREAMING|etl.config.streaming|Run in [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html) mode or not. Boolean default `false`.|
 |ETL_CONF_DISABLE_DEPENDENCY_VALIDATION|etl.config.disableDependencyValidation|Disable config dependency graph validation in case of dependency resolution defects. Boolean default `false`.|
-
+|ETL_CONF_STORAGE_LEVEL|etl.config.storageLevel|The [StorageLevel](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$) used when persisting datasets. String default `MEMORY_AND_DISK_SER`.|
+|ETL_CONF_IMMUTABLE_VIEWS|etl.config.immutableViews|Prevent reusing view names multiple times within a job (calls `createTempView` instead of `createOrReplaceTempView`). Boolean default `false`.|
 
 Additionally there are permissions arguments that can be used to retrieve the job file from cloud storage:
 

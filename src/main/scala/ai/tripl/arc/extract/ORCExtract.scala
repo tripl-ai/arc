@@ -74,6 +74,7 @@ class ORCExtract extends PipelineStagePlugin {
         for (basePath <- basePath) {
           stage.stageDetail.put("basePath", basePath)  
         }        
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -186,7 +187,7 @@ object ORCExtractStage {
         }
       }
     } 
-    repartitionedDF.createOrReplaceTempView(stage.outputView)
+    if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
       stage.stageDetail.put("inputFiles", java.lang.Integer.valueOf(repartitionedDF.inputFiles.length))
@@ -194,7 +195,7 @@ object ORCExtractStage {
       stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
-        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        repartitionedDF.persist(arcContext.storageLevel)
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
       }      
     }

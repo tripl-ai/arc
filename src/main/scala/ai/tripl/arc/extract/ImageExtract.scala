@@ -50,30 +50,31 @@ class ImageExtract extends PipelineStagePlugin {
     (name, description, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, basePath, invalidKeys) match {
       case (Right(name), Right(description), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(dropInvalid), Right(basePath), Right(invalidKeys)) => 
 
-      val stage = ImageExtractStage(
-        plugin=this,
-        name=name,
-        description=description,
-        outputView=outputView,
-        input=parsedGlob,
-        authentication=authentication,
-        params=params,
-        persist=persist,
-        numPartitions=numPartitions,
-        partitionBy=partitionBy,
-        basePath=basePath,
-        dropInvalid=dropInvalid
-      )
+        val stage = ImageExtractStage(
+          plugin=this,
+          name=name,
+          description=description,
+          outputView=outputView,
+          input=parsedGlob,
+          authentication=authentication,
+          params=params,
+          persist=persist,
+          numPartitions=numPartitions,
+          partitionBy=partitionBy,
+          basePath=basePath,
+          dropInvalid=dropInvalid
+        )
 
-      for (bp <- basePath) {
-        stage.stageDetail.put("basePath", bp)
-      }
-      stage.stageDetail.put("dropInvalid", java.lang.Boolean.valueOf(dropInvalid))
-      stage.stageDetail.put("input", parsedGlob)  
-      stage.stageDetail.put("outputView", outputView)  
-      stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
+        for (basePath <- basePath) {
+          stage.stageDetail.put("basePath", basePath)
+        }
+        stage.stageDetail.put("dropInvalid", java.lang.Boolean.valueOf(dropInvalid))
+        stage.stageDetail.put("input", parsedGlob)  
+        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
+        stage.stageDetail.put("params", params.asJava)
 
-      Right(stage)
+        Right(stage)
 
       case _ =>
         val allErrors: Errors = List(name, description, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, basePath, invalidKeys).collect{ case Left(errs) => errs }.flatten
@@ -147,7 +148,7 @@ object ImageExtractStage {
         }
       }
     } 
-    repartitionedDF.createOrReplaceTempView(stage.outputView)
+    if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
     
     if (!repartitionedDF.isStreaming) {
       stage.stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
@@ -155,7 +156,7 @@ object ImageExtractStage {
       stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
-        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        repartitionedDF.persist(arcContext.storageLevel)
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
       }      
     }

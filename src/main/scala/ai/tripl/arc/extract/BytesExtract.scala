@@ -72,6 +72,7 @@ class BytesExtract extends PipelineStagePlugin {
         stage.stageDetail.put("input", if (c.hasPath("inputView")) inputView else parsedGlob)    
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(stage.persist))
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -104,7 +105,7 @@ case class BytesExtractStage(
 
 object BytesExtractStage {
 
-  def execute(stage: BytesExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def execute(stage: BytesExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val signature = "BytesExtract requires pathView to be dataset with [value: string] signature."
 
@@ -161,14 +162,14 @@ object BytesExtractStage {
       case Some(numPartitions) => df.repartition(numPartitions)
       case None => df
     }
-    repartitionedDF.createOrReplaceTempView(stage.outputView)
+    if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     stage.stageDetail.put("inputFiles", java.lang.Integer.valueOf(repartitionedDF.inputFiles.length))
     stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
     stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (stage.persist && !repartitionedDF.isStreaming) {
-      repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+      repartitionedDF.persist(arcContext.storageLevel)
       stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
     }
 

@@ -73,6 +73,7 @@ class XMLExtract extends PipelineStagePlugin {
         stage.stageDetail.put("outputView", outputView)  
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -106,7 +107,7 @@ case class XMLExtractStage(
 
 object XMLExtractStage {
 
-  def execute(stage: XMLExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def execute(stage: XMLExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
 
     // force com.sun.xml.* implementation for reading xml to be compatible with spark-xml library
@@ -215,7 +216,7 @@ object XMLExtractStage {
         }
       }
     } 
-    repartitionedDF.createOrReplaceTempView(stage.outputView)
+    if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
       stage.stageDetail.put("inputFiles", java.lang.Integer.valueOf(repartitionedDF.inputFiles.length))
@@ -223,7 +224,7 @@ object XMLExtractStage {
       stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
-        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        repartitionedDF.persist(arcContext.storageLevel)
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
       }      
     }  

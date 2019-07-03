@@ -17,6 +17,7 @@ object ARC {
 
   import org.apache.spark.sql._
   import org.apache.spark.sql.types._
+  import org.apache.spark.storage.StorageLevel
 
   import ai.tripl.arc.api.API._
   import ai.tripl.arc.config._
@@ -51,16 +52,14 @@ object ARC {
         MDC.put("jobId", j) 
     }    
 
-    val streaming: Option[String] = commandLineArguments.get("etl.config.streaming").orElse(envOrNone("ETL_CONF_STREAMING"))
-    val isStreaming = streaming match {
+    val isStreaming = commandLineArguments.get("etl.config.streaming").orElse(envOrNone("ETL_CONF_STREAMING")) match {
       case Some(v) if v.trim.toLowerCase == "true" => true
       case Some(v) if v.trim.toLowerCase == "false" => false
       case _ => false
     }
     MDC.put("streaming", isStreaming.toString) 
 
-    val ignoreEnv: Option[String] = commandLineArguments.get("etl.config.ignoreEnvironments").orElse(envOrNone("ETL_CONF_IGNORE_ENVIRONMENTS"))
-    val ignoreEnvironments = ignoreEnv match {
+    val ignoreEnvironments = commandLineArguments.get("etl.config.ignoreEnvironments").orElse(envOrNone("ETL_CONF_IGNORE_ENVIRONMENTS")) match {
       case Some(v) if v.trim.toLowerCase == "true" => true
       case Some(v) if v.trim.toLowerCase == "false" => false
       case _ => false
@@ -145,6 +144,27 @@ object ARC {
 
     MDC.put("applicationId", spark.sparkContext.applicationId) 
 
+    // read storagelevel
+    val (storageLevel, storageLevelName) = commandLineArguments.get("etl.config.storageLevel").orElse(envOrNone("ETL_CONF_STORAGE_LEVEL")) match {
+      case Some(v) if v.trim.toUpperCase == "DISK_ONLY" => (StorageLevel.DISK_ONLY, "DISK_ONLY")
+      case Some(v) if v.trim.toUpperCase == "DISK_ONLY_2" => (StorageLevel.DISK_ONLY_2, "DISK_ONLY_2")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK" => (StorageLevel.MEMORY_AND_DISK, "MEMORY_AND_DISK")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK_2" => (StorageLevel.MEMORY_AND_DISK_2, "MEMORY_AND_DISK_2")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK_SER" => (StorageLevel.MEMORY_AND_DISK_SER, "MEMORY_AND_DISK_SER") 
+      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK_SER_2" => (StorageLevel.MEMORY_AND_DISK_SER_2, "MEMORY_AND_DISK_SER_2") 
+      case Some(v) if v.trim.toUpperCase == "MEMORY_ONLY" => (StorageLevel.MEMORY_ONLY, "MEMORY_ONLY") 
+      case Some(v) if v.trim.toUpperCase == "MEMORY_ONLY_SER" => (StorageLevel.MEMORY_ONLY_SER, "MEMORY_ONLY_SER") 
+      case Some(v) if v.trim.toUpperCase == "MEMORY_ONLY_SER_2" => (StorageLevel.MEMORY_ONLY_SER_2, "MEMORY_ONLY_SER_2") 
+      case _ => (StorageLevel.MEMORY_AND_DISK_SER, "MEMORY_AND_DISK_SER") 
+    }   
+
+    // read immutableViews
+    val immutableViews = commandLineArguments.get("etl.config.immutableViews").orElse(envOrNone("ETL_CONF_IMMUTABLE_VIEWS")) match {
+      case Some(v) if v.trim.toLowerCase == "true" => true
+      case Some(v) if v.trim.toLowerCase == "false" => false
+      case _ => false
+    }        
+
     // log available plugins
     val loader = Utils.getContextOrSparkClassLoader
 
@@ -156,12 +176,15 @@ object ARC {
       configUri=configUri, 
       isStreaming=isStreaming, 
       ignoreEnvironments=ignoreEnvironments, 
+      storageLevel=storageLevel,
+      immutableViews=immutableViews,
       commandLineArguments=commandLineArguments,
       dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
       lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
       activeLifecyclePlugins=Nil,
       pipelineStagePlugins=ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList,
-      udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList
+      udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList,
+      userData=Map.empty
     )
 
     // add spark listeners and register udfs
@@ -178,6 +201,8 @@ object ARC {
         .field("scalaVersion", scala.util.Properties.versionNumberString)
         .field("javaVersion", System.getProperty("java.runtime.version"))
         .field("environment", environment.getOrElse(""))
+        .field("storageLevel", storageLevelName)
+        .field("immutableViews", java.lang.Boolean.valueOf(immutableViews))
         .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => c.getClass.getName).asJava)
         .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => c.getClass.getName).asJava)
         .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
@@ -201,6 +226,8 @@ object ARC {
           .field("scalaVersion", scala.util.Properties.versionNumberString)
           .field("javaVersion", System.getProperty("java.runtime.version"))
           .field("environment", environment.getOrElse(""))
+          .field("storageLevel", storageLevelName)
+          .field("immutableViews", java.lang.Boolean.valueOf(immutableViews))
           .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => c.getClass.getName).asJava)
           .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => c.getClass.getName).asJava)
           .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)          

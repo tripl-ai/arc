@@ -62,6 +62,7 @@ class AvroLoad extends PipelineStagePlugin {
         stage.stageDetail.put("outputURI", outputURI.toString)  
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -94,7 +95,7 @@ case class AvroLoadStage(
 
 object AvroLoadStage {
 
-  def execute(stage: AvroLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def execute(stage: AvroLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val df = spark.table(stage.inputView)      
 

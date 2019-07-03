@@ -158,6 +158,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
@@ -198,6 +199,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
@@ -237,6 +239,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: Can post data (POST)") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
@@ -266,6 +269,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
@@ -297,6 +301,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: Throws exception with 404") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
       extract.HTTPExtractStage.execute(      
@@ -326,6 +331,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: validStatusCodes") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
       extract.HTTPExtractStage.execute(      
@@ -355,6 +361,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: broken url throws exception") {
     implicit val spark = session
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
       extract.HTTPExtractStage.execute(      
@@ -384,6 +391,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val inputDF = Seq(s"${uri}/${get}/", s"${uri}/${get}/").toDF("value")
     inputDF.createOrReplaceTempView(inputView)
@@ -419,6 +427,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val inputDF = Seq(("blah", s"${uri}/${echo}/", body0), ("blah", s"${uri}/${echo}/", body1)).toDF("ignore", "uri", "body")
     inputDF.createOrReplaceTempView(inputView)
@@ -454,6 +463,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val inputDF = Seq(("blah", s"${uri}/${echo}/", body0), ("blah", s"${uri}/${echo}/", body1)).toDF("ignore", "uri", "body")
     inputDF.createOrReplaceTempView(inputView)

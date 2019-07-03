@@ -71,6 +71,7 @@ class DiffTransform extends PipelineStagePlugin {
         for (outputRightView <- outputRightView) {
           stage.stageDetail.put("outputRightView", outputRightView)  
         }                 
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -115,7 +116,7 @@ object DiffTransformStage {
     val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF("_hash") === rightHashDF("_hash"), "full")
 
     if (stage.persist && !transformedDF.isStreaming) {
-      transformedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+      transformedDF.persist(arcContext.storageLevel)
     }   
 
     val outputIntersectionDF = transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).select(col("_1.*")).drop("_hash")
@@ -123,18 +124,15 @@ object DiffTransformStage {
     val outputRightDF = transformedDF.filter(col("_1").isNull).select(col("_2.*")).drop("_hash")
 
     // register views
-    stage.outputIntersectionView match {
-      case Some(oiv) => outputIntersectionDF.createOrReplaceTempView(oiv)
-      case None => 
+    for (outputIntersectionView <- stage.outputIntersectionView) {
+      if (arcContext.immutableViews) outputIntersectionDF.createTempView(outputIntersectionView) else outputIntersectionDF.createOrReplaceTempView(outputIntersectionView)
     }
-    stage.outputLeftView match {
-      case Some(olv) => outputLeftDF.createOrReplaceTempView(olv)
-      case None => 
-    }
-    stage.outputRightView match {
-      case Some(orv) => outputRightDF.createOrReplaceTempView(orv)
-      case None => 
+    for (outputLeftView <- stage.outputLeftView) {
+      if (arcContext.immutableViews) outputLeftDF.createTempView(outputLeftView) else outputLeftDF.createOrReplaceTempView(outputLeftView)
     }    
+    for (outputRightView <- stage.outputRightView) {
+      if (arcContext.immutableViews) outputRightDF.createTempView(outputRightView) else outputRightDF.createOrReplaceTempView(outputRightView)
+    }
 
     Option(outputIntersectionDF)
   }

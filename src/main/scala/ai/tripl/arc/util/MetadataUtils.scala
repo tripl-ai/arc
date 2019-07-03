@@ -22,7 +22,7 @@ object MetadataUtils {
   def createMetadataDataframe(input: DataFrame)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
     import spark.implicits._
 
-    // this is a hack but having to deal with StructTypes and StructFields
+    // this is a hack but having to deal with StructTypes and StructFields is not fun
     val schemaDataframe = spark.sparkContext.parallelize(Seq(input.schema.json)).toDF.as[String]
     val parsedSchema = spark.read.json(schemaDataframe)
     parsedSchema.createOrReplaceTempView("parsedSchema")
@@ -41,6 +41,7 @@ object MetadataUtils {
     """)
 
     schema.cache.count
+    spark.catalog.dropTempView("parsedSchema")
     schema
   }
 

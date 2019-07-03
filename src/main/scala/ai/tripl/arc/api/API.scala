@@ -8,6 +8,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.types.MetadataBuilder
 import org.apache.spark.sql.SaveMode
+import org.apache.spark.storage.StorageLevel
 
 import ai.tripl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin, UDFPlugin}
 
@@ -47,6 +48,14 @@ object API {
       */    
     ignoreEnvironments: Boolean,  
 
+    /** the storage level for any dataframe persistence
+      */    
+    storageLevel: StorageLevel,
+
+    /** whether to use createTempView or createOrReplaceTempView at runtime
+      */    
+    immutableViews: Boolean,  
+
     /** the command line arguments
       */   
     commandLineArguments: Map[String, String],
@@ -69,7 +78,12 @@ object API {
 
     /** a list of udf plugins which are registered before running the pipeline
       */    
-    udfPlugins: List[UDFPlugin]    
+    udfPlugins: List[UDFPlugin],
+
+    /** a map of objects which can be attached to the context for plugins
+      * try to avoid using this as it is hacky
+      */   
+    userData: Map[String, Object]
   )
 
   /** ExtractColumns are used to define schemas for typing transforms

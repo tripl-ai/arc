@@ -60,6 +60,7 @@ class RateExtract extends PipelineStagePlugin {
         stage.stageDetail.put("rowsPerSecond", Integer.valueOf(rowsPerSecond))
         stage.stageDetail.put("rampUpTime", Integer.valueOf(rampUpTime))
         stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions))
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -105,7 +106,7 @@ object RateExtractStage {
       .option("numPartitions", stage.numPartitions.toString)
       .load
 
-    df.createOrReplaceTempView(stage.outputView)
+    if (arcContext.immutableViews) df.createTempView(stage.outputView) else df.createOrReplaceTempView(stage.outputView)
 
     Option(df)
   }

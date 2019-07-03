@@ -51,6 +51,7 @@ class ConsoleLoad extends PipelineStagePlugin {
 
         stage.stageDetail.put("inputView", stage.inputView)  
         stage.stageDetail.put("outputMode", stage.outputMode.sparkString)  
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -80,7 +81,7 @@ case class ConsoleLoadStage(
 
 object ConsoleLoadStage {
 
-  def execute(stage: ConsoleLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def execute(stage: ConsoleLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val df = spark.table(stage.inputView)   
 

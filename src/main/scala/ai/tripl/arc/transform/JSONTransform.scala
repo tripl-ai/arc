@@ -59,6 +59,7 @@ class JSONTransform extends PipelineStagePlugin {
         stage.stageDetail.put("inputView", inputView)  
         stage.stageDetail.put("outputView", outputView)   
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))        
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -89,7 +90,7 @@ case class JSONTransformStage(
 
 object JSONTransformStage {
 
-  def execute(stage: JSONTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def execute(stage: JSONTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val df = spark.table(stage.inputView)
 
@@ -128,15 +129,14 @@ object JSONTransformStage {
         }
       }
     }
-
-    repartitionedDF.createOrReplaceTempView(stage.outputView)    
+    if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
       stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
       stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
-        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        repartitionedDF.persist(arcContext.storageLevel)
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
       }      
     }

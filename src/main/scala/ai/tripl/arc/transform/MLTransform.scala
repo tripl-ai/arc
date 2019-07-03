@@ -71,6 +71,7 @@ class MLTransform extends PipelineStagePlugin {
         stage.stageDetail.put("inputURI", inputURI.toString)  
         stage.stageDetail.put("inputView", inputView)  
         stage.stageDetail.put("outputView", outputView)   
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -189,15 +190,14 @@ object MLTransformStage {
         }
       }
     }
-
-    repartitionedDF.createOrReplaceTempView(stage.outputView)    
+    if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
       stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
       stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
-        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        repartitionedDF.persist(arcContext.storageLevel)
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
 
         // add percentiles to list for logging

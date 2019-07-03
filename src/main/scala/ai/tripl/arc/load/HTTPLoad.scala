@@ -54,20 +54,21 @@ class HTTPLoad extends PipelineStagePlugin {
     (name, description, outputURI, inputView, validStatusCodes, invalidKeys) match {
       case (Right(name), Right(description), Right(outputURI), Right(inputView), Right(validStatusCodes), Right(invalidKeys)) => 
         
-      val stage = HTTPLoadStage(
-        plugin=this,
-        name=name,
-        description=description,
-        inputView=inputView,
-        outputURI=outputURI,
-        headers=headers,
-        validStatusCodes=validStatusCodes,
-        params=params
-      )
+        val stage = HTTPLoadStage(
+          plugin=this,
+          name=name,
+          description=description,
+          inputView=inputView,
+          outputURI=outputURI,
+          headers=headers,
+          validStatusCodes=validStatusCodes,
+          params=params
+        )
 
-      stage.stageDetail.put("inputView", inputView)  
-      stage.stageDetail.put("outputURI", outputURI.toString)  
-      stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
+        stage.stageDetail.put("inputView", inputView)  
+        stage.stageDetail.put("outputURI", outputURI.toString)  
+        stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>

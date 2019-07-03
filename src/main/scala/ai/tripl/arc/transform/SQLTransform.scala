@@ -95,7 +95,8 @@ class SQLTransform extends PipelineStagePlugin {
         stage.stageDetail.put("outputView", outputView)   
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("sql", inputSQL)   
-        stage.stageDetail.put("sqlParams", sqlParams.asJava)   
+        stage.stageDetail.put("sqlParams", sqlParams.asJava)  
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -158,8 +159,7 @@ object SQLTransformStage {
         }
       }
     }
-
-    repartitionedDF.createOrReplaceTempView(stage.outputView)    
+    if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
       // add partition and predicate pushdown detail to logs
@@ -169,7 +169,7 @@ object SQLTransformStage {
       stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
-        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        repartitionedDF.persist(arcContext.storageLevel)
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
       }      
     }

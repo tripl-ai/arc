@@ -129,12 +129,15 @@ object ConfigUtils {
                 configUri=arcContext.configUri, 
                 isStreaming=arcContext.isStreaming, 
                 ignoreEnvironments=arcContext.ignoreEnvironments, 
+                storageLevel=arcContext.storageLevel,
+                immutableViews=arcContext.immutableViews,
                 commandLineArguments=arcContext.commandLineArguments,
                 dynamicConfigurationPlugins=arcContext.dynamicConfigurationPlugins,
                 lifecyclePlugins=arcContext.lifecyclePlugins,
                 activeLifecyclePlugins=lifecycleInstances,
                 pipelineStagePlugins=arcContext.pipelineStagePlugins,
-                udfPlugins=arcContext.udfPlugins
+                udfPlugins=arcContext.udfPlugins,
+                userData=arcContext.userData
               ) 
 
               Right((ETLPipeline(flatPipelineInstances), ctx))

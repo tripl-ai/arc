@@ -1,5 +1,7 @@
 package ai.tripl.arc.validate
 
+import scala.collection.JavaConverters._
+
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
@@ -49,6 +51,7 @@ class EqualityValidate extends PipelineStagePlugin {
 
         stage.stageDetail.put("leftView", leftView)      
         stage.stageDetail.put("rightView", rightView)         
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>

@@ -89,6 +89,7 @@ class HTTPExtract extends PipelineStagePlugin {
         stage.stageDetail.put("outputView", outputView)  
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
+        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -138,7 +139,7 @@ object HTTPExtractStage {
     */
   type RequestResponseRow = Row
 
-  def execute(stage: HTTPExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  def execute(stage: HTTPExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
 
     // create a StructType schema for RequestResponse
@@ -253,13 +254,13 @@ object HTTPExtractStage {
         }
       }
     } 
-    repartitionedDF.createOrReplaceTempView(stage.outputView)
+    if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
     stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (stage.persist) {
-      repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
+      repartitionedDF.persist(arcContext.storageLevel)
       stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
     }    
 
