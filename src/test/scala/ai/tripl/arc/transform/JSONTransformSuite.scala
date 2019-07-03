@@ -6,7 +6,6 @@ import org.scalatest.BeforeAndAfter
 import org.apache.spark.sql._
 
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util.TestUtils
 
@@ -23,7 +22,7 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")   
@@ -38,7 +37,7 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("JSONTransform") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     TestUtils.getKnownDataset.createOrReplaceTempView(inputView)
@@ -67,7 +66,7 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("JSONTransform: Structured Streaming") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     val readStream = spark

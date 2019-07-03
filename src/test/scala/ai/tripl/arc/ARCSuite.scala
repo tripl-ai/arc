@@ -20,7 +20,6 @@ import org.apache.spark.sql.functions._
 import ai.tripl.arc.util._
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util.TestUtils
 
@@ -38,7 +37,7 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
       .config("spark.ui.port", "9999")
       .appName("Spark ETL Test")
       .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")       

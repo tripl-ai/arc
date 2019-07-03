@@ -14,6 +14,7 @@ import org.apache.spark.sql.types._
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.util.log.LoggerFactory 
+import org.apache.log4j.{Level, Logger}
 import ai.tripl.arc.util.ConfigUtils._
 import ai.tripl.arc.config.Error._
 
@@ -61,7 +62,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   test("TypingTransform") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // load csv
@@ -141,7 +142,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   test("TypingTransform: failMode - failfast") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // get a corrupt dataset dataset
@@ -175,14 +176,14 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
       dataset.count
     }
 
-    assert(thrown0.getMessage.contains("TypingTransform with failMode equal to 'failfast' cannot continue due to row with error(s): [[booleanDatum,Unable to convert 'bad' to boolean using provided true values: ['true'] or false values: ['false']], [timestampDatum,Unable to convert '2017-12-20 21:46:54' to timestamp using formatters ['yyyy-MM-dd'T'HH:mm:ss.SSSXXX'] and timezone 'UTC']]."))
+    assert(thrown0.getMessage.contains("TypingTransform with failMode equal to 'failfast' cannot continue due to row with error(s): [[booleanDatum,Unable to convert 'bad' to boolean using provided true values: ['true'] or false values: ['false']], [timestampDatum,Unable to convert '2017-12-20 21:46:54' to timestamp using formatters ['uuuu-MM-dd'T'HH:mm:ss.SSSXXX'] and timezone 'UTC']]."))
 
   }    
 
   test("TypingTransform: metadata bad array") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val meta = """
@@ -223,7 +224,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   test("TypingTransform: metadata bad type object") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val meta = """
@@ -264,7 +265,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   test("TypingTransform: metadata bad type null") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val meta = """
@@ -303,7 +304,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   test("TypingTransform: metadata bad type same name as column") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val meta = """
@@ -344,7 +345,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   test("TypingTransform: metadata bad type multiple") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val meta = """
@@ -386,7 +387,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   test("TypingTransform: Execute with Structured Streaming" ) {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     val df = TestUtils.getKnownStringDataset.drop("nullDatum")
@@ -448,7 +449,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   test("TypingTransform: StringType still has rules applied") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val meta = """
@@ -499,7 +500,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   test("BinaryTyping: config") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val meta = """

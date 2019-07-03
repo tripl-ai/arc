@@ -33,7 +33,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
                   .master("local[*]")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")   
@@ -48,7 +48,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   // test("Read simple config") {
   //   implicit val spark = session
 
-  //   implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+  //   implicit val logger = TestUtils.getLogger()
   //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
   //   val commandLineArguments = collection.mutable.HashMap[String, String]()
@@ -164,7 +164,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   // the same config files are used (embedded) on the documentation site so this ensures the examples will work.
   test("Read documentation config files") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     var commandLineArguments = Map[String, String]("JOB_RUN_DATE" -> "0", "ETL_CONF_BASE_URL" -> "")
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false, commandLineArguments=commandLineArguments)
 
@@ -214,7 +214,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
   test("Test missing keys exception") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = """{
@@ -247,7 +247,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
   test("Test extraneous attributes") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = """{
@@ -294,7 +294,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   
   test("Test invalid validValues") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = """{
@@ -325,7 +325,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
   test("Test read custom delimiter") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = """{
@@ -356,7 +356,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
   test("Test read custom delimiter success") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = """{
@@ -391,7 +391,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
   test("Test config substitutions") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = """{
@@ -428,7 +428,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
   test("Test not List[Object]") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = """{
@@ -464,7 +464,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   // this is to ensure that the stages are executed in the correct order
   test("Test read correct order") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = TestUtils.getKnownDataset

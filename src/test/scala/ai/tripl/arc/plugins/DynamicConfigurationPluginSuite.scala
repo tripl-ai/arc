@@ -2,7 +2,6 @@ package ai.tripl.arc.plugins
 
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.util.ConfigUtils
-import ai.tripl.arc.util.log.LoggerFactory
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.util.TestUtils
 
@@ -19,7 +18,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
       .master("local[*]")
       .appName("Spark ETL Test")
       .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")   
@@ -34,7 +33,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
   test("Read config with dynamic configuration plugin") {
     implicit val spark = session
 
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), arcContext)
@@ -54,7 +53,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
 
   test("Test commandLineArguments precedence") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     val commandLineArguments = Map[String, String]("ARGS_MAP_VALUE" -> "before\"${arc.paramvalue}\"after")
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false, commandLineArguments=commandLineArguments)
 
@@ -78,7 +77,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
   test("Read config with dynamic configuration plugin environments ") {
     implicit val spark = session
 
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false, environment="production")
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), arcContext)

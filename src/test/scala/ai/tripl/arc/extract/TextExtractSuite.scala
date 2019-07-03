@@ -14,7 +14,6 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util._
 import ai.tripl.arc.util.ControlUtils._
@@ -35,7 +34,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("FATAL")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")    
@@ -51,7 +50,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
   test("TextExtract: multiLine false") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.TextExtractStage.execute(
@@ -79,7 +78,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
   test("TextExtract: multiLine true") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.TextExtractStage.execute(
@@ -107,7 +106,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
   test("TextExtract: Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // try with wildcard
@@ -137,7 +136,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
   test("TextExtract: Structured Streaming") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     val jsonSchema = """

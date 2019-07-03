@@ -17,7 +17,6 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util._
 
@@ -113,7 +112,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("FATAL")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")    
@@ -157,7 +156,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: Can read data (GET)") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.HTTPExtractStage.execute(
@@ -198,7 +197,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: Can read data (POST)") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.HTTPExtractStage.execute(
@@ -238,7 +237,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPExtract: Can post data (POST)") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.HTTPExtractStage.execute(
@@ -268,7 +267,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: Can handle empty response") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.HTTPExtractStage.execute(
@@ -300,7 +299,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPExtract: Throws exception with 404") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
@@ -330,7 +329,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPExtract: validStatusCodes") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
@@ -360,7 +359,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPExtract: broken url throws exception") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
@@ -390,7 +389,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: Can read data (GET) with DataFrame input") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val inputDF = Seq(s"${uri}/${get}/", s"${uri}/${get}/").toDF("value")
@@ -426,7 +425,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: Can post data (POST) with Body from DataFrame by name") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val inputDF = Seq(("blah", s"${uri}/${echo}/", body0), ("blah", s"${uri}/${echo}/", body1)).toDF("ignore", "uri", "body")
@@ -462,7 +461,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: Can post data (POST) with Body from DataFrame by name precedence") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val inputDF = Seq(("blah", s"${uri}/${echo}/", body0), ("blah", s"${uri}/${echo}/", body1)).toDF("ignore", "uri", "body")

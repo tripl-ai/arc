@@ -14,7 +14,6 @@ import org.apache.spark.sql._
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.api.{Delimited, Delimiter, QuoteCharacter}
-import ai.tripl.arc.util.log.LoggerFactory
 import ai.tripl.arc.util.ConfigUtils
 import ai.tripl.arc.util.ConfigUtils._
 import ai.tripl.arc.util._
@@ -34,12 +33,13 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   val minioSecretKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 
   before {
-    val spark = SparkSession
+    implicit val spark = SparkSession
                   .builder()
                   .master("local[*]")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
+    implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")         
@@ -53,7 +53,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
   test("ConfigUtilsSuite: Ensure remote data and config references can be parsed") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // note: initial files are created in the src/it/resources/minio/Dockerfile

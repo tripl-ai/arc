@@ -13,7 +13,6 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util._
 
@@ -63,7 +62,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")    
@@ -109,7 +108,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
   test("JSONExtract") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
@@ -161,7 +160,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
   test("JSONExtract: inputView") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
  
     val df = TestUtils.getKnownDataset
@@ -198,7 +197,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
   test("JSONExtract: Caching") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // no cache
@@ -249,7 +248,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
   test("JSONExtract: Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val schema = 
@@ -348,7 +347,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
   test("JSONExtract: multiLine") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val actual0 = extract.JSONExtractStage.execute(
@@ -404,7 +403,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
   test("JSONExtract: singleLine Array") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val actual0 = extract.JSONExtractStage.execute(
@@ -437,7 +436,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
   test("JSONExtract: multiLine Array") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val actual0 = extract.JSONExtractStage.execute(
@@ -492,7 +491,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
   test("JSONExtract: Input Schema") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val schema = 
@@ -550,7 +549,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
   test("JSONExtract: Structured Streaming") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     // parse json schema to List[ExtractColumn]

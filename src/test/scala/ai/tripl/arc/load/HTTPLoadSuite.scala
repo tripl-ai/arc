@@ -18,7 +18,6 @@ import scala.io.Source
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util.TestUtils
 
@@ -90,7 +89,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")    
@@ -128,7 +127,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
   test("HTTPLoad: success") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = TestUtils.getKnownDataset.toJSON.toDF
@@ -151,7 +150,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
   test("HTTPLoad: failure") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = TestUtils.getKnownDataset.toJSON.toDF
@@ -177,7 +176,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
   test("HTTPLoad: validStatusCodes") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = TestUtils.getKnownDataset.toJSON.toDF
@@ -200,7 +199,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
   test("HTTPLoad: headers positive") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = TestUtils.getKnownDataset.toJSON.toDF
@@ -223,7 +222,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
   test("HTTPLoad: headers negative") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = TestUtils.getKnownDataset.toJSON.toDF
@@ -249,7 +248,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
   test("HTTPLoad: invalid inputView") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = TestUtils.getKnownDataset
@@ -275,7 +274,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
   test("HTTPLoad: Structured Streaming: Success") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     requests = 0
@@ -315,7 +314,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
   test("HTTPLoad: Structured Streaming: Failure") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     requests = 0

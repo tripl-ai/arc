@@ -28,7 +28,6 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
   val inputView = "inputView"
   val outputView = "outputView"
   val uri = s"http://tensorflow_serving:9001/v1/models/simple/versions/1:predict"
-  var logger: ai.tripl.arc.util.log.logger.Logger = _
 
   before {
     implicit val spark = SparkSession
@@ -37,14 +36,13 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
+    implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")     
 
     session = spark
-
-    logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
   }
 
   after {
@@ -53,7 +51,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPTransform: Can call TensorFlowServing via REST: integer" ) {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
@@ -92,7 +90,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can call TensorFlowServing via REST: double" ) {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
@@ -131,7 +129,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can call TensorFlowServing via REST: string" ) {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
@@ -170,7 +168,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can call TensorFlowServing via REST: inputField" ) {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
@@ -230,7 +228,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can call TensorFlowServing via Structured Streaming" ) {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val readStream = spark

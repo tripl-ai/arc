@@ -2,7 +2,6 @@ package ai.tripl.arc.plugins
 
 import ai.tripl.arc.util.ConfigUtils
 import ai.tripl.arc.util.ConfigUtils._
-import ai.tripl.arc.util.log.LoggerFactory
 import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
@@ -22,7 +21,7 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
       .master("local[*]")
       .appName("Spark ETL Test")
       .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")   
@@ -36,7 +35,7 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
 
   test("Read and execute config with lifecycle configuration plugin") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
     import spark.implicits._
 

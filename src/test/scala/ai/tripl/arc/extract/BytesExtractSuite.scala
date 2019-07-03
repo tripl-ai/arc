@@ -15,7 +15,6 @@ import org.apache.spark.sql.functions._
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.datasource.BinaryContent
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util._
 import ai.tripl.arc.util.ControlUtils._
@@ -38,7 +37,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("FATAL")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")        
@@ -54,7 +53,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
   test("BytesExtract: input") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.BytesExtractStage.execute(
@@ -80,7 +79,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
   test("BytesExtract: pathView") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val input = Seq(targetFile, targetFile).toDF("value")
@@ -108,7 +107,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
   test("BytesExtract: FailModeTypeFailFast") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // try with wildcard

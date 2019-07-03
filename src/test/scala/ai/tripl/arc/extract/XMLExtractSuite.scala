@@ -12,7 +12,6 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 import ai.tripl.arc.util._
 
 import ai.tripl.arc.util.TestUtils
@@ -36,7 +35,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")    
@@ -66,7 +65,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
   test("XMLExtract") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
@@ -109,7 +108,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
   test("XMLExtract: Caching") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // no cache
@@ -154,7 +153,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
   test("XMLExtract: Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val schema = 
@@ -242,7 +241,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
   test("XMLExtract: .zip single record") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.XMLExtractStage.execute(
@@ -270,7 +269,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
   test("XMLExtract: .zip multiple record") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.XMLExtractStage.execute(
@@ -300,7 +299,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
   test("XMLExtract: Dataframe") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // temporarily remove the delimiter so all the data is loaded as a single line

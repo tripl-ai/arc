@@ -25,12 +25,16 @@ services:
     image: tensorflow_serving/simple:latest
     networks:
       - arc-integration    
+    ports:
+      - 9001:9001
     build: tensorflow_serving/.
 
   postgres:
     image: postgres:10.4-alpine-init
     networks:
-      - arc-integration    
+      - arc-integration  
+    ports:
+      - 5432:5432          
     build: postgres/.
     environment:
       POSTGRES_USER: sa
@@ -40,13 +44,17 @@ services:
     image: flask_serving/simple:latest
     networks:
       - arc-integration    
+    ports:
+      - 5000:5000        
     build: flask_serving/.
   
   minio:
     image: minio/minio:it
     build: minio/.
     networks:
-      - arc-integration    
+      - arc-integration
+    ports:
+      - 9000:9000          
     command: server /it
     environment:
       MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE

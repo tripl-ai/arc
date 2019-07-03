@@ -13,7 +13,6 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util._
 
@@ -37,7 +36,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")    
@@ -64,7 +63,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   test("AvroExtract") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
@@ -109,7 +108,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   test("AvroExtract Caching") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // no cache
@@ -160,7 +159,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   test("AvroExtract Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val schema = 
@@ -256,7 +255,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
 
   test("AvroExtract: Binary with user.avsc") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = s"""{
@@ -304,7 +303,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   test("AvroExtract: Schema Included Avro") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)  
+    implicit val logger = TestUtils.getLogger()  
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = extract.AvroExtractStage.execute(
@@ -333,7 +332,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   test("AvroExtract: Binary only Avro") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)  
+    implicit val logger = TestUtils.getLogger()  
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val schema = new Schema.Parser().parse(CloudUtils.getTextBlob(new URI(schemaFile)))

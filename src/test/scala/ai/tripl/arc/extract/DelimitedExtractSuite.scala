@@ -12,7 +12,6 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util._
 
@@ -35,7 +34,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")      
@@ -65,7 +64,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedExtract") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
@@ -120,7 +119,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedExtract inputView") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
  
     val df = TestUtils.getKnownDataset
@@ -161,7 +160,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedExtract Caching") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
   
     // no cache
@@ -212,7 +211,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedExtract Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val schema = 
@@ -315,7 +314,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
   test("DelimitedExtract: Settings Delimiter") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // incorrect delimiter
@@ -349,7 +348,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedExtract: Settings Custom Delimiter") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // incorrect delimiter
@@ -395,7 +394,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedExtract: Settings Header") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // incorrect header
@@ -428,7 +427,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
   test("DelimitedExtract: Settings inferSchema") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // incorrect header
@@ -462,7 +461,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedExtract: Structured Streaming") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     // parse json schema to List[ExtractColumn]

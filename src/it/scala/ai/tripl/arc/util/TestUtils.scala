@@ -19,6 +19,8 @@ import com.fasterxml.jackson.core._
 
 import ai.tripl.arc.api.API.ARCContext
 import ai.tripl.arc.plugins._
+import ai.tripl.arc.util.log.LoggerFactory 
+import org.apache.log4j.{Level, Logger}
 
 case class KnownData(
     booleanDatum: Boolean, 
@@ -34,6 +36,13 @@ case class KnownData(
 )
 
 object TestUtils {
+    def getLogger()(implicit spark: SparkSession): ai.tripl.arc.util.log.logger.Logger = {
+        val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
+        val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+        Logger.getLogger("org").setLevel(Level.ERROR)
+        Logger.getLogger("breeze").setLevel(Level.ERROR)
+        logger
+    }
 
     def getARCContext(isStreaming: Boolean, environment: String = "test", commandLineArguments: Map[String,String] = Map[String,String]()) = {
       val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader

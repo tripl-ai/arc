@@ -19,6 +19,8 @@ import org.apache.spark.storage.StorageLevel
 
 import ai.tripl.arc.api.API.ARCContext
 import ai.tripl.arc.plugins._
+import ai.tripl.arc.util.log.LoggerFactory 
+import org.apache.log4j.{Level, Logger}
 
 case class KnownData(
     booleanDatum: Boolean, 
@@ -34,7 +36,15 @@ case class KnownData(
 )
 
 object TestUtils {
-    def getARCContext(isStreaming: Boolean, environment: String = "test", commandLineArguments: Map[String,String] = Map[String,String]()) = {
+    def getLogger()(implicit spark: SparkSession): ai.tripl.arc.util.log.logger.Logger = {
+        val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
+        val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+        Logger.getLogger("org").setLevel(Level.ERROR)
+        Logger.getLogger("breeze").setLevel(Level.ERROR)
+        logger
+    }
+
+    def getARCContext(isStreaming: Boolean, environment: String = "test", commandLineArguments: Map[String,String] = Map[String,String]()): ARCContext = {
       val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
 
       ARCContext(
@@ -55,7 +65,7 @@ object TestUtils {
         udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList,
         userData=Map.empty
       )
-    }
+    }    
 
     def datasetEquality(expected: DataFrame, actual: DataFrame)(implicit spark: SparkSession): Boolean = {
         import spark.implicits._
@@ -188,7 +198,7 @@ object TestUtils {
                 "null"
             ],
             "formatters": [
-                "yyyy-MM-dd"
+                "uuuu-MM-dd"
             ],
             "metadata": {
                 "private": true,
@@ -308,7 +318,7 @@ object TestUtils {
                 "null"
             ],
             "formatters": [
-                "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+                "uuuu-MM-dd'T'HH:mm:ss.SSSXXX"
             ],
             "timezoneId": "UTC",
             "metadata": {

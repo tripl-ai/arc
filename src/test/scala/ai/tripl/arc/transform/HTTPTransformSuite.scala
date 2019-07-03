@@ -17,8 +17,6 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
-
 import ai.tripl.arc.util._
 
 class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
@@ -68,7 +66,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")   
@@ -103,7 +101,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can echo post data") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
@@ -153,7 +151,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can echo post data: inputField") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
@@ -196,7 +194,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can echo post data: batchSize 1") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     requests = 0
@@ -241,7 +239,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can echo post data: batchSize >1") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     requests = 0
@@ -287,7 +285,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can handle empty response") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = TestUtils.getKnownDataset.toJSON.toDF.repartition(1)
@@ -320,7 +318,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPTransform: Throws exception with 404") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = TestUtils.getKnownDataset.toJSON.toDF.repartition(1)
@@ -354,7 +352,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPTransform: validStatusCodes") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = TestUtils.getKnownDataset.toJSON.toDF
@@ -389,7 +387,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can echo post data - binary") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
@@ -434,7 +432,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Missing 'value' column") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
@@ -475,7 +473,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Wrong type of 'value' column") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
@@ -516,7 +514,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Wrong type of 'value' column: inputField") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
@@ -559,7 +557,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Structured Streaming") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     val readStream = spark
@@ -616,7 +614,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPTransform: FailModeTypePermissive") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = TestUtils.getKnownDataset.toJSON.toDF

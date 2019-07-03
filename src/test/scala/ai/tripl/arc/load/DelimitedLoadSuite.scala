@@ -5,7 +5,6 @@ import java.net.URI
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
-
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.apache.spark.sql._
@@ -13,7 +12,6 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util.TestUtils
 
@@ -31,7 +29,7 @@ class DelimitedLoadSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.sql.streaming.checkpointLocation", "/tmp/checkpoint")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")    
@@ -52,7 +50,7 @@ class DelimitedLoadSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedLoad") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = TestUtils.getKnownDataset
@@ -93,7 +91,7 @@ class DelimitedLoadSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedLoad: partitionBy") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = TestUtils.getKnownDataset
@@ -123,7 +121,7 @@ class DelimitedLoadSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedLoad: Structured Streaming") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     val readStream = spark

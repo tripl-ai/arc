@@ -17,7 +17,6 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 import ai.tripl.arc.udf.UDF
 
 import ai.tripl.arc.util._
@@ -38,15 +37,14 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
+    implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")     
 
     session = spark
     import spark.implicits._
-
-    logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
 
     // register udf
     UDF.registerUDFs()(spark, logger, arcContext)
@@ -58,7 +56,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPTransform: Can call TensorflowServing via REST" ) {
     implicit val spark = session
-    implicit val l = logger
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
@@ -104,7 +102,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("HTTPTransform: Can call TensorflowServing via REST: inputField" ) {
     implicit val spark = session
-    implicit val l = logger
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF

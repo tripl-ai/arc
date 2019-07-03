@@ -2,7 +2,6 @@ package ai.tripl.arc.plugins
 
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.util.ConfigUtils
-import ai.tripl.arc.util.log.LoggerFactory
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.util.TestUtils
 
@@ -23,7 +22,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
       .master("local[*]")
       .appName("Spark ETL Test")
       .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")   
@@ -37,7 +36,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
 
   test("PipelineStagePlugin: getName") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin.conf"), arcContext)
@@ -56,7 +55,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
 
   test("PipelineStagePlugin: getSimpleName") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_short.conf"), arcContext)
@@ -76,7 +75,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
 
   test("PipelineStagePlugin: Missing") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_missing.conf"), arcContext)
@@ -91,7 +90,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
 
   test("PipelineStagePlugin: Version Correct") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_correct.conf"), arcContext)
@@ -110,7 +109,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
 
   test("PipelineStagePlugin: Version Correct Long") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_correct_long.conf"), arcContext)
@@ -129,7 +128,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
 
   test("PipelineStagePlugin: Version Incorrect") { 
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_incorrect.conf"), arcContext)

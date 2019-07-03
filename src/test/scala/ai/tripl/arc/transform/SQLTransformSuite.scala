@@ -17,6 +17,7 @@ import org.apache.spark.sql.functions._
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.util.log.LoggerFactory 
+import org.apache.log4j.{Level, Logger}
 
 import ai.tripl.arc.util._
 
@@ -34,7 +35,8 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
+    Logger.getLogger("org").setLevel(Level.ERROR)
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")   
@@ -59,7 +61,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = TestUtils.getKnownDataset
@@ -89,7 +91,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("SQLTransform: end-to-end") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = s"""{
@@ -126,7 +128,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform: persist") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = TestUtils.getKnownDataset
@@ -170,7 +172,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform: sqlParams") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = TestUtils.getKnownDataset
@@ -201,7 +203,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform: sqlParams missing") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // try with wildcard
@@ -227,7 +229,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
 
   // test("SQLTransform: partitionPushdown") {
   //   implicit val spark = session
-  //   implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+  //   implicit val logger = TestUtils.getLogger()
   //   implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
   //   extract.ParquetExtract.extract(
@@ -269,7 +271,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("SQLTransform: predicatePushdown") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val dataset = transform.SQLTransformStage.execute(
@@ -296,7 +298,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
 
   // test("SQLTransform: partitionPushdown and predicatePushdown") {
   //   implicit val spark = session
-  //   implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+  //   implicit val logger = TestUtils.getLogger()
   //   implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
   //   extract.ParquetExtract.extract(
@@ -344,7 +346,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform: Execute with Structured Streaming" ) {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     val readStream = spark

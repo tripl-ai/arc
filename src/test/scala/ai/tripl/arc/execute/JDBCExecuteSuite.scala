@@ -13,7 +13,6 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util._
 
@@ -36,8 +35,8 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
-    
+    spark.sparkContext.setLogLevel("INFO")
+
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")    
 
@@ -74,7 +73,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
   test("JDBCExecute") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
@@ -104,7 +103,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
   test("JDBCExecute: Bad serverName") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
@@ -127,7 +126,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
   test("JDBCExecute: sqlParams") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
@@ -157,7 +156,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
   test("JDBCExecute: Bad sqlserver connection parameters") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
@@ -180,7 +179,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
   test("JDBCExecute: Bad jdbcType") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
@@ -203,7 +202,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
   test("JDBCExecute: Connection Params") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
