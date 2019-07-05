@@ -13,7 +13,6 @@ import com.fasterxml.jackson.core._
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
 
@@ -63,7 +62,7 @@ object TestUtils {
         activeLifecyclePlugins=Nil,
         pipelineStagePlugins=ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList,
         udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList,
-        userData=Map.empty
+        userData=collection.mutable.Map.empty
       )
     }    
 
@@ -329,11 +328,5 @@ object TestUtils {
     ]
     """
     }
-
-    def emptyGraph()(implicit spark: SparkSession): Graph[(Int, String), String] = {
-        val emptyVertices: RDD[(VertexId, (Int, String))] = spark.sparkContext.emptyRDD
-        val emptyEdges: RDD[Edge[String]] = spark.sparkContext.emptyRDD
-        Graph(emptyVertices, emptyEdges)
-    }    
 }
 

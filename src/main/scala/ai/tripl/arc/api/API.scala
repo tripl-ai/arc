@@ -83,7 +83,7 @@ object API {
     /** a map of objects which can be attached to the context for plugins
       * try to avoid using this as it is hacky
       */   
-    userData: Map[String, Object]
+    userData: collection.mutable.Map[String, Object]
   )
 
   /** ExtractColumns are used to define schemas for typing transforms

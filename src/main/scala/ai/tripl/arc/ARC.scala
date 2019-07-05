@@ -184,7 +184,7 @@ object ARC {
       activeLifecyclePlugins=Nil,
       pipelineStagePlugins=ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList,
       udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList,
-      userData=Map.empty
+      userData=collection.mutable.Map.empty
     )
 
     // add spark listeners and register udfs
