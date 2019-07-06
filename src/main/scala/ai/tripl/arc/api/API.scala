@@ -243,8 +243,7 @@ object API {
     lazy val stageDetail: collection.mutable.Map[String, Object] = {
       val detail = new collection.mutable.HashMap[String, Object]()
       detail.put("type", plugin.getClass.getSimpleName)
-      detail.put("plugin", plugin.getClass.toString)
-      detail.put("version", plugin.version)
+      detail.put("plugin", s"${plugin.getClass.getName}:${plugin.version}")
       detail.put("name", name)
       for (d <- description) {
         detail.put("description", d)
