@@ -241,6 +241,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     assert(expected.except(actual).count === 0)
   }     
 
+  // see docker-entrypoint-initdb.d/init.sql to define data
   test("JDBCExtract: get metadata from postgres") {
     implicit val spark = session
     import spark.implicits._
