@@ -335,7 +335,6 @@ object ConfigUtils {
     }
   }
 
-
   // resolvePlugin searches a provided list of plugins for a name/version combination
   // it then validates only a single plugin exists and if so calls the instantiate method
   def resolvePlugin[T](index: Int, name: String, config: Config, plugins: List[ConfigPlugin[T]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], T] = {
