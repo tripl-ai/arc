@@ -40,6 +40,15 @@ services:
       POSTGRES_USER: sa
       POSTGRES_PASSWORD: "SecretPass!2018"
 
+  sqlserver:
+    image: microsoft/mssql-server-linux:2017-CU9
+    networks:
+      - arc-integration    
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: "SecretPass!2018"
+      MSSQL_PID: Express
+
   flask_serving:
     image: flask_serving/simple:latest
     networks:

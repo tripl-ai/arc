@@ -13,4 +13,4 @@ docker run \
 -v $(pwd):/app \
 -w /app \
 mozilla/sbt:8u212_1.2.8 \
-sbt it:test
+sbt "+it:test"
