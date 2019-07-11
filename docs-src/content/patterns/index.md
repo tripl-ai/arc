@@ -30,6 +30,10 @@ Note that this method will require some cleanup activity to be performed or the 
 
 ## Delta Processing
 
+{{<note title="Delta Processing">}}
+Databricks have open sourced their Spark Delta Processing framework (DeltaLake)[https://delta.io] which provides a much safer (transactional) way to perform updates to a dataset which should be used to prevent stale reads or corruption.
+{{</note>}}
+
 A common pattern is to reduce the amount of computation by processing only new files thereby reducing the amount of processing (and therefore cost) of expensive operations like the [TypingTransform](../transform/#typingtransform).
 
 A simple way to do this is to use the `glob` capabilities of Spark to [extract](../extract) a subset of files and then use a [SQLTransform](../transform/#sqltransform) to merge them with a previous state stored in something like Parquet. It is suggested to have a large date overlap with the previous state dataset to avoid missed data. Be careful with this pattern as it assumes that the previous state is correct/complete and that no input files are late arriving.

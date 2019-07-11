@@ -38,38 +38,6 @@ The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avr
 #### Complete
 {{< readfile file="/resources/docs_resources/AvroLoadComplete" highlight="json" >}} 
 
-## AzureEventHubsLoad
-##### Since: 1.0.0 - Supports Streaming: False
-
-The `AzureEventHubsLoad` writes an input `DataFrame` to a target [Azure Event Hubs](https://azure.microsoft.com/en-gb/services/event-hubs/) stream. The input to this stage needs to be a single column dataset of signature `value: string` and is intended to be used after a [JSONTransform](/load/#jsontransform) stage which would prepare the data for sending to the external server.
-
-In the future additional Transform stages (like `ProtoBufTransform`) could be added to prepare binary payloads instead of just `json` `string`.
-
-### Parameters
-
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
-|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
-|namespaceName|String|true|{{< readfile file="/content/partials/fields/namespaceName.md" markdown="true" >}}|
-|eventHubName|String|true|{{< readfile file="/content/partials/fields/eventHubName.md" markdown="true" >}}|
-|sharedAccessSignatureKeyName|String|true|{{< readfile file="/content/partials/fields/sharedAccessSignatureKeyName.md" markdown="true" >}}|
-|sharedAccessSignatureKey|String|true|{{< readfile file="/content/partials/fields/sharedAccessSignatureKey.md" markdown="true" >}}|
-|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
-|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} Azure EventHubs will throw a `ServerBusyException` if too many executors write to a target in parallel which can be decreased by reducing the number of partitions.|
-|retryCount|Integer|false|The maximum number of retries for the exponential backoff algorithm.<br><br>Default: 10.|
-|retryMaxBackoff|Long|false|The maximum time (in seconds) for the exponential backoff algorithm to wait between retries.<br><br>Default: 30.|
-|retryMinBackoff|Long|false|The minimum time (in seconds) for the exponential backoff algorithm to wait between retries.<br><br>Default: 0.|
-
-### Examples
-
-#### Minimal
-{{< readfile file="/resources/docs_resources/AzureEventHubsLoadMin" highlight="json" >}} 
-
-#### Complete
-{{< readfile file="/resources/docs_resources/AzureEventHubsLoadComplete" highlight="json" >}} 
-
 
 ## ConsoleLoad
 ##### Since: 1.2.0 - Supports Streaming: True
@@ -97,16 +65,13 @@ This stage has been included for testing Structured Streaming jobs as it can be 
 {{< readfile file="/resources/docs_resources/ConsoleLoadComplete" highlight="json" >}} 
 
 
-## DatabricksDeltaLoad
-##### Since: 1.8.0 - Supports Streaming: True
-
-{{< note title="Experimental" >}}
-The `DatabricksDeltaLoad` is currently in experimental state whilst the requirements become clearer. 
-
-This means this API is likely to change.
+## DeltaLakeLoad
+##### Since: 2.0.0 - Supports Streaming: True
+{{< note title="Plugin" >}}
+The `DeltaLakeLoad` is provided by the https://github.com/tripl-ai/arc-deltalake-pipeline-plugin package.
 {{</note>}}
 
-The `DatabricksDeltaLoad` writes an input `DataFrame` to a target [Databricks Delta](https://databricks.com/product/databricks-delta/) file. 
+The `DeltaLakeLoad` writes an input `DataFrame` to a target [DeltaLake](https://delta.io/) file. 
 
 ### Parameters
 
@@ -124,51 +89,10 @@ The `DatabricksDeltaLoad` writes an input `DataFrame` to a target [Databricks De
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/DatabricksDeltaLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/DeltaLakeLoadMin" highlight="json" >}} 
 
 #### Complete
-{{< readfile file="/resources/docs_resources/DatabricksDeltaLoadComplete" highlight="json" >}} 
-
-
-## DatabricksSQLDWLoad
-##### Since: 1.8.1 - Supports Streaming: False
-
-{{< note title="Experimental" >}}
-The `DatabricksSQLDWLoad` is currently in experimental state whilst the requirements become clearer. 
-
-This means this API is likely to change.
-{{</note>}}
-
-The `DatabricksSQLDWLoad` writes an input `DataFrame` to a target [Azure SQL Data Warehouse](https://azure.microsoft.com/en-au/services/sql-data-warehouse/) file using a [proprietary driver](https://docs.databricks.com/spark/latest/data-sources/azure/sql-data-warehouse.html) within a Databricks Runtime Environment.
-
-Known limitations:
-
-- SQL Server date fields can only be between range `1753-01-01` to `9999-12-31`.
-
-### Parameters
-
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
-|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
-|jdbcURL|URI|true|URI of the Delta file to write to.|
-|dbTable|String|true|The table to create in SQL DW.|
-|tempDir|URI|true|A Azure Blob Storage path to temporarily hold the data before executing the SQLDW load.|
-|authentication|Map[String, String]|true|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}. Note this stage only works with the `AzureSharedKey` [authentication](../partials/#authentication) method.|
-|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
-|forwardSparkAzureStorageCredentials|Boolean|false|If true, the library automatically discovers the credentials that Spark is using to connect to the Blob Storage container and forwards those credentials to SQL DW over JDBC.<br><br>Default: `true`.|
-|tableOptions|String|false|Used to specify table options when creating the SQL DW table.|
-|maxStrLength|Integer|false|The default length of `String`/`NVARCHAR` columns when creating the table in SQLDW.<br><br>Default: `256`.|
-|params|Map[String, String]|false|Parameters for connecting to the [Azure SQL Data Warehouse](https://azure.microsoft.com/en-au/services/sql-data-warehouse/) so that password is not logged.|
-
-### Examples
-
-#### Minimal
-{{< readfile file="/resources/docs_resources/DatabricksSQLDWLoadMin" highlight="json" >}} 
-
-#### Complete
-{{< readfile file="/resources/docs_resources/DatabricksSQLDWLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/DeltaLakeLoadComplete" highlight="json" >}} 
 
 
 ## DelimitedLoad
@@ -205,11 +129,8 @@ The `DelimitedLoad` writes an input `DataFrame` to a target delimited file.
 
 ## ElasticsearchLoad
 ##### Since: 1.9.0 - Supports Streaming: False
-
-{{< note title="Experimental" >}}
-The `ElasticsearchLoad` is currently in experimental state whilst the requirements become clearer. 
-
-This means this API is likely to change.
+{{< note title="Plugin" >}}
+The `ElasticsearchLoad` is provided by the https://github.com/tripl-ai/arc-elasticsearch-pipeline-plugin package.
 {{</note>}}
 
 The `ElasticsearchLoad` writes an input `DataFrame` to a target [Elasticsearch](https://www.elastic.co/products/elasticsearch) cluster. 
@@ -230,10 +151,10 @@ The `ElasticsearchLoad` writes an input `DataFrame` to a target [Elasticsearch](
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/ElasticsearchLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/ElasticsearchLoadMin" highlight="json" >}} 
 
 #### Complete
-{{< readfile file="/resources/docs_resources/ElasticsearchLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/ElasticsearchLoadComplete" highlight="json" >}} 
 
 
 ## HTTPLoad
@@ -280,7 +201,7 @@ Whilst it is possible to use `JDBCLoad` to create tables directly in the target 
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |jdbcURL|String|true|{{< readfile file="/content/partials/fields/jdbcURL.md" markdown="true" >}}|
 |tableName|String|true|The target JDBC table. Must be in `database`.`schema`.`table` format.|
-|params|Map[String, String]|true|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Currently requires `user` and `password` to be set here - see example below.|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Any parameters provided will be added to the JDBC connection object. These are not logged so it is safe to put passwords here.|
 |batchsize|Integer|false|{{< readfile file="/content/partials/fields/batchsize.md" markdown="true" >}}|
 |bulkload|Boolean|false|{{< readfile file="/content/partials/fields/bulkload.md" markdown="true" >}}|
 |createTableColumnTypes|String|false|{{< readfile file="/content/partials/fields/createTableColumnTypes.md" markdown="true" >}}|
@@ -331,6 +252,9 @@ The `JSONLoad` writes an input `DataFrame` to a target JSON file.
 
 ## KafkaLoad
 ##### Since: 1.0.8 - Supports Streaming: True
+{{< note title="Plugin" >}}
+The `KafkaLoad` is provided by the https://github.com/tripl-ai/arc-kafka-pipeline-plugin package.
+{{</note>}}
 
 The `KafkaLoad` writes an input `DataFrame` to a target [Kafka](https://kafka.apache.org/) `topic`. The input to this stage needs to be a single column dataset of signature `value: string` - intended to be used after a [JSONTransform](/load/#jsontransform) stage - or a two columns of signature `key: string, value: string` which could be created by a [SQLTransform](/load/#sqltransform) stage.
 
@@ -355,10 +279,40 @@ In the future additional Transform stages (like `ProtoBufTransform`) may be adde
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/KafkaLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/KafkaLoadMin" highlight="json" >}} 
 
 #### Complete
-{{< readfile file="/resources/docs_resources/KafkaLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/KafkaLoadComplete" highlight="json" >}} 
+
+
+## MongoDBLoad
+##### Since: 2.0.0 - Supports Streaming: False
+{{< note title="Plugin" >}}
+The `MongoDBLoad` is provided by the https://github.com/tripl-ai/arc-mongo-pipeline-plugin package.
+{{</note>}}
+
+The `MongoDBLoad` writes an input `DataFrame` to a target [MongoDB](https://www.mongodb.com/) collection. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|options|Map[String, String]|false|Map of configuration parameters. These parameters are used to provide database connection/collection details.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/MongoDBLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/MongoDBLoadComplete" highlight="json" >}} 
 
 
 ## ORCLoad

@@ -12,6 +12,37 @@ Transformers should meet this criteria:
 - Perform only a [single function](https://en.wikipedia.org/wiki/Separation_of_concerns).
 - Utilise Spark [internal functionality](https://spark.apache.org/docs/latest/sql-programming-guide.html) where possible.
 
+## CypherTransform
+##### Since: 2.0.0 - Supports Streaming: True
+{{< note title="Plugin" >}}
+The `CypherTransform` is provided by the https://github.com/tripl-ai/arc-graph-pipeline-plugin package.
+{{</note>}}
+
+The `CypherTransform` executes an [Cypher](https://www.opencypher.org/) graph query against a graph already created by a [GraphTransform](#GraphTransform) stage.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|true|URI/Glob of the input Cypher query.|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|cypherParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/cypherParams.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|Whether to persist graph to Spark cache.|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/CypherTransformMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/CypherTransformComplete" highlight="json" >}} 
+
+
 ## DiffTransform
 ##### Since: 1.0.8 - Supports Streaming: False
 
@@ -47,6 +78,35 @@ This stage performs this 'diffing' operation in a single pass so if multiple of 
 #### Complete
 {{< readfile file="/resources/docs_resources/DiffTransformComplete" highlight="json" >}} 
 
+## GraphTransform
+##### Since: 2.0.0 - Supports Streaming: True
+{{< note title="Plugin" >}}
+The `GraphTransform` is provided by the https://github.com/tripl-ai/arc-graph-pipeline-plugin package.
+{{</note>}}
+
+The `GraphTransform` stage takes either a list of views of graph nodes and views of graph relationships to produce a new https://github.com/opencypher/morpheus graph or uses a `cypher` query to create a new https://github.com/opencypher/morpheus graph.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|true*|URI/Glob of the input Cypher query.|
+|nodes|Array[Object]|true*|List of node labels and node views to construct the graph from. See example below.|
+|relationships|Array[Object]|true*|List of relionship types and relionship views to construct the graph from. See example below.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|cypherParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/cypherParams.md" markdown="true" >}}|
+|outputGraph|String|true|{{< readfile file="/content/partials/fields/outputGraph.md" markdown="true" >}}|
+|persist|Boolean|false|Whether to persist graph to Spark cache.|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/GraphTransformMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/GraphTransformComplete" highlight="json" >}} 
 
 ## HTTPTransform
 ##### Since: 1.0.9 - Supports Streaming: True

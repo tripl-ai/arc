@@ -7,7 +7,7 @@ Full documentation is available here: https://arc.tripl.ai
 ## Index
 
 - [What is Arc?](#what-is-spark-etl-pipeline)
-- [Notebook](#what-is-spark-etl-pipeline)
+- [Getting Started](#getting-started)
 - [Principles](#principles)
 - [Not just for data engineers](#not-just-for-data-engineers)
 - [Why abstract from code?](#why-abstract-from-code)
@@ -25,20 +25,22 @@ Arc is an **opinionated** framework for defining **predictable**, **repeatable**
 - **repeatable** in that if a job is executed multiple times it will produce the same result.
 - **manageable** in that execution considerations and logging has been baked in from the start.
 
-## Notebook
+## Getting Started
 
 ![Notebook](/docs-src/static/img/arc-starter.png)
 
-Arc has an interactive [Jupyter Notebook](https://jupyter.org/) extension to help with rapid development of jobs. This extension is available at [https://github.com/tripl-ai/arc-jupyter](https://github.com/tripl-ai/arc-jupyter).
+Arc has an interactive [Jupyter Notebook](https://jupyter.org/) extension to help with rapid development of jobs. Start by cloning [https://github.com/tripl-ai/arc-starter](https://github.com/tripl-ai/arc-starter) and running through the [tutorial](https://arc.tripl.ai/tutorial/).
+
+This extension is available at [https://github.com/tripl-ai/arc-jupyter](https://github.com/tripl-ai/arc-jupyter).
 
 ## Principles
 
-Many of these principles have come from [12factor](https://12factor.net/):
+Many of these principles have come from [12factor](https://12factor.net/) with the aim of deploying **predictable**, **repeatable** and **manageable** data transformation pipelines:
 
-- **[single responsibility](https://en.wikipedia.org/wiki/Single_responsibility_principle)** components/stages.
+- **[single responsibility](https://en.wikipedia.org/wiki/Single_responsibility_principle)** components/stages with first-class support for [extending](https://arc.tripl.ai/extend/).
 - **stateless** jobs where possible and use of [immutable](https://en.wikipedia.org/wiki/Immutable_object) datasets.
 - **precise logging** to allow management of jobs at scale.
-- **library dependencies** are to be limited or avoided where possible.
+- **library dependencies** limited or avoided where possible.
 
 ## Not just for data engineers
 

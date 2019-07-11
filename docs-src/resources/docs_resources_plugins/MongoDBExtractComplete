@@ -1,0 +1,22 @@
+{
+  "type": "MongoDBExtract",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "options": {
+    "uri": "mongodb://username:password@mongo:27017",
+    "database": "local",
+    "collection": "customer"
+  },
+  "outputView": "customers",
+  "authentication": {},
+  "numPartitions": 10,
+  "partitionBy": [
+    "country"
+  ],
+  "persist": false,
+  "schemaURI": "hdfs://datalake/metadata/customer.json",
+  "schemaView": "customer_schema"  
+} 

@@ -110,7 +110,7 @@ Before we start adding job stages we need to define a variable which allows us t
 
 Paste this into the first sell and execute to set the environment variable.
 
-```bash
+```scala
 %env ETL_CONF_BASE_URL=/home/jovyan/tutorial
 ```
 

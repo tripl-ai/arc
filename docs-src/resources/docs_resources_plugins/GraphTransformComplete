@@ -1,0 +1,18 @@
+{
+  "type": "GraphTransform",
+  "name": "create customer graph",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "nodes": [
+    {"label": "Person", "view": "persons"},
+    {"label": "Product", "view": "products"}
+  ],
+  "relationships": [
+    {"type": "FRIEND", "view": "friends"},
+    {"type": "BOUGHT", "view": "bought"}
+  ],
+  "outputGraph": "customer",
+  "persist": true
+} 

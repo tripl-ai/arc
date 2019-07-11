@@ -49,7 +49,7 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 |inputField|String|false|If using `inputView` this option allows you to specify the name of the field which contains the Avro binary data.|
 |avroSchemaView|URI|false*|If using `inputView` this option allows you to specify the Avro schema URI. Has been tested to work with the [Kafka Schema Registry](https://www.confluent.io/confluent-schema-registry/) with URI like `http://kafka-schema-registry:8081/schemas/ids/1` as well as standalone `*.avsc` files.|
 
@@ -60,42 +60,6 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 
 #### Complete
 {{< readfile file="/resources/docs_resources/AvroExtractComplete" highlight="json" >}} 
-
-
-## AzureCosmosDBExtract
-##### Since: 1.13.0 - Supports Streaming: True
-
-{{< note title="Experimental" >}}
-The `AzureCosmosDBExtract` is currently in experimental state whilst the requirements become clearer. 
-
-This means this API is likely to change.
-{{</note>}}
-
-The `AzureCosmosDBExtract` stage reads data from a [Azure Cosmos DB](https://azure.microsoft.com/en-au/services/cosmos-db/) instance and returns a `DataFrame`. 
-
-### Parameters
-
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
-|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|config|Map[String, String]|false|The Cosmos DB configuration options.|
-|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
-|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
-|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
-|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
-
-### Examples
-
-#### Minimal
-{{< readfile file="/resources/docs_resources/AzureCosmosDBExtractMin" highlight="json" >}} 
-
-#### Complete
-{{< readfile file="/resources/docs_resources/AzureCosmosDBExtractComplete" highlight="json" >}} 
 
 
 ## BytesExtract
@@ -128,16 +92,13 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
 {{< readfile file="/resources/docs_resources/BytesExtractComplete" highlight="json" >}} 
 
 
-## DatabricksDeltaExtract
-##### Since: 1.8.0 - Supports Streaming: True
-
-{{< note title="Experimental" >}}
-The `DatabricksDeltaExtract` is currently in experimental state whilst the requirements become clearer. 
-
-This means this API is likely to change.
+## DeltaLakeExtract
+##### Since: 2.0.0 - Supports Streaming: True
+{{< note title="Plugin" >}}
+The `DeltaLakeExtract` is provided by the https://github.com/tripl-ai/arc-deltalake-pipeline-plugin package.
 {{</note>}}
 
-The `DatabricksDeltaExtract` stage reads one or more [Databricks Delta](https://databricks.com/product/databricks-delta/) files and returns a `DataFrame`. 
+The `DeltaLakeExtract` stage reads one or more [DeltaLake](https://delta.io/) files and returns a `DataFrame`. 
 
 ### Parameters
 
@@ -155,10 +116,10 @@ The `DatabricksDeltaExtract` stage reads one or more [Databricks Delta](https://
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/DatabricksDeltaExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/DeltaLakeExtractMin" highlight="json" >}} 
 
 #### Complete
-{{< readfile file="/resources/docs_resources/DatabricksDeltaExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/DeltaLakeExtractComplete" highlight="json" >}} 
 
 
 ## DelimitedExtract
@@ -188,7 +149,7 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |quote|String|false|The type of quoting in the file. Supported values: `None`, `SingleQuote`, `DoubleQuote`.<br><br>Default: `DoubleQuote`.|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
@@ -201,11 +162,8 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 
 ## ElasticsearchExtract
 ##### Since: 1.9.0 - Supports Streaming: False
-
-{{< note title="Experimental" >}}
-The `ElasticsearchExtract` is currently in experimental state whilst the requirements become clearer. 
-
-This means this API is likely to change.
+{{< note title="Plugin" >}}
+The `ElasticsearchExtract` is provided by the https://github.com/tripl-ai/arc-elasticsearch-pipeline-plugin package.
 {{</note>}}
 
 The `ElasticsearchExtract` stage reads from an [Elasticsearch](https://www.elastic.co/products/elasticsearch) cluster and returns a `DataFrame`. 
@@ -227,10 +185,10 @@ The `ElasticsearchExtract` stage reads from an [Elasticsearch](https://www.elast
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/ElasticsearchExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/ElasticsearchExtractMin" highlight="json" >}} 
 
 #### Complete
-{{< readfile file="/resources/docs_resources/ElasticsearchExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/ElasticsearchExtractComplete" highlight="json" >}} 
 
 
 ## HTTPExtract
@@ -331,13 +289,13 @@ The `JDBCExtract` reads directly from a JDBC Database and returns a `DataFrame`.
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |fetchsize|Integer|false|{{< readfile file="/content/partials/fields/fetchsize.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently requires `user` and `password` to be set here - see example below.|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Any parameters provided will be added to the JDBC connection object. These are not logged so it is safe to put passwords here.|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |partitionColumn|String|false|The name of a numeric column from the table in question which defines how to partition the table when reading in parallel from multiple workers. If set `numPartitions` must also be set.|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |predicates|Array[String]|false|{{< readfile file="/content/partials/fields/predicates.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
@@ -372,7 +330,7 @@ The `JSONExtract` stage reads either one or more JSON files or an input `Dataset
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
@@ -385,11 +343,8 @@ The `JSONExtract` stage reads either one or more JSON files or an input `Dataset
 
 ## KafkaExtract
 ##### Since: 1.0.8 - Supports Streaming: True
-
-{{< note title="Experimental" >}}
-The `KafkaExtract` is currently in experimental state whilst the requirements become clearer. 
-
-This means this API is likely to change to better handle failures.
+{{< note title="Plugin" >}}
+The `KafkaExtract` is provided by the https://github.com/tripl-ai/arc-kafka-pipeline-plugin package.
 {{</note>}}
 
 The `KafkaExtract` stage reads records from a [Kafka](https://kafka.apache.org/) `topic` and returns a `DataFrame`. It requires a unique `groupID` to be set which on first run will consume from the `earliest` offset available in Kafka. Each subsequent run will use the offset as recorded against that `groupID`. This means that if a job fails before properly processing the data then data may need to be restarted from the earliest offset by creating a new `groupID`.
@@ -428,10 +383,43 @@ Can be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecu
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/KafkaExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/KafkaExtractMin" highlight="json" >}} 
 
 #### Complete
-{{< readfile file="/resources/docs_resources/KafkaExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/KafkaExtractComplete" highlight="json" >}} 
+
+
+## MongoDBExtract
+##### Since: 2.0.0 - Supports Streaming: False
+{{< note title="Plugin" >}}
+The `MongoDBExtract` is provided by the https://github.com/tripl-ai/arc-mongo-pipeline-plugin package.
+{{</note>}}
+
+The `MongoDBExtract` stage reads a collection from [MongoDB](https://www.mongodb.com/) and returns a `DataFrame`. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|options|Map[String, String]|false|Map of configuration parameters. These parameters are used to provide database connection/collection details.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/MongoDBExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/MongoDBExtractComplete" highlight="json" >}} 
 
 
 ## ORCExtract
@@ -455,7 +443,7 @@ The `ORCExtract` stage reads one or more [Apache ORC](https://orc.apache.org/) f
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
@@ -487,7 +475,7 @@ The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.ap
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
@@ -547,7 +535,7 @@ The `TextExtract` stage reads either one or more text files and returns a `DataF
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 
@@ -588,7 +576,7 @@ The backtick character (`) can be used to address fields with non-alphanumeric n
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
-|schemaView|URI|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 ### Examples
 

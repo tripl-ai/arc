@@ -1,0 +1,20 @@
+{
+  "type": "CypherTransform",
+  "name": "create recommendations",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/cypher/recommendations.cypher",
+  "outputView": "recommendations"
+  "authentication": {},
+  "numPartitions": 10,
+  "partitionBy": [
+    "customerId"
+  ],
+  "persist": false,
+  "cypherTransform": {
+    "current_date": "2018-11-24",
+    "current_timestamp": "2018-11-24 14:48:56"
+  }
+} 

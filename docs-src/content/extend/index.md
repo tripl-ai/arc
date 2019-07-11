@@ -6,10 +6,50 @@ type: blog
 
 Arc can be exended in four ways by registering:
 
-- [Dynamic Configuration Plugins](#dynamic-configuration-plugins).
-- [Lifecycle Plugins](#lifecycle-plugins).
-- [Pipeline Stage Plugins](#pipeline-stage-plugins).
+- [Dynamic Configuration Plugins](#dynamic-configuration-plugins) which allow users to inject custom configuration parameters which will be processed before resolving the job configuration file..
+- [Lifecycle Plugins](#lifecycle-plugins) which allow users to extend the base Arc framework with pipeline lifecycle hooks.
+- [Pipeline Stage Plugins](#pipeline-stage-plugins) which allow users to extend the base Arc framework with custom stages which allow the full use of the Spark [Scala API](https://spark.apache.org/docs/latest/api/scala/).
 - [User Defined Functions](#user-defined-functions) which extend the Spark SQL dialect.
+
+## Resolution
+
+Plugins are resolved dynamically at runtime and are resolved by name/version.
+
+### Examples
+
+Assuming we wanted to execute a `KafkaExtract` [Pipeline Stage Plugin](#pipeline-stage-plugins):
+
+{{< readfile file="/resources/docs_resources_plugins/KafkaExtractMin" highlight="json" >}} 
+
+Arc will attempt to resolve the plugin by first looking in all the `META-INF` directories of all included `JAR` files (https://github.com/tripl-ai/arc-kafka-pipeline-plugin/blob/master/src/main/resources/META-INF/services/ai.tripl.arc.plugins.PipelineStagePlugin) for classes that extend `PipelineStagePlugin` which the `KafkaExtract` plugin does:
+
+```scala
+class KafkaExtract extends PipelineStagePlugin {
+```
+
+Arc is then able to resolve the plugin by `simpleName` - in this case `KafkaExtract` - and then call the `instantiate()` method to create an instance of the plugin which is executed by Arc at the appropriate time depending on plugin type. 
+
+To allow more specitivity you can use either the full package name or include the version or a combination of both:
+
+```json
+{
+  "type": "ai.tripl.arc.extract.KafkaExtract",
+  ...
+```
+
+```json
+{
+  "type": "KafkaExtract:1.0.0",
+  ...
+```
+
+
+```json
+{
+  "type": "ai.tripl.arc.extract.KafkaExtract:1.0.0",
+  ...
+```
+
 
 ## Dynamic Configuration Plugins
 ##### Since: 1.3.0
@@ -18,134 +58,64 @@ Arc can be exended in four ways by registering:
 Use of this functionality is discouraged as it goes against the [principles of Arc](/#principles) specifically around statelessness/deterministic behaviour but is inlcuded here for users who have not yet committed to a job orchestrator such as [Apache Airflow](https://airflow.apache.org/) and have dynamic configuration requirements.
 {{</note>}}
 
-The `Dynamic Configuration Plugin` plugin allow users to inject custom configuration parameters which will be processed before resolving the job configuration file. The plugin must return a Java `Map[String, Object]` which will be included in the job configuration resolution step.
+The `Dynamic Configuration Plugin` plugin allow users to inject custom configuration parameters which will be processed before resolving the job configuration file. The plugin must return a Typesafe Config object (which is easily created from a `java.util.Map[String, Object]` which will be included in the job configuration resolution step.
 
 ### Examples
 
-For example a custom runtime configuration plugin could be used calculate a formatted list of dates to be used with an [Extract](../extract) stage to read only a subset of documents:
-
 ```scala
-package ai.tripl.arc.plugins.config
+package ai.tripl.arc.plugins
+import java.util
 
-import scala.collection.JavaConverters._
+import com.typesafe.config._
 
-import ai.tripl.arc.plugins._
+import org.apache.spark.sql.SparkSession
+
 import ai.tripl.arc.util.log.logger.Logger
+import ai.tripl.arc.api.API.ARCContext
+import ai.tripl.arc.config.Error._
 
-import java.sql.Date
-import java.time.LocalDate
-import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
-import java.time.format.ResolverStyle
+class KeyDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
 
-class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
+  val version = "0.0.1"
 
-  override def values(params: Map[String, String])(implicit logger: ai.tripl.arc.util.log.logger.Logger): java.util.Map[String, Object] = {
-    val startTime = System.currentTimeMillis() 
+  def instantiate(index: Int, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], Config] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
 
-    val stageDetail = new java.util.HashMap[String, Object]()
-    stageDetail.put("type", "DeltaPeriodDynamicConfigurationPlugin")
-    stageDetail.put("pluginVersion", BuildInfo.version)
-    stageDetail.put("params", params.asJava)
+    val expectedKeys = "type" :: "environments" :: "key" :: Nil
+    val key = getValue[String]("key")
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    logger.info()
-      .field("event", "enter")
-      .map("stage", stageDetail)      
-      .log()   
+    (key, invalidKeys) match {
+      case (Right(key), Right(invalidKeys)) => 
 
-    // input validation
-    val returnName = params.get("returnName") match {
-        case Some(returnName) => returnName.trim
-        case None => throw new Exception("required parameter 'returnName' not found.")
+        val values = new java.util.HashMap[String, Object]()
+        values.put("ETL_CONF_DYNAMIC_KEY_VALUE", key)
+
+        Right(ConfigFactory.parseMap(values))
+      case _ =>
+        val allErrors: Errors = List(key, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val err = StageError(index, this.getClass.getName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
     }
-
-    val lagDays = params.get("lagDays") match {
-        case Some(lagDays) => {
-            try {
-            lagDays.toInt * -1
-            } catch {
-                case e: Exception => throw new Exception(s"cannot convert lagDays ('${lagDays}') to integer.")
-            }
-        }
-        case None => throw new Exception("required parameter 'lagDays' not found.")
-    }
-
-    val leadDays = params.get("leadDays") match {
-        case Some(leadDays) => {
-            try {
-            leadDays.toInt
-            } catch {
-                case e: Exception => throw new Exception(s"cannot convert leadDays ('${leadDays}') to integer.")
-            }
-        }
-        case None => throw new Exception("required parameter 'leadDays' not found.")
-    }
-
-    val formatter = params.get("pattern") match {
-        case Some(pattern) => {
-            try {
-                DateTimeFormatter.ofPattern(pattern).withResolverStyle(ResolverStyle.SMART)
-            } catch {
-                case e: Exception => throw new Exception(s"cannot parse pattern ('${pattern}').")
-            }
-        }
-        case None => throw new Exception("required parameter 'pattern' not found.")
-    }
-
-    val currentDate = params.get("currentDate") match {
-        case Some(currentDate) => {
-            try {
-                LocalDate.parse(currentDate, formatter)
-            } catch {
-                case e: Exception => throw new Exception(s"""cannot parse currentDate ('${currentDate}') with formatter '${params.get("pattern").getOrElse("")}'.""")
-            }
-        }
-        case None => java.time.LocalDate.now
-    }
-
-
-    // calculate the range 
-    // produces a value that looks like "2018-12-31,2019-01-01,2019-01-02,2019-01-03,2019-01-04,2019-01-05,2019-01-06"
-    val res = (lagDays to leadDays).map { v =>
-      formatter.format(currentDate.plusDays(v))
-    }.mkString(",")
-
-    // set the return value
-    val values = new java.util.HashMap[String, Object]()
-    values.put(returnName, res)
-
-    logger.info()
-      .field("event", "exit")
-      .field("duration", System.currentTimeMillis() - startTime)
-      .map("stage", stageDetail)      
-      .log()  
-
-    values
-  }
+  }    
 }
 ```
 
-The plugin then needs to be registered in the `plugins.config` section of the job configuration and the full plugin name must be listed in your project's `/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin` file. See [this example](https://github.com/tripl-ai/arc/blob/master/src/test/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin). 
-
-Note that the resolution order of these plugins is in descending order in that if the the `ETL_CONF_LAST_PROCESSING_DAY` was declared in multiple plugins the value set by the plugin with the lower index in the `plugins.config` array will take precedence.
-
-The `ETL_CONF_LAST_PROCESSING_DAY` variable is then available to be resolved in a standard configuration:
+The plugin then needs to be registered in the `plugins.config` section of the job configuration and the full plugin name must be listed in your project's `/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin` file. 
 
 ```json
 {
   "plugins": {
     "config": [
       {
-        "type": "ai.tripl.arc.plugins.config.DeltaPeriodDynamicConfigurationPlugin",
+        "type": "ai.tripl.arc.plugins.config.KeyDynamicConfigurationPlugin:0.0.1",
         "environments": [
           "production",
           "test"
         ],
-        "params": {
-          "returnName": "ETL_CONF_DELTA_PERIOD",
-          "lagDays": "10",
-          "leadDays": "1",
-          "pattern": "yyyy-MM-dd"
-        }
+        "key": "customer"
       }
     ]
   },
@@ -157,7 +127,7 @@ The `ETL_CONF_LAST_PROCESSING_DAY` variable is then available to be resolved in 
         "production",
         "test"
       ],
-      "inputURI": "hdfs://datalake/input/customer/customers_{"${ETL_CONF_DELTA_PERIOD}"}.csv",
+      "inputURI": "hdfs://datalake/input/customer/"${ETL_CONF_DYNAMIC_KEY_VALUE}".csv",
       "outputView": "customer"
     }
   ]
@@ -182,50 +152,64 @@ import ai.tripl.arc.api.API._
 import ai.tripl.arc.plugins.LifecyclePlugin
 import ai.tripl.arc.util.Utils
 import ai.tripl.arc.util.log.logger.Logger
+import ai.tripl.arc.config.Error._
 
-class DataFramePrinterLifecyclePlugin extends LifecyclePlugin {
+class DataFramePrinter extends LifecyclePlugin {
 
-  var params = Map[String, String]()
+  val version = Utils.getFrameworkVersion
 
-  override def setParams(p: Map[String, String]) {
-    params = p
+  def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], LifecyclePluginInstance] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
+
+    val expectedKeys = "type" :: "environments" :: "numRows" :: "truncate" :: Nil
+    val numRows = getValue[Int]("numRows", default = Some(20))
+    val truncate = getValue[java.lang.Boolean]("truncate", default = Some(true))
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    (numRows, truncate, invalidKeys) match {
+      case (Right(numRows), Right(truncate), Right(invalidKeys)) => 
+        Right(DataFramePrinterInstance(
+          plugin=this,
+          numRows=numRows,
+          truncate=truncate
+        ))
+      case _ =>
+        val allErrors: Errors = List(numRows, truncate, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val err = StageError(index, this.getClass.getName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
   }
+}
 
-  override def before(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger) {
+case class DataFramePrinterInstance(
+    plugin: LifecyclePlugin,
+    numRows: Int,
+    truncate: Boolean
+  ) extends LifecyclePluginInstance {
+
+  override def before(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
     logger.trace()        
       .field("event", "before")
       .field("stage", stage.name)
-      .field("stageType", stage.getType)
       .log()  
   }
 
-  override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger) {
+  override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
     logger.trace()        
       .field("event", "after")
       .field("stage", stage.name)
-      .field("stageType", stage.getType)
       .field("isLast", java.lang.Boolean.valueOf(isLast))
       .log() 
 
     result match {
-      case Some(df) => {
-        val numRows = params.get("numRows") match {
-          case Some(n) => n.toInt
-          case None => 20
-        }
-
-        val truncate = params.get("truncate") match {
-          case Some(t) => t.toBoolean
-          case None => true
-        }  
-
-        df.show(numRows, truncate)
-      }
+      case Some(df) => df.show(numRows, truncate)
       case None =>
     }
-  }
-
+  } 
 }
+
 ```
 
 The plugin then needs to be registered by adding the full plugin name must be listed in your project’s `/resources/META-INF/services/ai.tripl.arc.plugins.LifecyclePlugin` file.
@@ -259,55 +243,89 @@ To execute:
 ## Pipeline Stage Plugins
 ##### Since: 1.3.0
 
-Custom `Pipeline Stage Plugins` allow users to extend the base Arc framework with custom stages which allow the full use of the Spark [Scala API](https://spark.apache.org/docs/latest/api/scala/). This means that private business logic or code which relies on libraries not included in the base Arc framework can be used - however it is strongly advised to use the inbuilt SQL stages where possible. These stages can use the `params` map to be able to pass configuration parameters.
+Custom `Pipeline Stage Plugins` allow users to extend the base Arc framework with custom stages which allow the full use of the Spark [Scala API](https://spark.apache.org/docs/latest/api/scala/). This means that private business logic or code which relies on libraries not included in the base Arc framework can be used - however it is strongly advised to use the inbuilt SQL stages where possible.
 
-If stages are general purpose enough for use outside your organisation consider creating a pull request against the main [Arc repository](https://github.com/tripl-ai/arc) so that others can benefit.
+If stages are general purpose enough for use outside your organisation consider contributing them to [ai.tripl](https://github.com/tripl-ai) so that others can benefit.
 
 ### Examples
 
 ```scala
-package au.com.myfakebusiness.plugins
+class ConsoleLoad extends PipelineStagePlugin {
 
-import ai.tripl.arc.plugins
-import ai.tripl.arc.util.log.logger.Logger
-import org.apache.spark.sql.{DataFrame, SparkSession}
+  val version = Utils.getFrameworkVersion
 
-class MyFakeBusinessAddCopyrightStage extends PipelineStagePlugin {
-  override def execute(name: String, params: Map[String, String])(implicit spark: SparkSession, logger: Logger): Option[DataFrame] = {
-    val startTime = System.currentTimeMillis() 
+  def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
 
-    val inputView = params.get("inputView").getOrElse("")
-    val outputView = params.get("outputView").getOrElse("")
-    val copyrightStatement = params.get("copyrightStatement").getOrElse("")
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputMode" :: "params" :: Nil
+    val name = getValue[String]("name")
+    val description = getOptionalValue[String]("description")
+    val inputView = getValue[String]("inputView")
+    val outputMode = getValue[String]("outputMode", default = Some("Append"), validValues = "Append" :: "Complete" :: "Update" :: Nil) |> parseOutputModeType("outputMode") _
+    val params = readMap("params", c)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)  
 
-    val stageDetail = new java.util.HashMap[String, Object]()
-    stageDetail.put("name", name)
-    stageDetail.put("inputView", inputView)  
-    stageDetail.put("outputView", outputView)  
-    stageDetail.put("copyrightStatement", copyrightStatement)
-    
-    logger.info()
-      .field("event", "enter")
-      .map("stage", stageDetail)      
-      .log()
+    (name, description, inputView, outputMode, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputMode), Right(invalidKeys)) => 
+        val stage = ConsoleLoadStage(
+          plugin=this,
+          name=name,
+          description=description,
+          inputView=inputView,
+          outputMode=outputMode,
+          params=params
+        )
+
+        stage.stageDetail.put("inputView", stage.inputView)  
+        stage.stageDetail.put("outputMode", stage.outputMode.sparkString)  
+        stage.stageDetail.put("params", params.asJava)
+
+        Right(stage)
+      case _ =>
+        val allErrors: Errors = List(name, description, inputView, outputMode, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+
+}
+
+case class ConsoleLoadStage(
+    plugin: ConsoleLoad,
+    name: String, 
+    description: Option[String], 
+    inputView: String, 
+    outputMode: OutputModeType, 
+    params: Map[String, String]
+  ) extends PipelineStage {
+
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    ConsoleLoadStage.execute(this)
+  }
+}
 
 
-    // get existing dataframe
-    val df = spark.table(inputView)
+object ConsoleLoadStage {
 
-    // add copyright statement
-    val enrichedDF = df.withColumn("copyright", lit(copyrightStatement))
+  def execute(stage: ConsoleLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    // register output view
-    enrichedDF.createOrReplaceTempView(outputView)
+    val df = spark.table(stage.inputView)   
 
-    logger.info()
-      .field("event", "exit")
-      .field("duration", System.currentTimeMillis() - startTime)
-      .map("stage", stageDetail)      
-      .log() 
+    if (!df.isStreaming) {
+      throw new Exception("ConsoleLoad can only be executed in streaming mode.") with DetailException {
+        override val detail = stage.stageDetail          
+      }
+    }      
 
-    Option(enrichedDF)    
+    df.writeStream
+        .format("console")
+        .outputMode(stage.outputMode.sparkString)
+        .start
+
+    Option(df)
   }
 }
 ```
@@ -320,17 +338,13 @@ To execute:
 {
   "stages": [
     {
-      "type": "au.com.mybusiness.plugins.MyFakeBusinessAddCopyrightStage",
-      "name": "add copyright to each row",
+      "type": "ConsoleLoad",
+      "name": "load streaming data to console for testing",
       "environments": [
-        "production",
         "test"
       ],
-      "params": {
-        "inputView": "calculated_dataset",
-        "copyrightStatement": "copyright 2018 MyBusiness.com.au",
-        "outputView": "final_dataset"
-      }
+      "inputView": "calculated_dataset",
+      "outputMode": "Complete"
     }
   ]
 }
@@ -355,29 +369,40 @@ Write the code to define the custom `User Defined Function`:
 package ai.tripl.arc.plugins
 import java.util
 
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SparkSession
+import ai.tripl.arc.api.API.ARCContext
 
 import ai.tripl.arc.util.log.logger.Logger
 
-class UDFPluginTest extends UDFPlugin {
+class TestUDFPlugin extends UDFPlugin {
+
+  val version = "0.0.1"
+
   // one udf plugin can register multiple user defined functions
-  override def register(sqlContext: SQLContext)(implicit logger: ai.tripl.arc.util.log.logger.Logger): Seq[String] = {
-    
+  override def register()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
+
     // register the functions so they can be accessed via Spark SQL
-    // SELECT add_ten(1) AS one_plus_ten
-    sqlContext.udf.register("add_ten", UDFPluginTest.addTen _ )
-    
-    // return the list of udf names that were registered for logging
-    Seq("add_ten")
+    spark.sqlContext.udf.register("add_ten", TestUDFPlugin.addTen _ )           // SELECT add_ten(1) AS one_plus_ten
+    spark.sqlContext.udf.register("add_twenty", TestUDFPlugin.addTwenty _ )     // SELECT add_twenty(1) AS one_plus_twenty
+
   }
 }
 
-object UDFPluginTest {
+object TestUDFPlugin {
   // add 10 to an incoming integer - DO NOT DO THIS IN PRODUCTION INSTEAD USE SPARK SQL DIRECTLY
   def addTen(input: Int): Int = {
     input + 10
   }
+
+  // add 20 to an incoming integer  - DO NOT DO THIS IN PRODUCTION INSTEAD USE SPARK SQL DIRECTLY
+  def addTwenty(input: Int): Int = {
+    input + 20
+  }
 }
 ```
 
-The plugin then needs to be registered by adding the full plugin name must be listed in your project's `/resources/META-INF/services/ai.tripl.arc.plugins.UDFPlugin` file.
+The plugin then needs to be registered by adding the full plugin name must be listed in your project's `/resources/META-INF/services/ai.tripl.arc.plugins.UDFPlugin` file and would be executed like:
+
+```sql
+SELECT age, add_ten(age) FROM customer
+```
