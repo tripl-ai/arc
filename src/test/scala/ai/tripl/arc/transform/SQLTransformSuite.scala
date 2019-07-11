@@ -224,7 +224,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         )
       ).get
     }
-    assert(thrown0.getMessage === "No replacement value found in sqlParams [sql_string_param] for placeholders: [${sql_boolean}].")
+    assert(thrown0.getMessage === "No replacement value found in parameters: [sql_string_param] for placeholders: [${sql_boolean}].")
   }     
 
   // test("SQLTransform: partitionPushdown") {
