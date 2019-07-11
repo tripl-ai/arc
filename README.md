@@ -141,7 +141,7 @@ A full worked example job is available [here](https://github.com/tripl-ai/arc/tr
 To compile the main library run:
 
 ```bash
-sbt package
+sbt +package
 ```
 
 To build a library to use with a [Databricks Runtime](https://databricks.com/product/databricks-runtime) environment it is easiest to `assembly` Arc with all the dependencies into a single JAR to simplify the deployment.
@@ -155,7 +155,7 @@ sbt assembly
 If you are having problems compiling it is likely due to environment setup. This command is executed in CICD and uses a predictable build environment pulled from Dockerhub:
 
 ```bash
-docker run --rm -v $(pwd):/app -w /app mozilla/sbt:8u212_1.2.8 sbt assembly
+docker run --rm -v $(pwd):/app -w /app mozilla/sbt:8u212_1.2.8 sbt +package
 ```
 
 ### Tests
@@ -163,7 +163,7 @@ docker run --rm -v $(pwd):/app -w /app mozilla/sbt:8u212_1.2.8 sbt assembly
 To run unit tests:
 
 ```bash
-sbt test
+sbt +test
 ```
 
 To run integration tests (which have external service depenencies):
