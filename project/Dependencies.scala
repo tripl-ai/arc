@@ -6,7 +6,7 @@ object Dependencies {
   lazy val hadoopVersion = "2.9.2"
 
   // arc
-  val typesafeConfig = "com.typesafe" % "config" % "1.3.1" intransitive()  
+  val typesafeConfig = "com.typesafe" % "config" % "1.3.1"
 
   // testing
   val scalaTest = "org.scalatest" %% "scalatest" % "3.0.7" % "test,it"

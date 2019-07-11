@@ -158,15 +158,6 @@ If you are having problems compiling it is likely due to environment setup. This
 docker run --rm -v $(pwd):/app -w /app mozilla/sbt:8u212_1.2.8 sbt assembly
 ```
 
-### Dockerfile
-
-To build the docker image:
-
-```bash
-export ARC_VERSION=$(awk -F'"' '$0=$2' version.sbt)
-docker build . --build-arg ARC_VERSION=${ARC_VERSION} -t triplai/arc:${ARC_VERSION}
-```
-
 ### Tests
 
 To run unit tests:

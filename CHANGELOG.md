@@ -10,19 +10,20 @@ Arc 2.0.0 is a major (breaking) change which has been done for multiple reasons:
 
 **BREAKING**
 
-**REMOVALS**
+**REMOVED**
 - remove `AzureCosmosDBExtract` stage. This could be reimplemented as a [Lifecycle Plugin](https://tripl-ai.github.io/arc/extend/#lifecycle-plugins).
 - remove `AzureEventHubsLoad` stage. This could be reimplemented as a [Lifecycle Plugin](https://tripl-ai.github.io/arc/extend/#lifecycle-plugins).
 - remove `DatabricksDeltaExtract` and `DatabricksDeltaLoad` stages and replace with the open-source [DeltaLake](https://delta.io/) versions (`DeltaLakeExtract` and `DeltaLakeLoad`) implemented https://github.com/tripl-ai/arc-deltalake-pipeline-plugin.
 - remove `DatabricksSQLDWLoad`. This could be reimplemented as a  [Lifecycle Plugin](https://tripl-ai.github.io/arc/extend/#lifecycle-plugins).
 - remove `bulkload` mode from `JDBCLoad`. Any target specific JDBC behaviours could be implemented by a custom plugins if required.
 - remove `user` and `password` from `JDBCExecute` for consistency. Move details to either `jdbcURL` or `params`.
-- move `ElasticsearchExtract` and `ElasticsearchLoad` to their own repository https://github.com/tripl-ai/arc-elasticsearch-pipeline-plugin.
-- move `KafkaExtract`, `KafkaLoad` and `KafkaCommitExecute` to their own repository https://github.com/tripl-ai/arc-kafka-pipeline-plugin.
+- remove the `Dockerfile` and put it in separate repo: (https://github.com/tripl-ai/docker)
 
-**ADDITIONS**
+**CHANGES**
 - add `CypherTransform` and `GraphTransform` stages to support the https://github.com/opencypher/morpheus project (https://github.com/tripl-ai/arc-graph-pipeline-plugin).
 - add `MongoDBExtract` and `MongoDBLoad` stages (https://github.com/tripl-ai/arc-mongodb-pipeline-plugin).
+- move `ElasticsearchExtract` and `ElasticsearchLoad` to their own repository https://github.com/tripl-ai/arc-elasticsearch-pipeline-plugin.
+- move `KafkaExtract`, `KafkaLoad` and `KafkaCommitExecute` to their own repository https://github.com/tripl-ai/arc-kafka-pipeline-plugin.
 
 # 1.15.0
 
