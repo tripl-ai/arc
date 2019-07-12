@@ -153,6 +153,44 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("HTTPExtract: end-to-end") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "HTTPExtract",
+          "name": "load data",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${uri}/${get}/",
+          "outputView": "data"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(_) => {
+        println(pipelineEither)
+        assert(false)
+      }
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext)
+        df match {
+          case Some(df) => assert(df.count != 0)
+          case None => assert(false)
+        }
+      }
+    }  
+  }    
+
+
   test("HTTPExtract: Can read data (GET)") {
     implicit val spark = session
     import spark.implicits._
