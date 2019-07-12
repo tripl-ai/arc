@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.14.0</span></strong>
+          <span class="version">2.0.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -155,6 +155,24 @@
         <ul>
           
 
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://arc.tripl.ai/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
 
 
 
@@ -350,24 +368,6 @@
 <a  title="Extend" href="https://arc.tripl.ai/extend/">
 	
 	Extend
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Contributing" href="https://arc.tripl.ai/contributing/">
-	
-	Contributing
 </a>
 
 
@@ -596,14 +596,7 @@
 <td>params</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>Map of configuration parameters. All parameters will be added to the Connection Properties.</td>
-</tr>
-
-<tr>
-<td>password</td>
-<td>String</td>
-<td>false</td>
-<td>Database password for the given user. Optional, can also be in the url or params.</td>
+<td>Map of configuration parameters.. Any parameters provided will be added to the JDBC connection object. These are not logged so it is safe to put passwords here.</td>
 </tr>
 
 <tr>
@@ -611,13 +604,6 @@
 <td>Map[String, String]</td>
 <td>false</td>
 <td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.</td>
-</tr>
-
-<tr>
-<td>user</td>
-<td>String</td>
-<td>false</td>
-<td>Database username to connect as. Optional, can also be in the url or params.</td>
 </tr>
 </tbody>
 </table>
@@ -648,19 +634,22 @@
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/update_customer_load_date.sql&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer?user=fred&amp;password=secret&amp;ssl=true&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
   <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{},</span>
-  <span class="nt">&#34;password&#34;</span><span class="p">:</span> <span class="s2">&#34;mypassword&#34;</span><span class="p">,</span>
   <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
     <span class="nt">&#34;current_timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2018-11-24 14:48:56&#34;</span>
-  <span class="p">},</span>
-  <span class="nt">&#34;user&#34;</span><span class="p">:</span> <span class="s2">&#34;myuser&#34;</span>
+  <span class="p">}</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="kafkacommitexecute">KafkaCommitExecute</h2>
 
 <h5 id="since-1-0-8-supports-streaming-false">Since: 1.0.8 - Supports Streaming: False</h5>
+
+<div class="admonition note">
+<p class="admonition-title">Plugin</p>
+<p>The <code>KafkaCommitExecute</code> is provided by the <a href="https://github.com/tripl-ai/arc-kafka-pipeline-plugin">https://github.com/tripl-ai/arc-kafka-pipeline-plugin</a> package.</p>
+</div>
 
 <p>The <code>KafkaCommitExecute</code> takes the resulting <code>DataFrame</code> from a <a href="../extract/#kafkaextract">KafkaExtract</a> stage and commits the offsets back to Kafka. This is used so that a user is able to perform a quasi-transaction by specifing a series of stages that must be succesfully executed prior to <code>committing</code> the offset back to Kafka. To use this stage ensure that the <code>autoCommit</code> option on the <a href="../extract/#kafkaextract">KafkaExtract</a> stage is set to <code>false</code>.</p>
 
@@ -808,7 +797,7 @@
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
-  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/jobs/active_customers.json&#34;</span>
+  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/job/active_customers.json&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h4 id="complete-2">Complete</h4>
@@ -821,7 +810,7 @@
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
-  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/jobs/active_customers.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/job/active_customers.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{}</span>
 <span class="p">}</span></code></pre></div>
 

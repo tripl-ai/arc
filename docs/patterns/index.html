@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.14.0</span></strong>
+          <span class="version">2.0.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -155,6 +155,24 @@
         <ul>
           
 
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://arc.tripl.ai/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
 
 
 
@@ -365,24 +383,6 @@
 
 
 
-<a  title="Contributing" href="https://arc.tripl.ai/contributing/">
-	
-	Contributing
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
 <a  title="License" href="https://arc.tripl.ai/license/">
 	
 	License
@@ -477,6 +477,11 @@ SELECT * FROM customers_${JOB_RUN_DATE}
 <p>Note that this method will require some cleanup activity to be performed or the number of tables will grow with each execution. A second <code>JDBCExecute</code> stage could be added to clean up older verions of the underlying <code>customers_</code> tables after successful &lsquo;rollover&rsquo; execution.</p>
 
 <h2 id="delta-processing">Delta Processing</h2>
+
+<div class="admonition note">
+<p class="admonition-title">Delta Processing</p>
+<p>Databricks have open sourced their Spark Delta Processing framework (DeltaLake)[<a href="https://delta.io">https://delta.io</a>] which provides a much safer (transactional) way to perform updates to a dataset which should be used to prevent stale reads or corruption.</p>
+</div>
 
 <p>A common pattern is to reduce the amount of computation by processing only new files thereby reducing the amount of processing (and therefore cost) of expensive operations like the <a href="../transform/#typingtransform">TypingTransform</a>.</p>
 

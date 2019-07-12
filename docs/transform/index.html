@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.14.0</span></strong>
+          <span class="version">2.0.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -155,6 +155,24 @@
         <ul>
           
 
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://arc.tripl.ai/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
 
 
 
@@ -365,24 +383,6 @@
 
 
 
-<a  title="Contributing" href="https://arc.tripl.ai/contributing/">
-	
-	Contributing
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
 <a  title="License" href="https://arc.tripl.ai/license/">
 	
 	License
@@ -431,6 +431,135 @@
 <li>Utilise Spark <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">internal functionality</a> where possible.</li>
 </ul>
 
+<h2 id="cyphertransform">CypherTransform</h2>
+
+<h5 id="since-2-0-0-supports-streaming-true">Since: 2.0.0 - Supports Streaming: True</h5>
+
+<div class="admonition note">
+<p class="admonition-title">Plugin</p>
+<p>The <code>CypherTransform</code> is provided by the <a href="https://github.com/tripl-ai/arc-graph-pipeline-plugin">https://github.com/tripl-ai/arc-graph-pipeline-plugin</a> package.</p>
+</div>
+
+<p>The <code>CypherTransform</code> executes an <a href="https://www.opencypher.org/">Cypher</a> graph query against a graph already created by a <a href="#GraphTransform">GraphTransform</a> stage.</p>
+
+<h3 id="parameters">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI/Glob of the input Cypher query.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>cypherParams</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Parameters to inject into the Cypher statement before executing. The parameters use the <code>${}</code> format.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist graph to Spark cache.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples">Examples</h3>
+
+<h4 id="minimal">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;CypherTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;create recommendations&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/cypher/recommendations.cypher&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;recommendations&#34;</span>
+<span class="p">}</span> 
+</code></pre></div>
+
+<h4 id="complete">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;CypherTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;create recommendations&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/cypher/recommendations.cypher&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;recommendations&#34;</span>
+  <span class="s2">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;customerId&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;cypherTransform&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;current_date&#34;</span><span class="p">:</span> <span class="s2">&#34;2018-11-24&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;current_timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2018-11-24 14:48:56&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span> 
+</code></pre></div>
+
 <h2 id="difftransform">DiffTransform</h2>
 
 <h5 id="since-1-0-8-supports-streaming-false">Since: 1.0.8 - Supports Streaming: False</h5>
@@ -448,7 +577,7 @@
 <p>This stage performs this &lsquo;diffing&rsquo; operation in a single pass so if multiple of the output views are going to be used then it is a good idea to set persist = <code>true</code> to reduce the cost of recomputing the difference multiple times.</p>
 </div>
 
-<h3 id="parameters">Parameters</h3>
+<h3 id="parameters-1">Parameters</h3>
 
 <table>
 <thead>
@@ -526,9 +655,9 @@
 </tbody>
 </table>
 
-<h3 id="examples">Examples</h3>
+<h3 id="examples-1">Examples</h3>
 
-<h4 id="minimal">Minimal</h4>
+<h4 id="minimal-1">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DiffTransform&#34;</span><span class="p">,</span>
@@ -542,7 +671,7 @@
   <span class="nt">&#34;outputIntersectionView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_unchanged&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete">Complete</h4>
+<h4 id="complete-1">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DiffTransform&#34;</span><span class="p">,</span>
@@ -560,13 +689,145 @@
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span>
 <span class="p">}</span></code></pre></div>
 
+<h2 id="graphtransform">GraphTransform</h2>
+
+<h5 id="since-2-0-0-supports-streaming-true-1">Since: 2.0.0 - Supports Streaming: True</h5>
+
+<div class="admonition note">
+<p class="admonition-title">Plugin</p>
+<p>The <code>GraphTransform</code> is provided by the <a href="https://github.com/tripl-ai/arc-graph-pipeline-plugin">https://github.com/tripl-ai/arc-graph-pipeline-plugin</a> package.</p>
+</div>
+
+<p>The <code>GraphTransform</code> stage takes either a list of views of graph nodes and views of graph relationships to produce a new <a href="https://github.com/opencypher/morpheus">https://github.com/opencypher/morpheus</a> graph or uses a <code>cypher</code> query to create a new <a href="https://github.com/opencypher/morpheus">https://github.com/opencypher/morpheus</a> graph.</p>
+
+<h3 id="parameters-2">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
+<td>true*</td>
+<td>URI/Glob of the input Cypher query.</td>
+</tr>
+
+<tr>
+<td>nodes</td>
+<td>Array[Object]</td>
+<td>true*</td>
+<td>List of node labels and node views to construct the graph from. See example below.</td>
+</tr>
+
+<tr>
+<td>relationships</td>
+<td>Array[Object]</td>
+<td>true*</td>
+<td>List of relionship types and relionship views to construct the graph from. See example below.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>cypherParams</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Parameters to inject into the Cypher statement before executing. The parameters use the <code>${}</code> format.</td>
+</tr>
+
+<tr>
+<td>outputGraph</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the constructed graph in the catalog. Graph will be accessible via &lsquo;session.[outputGraph]&lsquo;.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist graph to Spark cache.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-2">Examples</h3>
+
+<h4 id="minimal-2">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;GraphTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;create friends graph&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;nodes&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="nt">&#34;label&#34;</span><span class="p">:</span> <span class="s2">&#34;Person&#34;</span><span class="p">,</span> <span class="nt">&#34;view&#34;</span><span class="p">:</span> <span class="s2">&#34;persons&#34;</span><span class="p">}</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;FRIEND&#34;</span><span class="p">,</span> <span class="nt">&#34;view&#34;</span><span class="p">:</span> <span class="s2">&#34;friends&#34;</span><span class="p">}</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;outputGraph&#34;</span><span class="p">:</span> <span class="s2">&#34;friends&#34;</span>
+<span class="p">}</span> 
+</code></pre></div>
+
+<h4 id="complete-2">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;GraphTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;create customer graph&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;nodes&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="nt">&#34;label&#34;</span><span class="p">:</span> <span class="s2">&#34;Person&#34;</span><span class="p">,</span> <span class="nt">&#34;view&#34;</span><span class="p">:</span> <span class="s2">&#34;persons&#34;</span><span class="p">},</span>
+    <span class="p">{</span><span class="nt">&#34;label&#34;</span><span class="p">:</span> <span class="s2">&#34;Product&#34;</span><span class="p">,</span> <span class="nt">&#34;view&#34;</span><span class="p">:</span> <span class="s2">&#34;products&#34;</span><span class="p">}</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;relationships&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;FRIEND&#34;</span><span class="p">,</span> <span class="nt">&#34;view&#34;</span><span class="p">:</span> <span class="s2">&#34;friends&#34;</span><span class="p">},</span>
+    <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;BOUGHT&#34;</span><span class="p">,</span> <span class="nt">&#34;view&#34;</span><span class="p">:</span> <span class="s2">&#34;bought&#34;</span><span class="p">}</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;outputGraph&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span> 
+</code></pre></div>
+
 <h2 id="httptransform">HTTPTransform</h2>
 
 <h5 id="since-1-0-9-supports-streaming-true">Since: 1.0.9 - Supports Streaming: True</h5>
 
 <p>The <code>HTTPTransform</code> stage transforms the incoming dataset by <code>POST</code>ing the value in the incoming dataset with column name <code>value</code> (must be of type <code>string</code> or <code>bytes</code>) and appending the response body from an external API as <code>body</code>.</p>
 
-<h3 id="parameters-1">Parameters</h3>
+<h3 id="parameters-3">Parameters</h3>
 
 <table>
 <thead>
@@ -686,9 +947,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-1">Examples</h3>
+<h3 id="examples-3">Examples</h3>
 
-<h4 id="minimal-1">Minimal</h4>
+<h4 id="minimal-3">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPTransform&#34;</span><span class="p">,</span>
@@ -702,7 +963,7 @@
   <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer_retention&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-1">Complete</h4>
+<h4 id="complete-3">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPTransform&#34;</span><span class="p">,</span>
@@ -740,7 +1001,7 @@
 
 <p>The <code>JSONTransform</code> stage transforms the incoming dataset to rows of <code>json</code> strings with the column name <code>value</code>. It is intended to be used before stages like <a href="https://arc.tripl.ai/load/#httpload">HTTPLoad</a> or <a href="https://arc.tripl.ai/transform/#httptransform">HTTPTransform</a> to prepare the data for sending externally.</p>
 
-<h3 id="parameters-2">Parameters</h3>
+<h3 id="parameters-4">Parameters</h3>
 
 <table>
 <thead>
@@ -811,9 +1072,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-2">Examples</h3>
+<h3 id="examples-4">Examples</h3>
 
-<h4 id="minimal-2">Minimal</h4>
+<h4 id="minimal-4">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONTransform&#34;</span><span class="p">,</span>
@@ -826,7 +1087,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_json&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-2">Complete</h4>
+<h4 id="complete-4">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONTransform&#34;</span><span class="p">,</span>
@@ -915,7 +1176,7 @@ WHERE metadata.pii = (
 
 <p>The <code>inputView</code> and <code>outputView</code> can be set to the same name so that downstream stages have no way of accessing the pre-filtered data accidentially.</p>
 
-<h3 id="parameters-3">Parameters</h3>
+<h3 id="parameters-5">Parameters</h3>
 
 <table>
 <thead>
@@ -1007,9 +1268,9 @@ WHERE metadata.pii = (
 </tbody>
 </table>
 
-<h3 id="examples-3">Examples</h3>
+<h3 id="examples-5">Examples</h3>
 
-<h4 id="minimal-3">Minimal</h4>
+<h4 id="minimal-5">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataFilterTransform&#34;</span><span class="p">,</span>
@@ -1023,7 +1284,7 @@ WHERE metadata.pii = (
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_safe&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-3">Complete</h4>
+<h4 id="complete-5">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataFilterTransform&#34;</span><span class="p">,</span>
@@ -1053,7 +1314,7 @@ WHERE metadata.pii = (
 
 <p>The <code>MLTransform</code> stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a <code>PipelineModel</code> or <code>CrossValidatorModel</code> produced using Spark&rsquo;s Scala, Java, PySpark or SparkR API.</p>
 
-<h3 id="parameters-4">Parameters</h3>
+<h3 id="parameters-6">Parameters</h3>
 
 <table>
 <thead>
@@ -1138,9 +1399,9 @@ WHERE metadata.pii = (
 </tbody>
 </table>
 
-<h3 id="examples-4">Examples</h3>
+<h3 id="examples-6">Examples</h3>
 
-<h4 id="minimal-4">Minimal</h4>
+<h4 id="minimal-6">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MLTransform&#34;</span><span class="p">,</span>
@@ -1154,7 +1415,7 @@ WHERE metadata.pii = (
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_scored&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-4">Complete</h4>
+<h4 id="complete-6">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MLTransform&#34;</span><span class="p">,</span>
@@ -1193,7 +1454,7 @@ WHERE metadata.pii = (
 </p>
 </div>
 
-<h3 id="parameters-5">Parameters</h3>
+<h3 id="parameters-7">Parameters</h3>
 
 <table>
 <thead>
@@ -1290,9 +1551,9 @@ FROM customer
 LEFT JOIN account ON account.customer_id = customer.customer_id
 </code></pre>
 
-<h3 id="examples-5">Examples</h3>
+<h3 id="examples-7">Examples</h3>
 
-<h4 id="minimal-5">Minimal</h4>
+<h4 id="minimal-7">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
@@ -1305,7 +1566,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-5">Complete</h4>
+<h4 id="complete-7">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
@@ -1345,7 +1606,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <p>The <code>TensorFlowServingTransform</code> stage transforms the incoming dataset by calling a <a href="https://www.tensorflow.org/serving/">TensorFlow Serving</a> service. Because each call is atomic the TensorFlow Serving instances could be behind a load balancer to increase throughput.</p>
 
-<h3 id="parameters-6">Parameters</h3>
+<h3 id="parameters-8">Parameters</h3>
 
 <table>
 <thead>
@@ -1458,9 +1719,9 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tbody>
 </table>
 
-<h3 id="examples-6">Examples</h3>
+<h3 id="examples-8">Examples</h3>
 
-<h4 id="minimal-6">Minimal</h4>
+<h4 id="minimal-8">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TensorFlowServingTransform&#34;</span><span class="p">,</span>
@@ -1474,7 +1735,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
   <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-6">Complete</h4>
+<h4 id="complete-8">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TensorFlowServingTransform&#34;</span><span class="p">,</span>
@@ -1505,7 +1766,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <p>The logical process that is applied to perform the typing on a field-by-field basis is shown below.</p>
 
-<h3 id="parameters-7">Parameters</h3>
+<h3 id="parameters-9">Parameters</h3>
 
 <table>
 <thead>
@@ -1597,9 +1858,9 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tbody>
 </table>
 
-<h3 id="examples-7">Examples</h3>
+<h3 id="examples-9">Examples</h3>
 
-<h4 id="minimal-7">Minimal</h4>
+<h4 id="minimal-9">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>
@@ -1613,7 +1874,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-7">Complete</h4>
+<h4 id="complete-9">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>

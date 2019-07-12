@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.14.0</span></strong>
+          <span class="version">2.0.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -155,6 +155,24 @@
         <ul>
           
 
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://arc.tripl.ai/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
 
 
 
@@ -365,24 +383,6 @@
 
 
 
-<a  title="Contributing" href="https://arc.tripl.ai/contributing/">
-	
-	Contributing
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
 <a  title="License" href="https://arc.tripl.ai/license/">
 	
 	License
@@ -527,7 +527,7 @@ start-notebook.sh \
 
 <p>Paste this into the first sell and execute to set the environment variable.</p>
 
-<pre><code class="language-bash">%env ETL_CONF_BASE_URL=/home/jovyan/tutorial
+<pre><code class="language-scala">%env ETL_CONF_BASE_URL=/home/jovyan/tutorial
 </code></pre>
 
 <h2 id="extracting-data">Extracting Data</h2>
@@ -824,7 +824,7 @@ FROM (
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_BASE_URL=/home/jovyan/tutorial&quot; \
 -p 4040:4040 \
-triplai/arc:1.14.0 \
+triplai/arc:2.0.0 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=4G \
@@ -1379,6 +1379,22 @@ AND dropoff_latitude IS NOT NULL
 
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
+    
+    <a href="https://arc.tripl.ai/getting-started/" title="Getting started">
+      <span class="direction">
+        Previous
+      </span>
+      <div class="page">
+        <div class="button button-previous" role="button" aria-label="Previous">
+          <i class="icon icon-back"></i>
+        </div>
+        <div class="stretch">
+          <div class="title">
+            Getting started
+          </div>
+        </div>
+      </div>
+    </a>
     
   </div>
 

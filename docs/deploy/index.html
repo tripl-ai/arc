@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.14.0</span></strong>
+          <span class="version">2.0.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -155,6 +155,24 @@
         <ul>
           
 
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://arc.tripl.ai/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
 
 
 
@@ -365,24 +383,6 @@
 
 
 
-<a  title="Contributing" href="https://arc.tripl.ai/contributing/">
-	
-	Contributing
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
 <a  title="License" href="https://arc.tripl.ai/license/">
 	
 	License
@@ -421,7 +421,7 @@
 
 			
 
-<p>Arc has been packaged as a <a href="https://www.docker.com/">Docker</a> image to simplify deployment as a stateless process on cloud infrastructure.</p>
+<p>Arc has been packaged as a <a href="https://hub.docker.com/u/triplai">Docker</a> image to simplify deployment as a stateless process on cloud infrastructure.</p>
 
 <h2 id="running-a-job">Running a Job</h2>
 
@@ -430,7 +430,7 @@
 <pre><code class="language-json">docker run \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&quot; \
--it -p 4040:4040 triplai/arc:1.14.0 \
+-it -p 4040:4040 triplai/arc:2.0.0 \
 bin/spark-submit \
 --master local[*] \
 --class ai.tripl.arc.ARC \
@@ -526,9 +526,15 @@ bin/spark-submit \
 </tr>
 
 <tr>
-<td>ETL_CONF_DISABLE_DEPENDENCY_VALIDATION</td>
-<td>etl.config.disableDependencyValidation</td>
-<td>Disable config dependency graph validation in case of dependency resolution defects. Boolean default <code>false</code>.</td>
+<td>ETL_CONF_STORAGE_LEVEL</td>
+<td>etl.config.storageLevel</td>
+<td>The <a href="https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$">StorageLevel</a> used when persisting datasets. String default <code>MEMORY_AND_DISK_SER</code>.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_IMMUTABLE_VIEWS</td>
+<td>etl.config.immutableViews</td>
+<td>Prevent reusing view names multiple times within a job (calls <code>createTempView</code> instead of <code>createOrReplaceTempView</code>). Boolean default <code>false</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -625,7 +631,7 @@ bin/spark-submit \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_STREAMING=true&quot; \
 -e &quot;ETL_CONF_ROWS_PER_SECOND=10&quot; \
--it -p 4040:4040 triplai/arc:1.14.0 \
+-it -p 4040:4040 triplai/arc:2.0.0 \
 bin/spark-submit \
 --master local[*] \
 --class ai.tripl.arc.ARC \

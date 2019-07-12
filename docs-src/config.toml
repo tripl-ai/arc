@@ -107,10 +107,10 @@ pygmentsUseClasses=true
 	url    = "extend/"
 	weight = 98
 
-[[menu.main]]
-	name   = "Contributing"
-	url    = "contributing/"
-	weight = 100	
+#[[menu.main]]
+#	name   = "Contributing"
+#	url    = "contributing/"
+#	weight = 100	
 
 [[menu.main]]
 	name   = "License"
