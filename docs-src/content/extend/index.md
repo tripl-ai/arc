@@ -295,9 +295,31 @@ To execute:
 ## Pipeline Stage Plugins
 ##### Since: 1.3.0
 
-Custom `Pipeline Stage Plugins` allow users to extend the base Arc framework with custom stages which allow the full use of the Spark [Scala API](https://spark.apache.org/docs/latest/api/scala/). This means that private business logic or code which relies on libraries not included in the base Arc framework can be used - however it is strongly advised to use the inbuilt SQL stages where possible.
+Custom `Pipeline Stage Plugins` allow users to extend the base Arc framework with custom stages which allow the full use of the Spark [Scala API](https://spark.apache.org/docs/latest/api/scala/). This means that private business logic or code which relies on libraries not included in the base Arc framework can be used - however it is strongly advised to use the inbuilt SQL stages where possible. If stages are general purpose enough for use outside your organisation consider contributing them to [ai.tripl](https://github.com/tripl-ai) so that others can benefit.
 
-If stages are general purpose enough for use outside your organisation consider contributing them to [ai.tripl](https://github.com/tripl-ai) so that others can benefit.
+When writing plugins and you find Spark throwing `NotSerializableException` errors like:
+
+```scala
+Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: scala.collection.convert.Wrappers$MapWrapper
+```
+
+Ensure that any stage with a `mapPartitions` or `map` DataFrame does not require the `PipelineStage` instance to be passed into the `map` function. So instead of doing something like:
+
+```scala
+val transformedDF = try {
+  df.mapPartitions[TransformedRow] { partition: Iterator[Row] => 
+    val uri = stage.uri.toString
+```
+
+Declare the variables outside the map function so that `stage` does not have to be serialised and sent to all the executors (which fails if any of the `PipelineStage` contents are not serializable):
+
+```scala
+val stageUri = stage.uri
+
+val transformedDF = try {
+  df.mapPartitions[TransformedRow] { partition: Iterator[Row] => 
+    val uri = stageUri.toString
+```
 
 ### Examples
 

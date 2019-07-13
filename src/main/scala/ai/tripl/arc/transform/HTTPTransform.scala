@@ -144,6 +144,13 @@ object HTTPTransformStage {
 
     val df = spark.table(stage.inputView)      
     val schema = df.schema
+    val stageUri = stage.uri
+    val stageInputField = stage.inputField
+    val stageHeaders = stage.headers
+    val stageBatchSize = stage.batchSize
+    val stageDelimiter = stage.delimiter
+    val stageFailMode = stage.failMode
+    val stageValidStatusCodes = stage.validStatusCodes
 
     val fieldIndex = try { 
       schema.fieldIndex(stage.inputField)
@@ -180,13 +187,13 @@ object HTTPTransformStage {
                 .setConnectionManager(poolingHttpClientConnectionManager)
                 .setRedirectStrategy(new LaxRedirectStrategy)
                 .build
-        val uri = stage.uri.toString
+        val uri = stageUri.toString
 
         // we are using a BufferedIterator so we can 'peek' at the first row to get column types without advancing the iterator
         // meaning we don't have to keep finding fieldIndex and dataType for each row (inefficient as they will not change)
         val bufferedPartition = partition.buffered
         val fieldIndex = bufferedPartition.hasNext match {
-          case true => bufferedPartition.head.fieldIndex(stage.inputField)
+          case true => bufferedPartition.head.fieldIndex(stageInputField)
           case false => 0
         }
         val dataType = bufferedPartition.hasNext match {
@@ -195,29 +202,29 @@ object HTTPTransformStage {
         }
 
         // group so we can send multiple rows per request
-        val groupedPartition = bufferedPartition.grouped(stage.batchSize)
+        val groupedPartition = bufferedPartition.grouped(stageBatchSize)
 
         groupedPartition.flatMap[TransformedRow] { groupedRow => 
           val post = new HttpPost(uri)
 
           // add headers
-          for ((k,v) <- stage.headers) {
+          for ((k,v) <- stageHeaders) {
             post.addHeader(k,v) 
           }
 
           // add payload
           val entity = dataType match {
             case _: StringType => {
-              val delimiter = if (stage.batchSize > 1) {
-                stage.delimiter
+              val delimiter = if (stageBatchSize > 1) {
+                stageDelimiter
               } else {
                 ""
               }        
-              new StringEntity(groupedRow.map(row => row.getString(fieldIndex)).mkString(stage.delimiter))
+              new StringEntity(groupedRow.map(row => row.getString(fieldIndex)).mkString(stageDelimiter))
             }
             case _: BinaryType => {
-              val delimiter = if (stage.batchSize > 1) {
-                stage.delimiter.getBytes
+              val delimiter = if (stageBatchSize > 1) {
+                stageDelimiter.getBytes
               } else {
                 "".getBytes
               }
@@ -233,26 +240,26 @@ object HTTPTransformStage {
             val responseTime = System.currentTimeMillis - requestStartTime
 
             // verify status code is correct
-            if (stage.failMode == FailModeTypeFailFast && !stage.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
-              throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${stage.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
+            if (stageFailMode == FailModeTypeFailFast && !stageValidStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+              throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${stageValidStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
             }
 
             // read and close response
             val content = response.getEntity.getContent
-            val body = if (stage.batchSize > 1) {
-              Source.fromInputStream(content).mkString.split(stage.delimiter)
+            val body = if (stageBatchSize > 1) {
+              Source.fromInputStream(content).mkString.split(stageDelimiter)
             } else {
               Array(Source.fromInputStream(content).mkString)
             }
             response.close 
 
             if (body.length != groupedRow.length) {
-              throw new Exception(s"""HTTPTransform expects the response to contain same number of results as 'batchSize' (${stage.batchSize}) but server responded with ${body.length}.""")
+              throw new Exception(s"""HTTPTransform expects the response to contain same number of results as 'batchSize' (${stageBatchSize}) but server responded with ${body.length}.""")
             }
 
             // cast to a TransformedRow to fit the Dataset map method requirements
             groupedRow.zipWithIndex.map { case (row, index) => {
-              stage.failMode match {
+              stageFailMode match {
                 case FailModeTypePermissive => Row.fromSeq(row.toSeq ++ Seq(body(index), Row(response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, response.getEntity.getContentType.toString.replace("Content-Type: ",""), responseTime))).asInstanceOf[TransformedRow]
                 case FailModeTypeFailFast => Row.fromSeq(row.toSeq ++ Seq(body(index))).asInstanceOf[TransformedRow]
               }

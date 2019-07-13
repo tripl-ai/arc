@@ -144,6 +144,11 @@ object TensorFlowServingTransformStage {
   def execute(stage: TensorFlowServingTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val df = spark.table(stage.inputView)
+    val stageUri = stage.uri
+    val stageInputField = stage.inputField
+    val stageBatchSize = stage.batchSize
+    val stageSignatureName = stage.signatureName
+    val stageResponseType = stage.responseType
 
     if (!df.columns.contains(stage.inputField)) {
       throw new Exception(s"""inputField '${stage.inputField}' is not present in inputView '${stage.inputView}' which has: [${df.columns.mkString(", ")}] columns.""") with DetailException {
@@ -168,7 +173,7 @@ object TensorFlowServingTransformStage {
                 .setConnectionManager(poolingHttpClientConnectionManager)
                 .setRedirectStrategy(new LaxRedirectStrategy())
                 .build()
-        val uri = stage.uri
+        val uri = stageUri
 
         val validStatusCodes = 200 :: 201 :: 202 :: Nil
 
@@ -177,7 +182,7 @@ object TensorFlowServingTransformStage {
         // get type and index so it doesnt have to be resolved for each row
         val bufferedPartition = partition.buffered
         val fieldIndex = bufferedPartition.hasNext match {
-          case true => bufferedPartition.head.fieldIndex(stage.inputField)
+          case true => bufferedPartition.head.fieldIndex(stageInputField)
           case false => 0
         }
         val dataType = bufferedPartition.hasNext match {
@@ -186,7 +191,7 @@ object TensorFlowServingTransformStage {
         }
 
         // group so we can send multiple rows per request
-        val groupedPartition = bufferedPartition.grouped(stage.batchSize)
+        val groupedPartition = bufferedPartition.grouped(stageBatchSize)
 
         groupedPartition.flatMap[TensorFlowResponseRow] { groupedRow => 
 
@@ -194,7 +199,7 @@ object TensorFlowServingTransformStage {
           val node = jsonNodeFactory.objectNode
 
           // optionally set signature_name
-          for (signatureName <- stage.signatureName) {
+          for (signatureName <- stageSignatureName) {
             node.put("signature_name", signatureName)
           }
           val instancesArray = node.putArray("instances")
@@ -240,7 +245,7 @@ object TensorFlowServingTransformStage {
 
           // try to unpack result 
           groupedRow.zipWithIndex.map { case (row, index) => {
-            val result = stage.responseType match {
+            val result = stageResponseType match {
               case IntegerResponse => Seq(response(index).asInt)
               case DoubleResponse => Seq(response(index).asDouble)
               case _ => Seq(response(index).asText)

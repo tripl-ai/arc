@@ -145,13 +145,21 @@ object HTTPExtractStage {
     // create a StructType schema for RequestResponse
     val typedSchema = ScalaReflection.schemaFor[RequestResponse].dataType.asInstanceOf[StructType]      
 
+    val stageInput = stage.input
+    val stageUriField = stage.uriField
+    val stageBodyField = stage.bodyField
+    val stageBody = stage.body
+    val stageMethod = stage.method
+    val stageHeaders = stage.headers
+    val stageValidStatusCodes = stage.validStatusCodes
+
     /** Create a dynamic RowEncoder from the provided schema. We use the phantom
       * TypeRow type to enable implicit resolution to find our encoder.
       */    
     implicit val typedEncoder: Encoder[RequestResponseRow] = org.apache.spark.sql.catalyst.encoders.RowEncoder(typedSchema)
 
     val responses = try {
-      val df = stage.input match {
+      val df = stageInput match {
         case Right(uri) => Seq(uri.toString).toDF("value")
         case Left(view) => spark.table(view)
       }
@@ -169,11 +177,11 @@ object HTTPExtractStage {
         val bufferedPartition = partition.buffered
         val (uriFieldIndex, bodyFieldIndex) = if (bufferedPartition.hasNext) {
           val row = bufferedPartition.head
-          val uriFieldIndex = stage.uriField match {
+          val uriFieldIndex = stageUriField match {
             case Some(uriField) => row.fieldIndex(uriField)
             case None => 0
           }
-          val bodyFieldIndex = stage.bodyField match {
+          val bodyFieldIndex = stageBodyField match {
             case Some(bodyField) => Option(row.fieldIndex(bodyField))
             case None => None
           }
@@ -184,14 +192,14 @@ object HTTPExtractStage {
 
         bufferedPartition.map[RequestResponseRow] { row: Row =>
           val uri = row.getString(uriFieldIndex)
-          val body = (bodyFieldIndex, stage.body) match {
+          val body = (bodyFieldIndex, stageBody) match {
             case (Some(bodyFieldIndex), None) => row.getString(bodyFieldIndex)
             case (Some(bodyFieldIndex), Some(_)) => row.getString(bodyFieldIndex)
             case (None, Some(body)) => body
             case (None, None) => ""
           } 
 
-          val request = stage.method match {
+          val request = stageMethod match {
             case "GET" => new HttpGet(uri)
             case "POST" => { 
               val post = new HttpPost(uri)
@@ -201,7 +209,7 @@ object HTTPExtractStage {
           }
 
           // add headers
-          for ((k,v) <- stage.headers) {
+          for ((k,v) <- stageHeaders) {
             request.addHeader(k,v) 
           }
 
@@ -210,8 +218,8 @@ object HTTPExtractStage {
             val response = httpClient.execute(request)
 
             // verify status code is correct
-            if (!stage.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
-              throw new Exception(s"""HTTPExtract expects all response StatusCode(s) in [${stage.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
+            if (!stageValidStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+              throw new Exception(s"""HTTPExtract expects all response StatusCode(s) in [${stageValidStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
             }
 
             // read and close response

@@ -111,6 +111,9 @@ object HTTPLoadStage {
     val signature = "HTTPLoad requires inputView to be dataset with [value: string] signature."
 
     val df = spark.table(stage.inputView)      
+    val stageOutputURI = stage.outputURI
+    val stageHeaders = stage.headers
+    val stageValidStatusCodes = stage.validStatusCodes    
 
     if (df.schema.length != 1 || df.schema(0).dataType != StringType) {
         throw new Exception(s"${signature} inputView '${stage.inputView}' has ${df.schema.length} columns of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
@@ -125,7 +128,7 @@ object HTTPLoadStage {
           new ForeachWriter[Row] {
             var poolingHttpClientConnectionManager: PoolingHttpClientConnectionManager = _
             var httpClient: CloseableHttpClient = _
-            var uri: String = stage.outputURI.toString
+            var uri: String = stageOutputURI.toString
 
             def open(partitionId: Long, epochId: Long): Boolean = {
               // create connection pool
@@ -140,7 +143,7 @@ object HTTPLoadStage {
               val post = new HttpPost(uri)
 
               // add headers
-              for ((k,v) <- stage.headers) {
+              for ((k,v) <- stageHeaders) {
                 post.addHeader(k,v) 
               }
 
@@ -149,8 +152,8 @@ object HTTPLoadStage {
               val response = httpClient.execute(post)
 
               // verify status code is correct
-              if (!stage.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
-                throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${stage.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
+              if (!stageValidStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+                throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${stageValidStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
               }      
 
               response.close
@@ -179,7 +182,7 @@ object HTTPLoadStage {
           val httpClient = HttpClients.custom()
                   .setConnectionManager(poolingHttpClientConnectionManager)
                   .build()
-          val uri = stage.outputURI.toString
+          val uri = stageOutputURI.toString
 
           // we are using a BufferedIterator so we can 'peek' at the first row to get column types without advancing the iterator
           // meaning we don't have to keep finding fieldIndex and dataType for each row (inefficient as they will not change)
@@ -197,7 +200,7 @@ object HTTPLoadStage {
             val post = new HttpPost(uri)
 
             // add headers
-            for ((k,v) <- stage.headers) {
+            for ((k,v) <- stageHeaders) {
               post.addHeader(k,v) 
             }
 
@@ -213,8 +216,8 @@ object HTTPLoadStage {
               val response = httpClient.execute(post)
               
               // verify status code is correct
-              if (!stage.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
-                throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${stage.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
+              if (!stageValidStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+                throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${stageValidStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
               }
 
               // read and close response
@@ -233,7 +236,6 @@ object HTTPLoadStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        println("here")
         override val detail = stage.stageDetail          
       }
     }
