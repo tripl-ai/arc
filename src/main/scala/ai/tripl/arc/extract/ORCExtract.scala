@@ -27,7 +27,7 @@ class ORCExtract extends PipelineStagePlugin {
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _     
+    val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _
     val outputView = getValue[String]("outputView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
@@ -41,7 +41,7 @@ class ORCExtract extends PipelineStagePlugin {
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, basePath, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(basePath), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(basePath), Right(invalidKeys)) =>
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
         val stage = ORCExtractStage(
@@ -61,12 +61,12 @@ class ORCExtract extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
-        stage.stageDetail.put("input", parsedGlob)  
-        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("input", parsedGlob)
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         for (basePath <- basePath) {
-          stage.stageDetail.put("basePath", basePath)  
-        }        
+          stage.stageDetail.put("basePath", basePath)
+        }
         stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
@@ -82,18 +82,18 @@ class ORCExtract extends PipelineStagePlugin {
 }
 
 case class ORCExtractStage(
-    plugin: ORCExtract, 
-    name: String, 
-    description: Option[String], 
-    schema: Either[String, List[ExtractColumn]], 
-    outputView: String, 
-    input: String, 
-    authentication: Option[Authentication], 
-    params: Map[String, String], 
-    persist: Boolean, 
-    numPartitions: Option[Int], 
-    partitionBy: List[String], 
-    contiguousIndex: Boolean, 
+    plugin: ORCExtract,
+    name: String,
+    description: Option[String],
+    schema: Either[String, List[ExtractColumn]],
+    outputView: String,
+    input: String,
+    authentication: Option[Authentication],
+    params: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
+    partitionBy: List[String],
+    contiguousIndex: Boolean,
     basePath: Option[String]
   ) extends PipelineStage {
 
@@ -111,9 +111,9 @@ object ORCExtractStage {
       ExtractUtils.getSchema(stage.schema)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }       
+        override val detail = stage.stageDetail
+      }
+    }
 
     CloudUtils.setHadoopConfiguration(stage.authentication)
 
@@ -123,20 +123,20 @@ object ORCExtractStage {
         optionSchema match {
           case Some(schema) => spark.readStream.option("mergeSchema", "true").schema(schema).orc(stage.input)
           case None => throw new Exception("ORCExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
-        }       
-      } else {    
+        }
+      } else {
         stage.basePath match {
           case Some(basePath) => spark.read.option("mergeSchema", "true").option("basePath", basePath).orc(stage.input)
-          case None => spark.read.option("mergeSchema", "true").orc(stage.input)   
-        }          
+          case None => spark.read.option("mergeSchema", "true").orc(stage.input)
+        }
       }
     } catch {
-        case e: AnalysisException if (e.getMessage == "Unable to infer schema for ORC. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) => 
+        case e: AnalysisException if (e.getMessage == "Unable to infer schema for ORC. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) =>
           spark.emptyDataFrame
         case e: Exception => throw new Exception(e) with DetailException {
-          override val detail = stage.stageDetail          
+          override val detail = stage.stageDetail
         }
-    } 
+    }
 
     // if incoming dataset has 0 columns then create empty dataset with correct schema
     val emptyDataframeHandlerDF = try {
@@ -151,9 +151,9 @@ object ORCExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }    
+        override val detail = stage.stageDetail
+      }
+    }
 
     // add internal columns data _filename, _index
     val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, stage.contiguousIndex)
@@ -161,15 +161,15 @@ object ORCExtractStage {
     // set column metadata if exists
     val enrichedDF = optionSchema match {
         case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
-        case None => sourceEnrichedDF   
+        case None => sourceEnrichedDF
     }
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => enrichedDF.repartition(numPartitions)
           case None => enrichedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -179,7 +179,7 @@ object ORCExtractStage {
           case None => enrichedDF.repartition(partitionCols:_*)
         }
       }
-    } 
+    }
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
@@ -189,8 +189,8 @@ object ORCExtractStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-      }      
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
     }
 
     Option(repartitionedDF)

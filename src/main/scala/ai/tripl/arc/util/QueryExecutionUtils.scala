@@ -7,7 +7,7 @@ object QueryExecutionUtils {
 
   def getPartitionFilters(plan: SparkPlan): List[String] = {
     plan.collect { case a: FileSourceScanExec => a }
-      .flatMap(fileSourceScanExec => 
+      .flatMap(fileSourceScanExec =>
         fileSourceScanExec
           .partitionFilters
           .toList

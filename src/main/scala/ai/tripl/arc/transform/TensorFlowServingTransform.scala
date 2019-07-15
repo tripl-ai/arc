@@ -51,12 +51,12 @@ class TensorFlowServingTransform extends PipelineStagePlugin {
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val responseType = getValue[String]("responseType", default = Some("object"), validValues = "integer" :: "double" :: "object" :: Nil) |> parseResponseType("responseType") _
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))        
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, inputView, outputView, uri, signatureName, responseType, batchSize, persist, inputField, numPartitions, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputView), Right(uri), Right(signatureName), Right(responseType), Right(batchSize), Right(persist), Right(inputField), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(inputView), Right(outputView), Right(uri), Right(signatureName), Right(responseType), Right(batchSize), Right(persist), Right(inputField), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) =>
 
         val stage = TensorFlowServingTransformStage(
           plugin=this,
@@ -75,15 +75,15 @@ class TensorFlowServingTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        stage.stageDetail.put("inputView", inputView)  
-        stage.stageDetail.put("inputField", inputField)  
-        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("inputField", inputField)
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("uri", uri.toString)
         stage.stageDetail.put("batchSize", java.lang.Integer.valueOf(batchSize))
         stage.stageDetail.put("responseType", responseType.sparkString)
         for (signatureName <- signatureName) {
           stage.stageDetail.put("signatureName", signatureName)
-        }            
+        }
         stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
@@ -102,24 +102,24 @@ class TensorFlowServingTransform extends PipelineStagePlugin {
       case "object" => Right(StringResponse)
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
-  }  
+  }
 
 }
 
 case class TensorFlowServingTransformStage(
     plugin: TensorFlowServingTransform,
-    name: String, 
-    description: Option[String], 
-    inputView: String, 
-    outputView: String, 
-    uri: URI, 
-    signatureName: Option[String], 
-    responseType: ResponseType, 
-    batchSize: Int, 
-    inputField: String, 
-    params: Map[String, String], 
-    persist: Boolean, 
-    numPartitions: Option[Int], 
+    name: String,
+    description: Option[String],
+    inputView: String,
+    outputView: String,
+    uri: URI,
+    signatureName: Option[String],
+    responseType: ResponseType,
+    batchSize: Int,
+    inputField: String,
+    params: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
     partitionBy: List[String]
   ) extends PipelineStage {
 
@@ -130,7 +130,7 @@ case class TensorFlowServingTransformStage(
 
 object TensorFlowServingTransformStage {
 
-  type TensorFlowResponseRow = Row  
+  type TensorFlowResponseRow = Row
 
   def execute(stage: TensorFlowServingTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
@@ -143,9 +143,9 @@ object TensorFlowServingTransformStage {
 
     if (!df.columns.contains(stage.inputField)) {
       throw new Exception(s"""inputField '${stage.inputField}' is not present in inputView '${stage.inputView}' which has: [${df.columns.mkString(", ")}] columns.""") with DetailException {
-        override val detail = stage.stageDetail          
-      }    
-    }   
+        override val detail = stage.stageDetail
+      }
+    }
 
     val tensorFlowResponseSchema = stage.responseType match {
       case IntegerResponse => StructType(df.schema.fields.toList ::: List(new StructField("result", IntegerType, true)))
@@ -156,7 +156,7 @@ object TensorFlowServingTransformStage {
     implicit val typedEncoder: Encoder[TensorFlowResponseRow] = org.apache.spark.sql.catalyst.encoders.RowEncoder(tensorFlowResponseSchema)
 
     val transformedDF = try {
-      df.mapPartitions[TensorFlowResponseRow] { partition: Iterator[Row] => 
+      df.mapPartitions[TensorFlowResponseRow] { partition: Iterator[Row] =>
 
         val poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager()
         poolingHttpClientConnectionManager.setMaxTotal(50)
@@ -184,7 +184,7 @@ object TensorFlowServingTransformStage {
         // group so we can send multiple rows per request
         val groupedPartition = bufferedPartition.grouped(stageBatchSize)
 
-        groupedPartition.flatMap[TensorFlowResponseRow] { groupedRow => 
+        groupedPartition.flatMap[TensorFlowResponseRow] { groupedRow =>
 
           val jsonNodeFactory = new JsonNodeFactory(true)
           val node = jsonNodeFactory.objectNode
@@ -219,11 +219,11 @@ object TensorFlowServingTransformStage {
             // read and close response
             val responseEntity = response.getEntity.getContent
             val body = Source.fromInputStream(responseEntity).mkString
-            response.close 
+            response.close
 
             // verify status code is correct
             if (!validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
-              throw new Exception(body) 
+              throw new Exception(body)
             }
 
             // decode the response
@@ -234,7 +234,7 @@ object TensorFlowServingTransformStage {
             post.releaseConnection
           }
 
-          // try to unpack result 
+          // try to unpack result
           groupedRow.zipWithIndex.map { case (row, index) => {
             val result = stageResponseType match {
               case IntegerResponse => Seq(response(index).asInt)
@@ -248,17 +248,17 @@ object TensorFlowServingTransformStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
     }
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => transformedDF.repartition(numPartitions)
           case None => transformedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -268,7 +268,7 @@ object TensorFlowServingTransformStage {
           case None => transformedDF.repartition(partitionCols:_*)
         }
       }
-    } 
+    }
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
@@ -277,9 +277,9 @@ object TensorFlowServingTransformStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-      }      
-    } 
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
+    }
 
     Option(repartitionedDF)
   }

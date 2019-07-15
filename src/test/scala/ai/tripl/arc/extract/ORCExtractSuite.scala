@@ -18,11 +18,11 @@ import ai.tripl.arc.util.TestUtils
 
 class ORCExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "extract.orc" 
-  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.orc" 
-  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.orc" 
-  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.orc.gz" 
+  var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "extract.orc"
+  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.orc"
+  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.orc"
+  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.orc.gz"
   val outputView = "dataset"
 
   before {
@@ -36,16 +36,16 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
 
     // recreate test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
-    FileUtils.deleteQuietly(new java.io.File(emptyDirectory)) 
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
+    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
     FileUtils.forceMkdir(new java.io.File(emptyDirectory))
-    // orc does not support writing NullType    
+    // orc does not support writing NullType
     TestUtils.getKnownDataset.drop($"nullDatum").write.orc(targetFile)
   }
 
@@ -53,8 +53,8 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))     
-    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))     
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
+    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
   }
 
   test("ORCExtract") {
@@ -64,7 +64,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.ORCExtractStage.execute(
       extract.ORCExtractStage(
@@ -95,9 +95,9 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     assert(TestUtils.datasetEquality(expected, actual))
 
     // test metadata
-    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata    
-    assert(timestampDatumMetadata.getLong("securityLevel") == 7)        
-  }  
+    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata
+    assert(timestampDatumMetadata.getLong("securityLevel") == 7)
+  }
 
   test("ORCExtract Caching") {
     implicit val spark = session
@@ -143,8 +143,8 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
         contiguousIndex=true
       )
     )
-    assert(spark.catalog.isCached(outputView) === true)     
-  }  
+    assert(spark.catalog.isCached(outputView) === true)
+  }
 
   test("ORCExtract Empty Dataset") {
     implicit val spark = session
@@ -152,7 +152,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val schema = 
+    val schema =
       BooleanColumn(
         id="1",
         name="booleanDatum",
@@ -160,11 +160,11 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
         nullable=true,
         nullReplacementValue=None,
         trim=false,
-        nullableValues=Nil, 
-        trueValues=Nil, 
+        nullableValues=Nil,
+        trueValues=Nil,
         falseValues=Nil,
         metadata=None
-      ) :: Nil    
+      ) :: Nil
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
@@ -187,7 +187,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown0.getMessage === "ORCExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-    
+
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
       extract.ORCExtractStage.execute(
@@ -209,7 +209,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown1.getMessage === "ORCExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-    
+
     // try with column
     val dataset = extract.ORCExtractStage.execute(
       extract.ORCExtractStage(
@@ -235,7 +235,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     val expected = TestUtils.getKnownDataset.select($"booleanDatum").limit(0)
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }  
+  }
 
   test("ORCExtract: Structured Streaming") {
     implicit val spark = session
@@ -244,7 +244,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.ORCExtractStage.execute(
       extract.ORCExtractStage(
@@ -266,7 +266,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
 
     val writeStream = dataset
       .writeStream
-      .queryName("extract") 
+      .queryName("extract")
       .format("memory")
       .start
 
@@ -278,6 +278,6 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
       df.first.getBoolean(0)
     } finally {
       writeStream.stop
-    }  
-  }    
+    }
+  }
 }

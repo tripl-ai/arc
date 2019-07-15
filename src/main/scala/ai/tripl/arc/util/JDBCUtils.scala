@@ -17,7 +17,7 @@ object JDBCUtils {
     element match {
       // if element has hypen within [ ] then return it
       case x if x matches "\\[.*-.*\\]" => element
-      // if element has no within [ ] then remove [ and ] 
+      // if element has no within [ ] then remove [ and ]
       case x if x matches "\\[[aA-zZ0-9]*\\]" => element.replace("[", "").replace("]", "")
       case _ => element
     }
@@ -32,5 +32,5 @@ object JDBCUtils {
     } else {
       passwordRegex.r.replaceAllIn(jdbcURL, s"password=${"*" * (matches(0).length - 9)}")
     }
-  }  
+  }
 }

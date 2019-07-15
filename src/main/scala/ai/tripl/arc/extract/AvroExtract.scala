@@ -37,7 +37,7 @@ class AvroExtract extends PipelineStagePlugin {
     val params = readMap("params", c)
     val description = getOptionalValue[String]("description")
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
-    val parsedGlob = if(!c.hasPath("inputView")) getValue[String]("inputURI") |> parseGlob("inputURI") _ else Right("")   
+    val parsedGlob = if(!c.hasPath("inputView")) getValue[String]("inputURI") |> parseGlob("inputURI") _ else Right("")
     val outputView = getValue[String]("outputView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
@@ -74,11 +74,11 @@ class AvroExtract extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
-        stage.stageDetail.put("input", input)  
-        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("input", input)
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         for (inputField <- inputField) {
-          stage.stageDetail.put("inputField", inputField)  
+          stage.stageDetail.put("inputField", inputField)
         }
         stage.stageDetail.put("params", params.asJava)
 
@@ -142,9 +142,9 @@ object AvroExtractStage {
       ExtractUtils.getSchema(stage.schema)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }        
+        override val detail = stage.stageDetail
+      }
+    }
 
     CloudUtils.setHadoopConfiguration(stage.authentication)
 
@@ -171,12 +171,12 @@ object AvroExtractStage {
         }
       }
     } catch {
-        case e: FileNotFoundException => 
+        case e: FileNotFoundException =>
           spark.emptyDataFrame
-        case e: AnalysisException if (e.getMessage.contains("Path does not exist")) => 
+        case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
           spark.emptyDataFrame
         case e: Exception => throw new Exception(e) with DetailException {
-          override val detail = stage.stageDetail          
+          override val detail = stage.stageDetail
         }
     }
 
@@ -193,9 +193,9 @@ object AvroExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }    
+        override val detail = stage.stageDetail
+      }
+    }
 
     // add internal columns data _filename, _index
     val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, stage.contiguousIndex)
@@ -203,16 +203,16 @@ object AvroExtractStage {
     // set column metadata if exists
     val enrichedDF = optionSchema match {
         case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
-        case None => sourceEnrichedDF   
+        case None => sourceEnrichedDF
     }
-  
+
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => enrichedDF.repartition(numPartitions)
           case None => enrichedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -222,7 +222,7 @@ object AvroExtractStage {
           case None => enrichedDF.repartition(partitionCols:_*)
         }
       }
-    } 
+    }
 
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
@@ -233,8 +233,8 @@ object AvroExtractStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-      }      
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
     }
 
     Option(repartitionedDF)

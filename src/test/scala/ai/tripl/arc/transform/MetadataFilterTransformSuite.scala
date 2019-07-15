@@ -21,8 +21,8 @@ import ai.tripl.arc.util._
 
 class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "MetadataFilterTransformSuite.csv"   
+  var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "MetadataFilterTransformSuite.csv"
   val inputView = "inputView"
   val outputView = "outputView"
 
@@ -37,22 +37,22 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
 
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
 
     // recreate test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
     // Delimited does not support writing NullType
-    TestUtils.getKnownDataset.drop($"nullDatum").write.csv(targetFile)    
+    TestUtils.getKnownDataset.drop($"nullDatum").write.csv(targetFile)
   }
 
   after {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))     
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
   test("MetadataFilterTransform: end-to-end") {
@@ -73,14 +73,14 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         plugin=new transform.TypingTransform,
         name="TypingTransform",
         description=None,
-        schema=Right(schema.right.getOrElse(null)), 
+        schema=Right(schema.right.getOrElse(null)),
         inputView=inputView,
-        outputView=outputView, 
+        outputView=outputView,
         params=Map.empty,
         persist=false,
         failMode=FailModeTypePermissive,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     )
 
@@ -99,17 +99,17 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
           "sqlParams": {
             "private": "true"
           }
-        }        
+        }
       ]
     }"""
-    
+
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(_) => assert(false)
       case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
-    }  
-  }  
+    }
+  }
 
   test("MetadataFilterTransform: private=true") {
     implicit val spark = session
@@ -129,21 +129,21 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         plugin=new transform.TypingTransform,
         name="TypingTransform",
         description=None,
-        schema=Right(schema.right.getOrElse(null)), 
+        schema=Right(schema.right.getOrElse(null)),
         inputView=inputView,
-        outputView=outputView, 
+        outputView=outputView,
         params=Map.empty,
         persist=false,
         failMode=FailModeTypePermissive,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     )
 
     val dataset = transform.MetadataFilterTransformStage.execute(
       transform.MetadataFilterTransformStage(
         plugin=new transform.MetadataFilterTransform,
-        name="MetadataFilterTransform", 
+        name="MetadataFilterTransform",
         description=None,
         inputView=outputView,
         inputURI=new URI(targetFile),
@@ -153,7 +153,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
@@ -161,7 +161,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val expected = TestUtils.getKnownDataset.select($"booleanDatum", $"longDatum", $"stringDatum")
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }  
+  }
 
   test("MetadataFilterTransform: securityLevel") {
     implicit val spark = session
@@ -181,21 +181,21 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         plugin=new transform.TypingTransform,
         name="TypingTransform",
         description=None,
-        schema=Right(schema.right.getOrElse(null)), 
+        schema=Right(schema.right.getOrElse(null)),
         inputView=inputView,
-        outputView=outputView, 
+        outputView=outputView,
         params=Map.empty,
         persist=false,
         failMode=FailModeTypePermissive,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     )
 
     val dataset = transform.MetadataFilterTransformStage.execute(
       transform.MetadataFilterTransformStage(
         plugin=new transform.MetadataFilterTransform,
-        name="MetadataFilterTransform", 
+        name="MetadataFilterTransform",
         description=None,
         inputView=outputView,
         inputURI=new URI(targetFile),
@@ -205,7 +205,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
@@ -213,7 +213,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val expected = TestUtils.getKnownDataset.select($"booleanDatum", $"dateDatum", $"decimalDatum", $"longDatum", $"stringDatum")
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }   
+  }
 
   test("MetadataFilterTransform: Structured Streaming") {
     implicit val spark = session
@@ -249,21 +249,21 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         plugin=new transform.TypingTransform,
         name="dataset",
         description=None,
-        schema=Right(schema.right.getOrElse(Nil)), 
+        schema=Right(schema.right.getOrElse(Nil)),
         inputView=inputView,
-        outputView=outputView, 
+        outputView=outputView,
         params=Map.empty,
         persist=false,
         failMode=FailModeTypePermissive,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     )
 
     val dataset = transform.MetadataFilterTransformStage.execute(
       transform.MetadataFilterTransformStage(
         plugin=new transform.MetadataFilterTransform,
-        name="MetadataFilterTransform", 
+        name="MetadataFilterTransform",
         description=None,
         inputView=outputView,
         inputURI=new URI(targetFile),
@@ -273,13 +273,13 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
     val writeStream = dataset
       .writeStream
-      .queryName("transformed") 
+      .queryName("transformed")
       .format("memory")
       .start
 
@@ -291,5 +291,5 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     } finally {
       writeStream.stop
     }
-  }      
+  }
 }

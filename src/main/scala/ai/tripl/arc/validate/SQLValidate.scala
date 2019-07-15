@@ -29,15 +29,15 @@ class SQLValidate extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
-    val authentication = readAuthentication("authentication")  
+    val authentication = readAuthentication("authentication")
     val inputSQL = parsedURI |> textContentForURI("inputURI", authentication) _
     val sqlParams = readMap("sqlParams", c)
     val validSQL = inputSQL |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, parsedURI, inputSQL, validSQL, invalidKeys) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(invalidKeys)) =>
 
         val stage = SQLValidateStage(
           plugin=this,
@@ -49,9 +49,9 @@ class SQLValidate extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("inputURI", parsedURI.toString)  
-        stage.stageDetail.put("sql", inputSQL)   
-        stage.stageDetail.put("sqlParams", sqlParams.asJava)           
+        stage.stageDetail.put("inputURI", parsedURI.toString)
+        stage.stageDetail.put("sql", inputSQL)
+        stage.stageDetail.put("sqlParams", sqlParams.asJava)
         stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
@@ -66,11 +66,11 @@ class SQLValidate extends PipelineStagePlugin {
 
 case class SQLValidateStage(
     plugin: SQLValidate,
-    name: String, 
-    description: Option[String], 
-    inputURI: URI, 
-    sql: String, 
-    sqlParams: Map[String, String], 
+    name: String,
+    description: Option[String],
+    inputURI: URI,
+    sql: String,
+    sqlParams: Map[String, String],
     params: Map[String, String]
   ) extends PipelineStage {
 
@@ -84,7 +84,7 @@ object SQLValidateStage {
   def execute(stage: SQLValidateStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val signature = "SQLValidate requires query to return 1 row with [outcome: boolean, message: string] signature."
-    
+
     val stmt = SQLUtils.injectParameters(stage.sql, stage.sqlParams, false)
     stage.stageDetail.put("sql", stmt)
 
@@ -93,13 +93,13 @@ object SQLValidateStage {
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stage.stageDetail
-      } 
+      }
     }
     val count = df.persist(StorageLevel.MEMORY_AND_DISK_SER).count
 
     if (df.count != 1 || df.schema.length != 2) {
       throw new Exception(s"""${signature} Query returned ${count} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].""") with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
     }
 
@@ -117,16 +117,16 @@ object SQLValidateStage {
       }
 
       val message = row.getString(1)
-      
+
       // try to parse to json
       try {
         val objectMapper = new ObjectMapper()
         messageMap = objectMapper.readValue(message, classOf[java.util.HashMap[String, Object]])
         stage.stageDetail.put("message", messageMap)
       } catch {
-        case e: Exception => 
+        case e: Exception =>
           stage.stageDetail.put("message", message)
-      }  
+      }
 
       val result = row.getBoolean(0)
 
@@ -139,12 +139,12 @@ object SQLValidateStage {
     } catch {
       case e: ClassCastException =>
         throw new Exception(s"${signature} Query returned ${count} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
-          override val detail = stage.stageDetail          
-        }     
+          override val detail = stage.stageDetail
+        }
       case e: Exception with DetailException => throw e
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      } 
+        override val detail = stage.stageDetail
+      }
     }
 
     df.unpersist

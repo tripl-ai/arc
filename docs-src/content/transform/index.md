@@ -377,7 +377,8 @@ The logical process that is applied to perform the typing on a field-by-field ba
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputURI|URI|true|URI of the input file containing the SQL statement.|
+|schemaURI|URI|true*|URI of the input JSON file containing the schema. Required if `schemaView` not provided.|
+|schemaView|String|true*|Similar to `schemaURI` but allows the schema to be passed in as another `DataFrame`.  It takes precedence over `schemaURI` if provided.|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|

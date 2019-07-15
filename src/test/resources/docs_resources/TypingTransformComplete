@@ -6,7 +6,8 @@
     "production",
     "test"
   ],
-  "inputURI": "hdfs://datalake/metadata/customer.json",
+  "schemaURI": "hdfs://datalake/metadata/customer.json",
+  "schemaView": "customer_schema",
   "inputView": "customer_untyped",
   "outputView": "customer",
   "authentication": {},

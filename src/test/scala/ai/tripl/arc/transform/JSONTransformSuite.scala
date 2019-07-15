@@ -11,7 +11,7 @@ import ai.tripl.arc.util.TestUtils
 
 class JSONTransformSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val inputView = "inputView"
   val outputView = "outputView"
 
@@ -25,7 +25,7 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
@@ -45,14 +45,14 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.JSONTransformStage.execute(
       transform.JSONTransformStage(
         plugin=new transform.JSONTransform,
-        name="JSONTransform", 
+        name="JSONTransform",
         description=None,
         inputView=inputView,
         outputView=outputView,
         persist=false,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
@@ -62,7 +62,7 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
 
     // check data
     assert(dataset.first.getString(0) == """{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-20T21:46:54.000Z"}""")
-  }  
+  }
 
   test("JSONTransform: Structured Streaming") {
     implicit val spark = session
@@ -80,20 +80,20 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.JSONTransformStage.execute(
       transform.JSONTransformStage(
         plugin=new transform.JSONTransform,
-        name="JSONTransform", 
+        name="JSONTransform",
         description=None,
         inputView=inputView,
         outputView=outputView,
         persist=false,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
     val writeStream = dataset
       .writeStream
-      .queryName("transformed") 
+      .queryName("transformed")
       .format("memory")
       .start
 
@@ -104,6 +104,6 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
       assert(df.first.getString(0).contains(""""value":0"""))
     } finally {
       writeStream.stop
-    }    
-  }    
+    }
+  }
 }

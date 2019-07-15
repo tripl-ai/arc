@@ -123,7 +123,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_, _) => assert(false)
     }
-  }  
+  }
 
   test("Type Timestamp Column: leading/trailing spaces not-trim") {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
@@ -139,7 +139,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_, _) => assert(false)
     }
-  } 
+  }
 
   test("Type Timestamp Column: ' ' not-trim") {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
@@ -156,7 +156,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_, _) => assert(false)
     }
-  } 
+  }
 
   test("Type Timestamp Column: null input WITH nullReplacementValue") {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
@@ -171,7 +171,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  } 
+  }
 
   test("Type Timestamp Column: ' ' value.isAllowedNullValue") {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
@@ -186,7 +186,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  } 
+  }
 
   test("Type Timestamp Column: value.isAllowedNullValue") {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
@@ -201,7 +201,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }   
+  }
 
   test("Type Timestamp Column: null input WITHOUT nullReplacementValue") {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
@@ -216,7 +216,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }  
+  }
 
   test("Type Timestamp Column: isAllowedNullValue") {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
@@ -231,7 +231,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }  
+  }
 
   test("Type Timestamp Column: isNotNull") {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 19, 16, 55, 0, ZoneId.of("UTC"))
@@ -246,7 +246,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }  
+  }
 
   test("Type Timestamp Column: multiple formatters - valid") {
     val datetimeValue = ZonedDateTime.of(2016, 12, 18, 17, 55, 21, 0, ZoneId.of("UTC"))
@@ -263,7 +263,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         }
         case (_,_) => assert(false)
       }
-    } 
+    }
 
     {
       val value = "18/12/2016 17:55:21"
@@ -274,8 +274,8 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         }
         case (_,_) => assert(false)
       }
-    }      
-  }  
+    }
+  }
 
   test("Type Timestamp Column: multiple formatters - not-valid") {
     val datetimeValue = ZonedDateTime.of(2016, 12, 18, 17, 55, 21, 0, ZoneId.of("UTC"))
@@ -285,7 +285,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
 
     {
       val value = "18 December 16 17:55:21"
-      Typing.typeValue(value, col) match {        
+      Typing.typeValue(value, col) match {
         case (res, Some(err)) => {
           assert(res === None)
           assert(err === TypingError.forCol(col, s"""Unable to convert '$value' to timestamp using formatters [${col.formatters.map(c => s"'${c}'").mkString(", ")}] and timezone '${col.timezoneId}'"""))
@@ -314,8 +314,8 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         }
         case (_, _) => assert(false)
       }
-    }    
-  }  
+    }
+  }
 
   test("Type Timestamp Column: timezones not UTC") {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 21, 46, 54, 0, ZoneId.of("+1000"))
@@ -331,8 +331,8 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(err === None)
       }
       case (_,_) => assert(false)
-    }   
-  }   
+    }
+  }
 
   test("Type Timestamp Column: timezones UTC") {
     // Australia/Sydney has a +1100 offset at this time of year
@@ -348,8 +348,8 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(err === None)
       }
       case (_,_) => assert(false)
-    } 
-  }   
+    }
+  }
 
   test("Type Timestamp Column: hard-coded time component") {
     // Australia/Sydney has a +1100 offset at this time of year
@@ -368,7 +368,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(err === None)
       }
     }
-  }  
+  }
 
   test("Type Timestamp Column: Timezone included in string") {
       val datetimeValue = ZonedDateTime.of(2016, 12, 18, 17, 55, 21, 0, ZoneId.of("UTC"))
@@ -384,7 +384,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         }
         case (_,_) => assert(false)
       }
-  }  
+  }
 
 
   test("Type Timestamp Column: Timestamp from Epoch") {
@@ -400,7 +400,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         }
         case (_,_) => assert(false)
       }
-  }    
+  }
 
   test("Type Timestamp Column: Timestamp from Invalid Epoch") {
       val timestampValue = Timestamp.from(Instant.ofEpochSecond(1527726973))
@@ -414,7 +414,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         }
         case (_,_) => assert(false)
       }
-  }   
+  }
 
   test("Type Timestamp Column: Timestamp from EpochMillis") {
       val timestampValue = Timestamp.from(Instant.ofEpochMilli(1527726973423L))
@@ -429,7 +429,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         }
         case (_,_) => assert(false)
       }
-  }   
+  }
 
   test("Type Timestamp Column: Timestamp from Invalid EpochMillis") {
       val timestampValue = Timestamp.from(Instant.ofEpochSecond(1527726973423L))
@@ -443,7 +443,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         }
         case (_,_) => assert(false)
       }
-  }   
+  }
 
   test("Type Timestamp Column: Timestamp from ISO8601") {
     val datetimeValue = ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC"))
@@ -473,11 +473,11 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         }
         case (_,_) => assert(false)
       }
-  }         
+  }
 
   test("Type Timestamp Column: impossible date: not strict") {
     val datetimeValue = ZonedDateTime.of(2000, 2, 29, 0, 0, 0, 0, ZoneId.of("UTC"))
-    val timestampValue = Timestamp.from(datetimeValue.toInstant())    
+    val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("uuuu-MM-dd HH:mm:ss")
     val col = TimestampColumn(id="1", name="timestamp", description=None, nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None, strict=false)
 
@@ -490,7 +490,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }   
+  }
 
   test("Type Timestamp Column: Formatter contains YearOfEra") {
     val pattern = "yyyy-MM-dd HH:mm:ss GG"
@@ -499,7 +499,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     assert(formatter.contains("(YearOfEra,"))
     assert(formatter.contains("(Era,"))
     assert(!formatter.contains("(Year,"))
-  }    
+  }
 
   test("Type Timestamp Column: Formatter contains Year") {
     val pattern = "uuuu-MM-dd HH:mm:ss"
@@ -508,11 +508,11 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     assert(!formatter.contains("(YearOfEra,"))
     assert(!formatter.contains("(Era,"))
     assert(formatter.contains("(Year,"))
-  }        
+  }
 
   test("Type Timestamp Column: nanosecond") {
     val datetimeValue = ZonedDateTime.of(2019, 5, 22, 12, 4, 0, 949903001, ZoneId.of("UTC"))
-    val timestampValue = Timestamp.from(datetimeValue.toInstant())    
+    val timestampValue = Timestamp.from(datetimeValue.toInstant())
     val fmt = List("yyyy-MM-dd HH:mm:ss.SSSSSSSSS")
     val col = TimestampColumn(id="1", name="timestamp", description=None, nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="UTC", formatters=fmt, None, metadata=None, strict=false)
 
@@ -524,7 +524,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }   
+  }
 
 
 }

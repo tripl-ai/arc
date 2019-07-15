@@ -32,7 +32,7 @@ object Error {
         case StageError(idx, stage, lineNumber, configErrors) => {
             s"""Stage: $idx '${stage}' (starting on line ${lineNumber}):\n${configErrors.map(e => "  - " + errToString(e)).mkString("\n")}"""
         }
-            
+
         case ConfigError(attribute, lineNumber, message) => {
             lineNumber match {
             case Some(ln) => s"""${attribute} (Line ${ln}): $message"""
@@ -47,7 +47,7 @@ object Error {
         case StageError(_, stage, lineNumber, configErrors) => {
             s"""${configErrors.map(e => "- " + errToSimpleString(e)).mkString("\n")}"""
         }
-            
+
         case ConfigError(attribute, lineNumber, message) => {
             lineNumber match {
             case Some(ln) => s"""${attribute} (Line ${ln}): $message"""
@@ -60,7 +60,7 @@ object Error {
 
     def errorsToJSON(err: Error): java.util.HashMap[String, Object] = {
         err match {
-        case StageError(idx, stage, lineNumber, configErrors) => {  
+        case StageError(idx, stage, lineNumber, configErrors) => {
             val stageErrorMap = new java.util.HashMap[String, Object]()
             stageErrorMap.put("stageIndex", Integer.valueOf(idx))
             stageErrorMap.put("stage", stage)
@@ -78,10 +78,10 @@ object Error {
             }
             case None => {
                 configErrorMap.put("attribute", attribute)
-                configErrorMap.put("message", message)          
+                configErrorMap.put("message", message)
             }
-            } 
-            configErrorMap      
+            }
+            configErrorMap
         }
         }
     }
@@ -92,10 +92,10 @@ object Error {
 
     def pipelineSimpleErrorMsg(errors: List[Error]): String = {
         errors.map(e => s"${errToSimpleString(e)}").mkString("\n")
-    }    
+    }
 
     def pipelineErrorJSON(errors: List[Error]): java.util.List[java.util.HashMap[String, Object]] = {
         errors.map(e => errorsToJSON(e)).asJava
-    }    
+    }
 
     }

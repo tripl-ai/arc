@@ -27,7 +27,7 @@ object ArcPipeline {
           case Some(uri) => parseConfig(Right(new URI(uri)), arcContext)
           case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
         }
-      }  
+      }
       case None => Left(ConfigError("file", None, s"No environment defined as a command line argument --etl.config.environment or ETL_CONF_ENVIRONMENT environment variable.") :: Nil)
     }
   }
@@ -46,13 +46,13 @@ object ArcPipeline {
       val uriString = uri match {
         case Left(str) => ""
         case Right(uri) => uri.toString
-      }    
+      }
 
       logger.info()
         .field("event", "validateConfig")
-        .field("uri", uriString)        
+        .field("uri", uriString)
         .field("content-md5", etlConfStringHash)
-        .log()         
+        .log()
 
       val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
@@ -86,7 +86,7 @@ object ArcPipeline {
             case (Right(lifecycleInstances), Right(pipelineInstances)) => {
 
               // flatten any PipelineExecuteStage stages
-              val flatPipelineInstances: List[PipelineStage] = pipelineInstances.flatMap { 
+              val flatPipelineInstances: List[PipelineStage] = pipelineInstances.flatMap {
                 instance => {
                   instance match {
                     case ai.tripl.arc.execute.PipelineExecuteStage(_, _, _, _, pipeline) => pipeline.stages
@@ -97,13 +97,13 @@ object ArcPipeline {
 
               // used the resolved config to add registered lifecyclePlugins to context
               val ctx = ARCContext(
-                jobId=arcContext.jobId, 
-                jobName=arcContext.jobName, 
-                environment=arcContext.environment, 
-                environmentId=arcContext.environmentId, 
-                configUri=arcContext.configUri, 
-                isStreaming=arcContext.isStreaming, 
-                ignoreEnvironments=arcContext.ignoreEnvironments, 
+                jobId=arcContext.jobId,
+                jobName=arcContext.jobName,
+                environment=arcContext.environment,
+                environmentId=arcContext.environmentId,
+                configUri=arcContext.configUri,
+                isStreaming=arcContext.isStreaming,
+                ignoreEnvironments=arcContext.ignoreEnvironments,
                 storageLevel=arcContext.storageLevel,
                 immutableViews=arcContext.immutableViews,
                 commandLineArguments=arcContext.commandLineArguments,
@@ -113,7 +113,7 @@ object ArcPipeline {
                 pipelineStagePlugins=arcContext.pipelineStagePlugins,
                 udfPlugins=arcContext.udfPlugins,
                 userData=arcContext.userData
-              ) 
+              )
 
               Right((ETLPipeline(flatPipelineInstances), ctx))
             }
@@ -121,6 +121,6 @@ object ArcPipeline {
         }
       }
     }
-  }  
+  }
 
 }

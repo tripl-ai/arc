@@ -18,8 +18,8 @@ import ai.tripl.arc.util.TestUtils
 
 class AvroLoadSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "extract.avro" 
+  var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "extract.avro"
   val outputView = "dataset"
 
   before {
@@ -32,19 +32,19 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
 
     // ensure targets removed
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
   after {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))     
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
   test("AvroLoad") {
@@ -59,14 +59,14 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
     load.AvroLoadStage.execute(
       load.AvroLoadStage(
         plugin=new load.AvroLoad,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputView=outputView, 
-        outputURI=new URI(targetFile), 
-        partitionBy=Nil, 
-        numPartitions=None, 
+        inputView=outputView,
+        outputURI=new URI(targetFile),
+        partitionBy=Nil,
+        numPartitions=None,
         authentication=None,
-        saveMode=SaveMode.Overwrite, 
+        saveMode=SaveMode.Overwrite,
         params=Map.empty
       )
     )
@@ -78,7 +78,7 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
     val actual = spark.read.format("com.databricks.spark.avro").load(targetFile)
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }  
+  }
 
   test("AvroLoad: partitionBy") {
     implicit val spark = session
@@ -88,25 +88,25 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(outputView)
-    assert(dataset.select(spark_partition_id()).distinct.count === 1)      
+    assert(dataset.select(spark_partition_id()).distinct.count === 1)
 
     load.AvroLoadStage.execute(
       load.AvroLoadStage(
         plugin=new load.AvroLoad,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputView=outputView, 
-        outputURI=new URI(targetFile), 
-        partitionBy="booleanDatum" :: Nil, 
-        numPartitions=None, 
-        authentication=None, 
-        saveMode=SaveMode.Overwrite, 
+        inputView=outputView,
+        outputURI=new URI(targetFile),
+        partitionBy="booleanDatum" :: Nil,
+        numPartitions=None,
+        authentication=None,
+        saveMode=SaveMode.Overwrite,
         params=Map.empty
       )
     )
 
     val actual = spark.read.format("com.databricks.spark.avro").load(targetFile)
     assert(actual.select(spark_partition_id()).distinct.count === 2)
-  }  
+  }
 
 }

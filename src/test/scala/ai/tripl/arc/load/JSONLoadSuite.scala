@@ -17,8 +17,8 @@ import ai.tripl.arc.util.TestUtils
 
 class JSONLoadSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "extract.json" 
+  var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "extract.json"
   val outputView = "dataset"
 
   before {
@@ -32,19 +32,19 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
 
     // ensure targets removed
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
   after {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))     
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
   test("JSONLoad") {
@@ -59,14 +59,14 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
     load.JSONLoadStage.execute(
       load.JSONLoadStage(
         plugin=new load.JSONLoad,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputView=outputView, 
-        outputURI=new URI(targetFile), 
-        partitionBy=Nil, 
-        numPartitions=None, 
-        authentication=None, 
-        saveMode=SaveMode.Overwrite, 
+        inputView=outputView,
+        outputURI=new URI(targetFile),
+        partitionBy=Nil,
+        numPartitions=None,
+        authentication=None,
+        saveMode=SaveMode.Overwrite,
         params=Map.empty
       )
     )
@@ -78,7 +78,7 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
     val actual = spark.read.json(targetFile)
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }  
+  }
 
   test("JSONLoad: partitionBy") {
     implicit val spark = session
@@ -88,26 +88,26 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(outputView)
-    assert(dataset.select(spark_partition_id()).distinct.count === 1)      
+    assert(dataset.select(spark_partition_id()).distinct.count === 1)
 
     load.JSONLoadStage.execute(
       load.JSONLoadStage(
         plugin=new load.JSONLoad,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputView=outputView, 
-        outputURI=new URI(targetFile), 
-        partitionBy="booleanDatum" :: Nil, 
-        numPartitions=None, 
-        authentication=None, 
-        saveMode=SaveMode.Overwrite, 
+        inputView=outputView,
+        outputURI=new URI(targetFile),
+        partitionBy="booleanDatum" :: Nil,
+        numPartitions=None,
+        authentication=None,
+        saveMode=SaveMode.Overwrite,
         params=Map.empty
       )
     )
 
     val actual = spark.read.json(targetFile)
     assert(actual.select(spark_partition_id()).distinct.count === 2)
-  }  
+  }
 
   test("JSONLoad: Structured Streaming") {
     implicit val spark = session
@@ -126,14 +126,14 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
     load.JSONLoadStage.execute(
       load.JSONLoadStage(
         plugin=new load.JSONLoad,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputView=outputView, 
-        outputURI=new URI(targetFile), 
-        partitionBy=Nil, 
-        numPartitions=None, 
-        authentication=None, 
-        saveMode=SaveMode.Overwrite, 
+        inputView=outputView,
+        outputURI=new URI(targetFile),
+        partitionBy=Nil,
+        numPartitions=None,
+        authentication=None,
+        saveMode=SaveMode.Overwrite,
         params=Map.empty
       )
     )
@@ -143,6 +143,6 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
 
     val actual = spark.read.json(targetFile)
     assert(actual.schema.map(_.name).toSet.equals(Array("timestamp", "value").toSet))
-  }    
+  }
 
 }

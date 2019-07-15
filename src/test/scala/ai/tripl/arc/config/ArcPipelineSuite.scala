@@ -35,7 +35,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -126,7 +126,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   //     persist=true,
   //     failMode=FailModeTypePermissive,
   //     numPartitions=None,
-  //     partitionBy=Nil         
+  //     partitionBy=Nil
   //   )
 
   //   val subSQLValidateStage = SQLValidate(
@@ -156,7 +156,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   //     case Right((pipeline, _)) => {
   //       assert(pipeline === expected)
   //     }
-  //   }    
+  //   }
   // }
 
   // This test loops through the /src/test/resources/docs_resources directory and tries to parse each file as a config
@@ -211,7 +211,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("Test missing keys exception") { 
+  test("Test missing keys exception") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -228,12 +228,12 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         }
       ]
     }"""
-    
+
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(stageError) => {
-        assert(stageError == 
+        assert(stageError ==
         StageError(0, "file extract",3,List(
             ConfigError("inputURI", None, "Missing required attribute 'inputURI'.")
             ,ConfigError("outputView", None, "Missing required attribute 'outputView'.")
@@ -241,10 +241,10 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         ) :: Nil)
       }
       case Right(_) => assert(false)
-    }    
+    }
   }
 
-  test("Test extraneous attributes") { 
+  test("Test extraneous attributes") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -260,7 +260,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
           ],
           "inputURI": "/tmp/test.csv",
           "outputView": "output",
-        },        
+        },
         {
           "type": "DelimitedExtract",
           "name": "file extract 1",
@@ -279,7 +279,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(stageError) => {
-        assert(stageError == 
+        assert(stageError ==
         StageError(1, "file extract 1",13,List(
             ConfigError("outputView", None, "Missing required attribute 'outputView'.")
             ,ConfigError("nothinglikeanything", Some(22), "Invalid attribute 'nothinglikeanything'.")
@@ -288,16 +288,16 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         ) :: Nil)
       }
       case Right(_) => assert(false)
-    }    
+    }
   }
-  
-  test("Test invalid validValues") { 
+
+  test("Test invalid validValues") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = """{
-      "stages": [       
+      "stages": [
         {
           "type": "DelimitedExtract",
           "name": "file extract",
@@ -320,15 +320,15 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       }
       case Right(_) => assert(false)
     }
-  }  
+  }
 
-  test("Test read custom delimiter") { 
+  test("Test read custom delimiter") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = """{
-      "stages": [       
+      "stages": [
         {
           "type": "DelimitedExtract",
           "name": "file extract",
@@ -351,15 +351,15 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       }
       case Right(_) => assert(false)
     }
-  }    
+  }
 
-  test("Test read custom delimiter success") { 
+  test("Test read custom delimiter success") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = """{
-      "stages": [       
+      "stages": [
         {
           "type": "DelimitedExtract",
           "name": "file extract",
@@ -385,10 +385,10 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
           case _ => assert(false)
         }
       }
-    }  
-  }    
+    }
+  }
 
-  test("Test config substitutions") { 
+  test("Test config substitutions") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -422,23 +422,23 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, _)) => {
         assert(pipeline.stages(0).name == "foo")
       }
-    } 
+    }
   }
 
-  test("Test not List[Object]") { 
+  test("Test not List[Object]") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = """{
-      "stages": 
+      "stages":
       {
         "type": "RateExtract",
         "name": "RateExtract",
         "environments": [
           "production",
           "test"
-        ],          
+        ],
         "outputView": "stream",
         "rowsPerSecond": 1,
         "rampUpTime": 1,
@@ -456,12 +456,12 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, _)) => {
         assert(false)
       }
-    } 
-  }  
+    }
+  }
 
   // this test reads a pipeline of sqltransforms which depend on the previous stage being run (including subpiplines)
   // this is to ensure that the stages are executed in the correct order
-  test("Test read correct order") { 
+  test("Test read correct order") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -480,8 +480,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         ARC.run(pipeline)
         assert(spark.sql("SELECT * FROM stage4").count == 2)
       }
-    } 
+    }
 
-  }  
+  }
 
 }

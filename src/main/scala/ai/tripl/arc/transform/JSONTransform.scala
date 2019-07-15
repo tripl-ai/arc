@@ -28,12 +28,12 @@ class JSONTransform extends PipelineStagePlugin {
     val outputView = getValue[String]("outputView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))  
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, inputView, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(inputView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) =>
 
       val stage = JSONTransformStage(
           plugin=this,
@@ -47,9 +47,9 @@ class JSONTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        stage.stageDetail.put("inputView", inputView)  
-        stage.stageDetail.put("outputView", outputView)   
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))        
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
@@ -64,13 +64,13 @@ class JSONTransform extends PipelineStagePlugin {
 
 case class JSONTransformStage(
     plugin: JSONTransform,
-    name: String, 
-    description: Option[String], 
-    inputView: String, 
-    outputView: String, 
-    params: Map[String, String], 
-    persist: Boolean, 
-    numPartitions: Option[Int], 
+    name: String,
+    description: Option[String],
+    inputView: String,
+    outputView: String,
+    params: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
     partitionBy: List[String]
   ) extends PipelineStage {
 
@@ -93,23 +93,23 @@ object JSONTransformStage {
       dropMap.put("NullType", nulls.asJava)
     }
 
-    stage.stageDetail.put("drop", dropMap)   
+    stage.stageDetail.put("drop", dropMap)
 
     val transformedDF = try {
       df.toJSON.toDF
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }  
+        override val detail = stage.stageDetail
+      }
+    }
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => transformedDF.repartition(numPartitions)
           case None => transformedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -128,8 +128,8 @@ object JSONTransformStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-      }      
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
     }
 
     Option(repartitionedDF)

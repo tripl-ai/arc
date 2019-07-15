@@ -15,72 +15,72 @@ import ai.tripl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, Pipeli
   */
 object API {
 
-  /** ARCContext is used to define immutable global run parameters. 
+  /** ARCContext is used to define immutable global run parameters.
   */
   case class ARCContext(
     /** the job identifier
-      */        
+      */
     jobId: Option[String],
 
     /** the name of the job
-      */    
+      */
     jobName: Option[String],
 
     /** the running environment
-      */    
+      */
     environment: Option[String],
 
     /** the running environment identifier
-      */    
-    environmentId: Option[String],    
+      */
+    environmentId: Option[String],
 
     /** the job configuration path
-      */    
+      */
     configUri: Option[String],
 
     /** whether the job is in structured streaming or batch mode
-      */    
+      */
     isStreaming: Boolean,
 
     /** whether to ignore environments and process everything
-      */    
-    ignoreEnvironments: Boolean,  
+      */
+    ignoreEnvironments: Boolean,
 
     /** the storage level for any dataframe persistence
-      */    
+      */
     storageLevel: StorageLevel,
 
     /** whether to use createTempView or createOrReplaceTempView at runtime
-      */    
-    immutableViews: Boolean,  
+      */
+    immutableViews: Boolean,
 
     /** the command line arguments
-      */   
+      */
     commandLineArguments: Map[String, String],
 
     /** a list of dynamic configuration plugins which are resolved before parsing the config
-      */    
+      */
     dynamicConfigurationPlugins: List[DynamicConfigurationPlugin],
 
     /** a list of lifecycle plugins which are called before and after each stage
-      */    
+      */
     lifecyclePlugins: List[LifecyclePlugin],
 
     /** a list of active lifecycle plugins which are called before and after each stage
-      */    
-    activeLifecyclePlugins: List[LifecyclePluginInstance],    
+      */
+    activeLifecyclePlugins: List[LifecyclePluginInstance],
 
     /** a list of pipeline stage plugins which are executed in the pipeline
-      */    
+      */
     pipelineStagePlugins: List[PipelineStagePlugin],
 
     /** a list of udf plugins which are registered before running the pipeline
-      */    
+      */
     udfPlugins: List[UDFPlugin],
 
     /** a map of objects which can be attached to the context for plugins
       * try to avoid using this as it is hacky
-      */   
+      */
     userData: collection.mutable.Map[String, Object]
   )
 
@@ -90,7 +90,7 @@ object API {
     */
   sealed trait ExtractColumn {
 
-    /** The immutable id for the this column, normally a GUID. Used in 
+    /** The immutable id for the this column, normally a GUID. Used in
       * constructing the initial hash for lineage as well as a general
       * reference.
       */
@@ -123,11 +123,11 @@ object API {
       val fields = cols.map(c => ExtractColumn.toStructField(c))
       StructType(fields)
     }
-  } 
+  }
 
-  object ExtractColumn {     
+  object ExtractColumn {
 
-    /** Converts an ExtractColumn to a Spark StructField in order to create a 
+    /** Converts an ExtractColumn to a Spark StructField in order to create a
       * Schema. Adds additional internal metadata that will be persisted in
       * parquet.
       */
@@ -302,7 +302,7 @@ object API {
     case class AzureSharedAccessSignature(accountName: String, container: String, token: String) extends Authentication
     case class AzureDataLakeStorageToken(clientID: String, refreshToken: String) extends Authentication
     case class AzureDataLakeStorageGen2AccountKey(accountName: String, accessKey: String) extends Authentication
-    case class AzureDataLakeStorageGen2OAuth(clientID: String, secret: String, directoryId: String) extends Authentication    
+    case class AzureDataLakeStorageGen2OAuth(clientID: String, secret: String, directoryId: String) extends Authentication
     case class GoogleCloudStorageKeyFile(projectID: String, keyFilePath: String) extends Authentication
   }
 
@@ -349,13 +349,13 @@ object Delimiter {
   }
   case object DefaultHive extends Delimiter {
     val value = s"${0x01 : Char}"
-  }  
+  }
   case object Pipe extends Delimiter {
     val value = "|"
   }
   case object Custom extends Delimiter {
     val value = ""
-  }  
+  }
 }
 
 sealed trait QuoteCharacter {
@@ -365,7 +365,7 @@ sealed trait QuoteCharacter {
 object QuoteCharacter {
   case object Disabled extends QuoteCharacter {
     val value = s"${0x0 : Char}"
-  }    
+  }
   case object DoubleQuote extends QuoteCharacter {
     val value = "\""
   }
@@ -391,7 +391,7 @@ case class JSON(
 }
 
 case class Delimited(
-  sep: Delimiter = Delimiter.DefaultHive, 
+  sep: Delimiter = Delimiter.DefaultHive,
   quote: QuoteCharacter = QuoteCharacter.DoubleQuote,
   header: Boolean = false,
   inferSchema: Boolean = false,

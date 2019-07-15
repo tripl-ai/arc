@@ -23,7 +23,7 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -49,8 +49,8 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
         assert(false)
       }
       case Right((pipeline, arcCtx)) => ARC.run(pipeline)(spark, logger, arcCtx)
-    } 
-    
+    }
+
     val expectedBefore = Seq(("delimited extract", "before", "testValue")).toDF("stage","when","message")
     assert(TestUtils.datasetEquality(expectedBefore, spark.table("before")))
 

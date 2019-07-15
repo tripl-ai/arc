@@ -17,7 +17,7 @@ import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
 class TestPipelineStagePlugin extends PipelineStagePlugin {
-  
+
   val version = "1.0.1"
 
   def instantiate(index: Int, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], PipelineStage] = {
@@ -27,12 +27,12 @@ class TestPipelineStagePlugin extends PipelineStagePlugin {
 
     val expectedKeys = "type" :: "environments" :: "name" :: "description" :: "params" :: Nil
     val name = getValue[String]("name")
-    val description = getOptionalValue[String]("description")    
+    val description = getOptionalValue[String]("description")
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, invalidKeys) match {
-      case (Right(name), Right(description), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(invalidKeys)) =>
         val instance = TestPipelineStageInstance(
           plugin=this,
           name=name,
@@ -50,16 +50,16 @@ class TestPipelineStagePlugin extends PipelineStagePlugin {
 }
 
 case class TestPipelineStageInstance(
-    plugin: PipelineStagePlugin, 
-    name: String, 
-    description: Option[String],     
+    plugin: PipelineStagePlugin,
+    name: String,
+    description: Option[String],
     params: Map[String, String]
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     TestPipelineStageInstance.extract(this)
   }
-  
+
 }
 
 object TestPipelineStageInstance {

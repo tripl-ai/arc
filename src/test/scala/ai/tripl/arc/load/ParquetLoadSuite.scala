@@ -17,8 +17,8 @@ import ai.tripl.arc.util.TestUtils
 
 class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "extract.parquet" 
+  var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "extract.parquet"
   val outputView = "dataset"
 
   before {
@@ -32,19 +32,19 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
 
     // ensure targets removed
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
   after {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))     
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
   test("ParquetLoad") {
@@ -59,14 +59,14 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
     load.ParquetLoadStage.execute(
       load.ParquetLoadStage(
         plugin=new load.ParquetLoad,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputView=outputView, 
-        outputURI=new URI(targetFile), 
-        partitionBy=Nil, 
-        numPartitions=None, 
-        authentication=None, 
-        saveMode=SaveMode.Overwrite, 
+        inputView=outputView,
+        outputURI=new URI(targetFile),
+        partitionBy=Nil,
+        numPartitions=None,
+        authentication=None,
+        saveMode=SaveMode.Overwrite,
         params=Map.empty
       )
     )
@@ -75,7 +75,7 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
     val actual = spark.read.parquet(targetFile)
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }  
+  }
 
   test("ParquetLoad: partitionBy") {
     implicit val spark = session
@@ -85,26 +85,26 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(outputView)
-    assert(dataset.select(spark_partition_id()).distinct.count === 1)      
+    assert(dataset.select(spark_partition_id()).distinct.count === 1)
 
     load.ParquetLoadStage.execute(
       load.ParquetLoadStage(
         plugin=new load.ParquetLoad,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputView=outputView, 
-        outputURI=new URI(targetFile), 
-        partitionBy="booleanDatum" :: Nil, 
-        numPartitions=None, 
-        authentication=None, 
-        saveMode=SaveMode.Overwrite, 
+        inputView=outputView,
+        outputURI=new URI(targetFile),
+        partitionBy="booleanDatum" :: Nil,
+        numPartitions=None,
+        authentication=None,
+        saveMode=SaveMode.Overwrite,
         params=Map.empty
       )
     )
 
     val actual = spark.read.parquet(targetFile)
     assert(actual.select(spark_partition_id()).distinct.count === 2)
-  }  
+  }
 
   test("ParquetLoad: Structured Streaming") {
     implicit val spark = session
@@ -123,14 +123,14 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
     load.ParquetLoadStage.execute(
       load.ParquetLoadStage(
         plugin=new load.ParquetLoad,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputView=outputView, 
-        outputURI=new URI(targetFile), 
-        partitionBy=Nil, 
-        numPartitions=None, 
-        authentication=None, 
-        saveMode=SaveMode.Overwrite, 
+        inputView=outputView,
+        outputURI=new URI(targetFile),
+        partitionBy=Nil,
+        numPartitions=None,
+        authentication=None,
+        saveMode=SaveMode.Overwrite,
         params=Map.empty
       )
     )
@@ -140,6 +140,6 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
 
     val actual = spark.read.parquet(targetFile)
     assert(actual.schema.map(_.name).toSet.equals(Array("timestamp", "value").toSet))
-  } 
+  }
 
 }

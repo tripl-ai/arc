@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+  
+  
+  
+  
+   <html class="no-js"> 
+
+  <head lang="en-us">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>Plugins - Arc</title>
+    <meta name="generator" content="Hugo 0.51" />
+
+    
+    <meta name="description" content="Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.">
+    
+    <link rel="canonical" href="https://arc.tripl.ai/plugins/">
+    
+    <meta name="author" content="ai.tripl.arc">
+    
+
+    <meta property="og:url" content="https://arc.tripl.ai/plugins/">
+    <meta property="og:title" content="Arc">
+    <meta property="og:image" content="https://arc.tripl.ai/images/logo.png">
+    <meta name="apple-mobile-web-app-title" content="Arc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="shortcut icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
+
+    <style>
+      @font-face {
+        font-family: 'Icon';
+        src: url('https://arc.tripl.ai/fonts/icon.eot');
+        src: url('https://arc.tripl.ai/fonts/icon.eot')
+               format('embedded-opentype'),
+             url('https://arc.tripl.ai/fonts/icon.woff')
+               format('woff'),
+             url('https://arc.tripl.ai/fonts/icon.ttf')
+               format('truetype'),
+             url('https://arc.tripl.ai/fonts/icon.svg')
+               format('svg');
+        font-weight: normal;
+        font-style: normal;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/temporary.css">
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/palettes.css">
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/highlight/highlight.css">
+
+    
+    
+    
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu&#43;Mono">
+    <style>
+      body, input {
+        font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+      }
+      pre, code {
+        font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
+      }
+    </style>
+
+    
+    <script src="https://arc.tripl.ai/javascripts/modernizr.js"></script>
+
+    
+
+  </head>
+  <body class="palette-primary-red palette-accent-teal">
+
+
+
+	
+	
+
+
+<div class="backdrop">
+	<div class="backdrop-paper"></div>
+</div>
+
+<input class="toggle" type="checkbox" id="toggle-drawer">
+<input class="toggle" type="checkbox" id="toggle-search">
+<label class="toggle-button overlay" for="toggle-drawer"></label>
+
+<header class="header">
+	<nav aria-label="Header">
+  <div class="bar default">
+    <div class="button button-menu" role="button" aria-label="Menu">
+      <label class="toggle-button icon icon-menu" for="toggle-drawer">
+        <span></span>
+      </label>
+    </div>
+    <div class="stretch">
+      <div class="title">
+        Plugins
+      </div>
+    </div>
+
+    
+
+    
+    <div class="button button-github" role="button" aria-label="GitHub">
+      <a href="https://github.com/tripl-ai/arc" title="@https://github.com/tripl-ai/arc on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
+    </div>
+    
+    
+        
+  </div>
+  <div class="bar search">
+    <div class="button button-close" role="button" aria-label="Close">
+      <label class="toggle-button icon icon-back" for="toggle-search"></label>
+    </div>
+    <div class="stretch">
+      <div class="field">
+        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+      </div>
+    </div>
+    <div class="button button-reset" role="button" aria-label="Search">
+      <button class="toggle-button icon icon-close" id="reset-search"></button>
+    </div>
+  </div>
+</nav>
+</header>
+
+<main class="main">
+	<div class="drawer">
+		<nav aria-label="Navigation">
+  <a href="https://arc.tripl.ai/" class="project">
+    <div class="banner">
+      
+      <div class="logo">
+        <img src="https://arc.tripl.ai/images/logo.png">
+      </div>
+      
+      <div class="name">
+        <strong>Arc 
+          <span class="version">2.0.0</span></strong>
+        
+        <br> tripl-ai/arc 
+      </div>
+    </div>
+  </a>
+
+  <div class="scrollable">
+    <div class="wrapper">
+      
+
+      <div class="toc">
+        
+        <ul>
+          
+
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://arc.tripl.ai/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Tutorial" href="https://arc.tripl.ai/tutorial/">
+	
+	Tutorial
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Extract" href="https://arc.tripl.ai/extract/">
+	
+	Extract
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Transform" href="https://arc.tripl.ai/transform/">
+	
+	Transform
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Load" href="https://arc.tripl.ai/load/">
+	
+	Load
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Execute" href="https://arc.tripl.ai/execute/">
+	
+	Execute
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Validate" href="https://arc.tripl.ai/validate/">
+	
+	Validate
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Metadata" href="https://arc.tripl.ai/metadata/">
+	
+	Metadata
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Deploy" href="https://arc.tripl.ai/deploy/">
+	
+	Deploy
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a class="current" title="Plugins" href="https://arc.tripl.ai/plugins/">
+	
+	Plugins
+</a>
+
+
+<ul id="scrollspy">
+</ul>
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Partials" href="https://arc.tripl.ai/partials/">
+	
+	Partials
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Patterns" href="https://arc.tripl.ai/patterns/">
+	
+	Patterns
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="License" href="https://arc.tripl.ai/license/">
+	
+	License
+</a>
+
+
+
+  
+</li>
+
+
+        </ul>
+         
+        <hr>
+        <span class="section">The author</span>
+
+        <ul>
+           
+          <li>
+            <a href="https://github.com/tripl-ai" target="_blank" title="@tripl-ai on GitHub">
+              @tripl-ai on GitHub
+            </a>
+          </li>
+           
+        </ul>
+        
+      </div>
+    </div>
+  </div>
+</nav>
+	</div>
+
+	<article class="article">
+		<div class="wrapper">
+			<h1>Plugins </h1>
+
+			
+
+<p>Arc can be exended in four ways by registering:</p>
+
+<ul>
+<li><a href="#dynamic-configuration-plugins">Dynamic Configuration Plugins</a> which allow users to inject custom configuration parameters which will be processed before resolving the job configuration file..</li>
+<li><a href="#lifecycle-plugins">Lifecycle Plugins</a> which allow users to extend the base Arc framework with pipeline lifecycle hooks.</li>
+<li><a href="#pipeline-stage-plugins">Pipeline Stage Plugins</a> which allow users to extend the base Arc framework with custom stages which allow the full use of the Spark <a href="https://spark.apache.org/docs/latest/api/scala/">Scala API</a>.</li>
+<li><a href="#user-defined-functions">User Defined Functions</a> which extend the Spark SQL dialect.</li>
+</ul>
+
+<h2 id="resolution">Resolution</h2>
+
+<p>Plugins are resolved dynamically at runtime and are resolved by name and version.</p>
+
+<h3 id="examples">Examples</h3>
+
+<p>Assuming we wanted to execute a <code>KafkaExtract</code> <a href="#pipeline-stage-plugins">Pipeline Stage Plugin</a>:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;bootstrapServers&#34;</span><span class="p">:</span> <span class="s2">&#34;kafka:29092&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;topic&#34;</span><span class="p">:</span> <span class="s2">&#34;customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;groupID&#34;</span><span class="p">:</span> <span class="s2">&#34;spark-customer-extract-job&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<p>Arc will attempt to resolve the plugin by first looking in all the <code>META-INF</code> directories of all included <code>JAR</code> files (<a href="https://github.com/tripl-ai/arc-kafka-pipeline-plugin/blob/master/src/main/resources/META-INF/services/ai.tripl.arc.plugins.PipelineStagePlugin">https://github.com/tripl-ai/arc-kafka-pipeline-plugin/blob/master/src/main/resources/META-INF/services/ai.tripl.arc.plugins.PipelineStagePlugin</a>) for classes that extend <code>PipelineStagePlugin</code> which the <code>KafkaExtract</code> plugin does:</p>
+
+<pre><code class="language-scala">class KafkaExtract extends PipelineStagePlugin {
+</code></pre>
+
+<p>Arc is then able to resolve the plugin by matching on <code>simpleName</code> - in this case <code>KafkaExtract</code> - and then call the <code>instantiate()</code> method to create an instance of the plugin which is executed by Arc at the appropriate time depending on plugin type.</p>
+
+<p>To allow more specitivity you can use either the full package name and/or include the version:</p>
+
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;ai.tripl.arc.extract.KafkaExtract&quot;,
+  ...
+</code></pre>
+
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;KafkaExtract:1.0.0&quot;,
+  ...
+</code></pre>
+
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;ai.tripl.arc.extract.KafkaExtract:1.0.0&quot;,
+  ...
+</code></pre>
+
+<h2 id="dynamic-configuration-plugins">Dynamic Configuration Plugins</h2>
+
+<h5 id="since-1-3-0">Since: 1.3.0</h5>
+
+<div class="admonition note">
+<p class="admonition-title">Dynamic vs Deterministic Configuration</p>
+<p>Use of this functionality is discouraged as it goes against the <a href="https://arc.tripl.ai/#principles">principles of Arc</a> specifically around statelessness/deterministic behaviour but is inlcuded here for users who have not yet committed to a job orchestrator such as <a href="https://airflow.apache.org/">Apache Airflow</a> and have dynamic configuration requirements.</p>
+</div>
+
+<p>The <code>Dynamic Configuration Plugin</code> plugin allow users to inject custom configuration parameters which will be processed before resolving the job configuration file. The plugin must return a Typesafe Config object (which is easily created from a <code>java.util.Map[String, Object]</code> which will be included in the job configuration resolution step.</p>
+
+<h3 id="examples-1">Examples</h3>
+
+<p>For example a custom runtime configuration plugin could be used calculate a formatted list of dates to be used with an <a href="../extract">Extract</a> stage to read only a subset of documents:</p>
+
+<pre><code class="language-scala">package ai.tripl.arc.plugins.config
+
+import java.util
+import java.sql.Date
+import java.time.LocalDate
+import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
+import java.time.format.ResolverStyle
+import scala.collection.JavaConverters._
+
+import com.typesafe.config._
+
+import org.apache.spark.sql.SparkSession
+
+import ai.tripl.arc.util.log.logger.Logger
+import ai.tripl.arc.api.API.ARCContext
+import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.plugins.DynamicConfigurationPlugin
+
+class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
+
+  val version = ai.tripl.arc.plugins.config.deltaperiod.BuildInfo.version
+
+  def instantiate(index: Int, config: Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], Config] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
+
+    val expectedKeys = &quot;type&quot; :: &quot;environments&quot; :: &quot;returnName&quot; :: &quot;lagDays&quot; :: &quot;leadDays&quot; :: &quot;formatter&quot; :: &quot;currentDate&quot; :: Nil
+    val returnName = getValue[String](&quot;returnName&quot;)
+    val lagDays = getValue[Int](&quot;lagDays&quot;)
+    val leadDays = getValue[Int](&quot;leadDays&quot;)
+    val formatter = getValue[String](&quot;formatter&quot;) |&gt; parseFormatter(&quot;formatter&quot;) _
+    val currentDate = formatter match {
+      case Right(formatter) =&gt; {
+        if (c.hasPath(&quot;currentDate&quot;)) getValue[String](&quot;currentDate&quot;) |&gt; parseCurrentDate(&quot;currentDate&quot;, formatter) _ else Right(java.time.LocalDate.now)
+      }
+      case _ =&gt; Right(java.time.LocalDate.now)
+    }
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    (returnName, lagDays, leadDays, formatter, currentDate, invalidKeys) match {
+      case (Right(returnName), Right(lagDays), Right(leadDays), Right(formatter), Right(currentDate), Right(invalidKeys)) =&gt; 
+
+        val res = (lagDays * -1 to leadDays).map { v =&gt;
+          formatter.format(currentDate.plusDays(v))
+        }.mkString(&quot;,&quot;)
+
+        val values = new java.util.HashMap[String, Object]()
+        values.put(returnName, res)
+
+        Right(ConfigFactory.parseMap(values))
+      case _ =&gt;
+        val allErrors: Errors = List(returnName, lagDays, leadDays, formatter, currentDate, invalidKeys).collect{ case Left(errs) =&gt; errs }.flatten
+        val err = StageError(index, this.getClass.getName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }   
+  
+  def parseFormatter(path: String)(formatter: String)(implicit c: Config): Either[Errors, DateTimeFormatter] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, DateTimeFormatter] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    try {
+      Right(DateTimeFormatter.ofPattern(formatter).withResolverStyle(ResolverStyle.SMART))
+    } catch {
+      case e: Exception =&gt; err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
+    }
+  }  
+
+  def parseCurrentDate(path: String, formatter: DateTimeFormatter)(value: String)(implicit c: Config): Either[Errors, LocalDate] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, LocalDate] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    try {
+      Right(LocalDate.parse(value, formatter))
+    } catch {
+      case e: Exception =&gt; err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
+    }
+  }    
+}
+
+</code></pre>
+
+<p>The plugin then needs to be registered in the <code>plugins.config</code> section of the job configuration and the full plugin name must be listed in your project&rsquo;s <code>/resources/META-INF/services/ai.tripl.arc.plugins.DynamicConfigurationPlugin</code> file. See <a href="https://github.com/tripl-ai/arc-deltaperiod-config-plugin">https://github.com/tripl-ai/arc-deltaperiod-config-plugin</a> for a full example.</p>
+
+<p>Note that the resolution order of these plugins is in descending order in that if the the <code>ETL_CONF_DELTA_PERIOD</code> was declared in multiple plugins the value set by the plugin with the lower index in the <code>plugins.config</code> array will take precedence.</p>
+
+<p>The <code>ETL_CONF_DELTA_PERIOD</code> variable is then available to be resolved in a standard configuration:</p>
+
+<pre><code class="language-json">{
+  &quot;plugins&quot;: {
+    &quot;config&quot;: [
+      {
+        &quot;type&quot;: &quot;ai.tripl.arc.plugins.config.DeltaPeriodDynamicConfigurationPlugin&quot;,
+        &quot;environments&quot;: [
+          &quot;production&quot;,
+          &quot;test&quot;
+        ],
+        &quot;returnName&quot;: &quot;ETL_CONF_DELTA_PERIOD&quot;,
+        &quot;lagDays&quot;: &quot;10&quot;,
+        &quot;leadDays&quot;: &quot;1&quot;,
+        &quot;pattern&quot;: &quot;yyyy-MM-dd&quot;
+      }
+    ]
+  },
+  &quot;stages&quot;: [
+    {
+      &quot;type&quot;: &quot;DelimitedExtract&quot;,
+      &quot;name&quot;: &quot;load customer extract&quot;,
+      &quot;environments&quot;: [
+        &quot;production&quot;,
+        &quot;test&quot;
+      ],
+      &quot;inputURI&quot;: &quot;hdfs://datalake/input/customer/customers_{&quot;${ETL_CONF_DELTA_PERIOD}&quot;}.csv&quot;,
+      &quot;outputView&quot;: &quot;customer&quot;
+    }
+  ]
+}
+</code></pre>
+
+<h2 id="lifecycle-plugins">Lifecycle Plugins</h2>
+
+<h5 id="since-1-3-0-1">Since: 1.3.0</h5>
+
+<p>Custom <code>Lifecycle Plugins</code> allow users to extend the base Arc framework with logic which is executed <code>before</code> or <code>after</code> each Arc stage (lifecycle hooks). These stages are useful for implementing things like dataset logging after each stage execution for debugging.</p>
+
+<h3 id="examples-2">Examples</h3>
+
+<pre><code class="language-scala">package ai.tripl.arc.plugins.lifecycle
+
+import java.util
+
+import org.apache.spark.sql.{DataFrame, SparkSession}
+
+import ai.tripl.arc.api.API._
+import ai.tripl.arc.plugins.LifecyclePlugin
+import ai.tripl.arc.util.Utils
+import ai.tripl.arc.util.log.logger.Logger
+import ai.tripl.arc.config.Error._
+
+class DataFramePrinter extends LifecyclePlugin {
+
+  val version = Utils.getFrameworkVersion
+
+  def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], LifecyclePluginInstance] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
+
+    val expectedKeys = &quot;type&quot; :: &quot;environments&quot; :: &quot;numRows&quot; :: &quot;truncate&quot; :: Nil
+    val numRows = getValue[Int](&quot;numRows&quot;, default = Some(20))
+    val truncate = getValue[java.lang.Boolean](&quot;truncate&quot;, default = Some(true))
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    (numRows, truncate, invalidKeys) match {
+      case (Right(numRows), Right(truncate), Right(invalidKeys)) =&gt; 
+        Right(DataFramePrinterInstance(
+          plugin=this,
+          numRows=numRows,
+          truncate=truncate
+        ))
+      case _ =&gt;
+        val allErrors: Errors = List(numRows, truncate, invalidKeys).collect{ case Left(errs) =&gt; errs }.flatten
+        val err = StageError(index, this.getClass.getName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+}
+
+case class DataFramePrinterInstance(
+    plugin: LifecyclePlugin,
+    numRows: Int,
+    truncate: Boolean
+  ) extends LifecyclePluginInstance {
+
+  override def before(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
+    logger.trace()        
+      .field(&quot;event&quot;, &quot;before&quot;)
+      .field(&quot;stage&quot;, stage.name)
+      .log()  
+  }
+
+  override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
+    logger.trace()        
+      .field(&quot;event&quot;, &quot;after&quot;)
+      .field(&quot;stage&quot;, stage.name)
+      .field(&quot;isLast&quot;, java.lang.Boolean.valueOf(isLast))
+      .log() 
+
+    result match {
+      case Some(df) =&gt; df.show(numRows, truncate)
+      case None =&gt;
+    }
+  } 
+}
+
+</code></pre>
+
+<p>The plugin then needs to be registered by adding the full plugin name must be listed in your project’s <code>/resources/META-INF/services/ai.tripl.arc.plugins.LifecyclePlugin</code> file.</p>
+
+<p>To execute:</p>
+
+<pre><code class="language-json">{
+  &quot;plugins&quot;: {
+    &quot;lifecycle&quot;: [
+      {
+        &quot;type&quot;: &quot;ai.tripl.arc.plugins.lifecycle.DataFramePrinterLifecyclePlugin&quot;,
+        &quot;environments&quot;: [
+          &quot;production&quot;,
+          &quot;test&quot;
+        ],
+        &quot;params&quot;: {
+          &quot;numRows&quot;: &quot;100&quot;,
+          &quot;truncate&quot;: &quot;false&quot;,
+        }
+      }
+    ]
+  },
+  &quot;stages&quot;: [
+    ...
+  ]
+}
+</code></pre>
+
+<h2 id="pipeline-stage-plugins">Pipeline Stage Plugins</h2>
+
+<h5 id="since-1-3-0-2">Since: 1.3.0</h5>
+
+<p>Custom <code>Pipeline Stage Plugins</code> allow users to extend the base Arc framework with custom stages which allow the full use of the Spark <a href="https://spark.apache.org/docs/latest/api/scala/">Scala API</a>. This means that private business logic or code which relies on libraries not included in the base Arc framework can be used - however it is strongly advised to use the inbuilt SQL stages where possible. If stages are general purpose enough for use outside your organisation consider contributing them to <a href="https://github.com/tripl-ai">ai.tripl</a> so that others can benefit.</p>
+
+<p>When writing plugins and you find Spark throwing <code>NotSerializableException</code> errors like:</p>
+
+<pre><code class="language-scala">Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: scala.collection.convert.Wrappers$MapWrapper
+</code></pre>
+
+<p>Ensure that any stage with a <code>mapPartitions</code> or <code>map</code> DataFrame does not require the <code>PipelineStage</code> instance to be passed into the <code>map</code> function. So instead of doing something like:</p>
+
+<pre><code class="language-scala">val transformedDF = try {
+  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =&gt; 
+    val uri = stage.uri.toString
+</code></pre>
+
+<p>Declare the variables outside the map function so that <code>stage</code> does not have to be serialised and sent to all the executors (which fails if any of the <code>PipelineStage</code> contents are not serializable):</p>
+
+<pre><code class="language-scala">val stageUri = stage.uri
+
+val transformedDF = try {
+  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =&gt; 
+    val uri = stageUri.toString
+</code></pre>
+
+<h3 id="examples-3">Examples</h3>
+
+<pre><code class="language-scala">class ConsoleLoad extends PipelineStagePlugin {
+
+  val version = Utils.getFrameworkVersion
+
+  def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
+
+    val expectedKeys = &quot;type&quot; :: &quot;name&quot; :: &quot;description&quot; :: &quot;environments&quot; :: &quot;inputView&quot; :: &quot;outputMode&quot; :: &quot;params&quot; :: Nil
+    val name = getValue[String](&quot;name&quot;)
+    val description = getOptionalValue[String](&quot;description&quot;)
+    val inputView = getValue[String](&quot;inputView&quot;)
+    val outputMode = getValue[String](&quot;outputMode&quot;, default = Some(&quot;Append&quot;), validValues = &quot;Append&quot; :: &quot;Complete&quot; :: &quot;Update&quot; :: Nil) |&gt; parseOutputModeType(&quot;outputMode&quot;) _
+    val params = readMap(&quot;params&quot;, c)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+
+    (name, description, inputView, outputMode, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputMode), Right(invalidKeys)) =&gt; 
+        val stage = ConsoleLoadStage(
+          plugin=this,
+          name=name,
+          description=description,
+          inputView=inputView,
+          outputMode=outputMode,
+          params=params
+        )
+
+        stage.stageDetail.put(&quot;inputView&quot;, stage.inputView)  
+        stage.stageDetail.put(&quot;outputMode&quot;, stage.outputMode.sparkString)  
+        stage.stageDetail.put(&quot;params&quot;, params.asJava)
+
+        Right(stage)
+      case _ =&gt;
+        val allErrors: Errors = List(name, description, inputView, outputMode, invalidKeys).collect{ case Left(errs) =&gt; errs }.flatten
+        val stageName = stringOrDefault(name, &quot;unnamed stage&quot;)
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+
+}
+
+case class ConsoleLoadStage(
+    plugin: ConsoleLoad,
+    name: String, 
+    description: Option[String], 
+    inputView: String, 
+    outputMode: OutputModeType, 
+    params: Map[String, String]
+  ) extends PipelineStage {
+
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    ConsoleLoadStage.execute(this)
+  }
+}
+
+
+object ConsoleLoadStage {
+
+  def execute(stage: ConsoleLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+
+    val df = spark.table(stage.inputView)   
+
+    if (!df.isStreaming) {
+      throw new Exception(&quot;ConsoleLoad can only be executed in streaming mode.&quot;) with DetailException {
+        override val detail = stage.stageDetail          
+      }
+    }      
+
+    df.writeStream
+        .format(&quot;console&quot;)
+        .outputMode(stage.outputMode.sparkString)
+        .start
+
+    Option(df)
+  }
+}
+</code></pre>
+
+<p>The plugin then needs to be registered by adding the full plugin name must be listed in your project’s <code>/resources/META-INF/services/ai.tripl.arc.plugins.PipelineStagePlugin</code> file.</p>
+
+<p>To execute:</p>
+
+<pre><code class="language-json">{
+  &quot;stages&quot;: [
+    {
+      &quot;type&quot;: &quot;ConsoleLoad&quot;,
+      &quot;name&quot;: &quot;load streaming data to console for testing&quot;,
+      &quot;environments&quot;: [
+        &quot;test&quot;
+      ],
+      &quot;inputView&quot;: &quot;calculated_dataset&quot;,
+      &quot;outputMode&quot;: &quot;Complete&quot;
+    }
+  ]
+}
+</code></pre>
+
+<h2 id="user-defined-functions">User Defined Functions</h2>
+
+<h5 id="since-1-3-0-3">Since: 1.3.0</h5>
+
+<div class="admonition note">
+<p class="admonition-title">User Defined Functions vs Spark SQL Functions</p>
+<p>The inbuilt <a href="https://spark.apache.org/docs/latest/api/sql/index.html">Spark SQL Functions</a> are heavily optimised by the internal Spark code to a level which custom User Defined Functions cannot be (byte code) - so where possible it is better to use the inbuilt functions.</p>
+</div>
+
+<p><code>User Defined Functions</code> allow users to extend the <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL</a> dialect.</p>
+
+<p>Arc already includes <a href="partials/#user-defined-functions">some addtional functions</a> which are not included in the base <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL</a> dialect so any useful generic functions can be included in the <a href="https://github.com/tripl-ai/arc">Arc repository</a> so that others can benefit.</p>
+
+<h3 id="examples-4">Examples</h3>
+
+<p>Write the code to define the custom <code>User Defined Function</code>:</p>
+
+<pre><code class="language-scala">package ai.tripl.arc.plugins
+import java.util
+
+import org.apache.spark.sql.SparkSession
+import ai.tripl.arc.api.API.ARCContext
+
+import ai.tripl.arc.util.log.logger.Logger
+
+class TestUDFPlugin extends UDFPlugin {
+
+  val version = &quot;0.0.1&quot;
+
+  // one udf plugin can register multiple user defined functions
+  override def register()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
+
+    // register the functions so they can be accessed via Spark SQL
+    spark.sqlContext.udf.register(&quot;add_ten&quot;, TestUDFPlugin.addTen _ )           // SELECT add_ten(1) AS one_plus_ten
+    spark.sqlContext.udf.register(&quot;add_twenty&quot;, TestUDFPlugin.addTwenty _ )     // SELECT add_twenty(1) AS one_plus_twenty
+
+  }
+}
+
+object TestUDFPlugin {
+  // add 10 to an incoming integer - DO NOT DO THIS IN PRODUCTION INSTEAD USE SPARK SQL DIRECTLY
+  def addTen(input: Int): Int = {
+    input + 10
+  }
+
+  // add 20 to an incoming integer  - DO NOT DO THIS IN PRODUCTION INSTEAD USE SPARK SQL DIRECTLY
+  def addTwenty(input: Int): Int = {
+    input + 20
+  }
+}
+</code></pre>
+
+<p>The plugin then needs to be registered by adding the full plugin name must be listed in your project&rsquo;s <code>/resources/META-INF/services/ai.tripl.arc.plugins.UDFPlugin</code> file and would be executed like:</p>
+
+<pre><code class="language-sql">SELECT age, add_ten(age) FROM customer
+</code></pre>
+
+
+			<aside class="copyright" role="note">
+				
+				&copy; 2019 Released under the MIT license
+				
+			</aside>
+
+			<footer class="footer">
+				
+
+<nav class="pagination" aria-label="Footer">
+  <div class="previous">
+    
+    <a href="https://arc.tripl.ai/deploy/" title="Deploy">
+      <span class="direction">
+        Previous
+      </span>
+      <div class="page">
+        <div class="button button-previous" role="button" aria-label="Previous">
+          <i class="icon icon-back"></i>
+        </div>
+        <div class="stretch">
+          <div class="title">
+            Deploy
+          </div>
+        </div>
+      </div>
+    </a>
+    
+  </div>
+
+  <div class="next">
+    
+    <a href="https://arc.tripl.ai/partials/" title="Partials">
+      <span class="direction">
+        Next
+      </span>
+      <div class="page">
+        <div class="stretch">
+          <div class="title">
+            Partials
+          </div>
+        </div>
+        <div class="button button-next" role="button" aria-label="Next">
+          <i class="icon icon-forward"></i>
+        </div>
+      </div>
+    </a>
+    
+  </div>
+</nav>
+
+
+
+
+			</footer>
+		</div>
+	</article>
+
+	<div class="results" role="status" aria-live="polite">
+		<div class="scrollable">
+			<div class="wrapper">
+				<div class="meta"></div>
+				<div class="list"></div>
+			</div>
+		</div>
+	</div>
+</main>
+
+    <script>
+    
+      var base_url = 'https:\/\/arc.tripl.ai\/';
+      var repo_id  = 'tripl-ai\/arc';
+    
+    </script>
+
+    <script src="https://arc.tripl.ai/javascripts/application.js"></script>
+    
+
+    <script>
+      /* Add headers to scrollspy */
+      var headers   = document.getElementsByTagName("h2");
+      var scrollspy = document.getElementById('scrollspy');
+
+      if(scrollspy) {
+        if(headers.length > 0) {
+          for(var i = 0; i < headers.length; i++) {
+            var li = document.createElement("li");
+            li.setAttribute("class", "anchor");
+
+            var a  = document.createElement("a");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", headers[i].innerHTML);
+            a.innerHTML = headers[i].innerHTML;
+
+            li.appendChild(a)
+            scrollspy.appendChild(li);
+          }
+        } else {
+          scrollspy.parentElement.removeChild(scrollspy)
+        }
+
+
+        /* Add permanent link next to the headers */
+        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+        for(var i = 0; i < headers.length; i++) {
+            var a = document.createElement("a");
+            a.setAttribute("class", "headerlink");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", "Permanent link")
+            a.innerHTML = "#";
+            headers[i].appendChild(a);
+        }
+      }
+    </script>
+
+    
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
+

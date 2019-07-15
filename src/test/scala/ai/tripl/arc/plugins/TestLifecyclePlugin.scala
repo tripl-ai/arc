@@ -21,7 +21,7 @@ class TestLifecyclePlugin extends LifecyclePlugin {
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (key, invalidKeys) match {
-      case (Right(key), Right(invalidKeys)) => 
+      case (Right(key), Right(invalidKeys)) =>
 
         val instance = TestLifecyclePluginInstance(
           plugin=this,
@@ -52,5 +52,5 @@ case class TestLifecyclePluginInstance(
     import spark.implicits._
     val df = Seq((stage.name, "after", this.key, result.get.count, isLast)).toDF("stage","when","message","count","isLast")
     df.createOrReplaceTempView("after")
-  } 
+  }
 }

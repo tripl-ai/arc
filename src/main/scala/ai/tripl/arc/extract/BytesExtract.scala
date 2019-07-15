@@ -38,12 +38,12 @@ class BytesExtract extends PipelineStagePlugin {
     val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
     val failMode = getValue[String]("failMode", default = Some("failfast"), validValues = "permissive" :: "failfast" :: Nil) |> parseFailMode("failMode") _
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)    
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, parsedGlob, inputView, outputView, persist, numPartitions, authentication, contiguousIndex, failMode, invalidKeys) match {
       case (Right(name), Right(description), Right(parsedGlob), Right(inputView), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(failMode), Right(invalidKeys)) =>
         val input = if(c.hasPath("inputView")) {
-          Left(inputView) 
+          Left(inputView)
         } else {
           Right(parsedGlob)
         }
@@ -52,7 +52,7 @@ class BytesExtract extends PipelineStagePlugin {
           plugin=this,
           name=name,
           description=description,
-          outputView=outputView, 
+          outputView=outputView,
           input=input,
           authentication=authentication,
           persist=persist,
@@ -63,7 +63,7 @@ class BytesExtract extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("failMode", stage.failMode.sparkString)
-        stage.stageDetail.put("input", if (c.hasPath("inputView")) inputView else parsedGlob)    
+        stage.stageDetail.put("input", if (c.hasPath("inputView")) inputView else parsedGlob)
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(stage.persist))
         stage.stageDetail.put("params", params.asJava)
@@ -80,7 +80,7 @@ class BytesExtract extends PipelineStagePlugin {
 
 case class BytesExtractStage(
     plugin: BytesExtract,
-    name: String, 
+    name: String,
     description: Option[String],
     outputView: String,
     input: Either[String, String],
@@ -130,23 +130,23 @@ object BytesExtractStage {
           spark.read.format("bytes").load(path)
         }
         case Right(glob) => {
-          val bytesDF = spark.read.format("bytes").load(glob)   
+          val bytesDF = spark.read.format("bytes").load(glob)
           // force evaluation so errors can be caught
           bytesDF.take(1)
           bytesDF
         }
       }
     } catch {
-      case e: InvalidInputException => 
+      case e: InvalidInputException =>
         if (stage.failMode == FailModeTypeFailFast) {
           throw new Exception("BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.") with DetailException {
-            override val detail = stage.stageDetail          
-          }  
+            override val detail = stage.stageDetail
+          }
         }
         spark.createDataFrame(spark.sparkContext.emptyRDD[Row], BinaryContent.schema)
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }   
+        override val detail = stage.stageDetail
+      }
     }
 
     // datasource already has a _filename column so no need to add internal columns

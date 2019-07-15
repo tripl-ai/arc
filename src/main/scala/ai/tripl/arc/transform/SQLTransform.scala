@@ -28,46 +28,46 @@ class SQLTransform extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
-    val authentication = readAuthentication("authentication")  
+    val authentication = readAuthentication("authentication")
     val inputSQL = parsedURI |> textContentForURI("inputURI", authentication) _
     val sqlParams = readMap("sqlParams", c)
     val validSQL = inputSQL |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
     val outputView = getValue[String]("outputView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))        
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, parsedURI, inputSQL, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) =>
 
         if (validSQL.toLowerCase() contains "now") {
           logger.warn()
             .field("event", "validateConfig")
             .field("name", name)
-            .field("type", "SQLTransform")              
-            .field("message", "sql contains NOW() function which may produce non-deterministic results")       
-            .log()   
-        } 
+            .field("type", "SQLTransform")
+            .field("message", "sql contains NOW() function which may produce non-deterministic results")
+            .log()
+        }
 
         if (validSQL.toLowerCase() contains "current_date") {
           logger.warn()
             .field("event", "validateConfig")
             .field("name", name)
-            .field("type", "SQLTransform")              
-            .field("message", "sql contains CURRENT_DATE() function which may produce non-deterministic results")       
-            .log()   
+            .field("type", "SQLTransform")
+            .field("message", "sql contains CURRENT_DATE() function which may produce non-deterministic results")
+            .log()
         }
 
         if (validSQL.toLowerCase() contains "current_timestamp") {
           logger.warn()
             .field("event", "validateConfig")
             .field("name", name)
-            .field("type", "SQLTransform")              
-            .field("message", "sql contains CURRENT_TIMESTAMP() function which may produce non-deterministic results")       
-            .log()   
-        }        
+            .field("type", "SQLTransform")
+            .field("message", "sql contains CURRENT_TIMESTAMP() function which may produce non-deterministic results")
+            .log()
+        }
 
         val stage = SQLTransformStage(
           plugin=this,
@@ -83,11 +83,11 @@ class SQLTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        stage.stageDetail.put("inputURI", parsedURI.toString)  
-        stage.stageDetail.put("outputView", outputView)   
+        stage.stageDetail.put("inputURI", parsedURI.toString)
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        stage.stageDetail.put("sql", inputSQL)   
-        stage.stageDetail.put("sqlParams", sqlParams.asJava)  
+        stage.stageDetail.put("sql", inputSQL)
+        stage.stageDetail.put("sqlParams", sqlParams.asJava)
         stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
@@ -102,15 +102,15 @@ class SQLTransform extends PipelineStagePlugin {
 
 case class SQLTransformStage(
     plugin: SQLTransform,
-    name: String, 
-    description: Option[String], 
-    inputURI: URI, 
-    sql: String, 
-    outputView:String, 
-    params: Map[String, String], 
-    sqlParams: Map[String, String], 
-    persist: Boolean, 
-    numPartitions: Option[Int], 
+    name: String,
+    description: Option[String],
+    inputURI: URI,
+    sql: String,
+    outputView:String,
+    params: Map[String, String],
+    sqlParams: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
     partitionBy: List[String]
   ) extends PipelineStage {
 
@@ -120,7 +120,7 @@ case class SQLTransformStage(
 }
 
 object SQLTransformStage {
-  
+
   def execute(stage: SQLTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val stmt = SQLUtils.injectParameters(stage.sql, stage.sqlParams, false)
@@ -130,17 +130,17 @@ object SQLTransformStage {
       spark.sql(stmt)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
     }
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => transformedDF.repartition(numPartitions)
           case None => transformedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -162,8 +162,8 @@ object SQLTransformStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-      }      
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
     }
 
     Option(repartitionedDF)

@@ -17,8 +17,8 @@ import ai.tripl.arc.util.TestUtils
 
 class ORCLoadSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "extract.orc" 
+  var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "extract.orc"
   val outputView = "dataset"
 
   before {
@@ -33,19 +33,19 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
 
     // ensure targets removed
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
   after {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))     
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
   test("ORCLoad") {
@@ -60,14 +60,14 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     load.ORCLoadStage.execute(
       load.ORCLoadStage(
         plugin=new load.ORCLoad,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputView=outputView, 
-        outputURI=new URI(targetFile), 
-        partitionBy=Nil, 
-        numPartitions=None, 
-        authentication=None, 
-        saveMode=SaveMode.Overwrite, 
+        inputView=outputView,
+        outputURI=new URI(targetFile),
+        partitionBy=Nil,
+        numPartitions=None,
+        authentication=None,
+        saveMode=SaveMode.Overwrite,
         params=Map.empty
       )
     )
@@ -76,7 +76,7 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     val actual = spark.read.orc(targetFile)
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }  
+  }
 
   test("ORCLoad: partitionBy") {
     implicit val spark = session
@@ -86,26 +86,26 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(outputView)
-    assert(dataset.select(spark_partition_id()).distinct.count === 1)      
+    assert(dataset.select(spark_partition_id()).distinct.count === 1)
 
     load.ORCLoadStage.execute(
       load.ORCLoadStage(
         plugin=new load.ORCLoad,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputView=outputView, 
-        outputURI=new URI(targetFile), 
-        partitionBy="booleanDatum" :: Nil, 
-        numPartitions=None, 
-        authentication=None, 
-        saveMode=SaveMode.Overwrite, 
+        inputView=outputView,
+        outputURI=new URI(targetFile),
+        partitionBy="booleanDatum" :: Nil,
+        numPartitions=None,
+        authentication=None,
+        saveMode=SaveMode.Overwrite,
         params=Map.empty
       )
     )
 
     val actual = spark.read.orc(targetFile)
     assert(actual.select(spark_partition_id()).distinct.count === 2)
-  }  
+  }
 
   test("ORCLoad: Structured Streaming") {
     implicit val spark = session
@@ -124,14 +124,14 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     load.ORCLoadStage.execute(
       load.ORCLoadStage(
         plugin=new load.ORCLoad,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputView=outputView, 
-        outputURI=new URI(targetFile), 
-        partitionBy=Nil, 
-        numPartitions=None, 
-        authentication=None, 
-        saveMode=SaveMode.Overwrite, 
+        inputView=outputView,
+        outputURI=new URI(targetFile),
+        partitionBy=Nil,
+        numPartitions=None,
+        authentication=None,
+        saveMode=SaveMode.Overwrite,
         params=Map.empty
       )
     )
@@ -141,5 +141,5 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
 
     val actual = spark.read.orc(targetFile)
     assert(actual.schema.map(_.name).toSet.equals(Array("timestamp", "value").toSet))
-  }    
+  }
 }

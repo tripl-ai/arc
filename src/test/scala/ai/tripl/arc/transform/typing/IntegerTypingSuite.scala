@@ -276,7 +276,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
           case (_, _) => assert(false)
         }
       }
-    }  
+    }
 
     //test multiple formatter
     {
@@ -293,7 +293,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
           case (_, _) => assert(false)
         }
       }
-    }      
+    }
 
     //test formatter in error message
     {
@@ -310,7 +310,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
           case (_, _) => assert(false)
         }
       }
-    } 
+    }
 
   }
 

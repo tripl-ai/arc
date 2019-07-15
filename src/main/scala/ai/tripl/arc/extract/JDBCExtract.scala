@@ -46,34 +46,34 @@ class JDBCExtract extends PipelineStagePlugin {
     val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, predicates, numPartitions, fetchsize, customSchema, partitionColumn, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(jdbcURL), Right(driver), Right(tableName), Right(predicates), Right(numPartitions), Right(fetchsize), Right(customSchema), Right(partitionColumn), Right(partitionBy), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(jdbcURL), Right(driver), Right(tableName), Right(predicates), Right(numPartitions), Right(fetchsize), Right(customSchema), Right(partitionColumn), Right(partitionBy), Right(invalidKeys)) =>
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
         val stage = JDBCExtractStage(
           plugin=this,
-          name=name, 
+          name=name,
           description=description,
           schema=schema,
-          outputView=outputView, 
+          outputView=outputView,
           jdbcURL=jdbcURL,
           driver=driver,
-          tableName=tableName, 
-          numPartitions=numPartitions, 
+          tableName=tableName,
+          numPartitions=numPartitions,
           partitionBy=partitionBy,
-          fetchsize=fetchsize, 
+          fetchsize=fetchsize,
           customSchema=customSchema,
           partitionColumn=partitionColumn,
           predicates=predicates,
-          params=params, 
+          params=params,
           persist=persist
         )
 
-        stage.stageDetail.put("driver", driver.getClass.toString)  
+        stage.stageDetail.put("driver", driver.getClass.toString)
         stage.stageDetail.put("jdbcURL", JDBCUtils.maskPassword(jdbcURL))
-        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("tableName", tableName)
         for (partitionColumn <- partitionColumn) {
@@ -85,7 +85,7 @@ class JDBCExtract extends PipelineStagePlugin {
         }
         for (fetchsize <- fetchsize) {
           stage.stageDetail.put("fetchsize", java.lang.Integer.valueOf(fetchsize))
-        }             
+        }
 
         Right(stage)
       case _ =>
@@ -100,20 +100,20 @@ class JDBCExtract extends PipelineStagePlugin {
 
 case class JDBCExtractStage(
     plugin: JDBCExtract,
-    name: String, 
-    description: Option[String], 
-    schema: Either[String, List[ExtractColumn]], 
-    outputView: String, 
-    jdbcURL: String, 
-    tableName: String, 
-    numPartitions: Option[Int], 
-    fetchsize: Option[Int], 
-    customSchema: Option[String], 
-    driver: java.sql.Driver, 
-    partitionColumn: Option[String], 
-    params: Map[String, String], 
-    persist: Boolean, 
-    partitionBy: List[String], 
+    name: String,
+    description: Option[String],
+    schema: Either[String, List[ExtractColumn]],
+    outputView: String,
+    jdbcURL: String,
+    tableName: String,
+    numPartitions: Option[Int],
+    fetchsize: Option[Int],
+    customSchema: Option[String],
+    driver: java.sql.Driver,
+    partitionColumn: Option[String],
+    params: Map[String, String],
+    persist: Boolean,
+    partitionBy: List[String],
     predicates: List[String]
   ) extends PipelineStage {
 
@@ -133,15 +133,15 @@ object JDBCExtractStage {
     }
 
     for (numPartitions <- stage.numPartitions) {
-      connectionProperties.put("numPartitions", numPartitions.toString)    
+      connectionProperties.put("numPartitions", numPartitions.toString)
     }
 
     for (fetchsize <- stage.fetchsize) {
-      connectionProperties.put("fetchsize", fetchsize.toString)    
-    }     
+      connectionProperties.put("fetchsize", fetchsize.toString)
+    }
 
     for (partitionColumn <- stage.partitionColumn) {
-      connectionProperties.put("partitionColumn", partitionColumn)    
+      connectionProperties.put("partitionColumn", partitionColumn)
 
       // automatically set the lowerBound and upperBound
       try {
@@ -155,28 +155,28 @@ object JDBCExtractStage {
               val lowerBound = statement.getResultSet.getLong(1)
               val upperBound = statement.getResultSet.getLong(2)
 
-              connectionProperties.put("lowerBound", lowerBound.toString)    
+              connectionProperties.put("lowerBound", lowerBound.toString)
               stage.stageDetail.put("lowerBound", java.lang.Long.valueOf(lowerBound))
-              connectionProperties.put("upperBound", upperBound.toString)    
+              connectionProperties.put("upperBound", upperBound.toString)
               stage.stageDetail.put("upperBound", java.lang.Long.valueOf(upperBound))
             }
           }
         }
       } catch {
         case e: Exception => throw new Exception(e) with DetailException {
-          override val detail = stage.stageDetail          
-        } 
+          override val detail = stage.stageDetail
+        }
       }
-    }  
+    }
 
     // try to get the schema
     val optionSchema = try {
       ExtractUtils.getSchema(stage.schema)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }         
+        override val detail = stage.stageDetail
+      }
+    }
 
     val df = try {
       stage.predicates match {
@@ -185,23 +185,23 @@ object JDBCExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
+        override val detail = stage.stageDetail
+      }
     }
 
     // set column metadata if exists
     val enrichedDF = optionSchema match {
         case Some(schema) => MetadataUtils.setMetadata(df, schema)
-        case None => df   
-    }    
+        case None => df
+    }
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => enrichedDF.repartition(numPartitions)
           case None => enrichedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -211,16 +211,16 @@ object JDBCExtractStage {
           case None => df.repartition(partitionCols:_*)
         }
       }
-    } 
+    }
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
-    
+
     stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
     stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (stage.persist) {
       repartitionedDF.persist(arcContext.storageLevel)
-      stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-    }    
+      stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+    }
 
     Option(repartitionedDF)
   }

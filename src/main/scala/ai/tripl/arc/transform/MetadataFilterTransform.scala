@@ -28,7 +28,7 @@ class MetadataFilterTransform extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
-    val authentication = readAuthentication("authentication")  
+    val authentication = readAuthentication("authentication")
     val inputSQL = parsedURI |> textContentForURI("inputURI", authentication) _
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
@@ -36,13 +36,13 @@ class MetadataFilterTransform extends PipelineStagePlugin {
     val sqlParams = readMap("sqlParams", c)
     val validSQL = inputSQL |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))    
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(inputView), Right(outputView), Right(persist), Right(invalidKeys), Right(numPartitions), Right(partitionBy)) => 
-        
+      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(inputView), Right(outputView), Right(persist), Right(invalidKeys), Right(numPartitions), Right(partitionBy)) =>
+
         val stage = MetadataFilterTransformStage(
           plugin=this,
           name=name,
@@ -58,11 +58,12 @@ class MetadataFilterTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        stage.stageDetail.put("inputURI", parsedURI.toString)  
-        stage.stageDetail.put("outputView", outputView)   
+        stage.stageDetail.put("inputURI", parsedURI.toString)
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        stage.stageDetail.put("sql", inputSQL)   
-        stage.stageDetail.put("sqlParams", sqlParams.asJava)  
+        stage.stageDetail.put("sql", inputSQL)
+        stage.stageDetail.put("sqlParams", sqlParams.asJava)
         stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
@@ -78,16 +79,16 @@ class MetadataFilterTransform extends PipelineStagePlugin {
 
 case class MetadataFilterTransformStage(
     plugin: MetadataFilterTransform,
-    name: String, 
-    description: Option[String], 
-    inputView: String, 
-    inputURI: URI, 
-    sql: String, 
-    outputView: String, 
-    params: Map[String, String], 
-    sqlParams: Map[String, String], 
-    persist: Boolean, 
-    numPartitions: Option[Int], 
+    name: String,
+    description: Option[String],
+    inputView: String,
+    inputURI: URI,
+    sql: String,
+    outputView: String,
+    params: Map[String, String],
+    sqlParams: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
     partitionBy: List[String]
   ) extends PipelineStage {
 
@@ -113,14 +114,14 @@ object MetadataFilterTransformStage {
       spark.sql(stmt)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }  
+        override val detail = stage.stageDetail
+      }
+    }
 
     if (!filterDF.columns.contains("name")) {
       throw new Exception("result does not contain field 'name' so cannot be filtered") with DetailException {
-        override val detail = stage.stageDetail          
-      }    
+        override val detail = stage.stageDetail
+      }
     }
 
     // get fields that meet condition from query result
@@ -136,11 +137,11 @@ object MetadataFilterTransformStage {
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => transformedDF.repartition(numPartitions)
           case None => transformedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -159,8 +160,8 @@ object MetadataFilterTransformStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-      }      
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
     }
 
     spark.catalog.dropTempView("metadata")

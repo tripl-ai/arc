@@ -24,7 +24,7 @@ class TestDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (key, invalidKeys) match {
-      case (Right(key), Right(invalidKeys)) => 
+      case (Right(key), Right(invalidKeys)) =>
 
         val values = new java.util.HashMap[String, Object]()
         values.put("arc.foo", "baz")
@@ -36,5 +36,5 @@ class TestDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
         val err = StageError(index, this.getClass.getName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
     }
-  }    
+  }
 }

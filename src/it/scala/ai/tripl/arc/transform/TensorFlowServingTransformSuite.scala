@@ -17,14 +17,14 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
+import ai.tripl.arc.util.log.LoggerFactory
 import ai.tripl.arc.udf.UDF
 
 import ai.tripl.arc.util._
 
 class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val inputView = "inputView"
   val outputView = "outputView"
   val uri = s"http://tensorflow_serving:9001/v1/models/simple/versions/1:predict"
@@ -40,14 +40,14 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")     
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
 
   after {
     session.stop
-  }    
+  }
 
   test("HTTPTransform: Can call TensorFlowServing via REST: integer" ) {
     implicit val spark = session
@@ -58,9 +58,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     df.createOrReplaceTempView(inputView)
 
     var payloadDataset = spark.sql(s"""
-    SELECT 
+    SELECT
       id
-      ,id AS value 
+      ,id AS value
     FROM ${inputView}
     """).repartition(1)
     payloadDataset.createOrReplaceTempView(inputView)
@@ -80,12 +80,12 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="value",
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
     assert(dataset.first.getInt(2) == 11)
-  }  
+  }
 
   test("HTTPTransform: Can call TensorFlowServing via REST: double" ) {
     implicit val spark = session
@@ -97,9 +97,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     df.createOrReplaceTempView(inputView)
 
     var payloadDataset = spark.sql(s"""
-    SELECT 
+    SELECT
       id
-      ,id AS value 
+      ,id AS value
     FROM ${inputView}
     """).repartition(1)
     payloadDataset.createOrReplaceTempView(inputView)
@@ -119,12 +119,12 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="value",
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
     assert(dataset.first.getDouble(2) == 11.0)
-  }   
+  }
 
   test("HTTPTransform: Can call TensorFlowServing via REST: string" ) {
     implicit val spark = session
@@ -136,9 +136,9 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     df.createOrReplaceTempView(inputView)
 
     var payloadDataset = spark.sql(s"""
-    SELECT 
+    SELECT
       id
-      ,id AS value 
+      ,id AS value
     FROM ${inputView}
     """).repartition(1)
     payloadDataset.createOrReplaceTempView(inputView)
@@ -158,12 +158,12 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="value",
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
     assert(dataset.first.getString(2) == "11")
-  } 
+  }
 
   test("HTTPTransform: Can call TensorFlowServing via REST: inputField" ) {
     implicit val spark = session
@@ -175,7 +175,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     df.createOrReplaceTempView(inputView)
 
     var payloadDataset = spark.sql(s"""
-    SELECT 
+    SELECT
       id
     FROM ${inputView}
     """).repartition(1)
@@ -197,11 +197,11 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           inputField="value",
           numPartitions=None,
-          partitionBy=Nil             
+          partitionBy=Nil
         )
       )
     }
-    assert(thrown.getMessage.contains("""inputField 'value' is not present in inputView 'inputView' which has: [id] columns."""))  
+    assert(thrown.getMessage.contains("""inputField 'value' is not present in inputView 'inputView' which has: [id] columns."""))
 
     val dataset = transform.TensorFlowServingTransformStage.execute(
       transform.TensorFlowServingTransformStage(
@@ -218,12 +218,12 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="id",
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
     assert(dataset.first.getInt(1) == 11)
-  }     
+  }
 
   test("HTTPTransform: Can call TensorFlowServing via Structured Streaming" ) {
     implicit val spark = session
@@ -254,13 +254,13 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         inputField="value",
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
     val writeStream = dataset
       .writeStream
-      .queryName("transformed") 
+      .queryName("transformed")
       .format("memory")
       .start
 
@@ -272,6 +272,6 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     } finally {
       writeStream.stop
     }
-  } 
+  }
 
 }

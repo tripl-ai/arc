@@ -23,20 +23,20 @@ class PipelineExecute extends PipelineStagePlugin {
 
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val uri = getValue[String]("uri") |> parseURI("uri") _ 
-    val authentication = readAuthentication("authentication")  
+    val uri = getValue[String]("uri") |> parseURI("uri") _
+    val authentication = readAuthentication("authentication")
     val textContent = uri |> textContentForURI("uri", authentication) _
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, uri, textContent, invalidKeys) match {
-      case (Right(name), Right(description), Right(uri), Right(textContent), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(uri), Right(textContent), Right(invalidKeys)) =>
 
         // try and read the nested pipeline
         val subPipeline = ai.tripl.arc.config.ArcPipeline.parseConfig(Left(textContent), arcContext)
 
         subPipeline match {
           case Right((pipeline, ctx)) => {
-            
+
             val stage = PipelineExecuteStage(
               plugin=this,
               name=name,
@@ -63,9 +63,9 @@ class PipelineExecute extends PipelineStagePlugin {
 
 case class PipelineExecuteStage(
     plugin: PipelineExecute,
-    name: String, 
-    description: Option[String], 
-    uri: URI, 
+    name: String,
+    description: Option[String],
+    uri: URI,
     pipeline: ETLPipeline
   ) extends PipelineStage {
 

@@ -30,7 +30,7 @@ class JDBCLoad extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigReader._
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
-  
+
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "jdbcURL" :: "tableName" :: "params" :: "batchsize" :: "createTableColumnTypes" :: "createTableOptions" :: "isolationLevel" :: "numPartitions" :: "saveMode" :: "tablock" :: "truncate" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
@@ -48,43 +48,43 @@ class JDBCLoad extends PipelineStagePlugin {
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
     val tablock = getValue[java.lang.Boolean]("tablock", default = Some(true))
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)     
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, tablock, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(jdbcURL), Right(driver), Right(tableName), Right(numPartitions), Right(isolationLevel), Right(batchsize), Right(truncate), Right(createTableOptions), Right(createTableColumnTypes), Right(saveMode), Right(tablock), Right(partitionBy), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(inputView), Right(jdbcURL), Right(driver), Right(tableName), Right(numPartitions), Right(isolationLevel), Right(batchsize), Right(truncate), Right(createTableOptions), Right(createTableColumnTypes), Right(saveMode), Right(tablock), Right(partitionBy), Right(invalidKeys)) =>
 
         val stage = JDBCLoadStage(
           plugin=this,
           name=name,
           description=description,
-          inputView=inputView, 
-          jdbcURL=jdbcURL, 
+          inputView=inputView,
+          jdbcURL=jdbcURL,
           driver=driver,
-          tableName=tableName, 
-          partitionBy=partitionBy, 
-          numPartitions=numPartitions, 
+          tableName=tableName,
+          partitionBy=partitionBy,
+          numPartitions=numPartitions,
           isolationLevel=isolationLevel,
-          batchsize=batchsize, 
+          batchsize=batchsize,
           truncate=truncate,
           createTableOptions=createTableOptions,
-          createTableColumnTypes=createTableColumnTypes,        
-          saveMode=saveMode, 
+          createTableColumnTypes=createTableColumnTypes,
+          saveMode=saveMode,
           tablock=tablock,
           params=params
         )
 
-        stage.stageDetail.put("inputView", inputView)  
+        stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("jdbcURL", JDBCUtils.maskPassword(jdbcURL))
-        stage.stageDetail.put("tableName", tableName)  
+        stage.stageDetail.put("tableName", tableName)
         stage.stageDetail.put("batchsize", java.lang.Integer.valueOf(batchsize))
-        stage.stageDetail.put("driver", driver.getClass.toString)  
+        stage.stageDetail.put("driver", driver.getClass.toString)
         stage.stageDetail.put("isolationLevel", isolationLevel.sparkString)
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
         stage.stageDetail.put("tablock", java.lang.Boolean.valueOf(tablock))
         stage.stageDetail.put("truncate", java.lang.Boolean.valueOf(truncate))
-        stage.stageDetail.put("createTableOptions", createTableOptions)  
-        stage.stageDetail.put("createTableColumnTypes", createTableColumnTypes)  
+        stage.stageDetail.put("createTableOptions", createTableOptions)
+        stage.stageDetail.put("createTableColumnTypes", createTableColumnTypes)
 
         Right(stage)
       case _ =>
@@ -104,26 +104,26 @@ class JDBCLoad extends PipelineStagePlugin {
       case "serializable" => Right(IsolationLevelSerializable)
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
-  }   
+  }
 }
 
 case class JDBCLoadStage(
     plugin: JDBCLoad,
-    name: String, 
-    description: Option[String], 
-    inputView: String, 
-    jdbcURL: String, 
-    tableName: String, 
-    partitionBy: List[String], 
-    numPartitions: Option[Int], 
-    isolationLevel: IsolationLevelType, 
-    batchsize: Int, 
-    truncate: Boolean, 
-    createTableOptions: Option[String], 
-    createTableColumnTypes: Option[String], 
-    saveMode: SaveMode, 
-    driver: java.sql.Driver, 
-    tablock: Boolean, 
+    name: String,
+    description: Option[String],
+    inputView: String,
+    jdbcURL: String,
+    tableName: String,
+    partitionBy: List[String],
+    numPartitions: Option[Int],
+    isolationLevel: IsolationLevelType,
+    batchsize: Int,
+    truncate: Boolean,
+    createTableOptions: Option[String],
+    createTableColumnTypes: Option[String],
+    saveMode: SaveMode,
+    driver: java.sql.Driver,
+    tablock: Boolean,
     params: Map[String, String]
   ) extends PipelineStage {
 
@@ -145,7 +145,7 @@ object JDBCLoadStage {
         case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
         case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
       }
-    } 
+    }
 
     // force cache the table so that when write verification is performed any upstream calculations are not executed twice
     if (!df.isStreaming && !spark.catalog.isCached(stage.inputView)) {
@@ -154,7 +154,7 @@ object JDBCLoadStage {
 
     // override defaults https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases
     // Properties is a Hashtable<Object,Object> but gets mapped to <String,String> so ensure all values are strings
-    val connectionProperties = new Properties 
+    val connectionProperties = new Properties
     connectionProperties.put("dbtable", stage.tableName)
     for ((key, value) <- stage.params) {
       connectionProperties.put(key, value)
@@ -175,7 +175,7 @@ object JDBCLoadStage {
             case SaveMode.Ignore => {
               // return a constant if table exists and SaveMode.Ignore
               SaveModeIgnore
-            }          
+            }
             case SaveMode.Overwrite => {
               if (stage.truncate) {
                 JdbcUtils.truncateTable(connection, jdbcOptions)
@@ -190,8 +190,8 @@ object JDBCLoadStage {
               using(connection.createStatement) { statement =>
                 val resultSet = statement.executeQuery(s"SELECT COUNT(*) AS count FROM ${stage.tableName}")
                 resultSet.next
-                resultSet.getInt("count")                  
-              }              
+                resultSet.getInt("count")
+              }
             }
           }
         } else {
@@ -200,7 +200,7 @@ object JDBCLoadStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail         
+        override val detail = stage.stageDetail
       }
     }
 
@@ -219,9 +219,9 @@ object JDBCLoadStage {
       dropMap.put("NullType", nulls.asJava)
     }
 
-    stage.stageDetail.put("drop", dropMap)    
-    
-    val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)            
+    stage.stageDetail.put("drop", dropMap)
+
+    val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)
 
     val listener = ListenerUtils.addStageCompletedListener(stage.stageDetail)
 
@@ -293,7 +293,7 @@ object JDBCLoadStage {
       }
     }
 
-    spark.sparkContext.removeSparkListener(listener)    
+    spark.sparkContext.removeSparkListener(listener)
 
     outputDF
   }

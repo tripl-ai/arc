@@ -20,7 +20,7 @@ object MetadataSchema {
 
   type ParseResult = Either[List[StageError], List[ExtractColumn]]
 
-  def parseDataFrameMetadata(source: DataFrame)(implicit logger: ai.tripl.arc.util.log.logger.Logger): ParseResult = {  
+  def parseDataFrameMetadata(source: DataFrame)(implicit logger: ai.tripl.arc.util.log.logger.Logger): ParseResult = {
     parseJsonMetadata(s"""[${source.toJSON.collect.mkString(",")}]""")
   }
 
@@ -35,7 +35,7 @@ object MetadataSchema {
     val config = etlConf.withFallback(base)
     val metas = config.resolve().getObjectList("meta").asScala.map(_.toConfig).toList
 
-    val cols = metas.zipWithIndex.map { case(meta, idx) => 
+    val cols = metas.zipWithIndex.map { case(meta, idx) =>
       import ConfigReader._
       implicit var c = meta
 
@@ -82,7 +82,7 @@ object MetadataSchema {
             case "binary" => {
               // test keys
               val expectedKeys = "encoding":: baseKeys
-              val invalidKeys = checkValidKeys(c)(expectedKeys)      
+              val invalidKeys = checkValidKeys(c)(expectedKeys)
 
               val encoding = getValue[String]("encoding", validValues = "base64" :: "hexadecimal" :: Nil) |> parseEncoding("encoding") _
 
@@ -96,13 +96,13 @@ object MetadataSchema {
                   val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
-              }  
-            }              
+              }
+            }
 
             case "boolean" => {
               // test keys
               val expectedKeys = "trueValues" :: "falseValues" :: baseKeys
-              val invalidKeys = checkValidKeys(c)(expectedKeys)      
+              val invalidKeys = checkValidKeys(c)(expectedKeys)
 
               val trueValues = ConfigReader.getValue[StringList]("trueValues")
               val falseValues = ConfigReader.getValue[StringList]("falseValues")
@@ -117,13 +117,13 @@ object MetadataSchema {
                   val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
-              }  
-            }  
+              }
+            }
 
             case "date" => {
               // test keys
               val expectedKeys = "metadata" :: "formatters" :: baseKeys
-              val invalidKeys = checkValidKeys(c)(expectedKeys)    
+              val invalidKeys = checkValidKeys(c)(expectedKeys)
 
               val formatters = ConfigReader.getValue[StringList]("formatters") |> validateDateTimeFormatter("formatters") _
 
@@ -131,7 +131,7 @@ object MetadataSchema {
                 case (Right(id), Right(name), Right(description), Right(_type), Right(nullable), Right(nullReplacementValue), Right(trim), Right(nullableValues), Right(metadata), Right(formatters)) => {
 
                   // test if strict mode possible and throw warning
-                  val strict = formatters.forall(formatter => strictDateTimeFormatter(name, formatter))   
+                  val strict = formatters.forall(formatter => strictDateTimeFormatter(name, formatter))
                   Right(DateColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, formatters, metadata, strict))
                 }
                 case _ => {
@@ -140,13 +140,13 @@ object MetadataSchema {
                   val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
-              }  
-            }        
+              }
+            }
 
             case "decimal" => {
               // test keys
               val expectedKeys = "precision" :: "scale" :: "formatters" :: baseKeys
-              val invalidKeys = checkValidKeys(c)(expectedKeys)    
+              val invalidKeys = checkValidKeys(c)(expectedKeys)
 
               val precision = ConfigReader.getValue[Int]("precision")
               val scale = ConfigReader.getValue[Int]("scale")
@@ -162,13 +162,13 @@ object MetadataSchema {
                   val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
-              }  
-            }                    
+              }
+            }
 
             case "double" => {
               // test keys
               val expectedKeys = "formatters" :: baseKeys
-              val invalidKeys = checkValidKeys(c)(expectedKeys)    
+              val invalidKeys = checkValidKeys(c)(expectedKeys)
 
               val formatters = ConfigReader.getOptionalValue[StringList]("formatters")
 
@@ -182,13 +182,13 @@ object MetadataSchema {
                   val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
-              }  
-            }   
+              }
+            }
 
             case "integer" => {
               // test keys
               val expectedKeys = "formatters" :: baseKeys
-              val invalidKeys = checkValidKeys(c)(expectedKeys)  
+              val invalidKeys = checkValidKeys(c)(expectedKeys)
 
               val formatters = ConfigReader.getOptionalValue[StringList]("formatters")
 
@@ -202,13 +202,13 @@ object MetadataSchema {
                   val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
-              }  
-            }              
+              }
+            }
 
             case "long" => {
               // test keys
               val expectedKeys = "formatters" :: baseKeys
-              val invalidKeys = checkValidKeys(c)(expectedKeys)  
+              val invalidKeys = checkValidKeys(c)(expectedKeys)
 
               val formatters = ConfigReader.getOptionalValue[StringList]("formatters")
 
@@ -222,13 +222,13 @@ object MetadataSchema {
                   val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
-              }  
-            } 
+              }
+            }
 
             case "string" => {
               // test keys
               val expectedKeys = "minLength" :: "maxLength" :: baseKeys
-              val invalidKeys = checkValidKeys(c)(expectedKeys)  
+              val invalidKeys = checkValidKeys(c)(expectedKeys)
 
               val minLength = ConfigReader.getOptionalValue[Int]("minLength")
               val maxLength = ConfigReader.getOptionalValue[Int]("maxLength")
@@ -243,13 +243,13 @@ object MetadataSchema {
                   val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
-              }  
-            }  
+              }
+            }
 
             case "time" => {
               // test keys
               val expectedKeys = "formatters" :: baseKeys
-              val invalidKeys = checkValidKeys(c)(expectedKeys)  
+              val invalidKeys = checkValidKeys(c)(expectedKeys)
 
               val formatters = ConfigReader.getValue[StringList]("formatters")
 
@@ -263,13 +263,13 @@ object MetadataSchema {
                   val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
-              }  
-            } 
+              }
+            }
 
             case "timestamp" => {
               // test keys
               val expectedKeys = "formatters" :: "timezoneId" :: "time" :: baseKeys
-              val invalidKeys = checkValidKeys(c)(expectedKeys)  
+              val invalidKeys = checkValidKeys(c)(expectedKeys)
 
               val formatters = ConfigReader.getValue[StringList]("formatters") |> validateDateTimeFormatter("formatters") _
               val timezoneId = ConfigReader.getValue[String]("timezoneId")
@@ -287,19 +287,19 @@ object MetadataSchema {
                   case (Right(hour), Right(minute), Right(second), Right(nano)) => Right(Option(LocalTime.of(hour, minute, second, nano)))
                   case _ => {
                     val errors = List(hour, minute, second, nano).collect{ case Left(errs) => errs }.flatten
-                    
+
                     Left(List(ConfigError("time", Some(c.origin.lineNumber), s"""Invalid value. ${errors.map(configError => configError.message).mkString(", ")}""")))
                   }
                 }
               } else {
                 Right(None)
-              }              
+              }
 
               (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, timezoneId, time) match {
                 case (Right(id), Right(name), Right(description), Right(_type), Right(nullable), Right(nullReplacementValue), Right(trim), Right(nullableValues), Right(metadata), Right(formatters), Right(timezoneId), Right(time)) => {
 
                   // test if strict mode possible and throw warning
-                  val strict = formatters.forall(formatter => strictDateTimeFormatter(name, formatter)) 
+                  val strict = formatters.forall(formatter => strictDateTimeFormatter(name, formatter))
 
                   Right(TimestampColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, timezoneId, formatters, time, metadata, strict))
                 }
@@ -309,8 +309,8 @@ object MetadataSchema {
                   val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                   Left(err :: Nil)
                 }
-              }  
-            } 
+              }
+            }
           }
         }
         case _ => {
@@ -363,8 +363,8 @@ object MetadataSchema {
                           Right(true)
                         } else {
                           Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain `number` arrays of different types (all values must be `integers` or all values must be `doubles`)."))
-                        }                      
-                      } 
+                        }
+                      }
                       case _ => Right(true)
                     }
                   } else {
@@ -391,7 +391,7 @@ object MetadataSchema {
         (pattern :: patterns, errs)
       } catch {
         case e: Exception => (patterns, List(ConfigError(path, Some(c.getValue(path).origin.lineNumber()), e.getMessage)) ::: errs)
-      }    
+      }
     }
 
     errors match {
@@ -405,11 +405,11 @@ object MetadataSchema {
     if (formatter.contains("(YearOfEra,") && !formatter.contains("(Era,")) {
       logger.warn()
         .field("event", "deprecation")
-        .field("message", s"'YearOfEra' ('yyyy') set without 'Era' ('GG') in field '${name}' with pattern '${pattern}'. Either add 'Era' ('GG') or change to 'Year' ('uuuu'). This formatter will not work in future versions.")        
-        .log()        
+        .field("message", s"'YearOfEra' ('yyyy') set without 'Era' ('GG') in field '${name}' with pattern '${pattern}'. Either add 'Era' ('GG') or change to 'Year' ('uuuu'). This formatter will not work in future versions.")
+        .log()
       false
     } else {
       true
     }
-  }   
+  }
 }

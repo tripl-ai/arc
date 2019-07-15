@@ -1,0 +1,10 @@
+{
+  "type": "MetadataTransform",
+  "name": "extract metadata from customer view",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputView": "customer_metadata"
+}

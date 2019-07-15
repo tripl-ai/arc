@@ -11,7 +11,7 @@ object HTTPUtils {
         } else {
             value
         }
-        (key, maskedValue) 
-    }})  
+        (key, maskedValue)
+    }})
   }
 }

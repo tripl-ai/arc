@@ -16,16 +16,16 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
+import ai.tripl.arc.util.log.LoggerFactory
 import org.apache.log4j.{Level, Logger}
 
 import ai.tripl.arc.util.TestUtils
 
 class MLTransformSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
-  val pipelineModelTargetFile = FileUtils.getTempDirectoryPath() + "spark-logistic-regression-model-pipelinemodel" 
-  val crossValidatorModelTargetFile = FileUtils.getTempDirectoryPath() + "spark-logistic-regression-model-crossvalidatormodel" 
+  var session: SparkSession = _
+  val pipelineModelTargetFile = FileUtils.getTempDirectoryPath() + "spark-logistic-regression-model-pipelinemodel"
+  val crossValidatorModelTargetFile = FileUtils.getTempDirectoryPath() + "spark-logistic-regression-model-crossvalidatormodel"
   val inputView = "inputView"
   val outputView = "outputView"
 
@@ -40,13 +40,13 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
 
     // ensure targets removed
-    FileUtils.deleteQuietly(new java.io.File(pipelineModelTargetFile))     
-    FileUtils.deleteQuietly(new java.io.File(crossValidatorModelTargetFile))   
+    FileUtils.deleteQuietly(new java.io.File(pipelineModelTargetFile))
+    FileUtils.deleteQuietly(new java.io.File(crossValidatorModelTargetFile))
 
     // Train an ML pipeline, which consists of three stages: tokenizer, hashingTF, and lr.
     val training = spark.createDataFrame(Seq(
@@ -73,7 +73,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
       .setStages(Array(tokenizer, hashingTF, lr))
 
     val pipelineModel = pipeline.fit(training)
-    pipelineModel.write.overwrite().save(pipelineModelTargetFile)    
+    pipelineModel.write.overwrite().save(pipelineModelTargetFile)
 
     val paramGrid = new ParamGridBuilder().build()
 
@@ -84,15 +84,15 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
       .setNumFolds(2) // Use 3+ in practice
 
     val crossValidatorModel = crossValidator.fit(training)
-    crossValidatorModel.write.overwrite().save(crossValidatorModelTargetFile) 
+    crossValidatorModel.write.overwrite().save(crossValidatorModelTargetFile)
   }
 
   after {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(pipelineModelTargetFile))     
-    FileUtils.deleteQuietly(new java.io.File(crossValidatorModelTargetFile))     
+    FileUtils.deleteQuietly(new java.io.File(pipelineModelTargetFile))
+    FileUtils.deleteQuietly(new java.io.File(crossValidatorModelTargetFile))
   }
 
   test("MLTransform: pipelineModel") {
@@ -112,7 +112,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MLTransformStage.execute(
       transform.MLTransformStage(
         plugin=new transform.MLTransform,
-        name="MLTransform", 
+        name="MLTransform",
         description=None,
         inputURI=new URI(pipelineModelTargetFile),
         model=Left(PipelineModel.load(pipelineModelTargetFile)),
@@ -121,7 +121,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
@@ -129,7 +129,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = dataset.withColumn("probability", round($"probability", 1))
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }  
+  }
 
   test("MLTransform: crossValidatorModelTargetFile") {
     implicit val spark = session
@@ -148,7 +148,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MLTransformStage.execute(
       transform.MLTransformStage(
         plugin=new transform.MLTransform,
-        name="MLTransform", 
+        name="MLTransform",
         description=None,
         inputURI=new URI(crossValidatorModelTargetFile),
         model=Right(CrossValidatorModel.load(crossValidatorModelTargetFile)),
@@ -157,7 +157,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
@@ -165,7 +165,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = dataset.withColumn("probability", round($"probability", 1))
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }    
+  }
 
   test("MLTransform: Structured Streaming") {
     implicit val spark = session
@@ -182,10 +182,10 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     readStream.createOrReplaceTempView("readstream")
 
     val input = spark.sql(s"""
-    SELECT 
+    SELECT
       readStream.value AS id
       ,"spark hadoop spark" AS text
-    FROM readstream 
+    FROM readstream
     """)
 
     input.createOrReplaceTempView(inputView)
@@ -193,7 +193,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MLTransformStage.execute(
       transform.MLTransformStage(
         plugin=new transform.MLTransform,
-        name="MLTransform", 
+        name="MLTransform",
         description=None,
         inputURI=new URI(crossValidatorModelTargetFile),
         model=Right(CrossValidatorModel.load(crossValidatorModelTargetFile)),
@@ -202,13 +202,13 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
     val writeStream = dataset
       .writeStream
-      .queryName("transformed") 
+      .queryName("transformed")
       .format("memory")
       .start
 
@@ -219,6 +219,6 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
       assert(df.first.getDouble(2) == 1.0)
     } finally {
       writeStream.stop
-    }    
-  }   
+    }
+  }
 }

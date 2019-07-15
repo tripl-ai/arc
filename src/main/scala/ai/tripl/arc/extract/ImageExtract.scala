@@ -26,7 +26,7 @@ class ImageExtract extends PipelineStagePlugin {
 
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _ 
+    val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _
     val outputView = getValue[String]("outputView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
@@ -35,10 +35,10 @@ class ImageExtract extends PipelineStagePlugin {
     val dropInvalid = getValue[java.lang.Boolean]("dropInvalid", default = Some(true))
     val basePath = getOptionalValue[String]("basePath")
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)    
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, basePath, invalidKeys) match {
-      case (Right(name), Right(description), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(dropInvalid), Right(basePath), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(dropInvalid), Right(basePath), Right(invalidKeys)) =>
 
         val stage = ImageExtractStage(
           plugin=this,
@@ -59,8 +59,8 @@ class ImageExtract extends PipelineStagePlugin {
           stage.stageDetail.put("basePath", basePath)
         }
         stage.stageDetail.put("dropInvalid", java.lang.Boolean.valueOf(dropInvalid))
-        stage.stageDetail.put("input", parsedGlob)  
-        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("input", parsedGlob)
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("params", params.asJava)
 
@@ -79,15 +79,15 @@ class ImageExtract extends PipelineStagePlugin {
 case class ImageExtractStage(
     plugin: ImageExtract,
     name: String,
-    description: Option[String], 
-    outputView: String, 
-    input: String, 
-    authentication: Option[Authentication], 
-    params: Map[String, String], 
-    persist: Boolean, 
-    numPartitions: Option[Int], 
-    partitionBy: List[String], 
-    dropInvalid: Boolean, 
+    description: Option[String],
+    outputView: String,
+    input: String,
+    authentication: Option[Authentication],
+    params: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
+    partitionBy: List[String],
+    dropInvalid: Boolean,
     basePath: Option[String]
   ) extends PipelineStage {
 
@@ -105,11 +105,11 @@ object ImageExtractStage {
     // if incoming dataset is empty create empty dataset with a known schema
     val df = try {
       if (arcContext.isStreaming) {
-        spark.readStream.format("image").option("dropInvalid", stage.dropInvalid).schema(ImageSchema.imageSchema).load(stage.input)   
-      } else {      
+        spark.readStream.format("image").option("dropInvalid", stage.dropInvalid).schema(ImageSchema.imageSchema).load(stage.input)
+      } else {
         stage.basePath match {
           case Some(basePath) => spark.read.format("image").option("dropInvalid", stage.dropInvalid).option("basePath", basePath).load(stage.input)
-          case None => spark.read.format("image").option("dropInvalid", stage.dropInvalid).load(stage.input)  
+          case None => spark.read.format("image").option("dropInvalid", stage.dropInvalid).load(stage.input)
         }
       }
     } catch {
@@ -117,17 +117,17 @@ object ImageExtractStage {
         spark.createDataFrame(spark.sparkContext.emptyRDD[Row], ImageSchema.imageSchema)
       }
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
-    }    
+    }
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => df.repartition(numPartitions)
           case None => df
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -137,9 +137,9 @@ object ImageExtractStage {
           case None => df.repartition(partitionCols:_*)
         }
       }
-    } 
+    }
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
-    
+
     if (!repartitionedDF.isStreaming) {
       stage.stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
       stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
@@ -147,8 +147,8 @@ object ImageExtractStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-      }      
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
     }
 
     Option(repartitionedDF)

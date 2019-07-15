@@ -25,7 +25,7 @@ import ai.tripl.arc.util.TestUtils
 
 class ARCSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val targetFile = FileUtils.getTempDirectoryPath()
   val inputView = "inputView"
   val outputView = "outputView"
@@ -40,7 +40,7 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")       
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }

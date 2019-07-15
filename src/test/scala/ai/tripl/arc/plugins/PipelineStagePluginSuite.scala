@@ -25,7 +25,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -70,10 +70,10 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
         fail("expected CustomStage")
       }
     }
-  }  
+  }
 
 
-  test("PipelineStagePlugin: Missing") { 
+  test("PipelineStagePlugin: Missing") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -85,10 +85,10 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
         assert(stageError.toString contains "No plugins found with name ai.tripl.arc.plugins.ThisWillNotBeFound")
       }
       case Right(_) => assert(false)
-    } 
-  }   
+    }
+  }
 
-  test("PipelineStagePlugin: Version Correct") { 
+  test("PipelineStagePlugin: Version Correct") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -105,9 +105,9 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
         fail()
       }
     }
-  }    
+  }
 
-  test("PipelineStagePlugin: Version Correct Long") { 
+  test("PipelineStagePlugin: Version Correct Long") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -124,9 +124,9 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
         fail()
       }
     }
-  }      
+  }
 
-  test("PipelineStagePlugin: Version Incorrect") { 
+  test("PipelineStagePlugin: Version Incorrect") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -139,7 +139,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
       }
       case Right(_) => assert(false)
     }
-  }     
+  }
 
 
 }

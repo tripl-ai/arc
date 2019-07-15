@@ -30,20 +30,20 @@ class RateExtract extends PipelineStagePlugin {
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, outputView, rowsPerSecond, rampUpTime, numPartitions, invalidKeys) match {
-      case (Right(name), Right(description), Right(outputView), Right(rowsPerSecond), Right(rampUpTime), Right(numPartitions), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(outputView), Right(rowsPerSecond), Right(rampUpTime), Right(numPartitions), Right(invalidKeys)) =>
 
         val stage = RateExtractStage(
           plugin=this,
           name=name,
           description=description,
-          outputView=outputView, 
+          outputView=outputView,
           rowsPerSecond=rowsPerSecond,
           rampUpTime=rampUpTime,
           numPartitions=numPartitions,
           params=params
         )
 
-        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("rowsPerSecond", Integer.valueOf(rowsPerSecond))
         stage.stageDetail.put("rampUpTime", Integer.valueOf(rampUpTime))
         stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions))
@@ -82,7 +82,7 @@ object RateExtractStage {
 
     if (!arcContext.isStreaming) {
       throw new Exception("RateExtract can only be executed in streaming mode.") with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
     }
 

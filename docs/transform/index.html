@@ -311,6 +311,42 @@
 
 
 
+<a  title="Deploy" href="https://arc.tripl.ai/deploy/">
+	
+	Deploy
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Plugins" href="https://arc.tripl.ai/plugins/">
+	
+	Plugins
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="Partials" href="https://arc.tripl.ai/partials/">
 	
 	Partials
@@ -332,42 +368,6 @@
 <a  title="Patterns" href="https://arc.tripl.ai/patterns/">
 	
 	Patterns
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Deploy" href="https://arc.tripl.ai/deploy/">
-	
-	Deploy
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Extend" href="https://arc.tripl.ai/extend/">
-	
-	Extend
 </a>
 
 
@@ -1794,10 +1794,17 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tr>
 
 <tr>
-<td>inputURI</td>
+<td>schemaURI</td>
 <td>URI</td>
-<td>true</td>
-<td>URI of the input file containing the SQL statement.</td>
+<td>true*</td>
+<td>URI of the input JSON file containing the schema. Required if <code>schemaView</code> not provided.</td>
+</tr>
+
+<tr>
+<td>schemaView</td>
+<td>String</td>
+<td>true*</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>.  It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
 
 <tr>
@@ -1869,7 +1876,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
-  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_untyped&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
@@ -1884,7 +1891,8 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
-  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_untyped&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>

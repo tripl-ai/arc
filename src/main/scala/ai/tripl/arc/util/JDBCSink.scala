@@ -45,8 +45,8 @@ class JDBCSink(url: String, connectionProperties: Properties) extends ForeachWri
       stmt = conn.prepareStatement(insertStatement)
       rowCount = 0
     }
-    
-    
+
+
     val setters = schema.fields.map(f => makeSetter(conn, dialect, f.dataType))
     val nullTypes = schema.fields.map(f => getJdbcType(f.dataType, dialect).jdbcNullType)
     val numFields = schema.fields.length
@@ -112,7 +112,7 @@ class JDBCSink(url: String, connectionProperties: Properties) extends ForeachWri
           case e: Exception => throw new Exception("Transaction succeeded, but closing failed", e)
         }
       }
-    }     
+    }
   }
 
   // this code is taken from the org.apache.spark.sql.execution.datasources.jdbc.JdbcUtils package:
@@ -193,7 +193,7 @@ class JDBCSink(url: String, connectionProperties: Properties) extends ForeachWri
   private def getJdbcType(dt: DataType, dialect: JdbcDialect): JdbcType = {
     dialect.getJDBCType(dt).orElse(JdbcUtils.getCommonJDBCType(dt)).getOrElse(
       throw new IllegalArgumentException(s"Can't get JDBC type for ${dt.simpleString}"))
-  }  
+  }
 
 }
 

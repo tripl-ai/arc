@@ -18,7 +18,7 @@ import ai.tripl.arc.util._
 
 class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   var connection: java.sql.Connection = _
 
   val url = "jdbc:derby:memory:JDBCExecuteSuite"
@@ -38,7 +38,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
@@ -79,12 +79,12 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
       ai.tripl.arc.execute.JDBCExecuteStage(
         plugin=new ai.tripl.arc.execute.JDBCExecute,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputURI=new URI(testURI), 
+        inputURI=new URI(testURI),
         jdbcURL = url,
-        sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-        params= Map.empty, 
+        sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+        params= Map.empty,
         sqlParams=Map.empty
       )
     )
@@ -98,7 +98,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(actual.count == 0)
-  } 
+  }
 
   test("JDBCExecute: Bad serverName") {
     implicit val spark = session
@@ -110,18 +110,18 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       ai.tripl.arc.execute.JDBCExecuteStage.execute(
         ai.tripl.arc.execute.JDBCExecuteStage(
           plugin=new ai.tripl.arc.execute.JDBCExecute,
-          name=outputView, 
+          name=outputView,
           description=None,
-          inputURI=new URI(testURI), 
+          inputURI=new URI(testURI),
           jdbcURL = "jdbc:derby:invalid",
-          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-          params= Map.empty, 
+          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+          params= Map.empty,
           sqlParams=Map.empty
         )
       )
     }
     assert(thrown.getMessage == "java.sql.SQLException: Database 'invalid' not found.")
-  }  
+  }
 
   test("JDBCExecute: sqlParams") {
     implicit val spark = session
@@ -132,12 +132,12 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
       ai.tripl.arc.execute.JDBCExecuteStage(
         plugin=new ai.tripl.arc.execute.JDBCExecute,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputURI=new URI(testURI), 
+        inputURI=new URI(testURI),
         jdbcURL = url,
-        sql=s"CREATE TABLE ${newTable} (${newColumn} VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-        params= Map.empty, 
+        sql=s"CREATE TABLE ${newTable} (${newColumn} VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+        params= Map.empty,
         sqlParams=Map("column_name" -> "COLUMN0")
       )
     )
@@ -151,7 +151,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(actual.count == 0)
-  }    
+  }
 
   test("JDBCExecute: Bad sqlserver connection parameters") {
     implicit val spark = session
@@ -163,18 +163,18 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       ai.tripl.arc.execute.JDBCExecuteStage.execute(
         ai.tripl.arc.execute.JDBCExecuteStage(
           plugin=new ai.tripl.arc.execute.JDBCExecute,
-          name=outputView, 
+          name=outputView,
           description=None,
-          inputURI=new URI(testURI), 
+          inputURI=new URI(testURI),
           jdbcURL = "0.0.0.0",
-          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-          params= Map.empty, 
+          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+          params= Map.empty,
           sqlParams=Map.empty
         )
       )
     }
     assert(thrown.getMessage.contains("No suitable driver found"))
-  }    
+  }
 
   test("JDBCExecute: Bad jdbcType") {
     implicit val spark = session
@@ -186,18 +186,18 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       ai.tripl.arc.execute.JDBCExecuteStage.execute(
         ai.tripl.arc.execute.JDBCExecuteStage(
           plugin=new ai.tripl.arc.execute.JDBCExecute,
-          name=outputView, 
+          name=outputView,
           description=None,
-          inputURI=new URI(testURI), 
+          inputURI=new URI(testURI),
           jdbcURL = "",
-          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-          params= Map.empty, 
+          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+          params= Map.empty,
           sqlParams=Map.empty
         )
       )
     }
     assert(thrown.getMessage == "java.sql.SQLException: No suitable driver found for ")
-  }    
+  }
 
   test("JDBCExecute: Connection Params") {
     implicit val spark = session
@@ -209,12 +209,12 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
       ai.tripl.arc.execute.JDBCExecuteStage.execute(
         ai.tripl.arc.execute.JDBCExecuteStage(
           plugin=new ai.tripl.arc.execute.JDBCExecute,
-          name=outputView, 
+          name=outputView,
           description=None,
-          inputURI=new URI(testURI), 
+          inputURI=new URI(testURI),
           jdbcURL = "jdbc:derby:memory:JDBCExecuteSuite/connectionParamsTestDB",
-          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-          params=Map.empty, 
+          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+          params=Map.empty,
           sqlParams=Map.empty
         )
       )
@@ -224,14 +224,14 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
       ai.tripl.arc.execute.JDBCExecuteStage(
         plugin=new ai.tripl.arc.execute.JDBCExecute,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputURI=new URI(testURI), 
+        inputURI=new URI(testURI),
         jdbcURL = "jdbc:derby:memory:JDBCExecuteSuite/connectionParamsTestDB",
-        sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-        params=Map("create" -> "true"), 
+        sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+        params=Map("create" -> "true"),
         sqlParams=Map.empty
       )
     )
-  }    
+  }
 }

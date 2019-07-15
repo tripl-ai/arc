@@ -23,7 +23,7 @@ import ai.tripl.arc.util.ControlUtils._
 
 class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
 
   val sqlserverurl = "jdbc:sqlserver://sqlserver:1433"
   val postgresurl = "jdbc:postgresql://postgres:5432/"
@@ -52,15 +52,15 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")       
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
-    
+
     // early resolution of jdbc drivers or else cannot find message
     DriverManager.getDrivers
 
     connectionProperties.put("user", user)
-    connectionProperties.put("password", password)  
+    connectionProperties.put("password", password)
 
     using(DriverManager.getConnection(sqlserverurl, connectionProperties)) { connection =>
       connection.createStatement.execute(s"IF NOT EXISTS(select * from sys.databases where name='${sqlserver_db}') CREATE DATABASE [${sqlserver_db}]")
@@ -86,18 +86,18 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         plugin=new load.JDBCLoad,
         name="dataset",
         description=None,
-        inputView=dbtable, 
-        jdbcURL=sqlserverurl, 
+        inputView=dbtable,
+        jdbcURL=sqlserverurl,
         driver=DriverManager.getDriver(sqlserverurl),
-        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-        partitionBy=Nil, 
-        numPartitions=None, 
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]",
+        partitionBy=Nil,
+        numPartitions=None,
         isolationLevel=IsolationLevelReadCommitted,
-        batchsize=1000, 
+        batchsize=1000,
         truncate=false,
         createTableOptions=None,
-        createTableColumnTypes=None,        
-        saveMode=SaveMode.Overwrite, 
+        createTableColumnTypes=None,
+        saveMode=SaveMode.Overwrite,
         tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
@@ -113,7 +113,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(actual.first.getInt(0) == 2)
-  }    
+  }
 
   test("JDBCLoad: postgres normal") {
     implicit val spark = session
@@ -129,18 +129,18 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
         plugin=new load.JDBCLoad,
         name="dataset",
         description=None,
-        inputView=dbtable, 
-        jdbcURL=postgresurl, 
+        inputView=dbtable,
+        jdbcURL=postgresurl,
         driver=DriverManager.getDriver(postgresurl),
-        tableName=s"sa.public.${postgrestable}", 
-        partitionBy=Nil, 
-        numPartitions=None, 
+        tableName=s"sa.public.${postgrestable}",
+        partitionBy=Nil,
+        numPartitions=None,
         isolationLevel=IsolationLevelReadCommitted,
-        batchsize=1000, 
+        batchsize=1000,
         truncate=false,
         createTableOptions=None,
-        createTableColumnTypes=None,        
-        saveMode=SaveMode.Overwrite, 
+        createTableColumnTypes=None,
+        saveMode=SaveMode.Overwrite,
         tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
@@ -156,7 +156,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(actual.first.getLong(0) == 2)
-  } 
+  }
 
   test("JDBCLoad: Structured Streaming") {
     implicit val spark = session
@@ -167,7 +167,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     val uuid = s"""a${UUID.randomUUID.toString.replace("-","")}"""
 
     try {
-      connection = DriverManager.getConnection(postgresurl, connectionProperties)    
+      connection = DriverManager.getConnection(postgresurl, connectionProperties)
       connection.createStatement.execute(s"""
       DROP TABLE IF EXISTS sa.public.${uuid}
       """)
@@ -179,7 +179,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       """)
     } finally {
       connection.close
-    }  
+    }
 
     val readStream = spark
       .readStream
@@ -188,25 +188,25 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       .option("numPartitions", "3")
       .load
 
-    readStream.createOrReplaceTempView(dbtable)    
+    readStream.createOrReplaceTempView(dbtable)
 
     load.JDBCLoadStage.execute(
       load.JDBCLoadStage(
         plugin=new load.JDBCLoad,
         name="dataset",
         description=None,
-        inputView=dbtable, 
-        jdbcURL=postgresurl, 
+        inputView=dbtable,
+        jdbcURL=postgresurl,
         driver=DriverManager.getDriver(postgresurl),
-        tableName=s"sa.public.${uuid}", 
-        partitionBy=Nil, 
-        numPartitions=None, 
+        tableName=s"sa.public.${uuid}",
+        partitionBy=Nil,
+        numPartitions=None,
         isolationLevel=IsolationLevelReadCommitted,
-        batchsize=1000, 
+        batchsize=1000,
         truncate=false,
         createTableOptions=None,
-        createTableColumnTypes=None,        
-        saveMode=SaveMode.Overwrite, 
+        createTableColumnTypes=None,
+        saveMode=SaveMode.Overwrite,
         tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
@@ -219,12 +219,12 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
       .format("jdbc")
       .option("url", postgresurl)
       .option("user", user)
-      .option("password", password)      
+      .option("password", password)
       .option("dbtable", s"(SELECT * FROM sa.public.${uuid}) result")
       .load()
     }
 
     assert(actual.count > 0)
-  }  
+  }
 
 }

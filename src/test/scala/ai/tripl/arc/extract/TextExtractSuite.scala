@@ -20,12 +20,12 @@ import ai.tripl.arc.util.ControlUtils._
 
 class TextExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
 
   val outputView = "outputView"
   val targetFile = getClass.getResource("/conf/simple.conf").toString
   val targetDirectory = s"""${getClass.getResource("/conf").toString}/*.conf"""
-  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.text" 
+  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.text"
 
   before {
     implicit val spark = SparkSession
@@ -37,7 +37,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -59,7 +59,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
         name="dataset",
         description=None,
         schema=Right(List.empty),
-        outputView=outputView, 
+        outputView=outputView,
         input=targetFile,
         authentication=None,
         persist=false,
@@ -73,7 +73,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
 
     assert(dataset.filter($"_filename".contains(targetFile.replace("file:", "file://"))).count != 0)
     assert(dataset.count == 29)
-  }    
+  }
 
   test("TextExtract: multiLine true") {
     implicit val spark = session
@@ -87,7 +87,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
         name="dataset",
         description=None,
         schema=Right(List.empty),
-        outputView=outputView, 
+        outputView=outputView,
         input=targetFile,
         authentication=None,
         persist=false,
@@ -101,7 +101,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
 
     assert(dataset.filter($"_filename".contains(targetFile.replace("file:", "file://"))).count != 0)
     assert(dataset.count == 1)
-  }    
+  }
 
   test("TextExtract: Empty Dataset") {
     implicit val spark = session
@@ -117,7 +117,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
           name="dataset",
           description=None,
           schema=Right(List.empty),
-          outputView=outputView, 
+          outputView=outputView,
           input=emptyDirectory,
           authentication=None,
           persist=false,
@@ -131,7 +131,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(thrown0.getMessage === "TextExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-  }  
+  }
 
   test("TextExtract: Structured Streaming") {
     implicit val spark = session
@@ -175,7 +175,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
         name="dataset",
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
-        outputView=outputView, 
+        outputView=outputView,
         input=targetDirectory,
         authentication=None,
         persist=false,
@@ -189,7 +189,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
 
     val writeStream = dataset
       .writeStream
-      .queryName("extract") 
+      .queryName("extract")
       .format("memory")
       .start
 
@@ -200,6 +200,6 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
       assert(df.count != 0)
     } finally {
       writeStream.stop
-    }  
-  }    
+    }
+  }
 }

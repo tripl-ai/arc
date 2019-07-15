@@ -308,42 +308,6 @@
 
 
 
-<a  title="Partials" href="https://arc.tripl.ai/partials/">
-	
-	Partials
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Patterns" href="https://arc.tripl.ai/patterns/">
-	
-	Patterns
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
 <a class="current" title="Deploy" href="https://arc.tripl.ai/deploy/">
 	
 	Deploy
@@ -365,9 +329,45 @@
 
 
 
-<a  title="Extend" href="https://arc.tripl.ai/extend/">
+<a  title="Plugins" href="https://arc.tripl.ai/plugins/">
 	
-	Extend
+	Plugins
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Partials" href="https://arc.tripl.ai/partials/">
+	
+	Partials
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Patterns" href="https://arc.tripl.ai/patterns/">
+	
+	Patterns
 </a>
 
 
@@ -421,7 +421,7 @@
 
 			
 
-<p>Arc has been packaged as a <a href="https://hub.docker.com/u/triplai">Docker</a> image to simplify deployment as a stateless process on cloud infrastructure.</p>
+<p>Arc has been packaged as a <a href="https://hub.docker.com/u/triplai">Docker</a> image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the <a href="https://hub.docker.com/u/triplai">https://hub.docker.com/u/triplai</a> for the relevant version.</p>
 
 <h2 id="running-a-job">Running a Job</h2>
 
@@ -430,7 +430,7 @@
 <pre><code class="language-json">docker run \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&quot; \
--it -p 4040:4040 triplai/arc:2.0.0 \
+-it -p 4040:4040 triplai/arc:arc_2.0.0_spark_2.4.3_scala_2.11_hadoop_2.9.2 \
 bin/spark-submit \
 --master local[*] \
 --class ai.tripl.arc.ARC \
@@ -631,7 +631,7 @@ bin/spark-submit \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_STREAMING=true&quot; \
 -e &quot;ETL_CONF_ROWS_PER_SECOND=10&quot; \
--it -p 4040:4040 triplai/arc:2.0.0 \
+-it -p 4040:4040 triplai/arc:arc_2.0.0_spark_2.4.3_scala_2.11_hadoop_2.9.2 \
 bin/spark-submit \
 --master local[*] \
 --class ai.tripl.arc.ARC \
@@ -656,7 +656,7 @@ bin/spark-submit \
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
     
-    <a href="https://arc.tripl.ai/patterns/" title="Patterns">
+    <a href="https://arc.tripl.ai/metadata/" title="Metadata">
       <span class="direction">
         Previous
       </span>
@@ -666,7 +666,7 @@ bin/spark-submit \
         </div>
         <div class="stretch">
           <div class="title">
-            Patterns
+            Metadata
           </div>
         </div>
       </div>
@@ -676,14 +676,14 @@ bin/spark-submit \
 
   <div class="next">
     
-    <a href="https://arc.tripl.ai/extend/" title="Extend">
+    <a href="https://arc.tripl.ai/plugins/" title="Plugins">
       <span class="direction">
         Next
       </span>
       <div class="page">
         <div class="stretch">
           <div class="title">
-            Extend
+            Plugins
           </div>
         </div>
         <div class="button button-next" role="button" aria-label="Next">

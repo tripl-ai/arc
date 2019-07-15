@@ -32,14 +32,14 @@ class ParquetLoad extends PipelineStagePlugin {
     val outputURI = getValue[String]("outputURI") |> parseURI("outputURI") _
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val authentication = readAuthentication("authentication")  
+    val authentication = readAuthentication("authentication")
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(partitionBy), Right(invalidKeys)) => 
-      
+      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(partitionBy), Right(invalidKeys)) =>
+
         val stage = ParquetLoadStage(
           plugin=this,
           name=name,
@@ -53,8 +53,8 @@ class ParquetLoad extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("inputView", inputView)  
-        stage.stageDetail.put("outputURI", outputURI.toString)  
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("outputURI", outputURI.toString)
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
         stage.stageDetail.put("params", params.asJava)
@@ -72,14 +72,14 @@ class ParquetLoad extends PipelineStagePlugin {
 
 case class ParquetLoadStage(
     plugin: ParquetLoad,
-    name: String, 
-    description: Option[String], 
-    inputView: String, 
-    outputURI: URI, 
-    partitionBy: List[String], 
-    numPartitions: Option[Int], 
-    authentication: Option[Authentication], 
-    saveMode: SaveMode, 
+    name: String,
+    description: Option[String],
+    inputView: String,
+    outputURI: URI,
+    partitionBy: List[String],
+    numPartitions: Option[Int],
+    authentication: Option[Authentication],
+    saveMode: SaveMode,
     params: Map[String, String]
   ) extends PipelineStage {
 
@@ -92,7 +92,7 @@ object ParquetLoadStage {
 
   def execute(stage: ParquetLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    val df = spark.table(stage.inputView)   
+    val df = spark.table(stage.inputView)
 
     if (!df.isStreaming) {
       stage.numPartitions match {
@@ -150,7 +150,7 @@ object ParquetLoadStage {
       }
     }
 
-    spark.sparkContext.removeSparkListener(listener)           
+    spark.sparkContext.removeSparkListener(listener)
 
     Option(nonNullDF)
   }

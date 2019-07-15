@@ -15,7 +15,7 @@ import ai.tripl.arc.util._
 
 class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
 
   before {
     implicit val spark = SparkSession
@@ -27,7 +27,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
@@ -71,6 +71,6 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           case None => assert(false)
         }
       }
-    }  
-  }    
+    }
+  }
 }

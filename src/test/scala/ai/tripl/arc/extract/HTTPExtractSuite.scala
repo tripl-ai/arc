@@ -34,9 +34,9 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       } else {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN)
       }
-      HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
+      HttpConnection.getCurrentConnection.getRequest.setHandled(true)
     }
-  } 
+  }
 
   class PostDataHandler extends AbstractHandler {
     val payload = """[{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-20T21:46:54.000Z"},
@@ -50,9 +50,9 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       } else {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN)
       }
-      HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
+      HttpConnection.getCurrentConnection.getRequest.setHandled(true)
     }
-  }   
+  }
 
   class PostPayloadHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
@@ -65,9 +65,9 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       } else {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN)
       }
-      HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
+      HttpConnection.getCurrentConnection.getRequest.setHandled(true)
     }
-  }   
+  }
 
   class PostPayloadEchoHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
@@ -78,19 +78,19 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       } else {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN)
       }
-      HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
+      HttpConnection.getCurrentConnection.getRequest.setHandled(true)
     }
-  }    
+  }
 
   class EmptyHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
       response.setContentType("text/html")
       response.setStatus(HttpServletResponse.SC_OK)
-      HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
+      HttpConnection.getCurrentConnection.getRequest.setHandled(true)
     }
-  }   
+  }
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val port = 1080
   val server = new Server(port)
   val inputView = "inputView"
@@ -115,7 +115,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
@@ -125,14 +125,14 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     getContext.setAllowNullPathInfo(false)
     getContext.setHandler(new GetDataHandler)
     val postContext = new ContextHandler(s"/${post}")
-    postContext.setAllowNullPathInfo(false) 
-    postContext.setHandler(new PostDataHandler)    
+    postContext.setAllowNullPathInfo(false)
+    postContext.setHandler(new PostDataHandler)
     val postPayloadContext = new ContextHandler(s"/${payload}")
-    postPayloadContext.setAllowNullPathInfo(false)   
-    postPayloadContext.setHandler(new PostPayloadHandler)   
+    postPayloadContext.setAllowNullPathInfo(false)
+    postPayloadContext.setHandler(new PostPayloadHandler)
     val postPayloadEchoContext = new ContextHandler(s"/${echo}")
-    postPayloadEchoContext.setAllowNullPathInfo(false)   
-    postPayloadEchoContext.setHandler(new PostPayloadEchoHandler)      
+    postPayloadEchoContext.setAllowNullPathInfo(false)
+    postPayloadEchoContext.setHandler(new PostPayloadEchoHandler)
     val emptyContext = new ContextHandler(s"/${empty}")
     emptyContext.setAllowNullPathInfo(false)
     emptyContext.setHandler(new EmptyHandler)
@@ -141,7 +141,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     server.setHandler(contexts)
 
     // start http server
-    server.start    
+    server.start
   }
 
   after {
@@ -187,8 +187,8 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           case None => assert(false)
         }
       }
-    }  
-  }    
+    }
+  }
 
 
   test("HTTPExtract: Can read data (GET)") {
@@ -199,7 +199,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
-        plugin=new extract.HTTPExtract,    
+        plugin=new extract.HTTPExtract,
         name=outputView,
         description=None,
         input=Right(new URI(s"${uri}/${get}/")),
@@ -230,7 +230,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       .drop($"nullDatum")
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }    
+  }
 
   test("HTTPExtract: Can read data (POST)") {
     implicit val spark = session
@@ -240,12 +240,12 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
-        plugin=new extract.HTTPExtract,   
+        plugin=new extract.HTTPExtract,
         name=outputView,
         description=None,
         input=Right(new URI(s"${uri}/${post}/")),
         uriField=None,
-        bodyField=None,        
+        bodyField=None,
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
         outputView=outputView,
@@ -259,7 +259,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     // assert HTTP_OK
-    assert(dataset.first.getInt(1) == 200)    
+    assert(dataset.first.getInt(1) == 200)
 
     val actual = spark.read.option("multiLine", "true").json(dataset.select(col("body")).as[String])
 
@@ -271,7 +271,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       .drop($"nullDatum")
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }  
+  }
 
   test("HTTPExtract: Can post data (POST)") {
     implicit val spark = session
@@ -280,12 +280,12 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
-        plugin=new extract.HTTPExtract,   
+        plugin=new extract.HTTPExtract,
         name=outputView,
         description=None,
         input=Right(new URI(s"${uri}/${payload}/")),
         uriField=None,
-        bodyField=None,        
+        bodyField=None,
         headers=Map.empty,
         validStatusCodes=200 :: Nil,
         outputView=outputView,
@@ -300,7 +300,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
     // assert HTTP_OK
     assert(dataset.first.getInt(1) == 200)
-  }  
+  }
 
   test("HTTPExtract: Can handle empty response") {
     implicit val spark = session
@@ -310,12 +310,12 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
-        plugin=new extract.HTTPExtract,   
+        plugin=new extract.HTTPExtract,
         name=outputView,
         description=None,
         input=Right(new URI(s"${uri}/${empty}/")),
         uriField=None,
-        bodyField=None,            
+        bodyField=None,
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
         outputView=outputView,
@@ -324,16 +324,16 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         method="GET",
-        body=None   
+        body=None
       )
     ).get
 
     // assert HTTP_OK
-    assert(dataset.first.getInt(1) == 200)    
+    assert(dataset.first.getInt(1) == 200)
 
     // ensure body is null
     assert(dataset.first.isNullAt(4))
-  }      
+  }
 
   test("HTTPExtract: Throws exception with 404") {
     implicit val spark = session
@@ -341,14 +341,14 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
-      extract.HTTPExtractStage.execute(      
+      extract.HTTPExtractStage.execute(
         extract.HTTPExtractStage(
-          plugin=new extract.HTTPExtract, 
+          plugin=new extract.HTTPExtract,
           name=outputView,
           description=None,
           input=Right(new URI(s"${uri}/fail/")),
           uriField=None,
-          bodyField=None, 
+          bodyField=None,
           headers=Map.empty,
           validStatusCodes=200 :: 201 :: 202 :: Nil,
           outputView=outputView,
@@ -357,7 +357,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           partitionBy=Nil,
           method="GET",
-          body=None   
+          body=None
         )
       ).get.count
     }
@@ -371,14 +371,14 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
-      extract.HTTPExtractStage.execute(      
+      extract.HTTPExtractStage.execute(
         extract.HTTPExtractStage(
-          plugin=new extract.HTTPExtract, 
+          plugin=new extract.HTTPExtract,
           name=outputView,
           description=None,
           input=Right(new URI(s"${uri}/${empty}/")),
           uriField=None,
-          bodyField=None,           
+          bodyField=None,
           headers=Map.empty,
           validStatusCodes=201 :: Nil,
           outputView=outputView,
@@ -387,13 +387,13 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           partitionBy=Nil,
           method="GET",
-          body=None   
+          body=None
         )
       ).get.count
     }
 
     assert(thrown.getMessage.contains("HTTPExtract expects all response StatusCode(s) in [201] but server responded with 200 (OK)."))
-  }  
+  }
 
   test("HTTPExtract: broken url throws exception") {
     implicit val spark = session
@@ -401,14 +401,14 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
-      extract.HTTPExtractStage.execute(      
+      extract.HTTPExtractStage.execute(
         extract.HTTPExtractStage(
-          plugin=new extract.HTTPExtract, 
+          plugin=new extract.HTTPExtract,
           name=outputView,
           description=None,
           input=Right(new URI(badUri)),
           uriField=None,
-          bodyField=None,                 
+          bodyField=None,
           headers=Map.empty,
           validStatusCodes=200 :: 201 :: 202 :: Nil,
           outputView=outputView,
@@ -417,11 +417,11 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           partitionBy=Nil,
           method="GET",
-          body=None   
+          body=None
         )
       ).get.count
     }
-    assert(thrown.getMessage.contains("Connection refused"))      
+    assert(thrown.getMessage.contains("Connection refused"))
   }
 
   test("HTTPExtract: Can read data (GET) with DataFrame input") {
@@ -435,12 +435,12 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
-        plugin=new extract.HTTPExtract,  
+        plugin=new extract.HTTPExtract,
         name=outputView,
         description=None,
         input=Left(inputView),
         uriField=None,
-        bodyField=None,            
+        bodyField=None,
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
         outputView=outputView,
@@ -458,8 +458,8 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     // assert HTTP_OK
     assert(actual(0).getInt(1) == 200)
     assert(actual(1).getInt(1) == 200)
-  }    
-       
+  }
+
   test("HTTPExtract: Can post data (POST) with Body from DataFrame by name") {
     implicit val spark = session
     import spark.implicits._
@@ -471,12 +471,12 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
-        plugin=new extract.HTTPExtract,  
+        plugin=new extract.HTTPExtract,
         name=outputView,
         description=None,
         input=Left(inputView),
         uriField=Some("uri"),
-        bodyField=Some("body"),     
+        bodyField=Some("body"),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
         outputView=outputView,
@@ -494,7 +494,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     // assert body has been echoed
     assert(actual(0).getString(4) == body0)
     assert(actual(1).getString(4) == body1)
-  }    
+  }
 
   test("HTTPExtract: Can post data (POST) with Body from DataFrame by name precedence") {
     implicit val spark = session
@@ -507,12 +507,12 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
-        plugin=new extract.HTTPExtract,  
+        plugin=new extract.HTTPExtract,
         name=outputView,
         description=None,
         input=Left(inputView),
         uriField=Some("uri"),
-        bodyField=Some("body"),            
+        bodyField=Some("body"),
         headers=Map.empty,
         validStatusCodes=200 :: 201 :: 202 :: Nil,
         outputView=outputView,
@@ -530,5 +530,5 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     // assert body has been echoed
     assert(actual(0).getString(4) == body0)
     assert(actual(1).getString(4) == body1)
-  }    
+  }
 }

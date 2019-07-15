@@ -23,7 +23,7 @@ import ai.tripl.arc.util.ControlUtils._
 
 class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
 
   val sqlserverurl = "jdbc:sqlserver://sqlserver:1433"
   val postgresurl = "jdbc:postgresql://postgres:5432/"
@@ -52,15 +52,15 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")       
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
-    
+
     // early resolution of jdbc drivers or else cannot find message
     DriverManager.getDrivers
 
     connectionProperties.put("user", user)
-    connectionProperties.put("password", password)  
+    connectionProperties.put("password", password)
 
     using(DriverManager.getConnection(sqlserverurl, connectionProperties)) { connection =>
       connection.createStatement.execute(s"IF NOT EXISTS(select * from sys.databases where name='${sqlserver_db}') CREATE DATABASE [${sqlserver_db}]")
@@ -86,18 +86,18 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new load.JDBCLoad,
         name="dataset",
         description=None,
-        inputView=dbtable, 
-        jdbcURL=sqlserverurl, 
+        inputView=dbtable,
+        jdbcURL=sqlserverurl,
         driver=DriverManager.getDriver(sqlserverurl),
-        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-        partitionBy=Nil, 
-        numPartitions=None, 
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]",
+        partitionBy=Nil,
+        numPartitions=None,
         isolationLevel=IsolationLevelReadCommitted,
-        batchsize=1000, 
+        batchsize=1000,
         truncate=false,
         createTableOptions=None,
-        createTableColumnTypes=None,        
-        saveMode=SaveMode.Overwrite, 
+        createTableColumnTypes=None,
+        saveMode=SaveMode.Overwrite,
         tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
@@ -109,14 +109,14 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         name="dataset",
         description=None,
         schema=Right(Nil),
-        outputView=dbtable, 
-        jdbcURL=sqlserverurl, 
+        outputView=dbtable,
+        jdbcURL=sqlserverurl,
         driver=DriverManager.getDriver(sqlserverurl),
-        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-        numPartitions=None, 
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]",
+        numPartitions=None,
         fetchsize=None,
         partitionBy=Nil,
-        customSchema=None, 
+        customSchema=None,
         persist=false,
         partitionColumn=None,
         predicates=Nil,
@@ -126,7 +126,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
 
     assert(actual.except(expected).count === 0)
     assert(expected.except(actual).count === 0)
-  }    
+  }
 
 
   test("JDBCExtract: sqlserver partitionColumn") {
@@ -143,18 +143,18 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new load.JDBCLoad,
         name="dataset",
         description=None,
-        inputView=dbtable, 
-        jdbcURL=sqlserverurl, 
+        inputView=dbtable,
+        jdbcURL=sqlserverurl,
         driver=DriverManager.getDriver(sqlserverurl),
-        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-        partitionBy=Nil, 
-        numPartitions=None, 
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]",
+        partitionBy=Nil,
+        numPartitions=None,
         isolationLevel=IsolationLevelReadCommitted,
-        batchsize=1000, 
+        batchsize=1000,
         truncate=false,
         createTableOptions=None,
-        createTableColumnTypes=None,        
-        saveMode=SaveMode.Overwrite, 
+        createTableColumnTypes=None,
+        saveMode=SaveMode.Overwrite,
         tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
@@ -166,14 +166,14 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         name="dataset",
         description=None,
         schema=Right(Nil),
-        outputView=dbtable, 
-        jdbcURL=sqlserverurl, 
+        outputView=dbtable,
+        jdbcURL=sqlserverurl,
         driver=DriverManager.getDriver(sqlserverurl),
-        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-        numPartitions=Option(2), 
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]",
+        numPartitions=Option(2),
         fetchsize=None,
         partitionBy=Nil,
-        customSchema=None, 
+        customSchema=None,
         persist=false,
         partitionColumn=Option("integerDatum"),
         predicates=Nil,
@@ -183,7 +183,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
 
     assert(actual.except(expected).count === 0)
     assert(expected.except(actual).count === 0)
-  }   
+  }
 
   test("JDBCExtract: sqlserver partitionColumn with Subquery") {
     implicit val spark = session
@@ -199,18 +199,18 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new load.JDBCLoad,
         name="dataset",
         description=None,
-        inputView=dbtable, 
-        jdbcURL=sqlserverurl, 
+        inputView=dbtable,
+        jdbcURL=sqlserverurl,
         driver=DriverManager.getDriver(sqlserverurl),
-        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]", 
-        partitionBy=Nil, 
-        numPartitions=None, 
+        tableName=s"[${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]",
+        partitionBy=Nil,
+        numPartitions=None,
         isolationLevel=IsolationLevelReadCommitted,
-        batchsize=1000, 
+        batchsize=1000,
         truncate=false,
         createTableOptions=None,
-        createTableColumnTypes=None,        
-        saveMode=SaveMode.Overwrite, 
+        createTableColumnTypes=None,
+        saveMode=SaveMode.Overwrite,
         tablock=true,
         params=Map("user" -> user, "password" -> password)
       )
@@ -222,14 +222,14 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         name="dataset",
         description=None,
         schema=Right(Nil),
-        outputView=dbtable, 
-        jdbcURL=sqlserverurl, 
+        outputView=dbtable,
+        jdbcURL=sqlserverurl,
         driver=DriverManager.getDriver(sqlserverurl),
-        tableName=s"(SELECT * FROM [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]) ds", 
-        numPartitions=Option(2), 
+        tableName=s"(SELECT * FROM [${sqlserver_db}].${sqlserver_schema}.[${sqlserver_table}]) ds",
+        numPartitions=Option(2),
         fetchsize=None,
         partitionBy=Nil,
-        customSchema=None, 
+        customSchema=None,
         persist=false,
         partitionColumn=Option("integerDatum"),
         predicates=Nil,
@@ -239,7 +239,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
 
     assert(actual.except(expected).count === 0)
     assert(expected.except(actual).count === 0)
-  }     
+  }
 
   // see docker-entrypoint-initdb.d/init.sql to define data
   test("JDBCExtract: get metadata from postgres") {
@@ -255,13 +255,13 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
         description=None,
         schema=Right(Nil),
         outputView="meta",
-        jdbcURL=postgresurl, 
+        jdbcURL=postgresurl,
         driver=DriverManager.getDriver(postgresurl),
-        tableName=s"(SELECT * FROM meta WHERE dataset = 'known_dataset' AND version = 0 ORDER BY index) meta", 
-        numPartitions=None, 
+        tableName=s"(SELECT * FROM meta WHERE dataset = 'known_dataset' AND version = 0 ORDER BY index) meta",
+        numPartitions=None,
         fetchsize=None,
         partitionBy=Nil,
-        customSchema=None, 
+        customSchema=None,
         persist=false,
         partitionColumn=None,
         predicates=Nil,
@@ -272,8 +272,8 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     // test metadata
     val meta = ai.tripl.arc.util.MetadataSchema.parseDataFrameMetadata(actual).right.getOrElse(Nil)
     val metaSchema = Extract.toStructType(meta)
-    val timestampDatumMetadata = metaSchema.fields(metaSchema.fieldIndex("timestampDatum")).metadata    
-    assert(timestampDatumMetadata.getLong("securityLevel") == 7)    
+    val timestampDatumMetadata = metaSchema.fields(metaSchema.fieldIndex("timestampDatum")).metadata
+    assert(timestampDatumMetadata.getLong("securityLevel") == 7)
 
-  }   
+  }
 }
