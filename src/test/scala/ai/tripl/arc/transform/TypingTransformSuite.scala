@@ -7,18 +7,19 @@ import org.scalatest.BeforeAndAfter
 
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
+
+import org.apache.log4j.{Level, Logger}
+
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
-import org.apache.log4j.{Level, Logger}
-import ai.tripl.arc.util.ConfigUtils._
+import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
-
 import ai.tripl.arc.util._
+import ai.tripl.arc.util.log.LoggerFactory 
 
 class TypingTransformSuite extends FunSuite with BeforeAndAfter {
 

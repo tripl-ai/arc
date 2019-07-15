@@ -1,7 +1,7 @@
 package ai.tripl.arc.plugins
 
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.ConfigUtils
+import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.util.TestUtils
 
@@ -39,7 +39,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin.conf"), arcContext)
+    val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin.conf"), arcContext)
 
     pipeline match {
       case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
@@ -58,7 +58,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_short.conf"), arcContext)
+    val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_short.conf"), arcContext)
 
     pipeline match {
       case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
@@ -78,7 +78,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_missing.conf"), arcContext)
+    val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_missing.conf"), arcContext)
 
     pipeline match {
       case Left(stageError) => {
@@ -93,7 +93,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_correct.conf"), arcContext)
+    val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_version_correct.conf"), arcContext)
 
     pipeline match {
       case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
@@ -112,7 +112,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_correct_long.conf"), arcContext)
+    val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_version_correct_long.conf"), arcContext)
 
     pipeline match {
       case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
@@ -131,7 +131,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/custom_plugin_version_incorrect.conf"), arcContext)
+    val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_version_incorrect.conf"), arcContext)
 
     pipeline match {
       case Left(stageError) => {

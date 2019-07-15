@@ -13,7 +13,7 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-
+import ai.tripl.arc.config._
 import ai.tripl.arc.util._
 
 class AvroExtractSuite extends FunSuite with BeforeAndAfter {
@@ -287,7 +287,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(_) => {

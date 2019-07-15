@@ -251,7 +251,7 @@ object ARC {
 
     // try to parse config
     val pipelineConfig = try {
-      ai.tripl.arc.util.ConfigUtils.parsePipeline(configUri, arcContext)(spark, logger)
+      ai.tripl.arc.config.ArcPipeline.parsePipeline(configUri, arcContext)(spark, logger)
     } catch {
       case e: Exception => 
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala

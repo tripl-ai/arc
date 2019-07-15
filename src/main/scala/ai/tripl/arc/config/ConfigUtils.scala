@@ -5,12 +5,14 @@ import java.net.InetAddress
 import java.sql.DriverManager
 
 import scala.collection.JavaConverters._
+import scala.util.Properties._
 
 import org.apache.hadoop.fs.GlobPattern
 import org.apache.spark.unsafe.types.UTF8String
 
 import com.typesafe.config._
 
+import org.apache.spark.SparkFiles
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.SaveMode
 
@@ -27,6 +29,137 @@ import ai.tripl.arc.util.MetadataSchema
 import Error._
 
 object ConfigUtils {
+
+  def getConfigString(uri: URI, arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], String] = {
+    uri.getScheme match {
+      case "local" => {
+        val filePath = new URI(SparkFiles.get(uri.getPath))
+        val etlConfString = CloudUtils.getTextBlob(filePath)
+        Right(etlConfString)
+      }
+      case "file" => {
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }
+      case "classpath" => {
+        val path = s"/${uri.getHost}${uri.getPath}"
+        val etlConfString = using(getClass.getResourceAsStream(path)) { is =>
+          scala.io.Source.fromInputStream(is).mkString
+        }
+        Right(etlConfString)
+      }      
+      // databricks file system
+      case "dbfs" => {
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }    
+      // amazon s3
+      case "s3a" => {
+        val s3aAccessKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY"))
+        val s3aSecretKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY"))
+        val s3aEndpoint: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
+        val s3aConnectionSSLEnabled: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.connection.ssl.enabled").orElse(envOrNone("ETL_CONF_S3A_CONNECTION_SSL_ENABLED"))        
+
+        val accessKey = s3aAccessKey match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"AWS Access Key not provided for: ${uri}. Set etl.config.fs.s3a.access.key property or ETL_CONF_S3A_ACCESS_KEY environment variable.")
+        }
+        val secretKey = s3aSecretKey match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"AWS Secret Key not provided for: ${uri}. Set etl.config.fs.s3a.secret.key property or ETL_CONF_S3A_SECRET_KEY environment variable.")
+        }
+        val connectionSSLEnabled = s3aConnectionSSLEnabled match {
+          case Some(value) => {
+            try {
+              Option(value.toBoolean)
+            } catch {
+              case e: Exception => throw new IllegalArgumentException(s"AWS SSL configuration incorrect for: ${uri}. Ensure etl.config.fs.s3a.connection.ssl.enabled or ETL_CONF_S3A_CONNECTION_SSL_ENABLED environment variables are boolean.")
+            }
+          }
+          case None => None
+        }        
+
+        CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(accessKey, secretKey, s3aEndpoint, connectionSSLEnabled)))
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }
+      // azure blob
+      case "wasb" | "wasbs" => {
+        val azureAccountName: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.azure.account.name").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_NAME"))
+        val azureAccountKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.azure.account.key").orElse(envOrNone("ETL_CONF_AZURE_ACCOUNT_KEY"))
+
+        val accountName = azureAccountName match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Azure Account Name not provided for: ${uri}. Set etl.config.fs.azure.account.name property or ETL_CONF_AZURE_ACCOUNT_NAME environment variable.")
+        }
+        val accountKey = azureAccountKey match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Azure Account Key not provided for: ${uri}. Set etl.config.fs.azure.account.key property or ETL_CONF_AZURE_ACCOUNT_KEY environment variable.")
+        }
+
+        CloudUtils.setHadoopConfiguration(Some(Authentication.AzureSharedKey(accountName, accountKey)))
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }
+      // azure data lake storage
+      case "adl" => {
+        val adlClientID: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.adl.oauth2.client.id").orElse(envOrNone("ETL_CONF_ADL_OAUTH2_CLIENT_ID"))
+        val adlRefreshToken: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.adl.oauth2.refresh.token").orElse(envOrNone("ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN"))
+
+        val clientID = adlClientID match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Azure Data Lake Storage Client ID not provided for: ${uri}. Set etl.config.fs.adl.oauth2.client.id or ETL_CONF_ADL_OAUTH2_CLIENT_ID environment variable.")
+        }
+        val refreshToken = adlRefreshToken match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Azure Data Lake Storage Refresh Token not provided for: ${uri}. Set etl.config.fs.adl.oauth2.refresh.token property or ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN environment variable.")
+        }
+
+        CloudUtils.setHadoopConfiguration(Some(Authentication.AzureDataLakeStorageToken(clientID, refreshToken)))
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }
+      // azure data lake storage gen 2
+      case "abfs" | "abfss" => {
+        val dfAccountName: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.dfs.account.name").orElse(envOrNone("ETL_CONF_DFS_ACCOUNT_NAME"))
+        val dfAccessKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.dfs.access.key").orElse(envOrNone("ETL_CONF_DFS_ACCESS_KEY"))
+
+        val accountName = dfAccountName match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Azure DLS Account Name not provided for: ${uri}. Set etl.config.fs.dfs.account.name property or ETL_CONF_DFS_ACCOUNT_NAME environment variable.")
+        }
+        val accountKey = dfAccessKey match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Azure DLS Access Key not provided for: ${uri}. Set etl.config.fs.dfs.access.key property or ETL_CONF_DFS_ACCESS_KEY environment variable.")
+        }
+
+        CloudUtils.setHadoopConfiguration(Some(Authentication.AzureDataLakeStorageGen2AccountKey(accountName, accountKey)))
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }      
+      // google cloud
+      case "gs" => {
+        val gsProjectID: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.gs.project.id").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_PROJECT_ID"))
+        val gsKeyfilePath: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.google.cloud.auth.service.account.json.keyfile").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE"))
+
+        val projectID = gsProjectID match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Google Cloud Project ID not provided for: ${uri}. Set etl.config.fs.gs.project.id or ETL_CONF_GOOGLE_CLOUD_PROJECT_ID environment variable.")
+        }
+        val keyFilePath = gsKeyfilePath match {
+          case Some(value) => value
+          case None => throw new IllegalArgumentException(s"Google Cloud KeyFile Path not provided for: ${uri}. Set etl.config.fs.google.cloud.auth.service.account.json.keyfile property or ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE environment variable.")
+        }
+
+        CloudUtils.setHadoopConfiguration(Some(Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)))
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }
+      case _ => {
+        Left(ConfigError("file", None, "make sure url scheme is defined e.g. file://${pwd}") :: Nil)
+      }
+    }
+  }
 
   def readMap(path: String, c: Config): Map[String, String] = {
     if (c.hasPath(path)) {

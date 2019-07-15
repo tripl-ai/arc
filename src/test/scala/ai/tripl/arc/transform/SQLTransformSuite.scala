@@ -8,6 +8,8 @@ import org.scalatest.BeforeAndAfter
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 
+import org.apache.log4j.{Level, Logger}
+
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
@@ -16,10 +18,9 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
-import org.apache.log4j.{Level, Logger}
-
+import ai.tripl.arc.config._
 import ai.tripl.arc.util._
+import ai.tripl.arc.util.log.LoggerFactory 
 
 class SQLTransformSuite extends FunSuite with BeforeAndAfter {
 
@@ -114,7 +115,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
     
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(_) => {

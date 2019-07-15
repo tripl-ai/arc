@@ -13,12 +13,11 @@ import org.apache.spark.sql._
 
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.api.{Delimited, Delimiter, QuoteCharacter}
-import ai.tripl.arc.util.log.LoggerFactory
-import ai.tripl.arc.util.ConfigUtils
-import ai.tripl.arc.util.TestUtils
-import ai.tripl.arc.util.ConfigUtils._
+import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error
 import ai.tripl.arc.config.Error._
+import ai.tripl.arc.util.log.LoggerFactory
+import ai.tripl.arc.util.TestUtils
 
 import com.typesafe.config._
 
@@ -193,7 +192,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val jobConf = metaConf.replaceAll("hdfs://datalake/job/", getClass.getResource("/conf/job/").toString)
 
       try {
-        val pipelineEither = ConfigUtils.parseConfig(Left(jobConf), arcContext)
+        val pipelineEither = ArcPipeline.parseConfig(Left(jobConf), arcContext)
 
         pipelineEither match {
           case Left(errors) => {
@@ -230,7 +229,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
     
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(stageError) => {
@@ -276,7 +275,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(stageError) => {
@@ -313,7 +312,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(stageError) => {
@@ -344,7 +343,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(stageError) => {
@@ -376,7 +375,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       ]
     }"""
 
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(errors) => assert(false)
@@ -416,7 +415,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }"""
 
 
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(errors) => assert(false)
@@ -448,7 +447,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }"""
 
 
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), arcContext)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(errors) => {
@@ -470,7 +469,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView("start")
 
-    val pipelineEither = ConfigUtils.parseConfig(Right(new URI("classpath://conf/pipeline.conf")), arcContext)
+    val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/pipeline.conf")), arcContext)
 
     pipelineEither match {
       case Left(errors) => {

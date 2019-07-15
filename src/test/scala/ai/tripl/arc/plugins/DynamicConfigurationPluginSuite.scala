@@ -1,7 +1,7 @@
 package ai.tripl.arc.plugins
 
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.ConfigUtils
+import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.util.TestUtils
 
@@ -36,7 +36,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), arcContext)
+    val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), arcContext)
     val configParms = Map[String, String](
       "foo" -> "baz",
       "bar" -> "testValue"
@@ -57,7 +57,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     val commandLineArguments = Map[String, String]("ARGS_MAP_VALUE" -> "before\"${arc.paramvalue}\"after")
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false, commandLineArguments=commandLineArguments)
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin_precendence.conf"), arcContext)
+    val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/dynamic_config_plugin_precendence.conf"), arcContext)
     val configParms = Map[String, String](
       "foo" -> "beforeparamValueafter"
     )
@@ -80,7 +80,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false, environment="production")
 
-    val pipeline = ConfigUtils.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), arcContext)
+    val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), arcContext)
     val configParms = Map[String, String](
       "foo" -> "baz",
       "bar" -> "productionValue"
