@@ -1,12 +1,14 @@
 ---
 title: Patterns
-weight: 90
+weight: 95
 type: blog
 ---
 
+This section describes some job design patterns to deal with common ETL requirements.
+
 ## Database Inconsistency
 
-When writing data to targets like databases using the `JDBCLoad` raises a risk of 'stale reads' where a client is reading a dataset which is either old or one which is in the process of being updated and so is internally inconsistent. 
+When writing data to targets like databases using the `JDBCLoad` raises a risk of [stale reads](https://en.wikipedia.org/wiki/Isolation_(database_systems)#Isolation_levels) where a client is reading a dataset which is either old or one which is in the process of being updated and so is internally inconsistent. 
 
 ### Example
 
@@ -31,7 +33,7 @@ Note that this method will require some cleanup activity to be performed or the 
 ## Delta Processing
 
 {{<note title="Delta Processing">}}
-Databricks have open sourced their Spark Delta Processing framework (DeltaLake)[https://delta.io] which provides a much safer (transactional) way to perform updates to a dataset which should be used to prevent stale reads or corruption.
+Databricks have open sourced their Spark Delta Processing framework [DeltaLake](https://delta.io) which provides a much safer (transactional) way to perform updates to a dataset which should be used to prevent stale reads or corruption. See [DeltaLakeExtract](../extract/#deltalakeextract) and [DeltaLakeLoad](../load/#deltalakeload) for implementations.
 {{</note>}}
 
 A common pattern is to reduce the amount of computation by processing only new files thereby reducing the amount of processing (and therefore cost) of expensive operations like the [TypingTransform](../transform/#typingtransform).
@@ -60,7 +62,7 @@ Add an additional environment variable to the `docker run` command which will ca
 
 Which will expose and environment variable that looks like `ETL_CONF_DELTA_PERIOD=2019-02-04,2019-02-05,2019-02-06,2019-02-07,2019-02-08`. 
 
-Alternatively, a [Dynamic Configuration Plugin](../extend/#dynamic-configuration-plugins) could be used to generate a similar list of dates.
+Alternatively, a [Dynamic Configuration Plugin](../extend/#dynamic-configuration-plugins) like the [arc-deltaperiod-config-plugin](https://github.com/tripl-ai/arc-deltaperiod-config-plugin) can be used to generate a similar list of dates.
 
 This can then be used to read just the files which match the `glob` pattern:
 
@@ -143,8 +145,10 @@ To find duplicate keys and stop the job so any issues are not propogated can be 
 ```sql
 SELECT 
     COUNT(*) = 0
-    ,CASE   
-    TO_JSON(NAMED_STRUCT('duplicate_customer_count', COUNT(*), 'duplicate_customer', CAST(COLLECT_LIST(DISTINCT customer_id) AS STRING)))
+    ,TO_JSON(NAMED_STRUCT(
+      'duplicate_customer_count', COUNT(*), 
+      'duplicate_customer', CAST(COLLECT_LIST(DISTINCT customer_id) AS STRING)
+    ))
 FROM (
     SELECT 
         customer_id
@@ -167,8 +171,8 @@ It is also quite common to recieve fixed width formats from older systems like I
 
 ### Example
 
-- Use a `DelimitedExtract` stage with a delimiter that will not be found in the data like `DefaultHive` to return dataset of many rows but single column.
-- Use a `SQLTransform` stage to split the data into columns.
+- Use a [TextExtract](../extract/#textextract) stage to return dataset of many rows but single column.
+- Use a [SQLTransform](../transform/#sqltransform) stage to split the data into columns.
 
 ```sql
 SELECT 
@@ -208,7 +212,11 @@ This can be done using a `SQLValidate` stage which will fail with a list of inva
 ```sql
 SELECT 
     SUM(invalid_customer_id) = 0
-    ,TO_JSON(NAMED_STRUCT('customers', COUNT(DISTINCT customer_id), 'invalid_account_numbers_count', SUM(invalid_customer_id), 'invalid_account_numbers', CAST(collect_list(DISTINCT invalid_account_numbers) AS STRING)))
+    ,TO_JSON(NAMED_STRUCT(
+      'customers', COUNT(DISTINCT customer_id), 
+      'invalid_account_numbers_count', SUM(invalid_customer_id), 
+      'invalid_account_numbers', CAST(collect_list(DISTINCT invalid_account_numbers) AS STRING)
+    ))
 FROM (
     SELECT 
         account.account_number
@@ -240,7 +248,7 @@ It is common to see formats like where the input dataset contains multiple recor
 
 ### Example
 
-- First use a `DelimitedExtract` stage to load the raw data without headers.
+- First use a `DelimitedExtract` stage to load the data into text columns.
 - Use two `SQLTransform` stages to split the input dataset into two new `DataFrame`s using SQL `WHERE` statements.
 
 #### detail
@@ -282,7 +290,12 @@ WHERE col0 = 'trailer'
 ```sql
 SELECT 
     sum_total = trailer_balance AND records_total = trailer_records
-    ,TO_JSON(NAMED_STRUCT('expected_count', trailer_records, 'actual_count', records_total, 'expected_balance', trailer_balance, 'actual_balance', sum_total))
+    ,TO_JSON(NAMED_STRUCT(
+      'expected_count', trailer_records, 
+      'actual_count', records_total, 
+      'expected_balance', trailer_balance, 
+      'actual_balance', sum_total
+    ))
 FROM (
     (SELECT COUNT(total) AS records_total, SUM(total) AS sum_total FROM detail) detail
     CROSS JOIN
@@ -292,7 +305,7 @@ FROM (
 
 ## Machine Learning Prediction Thresholds
 
-When used for classification the `MLTransform` stage will add a `probability` column which exposes the highest probability score from the Spark ML probability vector which led to the predicted value. This can then be used as a boundary to prevent low probability predictions being sent to other systems if, for example, a change in input data resulted in a major change in predictions. 
+When used for classification, the [MLTransform](../transform/#mltransform) stage will add a `probability` column which exposes the highest probability score from the Spark ML probability vector which led to the predicted value. This can then be used as a boundary to prevent low probability predictions being sent to other systems if, for example, a change in input data resulted in a major change in predictions. 
 
 |id|input|prediction|probability|
 |---|-----|----------|-----------|
@@ -306,7 +319,10 @@ When used for classification the `MLTransform` stage will add a `probability` co
 ```sql
 SELECT 
     SUM(low_probability) = 0
-    ,TO_JSON(NAMED_STRUCT('probability_below_threshold', SUM(low_probability), 'threshold', 0.8))
+    ,TO_JSON(NAMED_STRUCT(
+      'probability_below_threshold', SUM(low_probability), 
+      'threshold', 0.8
+    ))
 FROM (
     SELECT 
         CASE 
@@ -317,11 +333,11 @@ FROM (
 ) valid
 ```
 
-The threshold parameter could be easily passed in as a sqlParam parameter and referenced as `${CUSTOMER_CHURN_PROBABILITY_THRESHOLD}` in the SQL code.
+The threshold value could be easily passed in as a `sqlParam` parameter and referenced as `${CUSTOMER_CHURN_PROBABILITY_THRESHOLD}` in the SQL code.
 
 ## Nested Data
 
-Because the SQL language wasn't really designed with nested data like Spark allows it can be difficult to convert nested data into normal table structures. The [EXPLODE](https://spark.apache.org/docs/latest/api/sql/index.html#explode) and [POSEXPLODE](https://spark.apache.org/docs/latest/api/sql/index.html#posexplode) SQL functions are very useful for this conversion:
+Because the SQL language wasn't really designed with nested data that Spark supports it can be difficult to convert nested data into normal table structures. The [EXPLODE](https://spark.apache.org/docs/latest/api/sql/index.html#explode) and [POSEXPLODE](https://spark.apache.org/docs/latest/api/sql/index.html#posexplode) SQL functions are very useful for this conversion:
 
 ### Example
 
@@ -347,7 +363,7 @@ Assuming a nested input structure like a JSON response that has been parsed via 
 }
 ```
 
-To flatten the `data` array use a SQL subquery and a [POSEXPLODE](https://spark.apache.org/docs/latest/api/sql/index.html#posexplode) to extract the data. `EXPLODE` and `POSEXPLODE` will both produce a field called `col` which can be used from the parent query. `POSEXPLODE` will include an additional field `pos` to indicate the index of the value in the input array (which can be useful if array order is important for business logic).
+To flatten the `data` array use a SQL subquery and a [POSEXPLODE](https://spark.apache.org/docs/latest/api/sql/index.html#posexplode) to extract the data. `EXPLODE` and `POSEXPLODE` will both produce a field called `col` which can be used from the parent query. `POSEXPLODE` will include an additional field `pos` to indicate the index of the value in the input array (which can is valuable if array order is important for business logic).
 
 ```sql
 SELECT 
@@ -376,7 +392,7 @@ To produce:
 
 ## Testing with Parquet
 
-If you want to manually create test data to compare against a Spark DataFrame a good option is to use the [Apache Arrow](https://arrow.apache.org/) library and the Python API to create a correctly typed [Parquet](https://parquet.apache.org/). This file can then be loaded and compared with the `EqualityValidate` stage.
+If you want to manually create test data to compare against a Spark DataFrame a good option is to use the [Apache Arrow](https://arrow.apache.org/) library and the Python API to create a correctly typed [Parquet](https://parquet.apache.org/). This file can then be loaded and compared with the [EqualityValidate](../validate/#equalityvalidate) stage.
 
 ### Example
 
@@ -386,7 +402,7 @@ Using the publicly available [Docker](https://www.docker.com/) [Conda](https://c
 docker run -it -v $(pwd)/data:/tmp/data conda/miniconda3 python
 ```
 
-Then with Python (of course normally you would install the required libraries into your own Docker image):
+Then with Python (normally you would install the required libraries into your own Docker image instead of installing dependencies on each run):
 
 ```python
 # install pyarrow - build your docker image so this is already installed
@@ -422,7 +438,7 @@ table = pa.Table.from_arrays([booleanDatum, dateDatum, decimalDatum, doubleDatum
 pq.write_table(table, '/tmp/data/example.parquet', flavor='spark')
 ```
 
-The suggestion then is to use the `environments` key to only execute the `EqualityValidate` stage whilst in testing mode:
+The suggestion then is to use the `environments` key to only execute the [EqualityValidate](../validate/#equalityvalidate) stage whilst in testing mode:
 
 {{< readfile file="/resources/docs_resources/PatternsTestingWithParquet" highlight="json" >}} 
 

@@ -308,6 +308,42 @@
 
 
 
+<a  title="Deploy" href="https://arc.tripl.ai/deploy/">
+	
+	Deploy
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Plugins" href="https://arc.tripl.ai/plugins/">
+	
+	Plugins
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="Partials" href="https://arc.tripl.ai/partials/">
 	
 	Partials
@@ -334,42 +370,6 @@
 
 <ul id="scrollspy">
 </ul>
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Deploy" href="https://arc.tripl.ai/deploy/">
-	
-	Deploy
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Extend" href="https://arc.tripl.ai/extend/">
-	
-	Extend
-</a>
-
 
 
   
@@ -421,9 +421,11 @@
 
 			
 
+<p>This section describes some job design patterns to deal with common ETL requirements.</p>
+
 <h2 id="database-inconsistency">Database Inconsistency</h2>
 
-<p>When writing data to targets like databases using the <code>JDBCLoad</code> raises a risk of &lsquo;stale reads&rsquo; where a client is reading a dataset which is either old or one which is in the process of being updated and so is internally inconsistent.</p>
+<p>When writing data to targets like databases using the <code>JDBCLoad</code> raises a risk of <a href="https://en.wikipedia.org/wiki/Isolation_(database_systems)#Isolation_levels">stale reads</a> where a client is reading a dataset which is either old or one which is in the process of being updated and so is internally inconsistent.</p>
 
 <h3 id="example">Example</h3>
 
@@ -480,7 +482,7 @@ SELECT * FROM customers_${JOB_RUN_DATE}
 
 <div class="admonition note">
 <p class="admonition-title">Delta Processing</p>
-<p>Databricks have open sourced their Spark Delta Processing framework (DeltaLake)[<a href="https://delta.io">https://delta.io</a>] which provides a much safer (transactional) way to perform updates to a dataset which should be used to prevent stale reads or corruption.</p>
+<p>Databricks have open sourced their Spark Delta Processing framework <a href="https://delta.io">DeltaLake</a> which provides a much safer (transactional) way to perform updates to a dataset which should be used to prevent stale reads or corruption. See <a href="../extract/#deltalakeextract">DeltaLakeExtract</a> and <a href="../load/#deltalakeload">DeltaLakeLoad</a> for implementations.</p>
 </div>
 
 <p>A common pattern is to reduce the amount of computation by processing only new files thereby reducing the amount of processing (and therefore cost) of expensive operations like the <a href="../transform/#typingtransform">TypingTransform</a>.</p>
@@ -507,7 +509,7 @@ hdfs://datalake/input/customer/customers_2019-02-07.csv
 
 <p>Which will expose and environment variable that looks like <code>ETL_CONF_DELTA_PERIOD=2019-02-04,2019-02-05,2019-02-06,2019-02-07,2019-02-08</code>.</p>
 
-<p>Alternatively, a <a href="../extend/#dynamic-configuration-plugins">Dynamic Configuration Plugin</a> could be used to generate a similar list of dates.</p>
+<p>Alternatively, a <a href="../extend/#dynamic-configuration-plugins">Dynamic Configuration Plugin</a> like the <a href="https://github.com/tripl-ai/arc-deltaperiod-config-plugin">arc-deltaperiod-config-plugin</a> can be used to generate a similar list of dates.</p>
 
 <p>This can then be used to read just the files which match the <code>glob</code> pattern:</p>
 
@@ -586,8 +588,10 @@ WHERE row_number = 1
 
 <pre><code class="language-sql">SELECT 
     COUNT(*) = 0
-    ,CASE   
-    TO_JSON(NAMED_STRUCT('duplicate_customer_count', COUNT(*), 'duplicate_customer', CAST(COLLECT_LIST(DISTINCT customer_id) AS STRING)))
+    ,TO_JSON(NAMED_STRUCT(
+      'duplicate_customer_count', COUNT(*), 
+      'duplicate_customer', CAST(COLLECT_LIST(DISTINCT customer_id) AS STRING)
+    ))
 FROM (
     SELECT 
         customer_id
@@ -627,8 +631,8 @@ WHERE customer_id_count &gt; 1
 <h3 id="example-3">Example</h3>
 
 <ul>
-<li>Use a <code>DelimitedExtract</code> stage with a delimiter that will not be found in the data like <code>DefaultHive</code> to return dataset of many rows but single column.</li>
-<li>Use a <code>SQLTransform</code> stage to split the data into columns.</li>
+<li>Use a <a href="../extract/#textextract">TextExtract</a> stage to return dataset of many rows but single column.</li>
+<li>Use a <a href="../transform/#sqltransform">SQLTransform</a> stage to split the data into columns.</li>
 </ul>
 
 <pre><code class="language-sql">SELECT 
@@ -719,7 +723,11 @@ FROM fixed_width_demo
 
 <pre><code class="language-sql">SELECT 
     SUM(invalid_customer_id) = 0
-    ,TO_JSON(NAMED_STRUCT('customers', COUNT(DISTINCT customer_id), 'invalid_account_numbers_count', SUM(invalid_customer_id), 'invalid_account_numbers', CAST(collect_list(DISTINCT invalid_account_numbers) AS STRING)))
+    ,TO_JSON(NAMED_STRUCT(
+      'customers', COUNT(DISTINCT customer_id), 
+      'invalid_account_numbers_count', SUM(invalid_customer_id), 
+      'invalid_account_numbers', CAST(collect_list(DISTINCT invalid_account_numbers) AS STRING)
+    ))
 FROM (
     SELECT 
         account.account_number
@@ -792,7 +800,7 @@ FROM (
 <h3 id="example-5">Example</h3>
 
 <ul>
-<li>First use a <code>DelimitedExtract</code> stage to load the raw data without headers.</li>
+<li>First use a <code>DelimitedExtract</code> stage to load the data into text columns.</li>
 <li>Use two <code>SQLTransform</code> stages to split the input dataset into two new <code>DataFrame</code>s using SQL <code>WHERE</code> statements.</li>
 </ul>
 
@@ -876,7 +884,12 @@ WHERE col0 = 'trailer'
 
 <pre><code class="language-sql">SELECT 
     sum_total = trailer_balance AND records_total = trailer_records
-    ,TO_JSON(NAMED_STRUCT('expected_count', trailer_records, 'actual_count', records_total, 'expected_balance', trailer_balance, 'actual_balance', sum_total))
+    ,TO_JSON(NAMED_STRUCT(
+      'expected_count', trailer_records, 
+      'actual_count', records_total, 
+      'expected_balance', trailer_balance, 
+      'actual_balance', sum_total
+    ))
 FROM (
     (SELECT COUNT(total) AS records_total, SUM(total) AS sum_total FROM detail) detail
     CROSS JOIN
@@ -886,7 +899,7 @@ FROM (
 
 <h2 id="machine-learning-prediction-thresholds">Machine Learning Prediction Thresholds</h2>
 
-<p>When used for classification the <code>MLTransform</code> stage will add a <code>probability</code> column which exposes the highest probability score from the Spark ML probability vector which led to the predicted value. This can then be used as a boundary to prevent low probability predictions being sent to other systems if, for example, a change in input data resulted in a major change in predictions.</p>
+<p>When used for classification, the <a href="../transform/#mltransform">MLTransform</a> stage will add a <code>probability</code> column which exposes the highest probability score from the Spark ML probability vector which led to the predicted value. This can then be used as a boundary to prevent low probability predictions being sent to other systems if, for example, a change in input data resulted in a major change in predictions.</p>
 
 <table>
 <thead>
@@ -933,7 +946,10 @@ FROM (
 
 <pre><code class="language-sql">SELECT 
     SUM(low_probability) = 0
-    ,TO_JSON(NAMED_STRUCT('probability_below_threshold', SUM(low_probability), 'threshold', 0.8))
+    ,TO_JSON(NAMED_STRUCT(
+      'probability_below_threshold', SUM(low_probability), 
+      'threshold', 0.8
+    ))
 FROM (
     SELECT 
         CASE 
@@ -944,11 +960,11 @@ FROM (
 ) valid
 </code></pre>
 
-<p>The threshold parameter could be easily passed in as a sqlParam parameter and referenced as <code>${CUSTOMER_CHURN_PROBABILITY_THRESHOLD}</code> in the SQL code.</p>
+<p>The threshold value could be easily passed in as a <code>sqlParam</code> parameter and referenced as <code>${CUSTOMER_CHURN_PROBABILITY_THRESHOLD}</code> in the SQL code.</p>
 
 <h2 id="nested-data">Nested Data</h2>
 
-<p>Because the SQL language wasn&rsquo;t really designed with nested data like Spark allows it can be difficult to convert nested data into normal table structures. The <a href="https://spark.apache.org/docs/latest/api/sql/index.html#explode">EXPLODE</a> and <a href="https://spark.apache.org/docs/latest/api/sql/index.html#posexplode">POSEXPLODE</a> SQL functions are very useful for this conversion:</p>
+<p>Because the SQL language wasn&rsquo;t really designed with nested data that Spark supports it can be difficult to convert nested data into normal table structures. The <a href="https://spark.apache.org/docs/latest/api/sql/index.html#explode">EXPLODE</a> and <a href="https://spark.apache.org/docs/latest/api/sql/index.html#posexplode">POSEXPLODE</a> SQL functions are very useful for this conversion:</p>
 
 <h3 id="example-7">Example</h3>
 
@@ -973,7 +989,7 @@ FROM (
 }
 </code></pre>
 
-<p>To flatten the <code>data</code> array use a SQL subquery and a <a href="https://spark.apache.org/docs/latest/api/sql/index.html#posexplode">POSEXPLODE</a> to extract the data. <code>EXPLODE</code> and <code>POSEXPLODE</code> will both produce a field called <code>col</code> which can be used from the parent query. <code>POSEXPLODE</code> will include an additional field <code>pos</code> to indicate the index of the value in the input array (which can be useful if array order is important for business logic).</p>
+<p>To flatten the <code>data</code> array use a SQL subquery and a <a href="https://spark.apache.org/docs/latest/api/sql/index.html#posexplode">POSEXPLODE</a> to extract the data. <code>EXPLODE</code> and <code>POSEXPLODE</code> will both produce a field called <code>col</code> which can be used from the parent query. <code>POSEXPLODE</code> will include an additional field <code>pos</code> to indicate the index of the value in the input array (which can is valuable if array order is important for business logic).</p>
 
 <pre><code class="language-sql">SELECT 
   result
@@ -1000,7 +1016,7 @@ FROM (
 
 <h2 id="testing-with-parquet">Testing with Parquet</h2>
 
-<p>If you want to manually create test data to compare against a Spark DataFrame a good option is to use the <a href="https://arrow.apache.org/">Apache Arrow</a> library and the Python API to create a correctly typed <a href="https://parquet.apache.org/">Parquet</a>. This file can then be loaded and compared with the <code>EqualityValidate</code> stage.</p>
+<p>If you want to manually create test data to compare against a Spark DataFrame a good option is to use the <a href="https://arrow.apache.org/">Apache Arrow</a> library and the Python API to create a correctly typed <a href="https://parquet.apache.org/">Parquet</a>. This file can then be loaded and compared with the <a href="../validate/#equalityvalidate">EqualityValidate</a> stage.</p>
 
 <h3 id="example-8">Example</h3>
 
@@ -1009,7 +1025,7 @@ FROM (
 <pre><code class="language-bash">docker run -it -v $(pwd)/data:/tmp/data conda/miniconda3 python
 </code></pre>
 
-<p>Then with Python (of course normally you would install the required libraries into your own Docker image):</p>
+<p>Then with Python (normally you would install the required libraries into your own Docker image instead of installing dependencies on each run):</p>
 
 <pre><code class="language-python"># install pyarrow - build your docker image so this is already installed
 import subprocess
@@ -1044,7 +1060,7 @@ table = pa.Table.from_arrays([booleanDatum, dateDatum, decimalDatum, doubleDatum
 pq.write_table(table, '/tmp/data/example.parquet', flavor='spark')
 </code></pre>
 
-<p>The suggestion then is to use the <code>environments</code> key to only execute the <code>EqualityValidate</code> stage whilst in testing mode:</p>
+<p>The suggestion then is to use the <code>environments</code> key to only execute the <a href="../validate/#equalityvalidate">EqualityValidate</a> stage whilst in testing mode:</p>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetExtract&#34;</span><span class="p">,</span>
@@ -1098,14 +1114,14 @@ pq.write_table(table, '/tmp/data/example.parquet', flavor='spark')
 
   <div class="next">
     
-    <a href="https://arc.tripl.ai/deploy/" title="Deploy">
+    <a href="https://arc.tripl.ai/license/" title="License">
       <span class="direction">
         Next
       </span>
       <div class="page">
         <div class="stretch">
           <div class="title">
-            Deploy
+            License
           </div>
         </div>
         <div class="button button-next" role="button" aria-label="Next">

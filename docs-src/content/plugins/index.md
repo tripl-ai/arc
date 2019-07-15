@@ -1,6 +1,6 @@
 ---
-title: Extend
-weight: 98
+title: Plugins
+weight: 85
 type: blog
 ---
 
@@ -13,7 +13,7 @@ Arc can be exended in four ways by registering:
 
 ## Resolution
 
-Plugins are resolved dynamically at runtime and are resolved by name/version.
+Plugins are resolved dynamically at runtime and are resolved by name and version.
 
 ### Examples
 
@@ -27,9 +27,9 @@ Arc will attempt to resolve the plugin by first looking in all the `META-INF` di
 class KafkaExtract extends PipelineStagePlugin {
 ```
 
-Arc is then able to resolve the plugin by `simpleName` - in this case `KafkaExtract` - and then call the `instantiate()` method to create an instance of the plugin which is executed by Arc at the appropriate time depending on plugin type. 
+Arc is then able to resolve the plugin by matching on `simpleName` - in this case `KafkaExtract` - and then call the `instantiate()` method to create an instance of the plugin which is executed by Arc at the appropriate time depending on plugin type. 
 
-To allow more specitivity you can use either the full package name or include the version or a combination of both:
+To allow more specitivity you can use either the full package name and/or include the version:
 
 ```json
 {

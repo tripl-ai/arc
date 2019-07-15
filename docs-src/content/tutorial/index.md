@@ -6,21 +6,21 @@ type: blog
 
 This tutorial works through a real-world example using the [New York City Taxi dataset](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml) which has been used heavliy around the web (see: [Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance](http://toddwschneider.com/posts/analyzing-1-1-billion-nyc-taxi-and-uber-trips-with-a-vengeance/) and [A Billion Taxi Rides in Redshift](http://tech.marksblogg.com/billion-nyc-taxi-rides-redshift.html)) due to its 1 billion+ record count and scripted process available on [github](https://github.com/toddwschneider/nyc-taxi-data).
 
-It is a great dataset as it has a lot of the attributes of real-world data we want to demonstrate:
+It is a great dataset as it has a lot of the attributes of real-world data that need to be considered:
 
 - [Schema Evolution](https://en.wikipedia.org/wiki/Schema_evolution) where fields are added/changed/removed over time or data is normalized as patterns emerge.
-- How to reliably apply data typing to an untyped source - in this case [Comma-Separated Values](https://en.wikipedia.org/wiki/Comma-separated_values) format.
+- How to reliably apply data typing to an untyped source - in this case the [Comma-Separated Values](https://en.wikipedia.org/wiki/Comma-separated_values) format.
 - How to build a repeatable and reproducible process which will scale by adding more compute - the small example is ~40 million records and the large 1+ billion records.
-- How reusable components can be composed to [extract data](/extract/#delimitedextract) with [data types](/transform/#typingtransform), apply rules to ensure [data quality](/validate/#sqlvalidate), enrich the data by executing [SQL statements](/transform/#sqltransform), apply [machine learning transformations](/transform/#mltransform) and [load the data](/load) to one or more destinations.
+- How reusable components can be composed to [extract data](/extract/#delimitedextract) with [data types](/transform/#typingtransform), apply rules to ensure [data quality](/validate/#sqlvalidate), enrich the data by executing [SQL statements](/transform/#sqltransform), apply [machine learning transformations](/transform/#mltransform) and [load the data](/load) to one or more targets.
 
 ## Get arc-starter
 
 ![arc-starter](/img/arc-starter.png)
 
-The easiest way to build an Arc job is by using [arc-starter](https://github.com/seddonm1/arc-starter) which is an interactive development environment using the [Jupyter Notebooks](https://jupyter.org/) ecosystem. This tutorial assumes you have cloned this repository. 
+The easiest way to build an Arc job is by using [arc-starter](https://github.com/tripl-ai/arc-starter) which is an interactive development environment using the [Jupyter Notebooks](https://jupyter.org/) ecosystem. This tutorial assumes you have cloned this repository. 
 
 ```bash
-git clone https://github.com/seddonm1/arc-starter.git
+git clone https://github.com/tripl-ai/arc-starter.git
 cd arc-starter
 ```
 

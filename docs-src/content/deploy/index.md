@@ -1,10 +1,10 @@
 ---
 title: Deploy
-weight: 95
+weight: 80
 type: blog
 ---
 
-Arc has been packaged as a [Docker](https://hub.docker.com/u/triplai) image to simplify deployment as a stateless process on cloud infrastructure.
+Arc has been packaged as a [Docker](https://hub.docker.com/u/triplai) image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the [https://hub.docker.com/u/triplai](https://hub.docker.com/u/triplai) for the relevant version.
 
 ## Running a Job
 
