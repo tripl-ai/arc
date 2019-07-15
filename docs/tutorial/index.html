@@ -634,13 +634,13 @@ start-notebook.sh \
 
 <p>To make this data more useful for querying (for example doing aggregation by time period) we need to safely apply data typing.</p>
 
-<p>Add a new stage to apply a <code>TypingTransformation</code> to the data extracted in the first stage named <code>green_tripdata0_raw</code> which will parse the data and produce an output dataset called <code>green_tripdata0</code> with correctly typed data. To do this we have to tell Spark how to parse the text data back into their original data types. To do this transformation we need some way to pass in the description of how to parse the data and that is descriped in the <code>metadata</code> file passed in using the <code>inputURI</code> key and described in the next step.</p>
+<p>Add a new stage to apply a <code>TypingTransformation</code> to the data extracted in the first stage named <code>green_tripdata0_raw</code> which will parse the data and produce an output dataset called <code>green_tripdata0</code> with correctly typed data. To do this we have to tell Spark how to parse the text data back into their original data types. To do this transformation we need some way to pass in the description of how to parse the data and that is descriped in the <code>metadata</code> file passed in using the <code>schemaURI</code> key and described in the next step.</p>
 
 <pre><code class="language-json">{
   &quot;type&quot;: &quot;TypingTransform&quot;,
   &quot;name&quot;: &quot;apply green_tripdata/0 data types&quot;,
   &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-  &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/0/green_tripdata.json&quot;,
+  &quot;schemaURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/0/green_tripdata.json&quot;,
   &quot;inputView&quot;: &quot;green_tripdata0_raw&quot;,            
   &quot;outputView&quot;: &quot;green_tripdata0&quot;       
 }   
@@ -868,7 +868,7 @@ bin/spark-submit \
     &quot;type&quot;: &quot;TypingTransform&quot;,
     &quot;name&quot;: &quot;apply green_tripdata/0 data types&quot;,
     &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/0/green_tripdata.json&quot;,
+    &quot;schemaURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/0/green_tripdata.json&quot;,
     &quot;inputView&quot;: &quot;green_tripdata0_raw&quot;,            
     &quot;outputView&quot;: &quot;green_tripdata0&quot;       
   },
@@ -895,7 +895,7 @@ bin/spark-submit \
     &quot;type&quot;: &quot;TypingTransform&quot;,
     &quot;name&quot;: &quot;apply green_tripdata/1 data types&quot;,
     &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/1/green_tripdata.json&quot;,
+    &quot;schemaURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/1/green_tripdata.json&quot;,
     &quot;inputView&quot;: &quot;green_tripdata1_raw&quot;,            
     &quot;outputView&quot;: &quot;green_tripdata1&quot;       
   },
@@ -922,7 +922,7 @@ bin/spark-submit \
     &quot;type&quot;: &quot;TypingTransform&quot;,
     &quot;name&quot;: &quot;apply green_tripdata/2 data types&quot;,
     &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/2/green_tripdata.json&quot;,
+    &quot;schemaURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/2/green_tripdata.json&quot;,
     &quot;inputView&quot;: &quot;green_tripdata2_raw&quot;,            
     &quot;outputView&quot;: &quot;green_tripdata2&quot;       
   },

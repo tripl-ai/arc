@@ -147,14 +147,14 @@ At this stage we have a stage which will tell Spark where to read one or more `.
 
 To make this data more useful for querying (for example doing aggregation by time period) we need to safely apply data typing. 
 
-Add a new stage to apply a `TypingTransformation` to the data extracted in the first stage named `green_tripdata0_raw` which will parse the data and produce an output dataset called `green_tripdata0` with correctly typed data. To do this we have to tell Spark how to parse the text data back into their original data types. To do this transformation we need some way to pass in the description of how to parse the data and that is descriped in the `metadata` file passed in using the `inputURI` key and described in the next step.
+Add a new stage to apply a `TypingTransformation` to the data extracted in the first stage named `green_tripdata0_raw` which will parse the data and produce an output dataset called `green_tripdata0` with correctly typed data. To do this we have to tell Spark how to parse the text data back into their original data types. To do this transformation we need some way to pass in the description of how to parse the data and that is descriped in the `metadata` file passed in using the `schemaURI` key and described in the next step.
 
 ```json
 {
   "type": "TypingTransform",
   "name": "apply green_tripdata/0 data types",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_BASE_URL}"/meta/green_tripdata/0/green_tripdata.json",
+  "schemaURI": ${ETL_CONF_BASE_URL}"/meta/green_tripdata/0/green_tripdata.json",
   "inputView": "green_tripdata0_raw",            
   "outputView": "green_tripdata0"       
 }   
@@ -383,7 +383,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
     "type": "TypingTransform",
     "name": "apply green_tripdata/0 data types",
     "environments": ["production", "test"],
-    "inputURI": ${ETL_CONF_BASE_URL}"/meta/green_tripdata/0/green_tripdata.json",
+    "schemaURI": ${ETL_CONF_BASE_URL}"/meta/green_tripdata/0/green_tripdata.json",
     "inputView": "green_tripdata0_raw",            
     "outputView": "green_tripdata0"       
   },
@@ -410,7 +410,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
     "type": "TypingTransform",
     "name": "apply green_tripdata/1 data types",
     "environments": ["production", "test"],
-    "inputURI": ${ETL_CONF_BASE_URL}"/meta/green_tripdata/1/green_tripdata.json",
+    "schemaURI": ${ETL_CONF_BASE_URL}"/meta/green_tripdata/1/green_tripdata.json",
     "inputView": "green_tripdata1_raw",            
     "outputView": "green_tripdata1"       
   },
@@ -437,7 +437,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
     "type": "TypingTransform",
     "name": "apply green_tripdata/2 data types",
     "environments": ["production", "test"],
-    "inputURI": ${ETL_CONF_BASE_URL}"/meta/green_tripdata/2/green_tripdata.json",
+    "schemaURI": ${ETL_CONF_BASE_URL}"/meta/green_tripdata/2/green_tripdata.json",
     "inputView": "green_tripdata2_raw",            
     "outputView": "green_tripdata2"       
   },
