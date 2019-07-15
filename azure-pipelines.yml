@@ -32,10 +32,10 @@ steps:
 
 - script: |
     docker-compose \
-    -d \
-    --build \
     -f src/it/resources/docker-compose.yml \
-    up
+    up \
+    --build \
+    -d
   displayName: 'Create a docker-compose based testing environment (including idle mozilla/sbt:8u212_1.2.8)'
 
 - script: |
