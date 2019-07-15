@@ -139,11 +139,6 @@ object DelimitedExtractStage {
       case None => Delimited.toSparkOptions(stage.settings)
     }
 
-    val inputValue = stage.input match {
-      case Left(view) => view
-      case Right(glob) => glob
-    }
-
     // try to get the schema
     val optionSchema = try {
       ExtractUtils.getSchema(stage.schema)(spark, logger)

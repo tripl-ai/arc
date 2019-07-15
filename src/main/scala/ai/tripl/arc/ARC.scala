@@ -107,8 +107,6 @@ object ARC {
     }
 
 
-    import spark.implicits._
-
     // add spark config to log
     val sparkConf = new java.util.HashMap[String, String]()
     spark.sparkContext.hadoopConfiguration.set("io.compression.codecs", classOf[ai.tripl.arc.util.ZipCodec].getName)

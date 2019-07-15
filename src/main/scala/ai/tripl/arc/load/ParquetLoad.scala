@@ -123,7 +123,6 @@ object ParquetLoadStage {
         stage.partitionBy match {
           case Nil => nonNullDF.writeStream.format("parquet").option("path", stage.outputURI.toString).start
           case partitionBy => {
-            val partitionCols = partitionBy.map(col => nonNullDF(col))
             nonNullDF.writeStream.partitionBy(partitionBy:_*).format("parquet").option("path", stage.outputURI.toString).start
           }
         }

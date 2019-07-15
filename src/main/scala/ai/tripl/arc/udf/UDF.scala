@@ -16,7 +16,7 @@ object UDF {
     for (plugin <- arcContext.udfPlugins) {
       val beforeFunctions = spark.catalog.listFunctions.map(_.name).collect.toSet
 
-      val pluginUDFs = plugin.register
+      plugin.register
 
       val afterFunctions = spark.catalog.listFunctions.map(_.name).collect.toSet
       val addedFunctions = afterFunctions.diff(beforeFunctions)

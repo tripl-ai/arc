@@ -122,7 +122,6 @@ object JSONLoadStage {
         stage.partitionBy match {
           case Nil => nonNullDF.writeStream.format("json").option("path", stage.outputURI.toString).start
           case partitionBy => {
-            val partitionCols = partitionBy.map(col => nonNullDF(col))
             nonNullDF.writeStream.partitionBy(partitionBy:_*).format("json").option("path", stage.outputURI.toString).start
           }
         }
