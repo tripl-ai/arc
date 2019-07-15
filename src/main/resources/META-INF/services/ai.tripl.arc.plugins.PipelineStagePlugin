@@ -27,6 +27,7 @@ ai.tripl.arc.transform.DiffTransform
 ai.tripl.arc.transform.HTTPTransform
 ai.tripl.arc.transform.JSONTransform
 ai.tripl.arc.transform.MetadataFilterTransform
+ai.tripl.arc.transform.MetadataTransform
 ai.tripl.arc.transform.MLTransform
 ai.tripl.arc.transform.SQLTransform
 ai.tripl.arc.transform.TensorFlowServingTransform
