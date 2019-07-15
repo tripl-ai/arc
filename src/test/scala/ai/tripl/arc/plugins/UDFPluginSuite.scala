@@ -21,7 +21,7 @@ class UDFPluginSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
 
@@ -29,7 +29,7 @@ class UDFPluginSuite extends FunSuite with BeforeAndAfter {
     val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // register udf
-    UDF.registerUDFs()(spark,logger,arcContext)    
+    UDF.registerUDFs()(spark,logger,arcContext)
   }
 
   after {

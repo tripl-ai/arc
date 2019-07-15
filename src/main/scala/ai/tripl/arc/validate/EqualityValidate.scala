@@ -26,10 +26,10 @@ class EqualityValidate extends PipelineStagePlugin {
     val leftView = getValue[String]("leftView")
     val rightView = getValue[String]("rightView")
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, leftView, rightView, invalidKeys) match {
-      case (Right(name), Right(description), Right(leftView), Right(rightView), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(leftView), Right(rightView), Right(invalidKeys)) =>
 
         val stage = EqualityValidateStage(
           plugin=this,
@@ -40,8 +40,8 @@ class EqualityValidate extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("leftView", leftView)      
-        stage.stageDetail.put("rightView", rightView)         
+        stage.stageDetail.put("leftView", leftView)
+        stage.stageDetail.put("rightView", rightView)
         stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
@@ -56,10 +56,10 @@ class EqualityValidate extends PipelineStagePlugin {
 
 case class EqualityValidateStage(
     plugin: EqualityValidate,
-    name: String, 
-    description: Option[String], 
-    leftView: String, 
-    rightView: String, 
+    name: String,
+    description: Option[String],
+    leftView: String,
+    rightView: String,
     params: Map[String, String]
   ) extends PipelineStage {
 
@@ -72,14 +72,14 @@ object EqualityValidateStage {
 
   def execute(stage: EqualityValidateStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    val rawLeftDF = spark.table(stage.leftView)   
-    val rawRightDF = spark.table(stage.rightView)   
+    val rawLeftDF = spark.table(stage.leftView)
+    val rawRightDF = spark.table(stage.rightView)
 
     // remove any internal fields as some will be added by things like the ParquetExtract which includes filename
     val leftInternalFields = rawLeftDF.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
     val rightInternalFields = rawRightDF.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val leftDF = rawLeftDF.drop(leftInternalFields:_*) 
-    val rightDF = rawRightDF.drop(rightInternalFields:_*) 
+    val leftDF = rawLeftDF.drop(leftInternalFields:_*)
+    val rightDF = rawRightDF.drop(rightInternalFields:_*)
 
     // test column count equality
     val leftExceptRightColumns = leftDF.columns diff rightDF.columns
@@ -90,8 +90,8 @@ object EqualityValidateStage {
 
       throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${stage.leftView}' (${leftDF.columns.length} columns) contains columns: [${leftExceptRightColumns.map(fieldName => s"'${fieldName}'").mkString(", ")}] that are not in '${stage.rightView}' and '${stage.rightView}' (${rightDF.columns.length} columns) contains columns: [${rightExceptLeftColumns.map(fieldName => s"'${fieldName}'").mkString(", ")}] that are not in '${stage.leftView}'. Columns are not equal so cannot the data be compared.""") with DetailException {
         override val detail = stage.stageDetail
-      }      
-    }      
+      }
+    }
 
     // test column order equality
     if (leftDF.schema.map(_.name).toArray.deep != rightDF.schema.map(_.name).toArray.deep) {
@@ -100,8 +100,8 @@ object EqualityValidateStage {
 
       throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${stage.leftView}' contains columns (ordered): [${leftDF.columns.map(fieldName => s"'${fieldName}'").mkString(", ")}] and '${stage.rightView}' contains columns (ordered): [${rightDF.columns.map(fieldName => s"'${fieldName}'").mkString(", ")}]. Columns are not equal so cannot the data be compared.""") with DetailException {
         override val detail = stage.stageDetail
-      }      
-    }      
+      }
+    }
 
     // test column type equality
     if (leftDF.schema.map(_.dataType).toArray.deep != rightDF.schema.map(_.dataType).toArray.deep) {
@@ -110,8 +110,8 @@ object EqualityValidateStage {
 
       throw new Exception(s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${stage.leftView}' contains column types (ordered): [${leftDF.schema.map(_.dataType.typeName).toArray.map(fieldType => s"'${fieldType}'").mkString(", ")}] and '${stage.rightView}' contains column types (ordered): [${rightDF.schema.map(_.dataType.typeName).toArray.map(fieldType => s"'${fieldType}'").mkString(", ")}]. Columns are not equal so cannot the data be compared.""") with DetailException {
         override val detail = stage.stageDetail
-      }      
-    }   
+      }
+    }
 
     // do not test column nullable equality
 
@@ -124,7 +124,7 @@ object EqualityValidateStage {
     val leftExceptRight = transformedDF.filter(col("_2").isNull)
     val rightExceptLeft = transformedDF.filter(col("_1").isNull)
     val leftExceptRightCount = leftExceptRight.count
-    val rightExceptLeftCount = rightExceptLeft.count     
+    val rightExceptLeftCount = rightExceptLeft.count
 
     if (leftExceptRightCount != 0 || rightExceptLeftCount != 0) {
       stage.stageDetail.put("leftExceptRightCount", java.lang.Long.valueOf(leftExceptRightCount))

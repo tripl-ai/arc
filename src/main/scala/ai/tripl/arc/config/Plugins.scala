@@ -38,12 +38,12 @@ object Plugins {
             .field("event", "validateConfig")
             .field("type", pluginType.right.getOrElse("unknown"))
             .field("stageIndex", index)
-            .field("environment", arcContext.environment.get)               
-            .list("environments", environments.asJava)   
-            .field("message", "skipping stage due to environment configuration")       
+            .field("environment", arcContext.environment.get)
+            .list("environments", environments.asJava)
+            .field("message", "skipping stage due to environment configuration")
             .field("skipPlugin", true)
-            .log()    
-          
+            .log()
+
           (errors, instances)
         } else {
           val instanceOrError: Either[List[StageError], T] = pluginType match {

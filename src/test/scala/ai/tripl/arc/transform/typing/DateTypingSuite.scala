@@ -310,7 +310,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
           }
           case (_,_) => assert(false)
         }
-      }   
+      }
 
       {
         val value = "18 Dec 2016"
@@ -325,15 +325,15 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
 
       {
         val value = "18 December 16"
-        Typing.typeValue(value, col) match {        
+        Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
             assert(err === TypingError.forCol(col, s"""Unable to convert '$value' to date using formatters [${col.formatters.map(c => s"'${c}'").mkString(", ")}]"""))
           }
           case (_, _) => assert(false)
         }
-      }                 
-    }    
+      }
+    }
   }
 
   test("Type Date Column: impossible date: strict") {
@@ -348,7 +348,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
         }
         case (_,_) => assert(false)
       }
-  }   
+  }
 
   test("Type Date Column: impossible date: not strict") {
       val dateValue = Date.valueOf("2000-02-29")
@@ -364,5 +364,5 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }    
+  }
 }

@@ -49,14 +49,14 @@ class HTTPTransform extends PipelineStagePlugin {
     val batchSize = getValue[Int]("batchSize", default = Some(1))
     val delimiter = getValue[String]("delimiter", default = Some("\n"))
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))    
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val failMode = getValue[String]("failMode", default = Some("failfast"), validValues = "permissive" :: "failfast" :: Nil) |> parseFailMode("failMode") _
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)      
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, inputView, outputView, uri, persist, inputField, validStatusCodes, batchSize, delimiter, numPartitions, partitionBy, failMode, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputView), Right(uri), Right(persist), Right(inputField), Right(validStatusCodes), Right(batchSize), Right(delimiter), Right(numPartitions), Right(partitionBy), Right(failMode), Right(invalidKeys)) => 
-        
+      case (Right(name), Right(description), Right(inputView), Right(outputView), Right(uri), Right(persist), Right(inputField), Right(validStatusCodes), Right(batchSize), Right(delimiter), Right(numPartitions), Right(partitionBy), Right(failMode), Right(invalidKeys)) =>
+
         val stage = HTTPTransformStage(
           plugin=this,
           name=name,
@@ -76,10 +76,10 @@ class HTTPTransform extends PipelineStagePlugin {
           failMode=failMode
         )
 
-        stage.stageDetail.put("inputView", inputView)  
-        stage.stageDetail.put("inputField", inputField)  
-        stage.stageDetail.put("outputView", outputView) 
-        stage.stageDetail.put("uri", uri.toString)      
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("inputField", inputField)
+        stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("uri", uri.toString)
         stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(headers).asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
@@ -101,20 +101,20 @@ class HTTPTransform extends PipelineStagePlugin {
 
 case class HTTPTransformStage(
     plugin: HTTPTransform,
-    name: String, 
-    description: Option[String], 
-    uri: URI, 
-    headers: Map[String, String], 
-    validStatusCodes: List[Int], 
-    inputView: String, 
-    outputView: String, 
-    inputField: String, 
-    params: Map[String, String], 
-    persist: Boolean, 
-    batchSize: Int, 
-    delimiter: String, 
-    numPartitions: Option[Int], 
-    partitionBy: List[String], 
+    name: String,
+    description: Option[String],
+    uri: URI,
+    headers: Map[String, String],
+    validStatusCodes: List[Int],
+    inputView: String,
+    outputView: String,
+    inputField: String,
+    params: Map[String, String],
+    persist: Boolean,
+    batchSize: Int,
+    delimiter: String,
+    numPartitions: Option[Int],
+    partitionBy: List[String],
     failMode: FailModeType
   ) extends PipelineStage {
 
@@ -127,14 +127,14 @@ object HTTPTransformStage {
 
   /** Phantom Type to enable compiler to find the encoder we want
     */
-  type TransformedRow = Row  
+  type TransformedRow = Row
 
   def execute(stage: HTTPTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
 
     val signature = s"HTTPTransform requires a field named '${stage.inputField}' of type 'string' or 'binary'."
 
-    val df = spark.table(stage.inputView)      
+    val df = spark.table(stage.inputView)
     val schema = df.schema
     val stageUri = stage.uri
     val stageInputField = stage.inputField
@@ -144,20 +144,20 @@ object HTTPTransformStage {
     val stageFailMode = stage.failMode
     val stageValidStatusCodes = stage.validStatusCodes
 
-    val fieldIndex = try { 
+    val fieldIndex = try {
       schema.fieldIndex(stage.inputField)
     } catch {
       case e: Exception => throw new Exception(s"""${signature} inputView has: [${df.schema.map(_.name).mkString(", ")}].""") with DetailException {
-        override val detail = stage.stageDetail          
-      }   
+        override val detail = stage.stageDetail
+      }
     }
 
     schema.fields(fieldIndex).dataType match {
-      case _: StringType => 
-      case _: BinaryType => 
+      case _: StringType =>
+      case _: BinaryType =>
       case _ => throw new Exception(s"""${signature} '${stage.inputField}' is of type: '${schema.fields(fieldIndex).dataType.simpleString}'.""") with DetailException {
-        override val detail = stage.stageDetail          
-      }  
+        override val detail = stage.stageDetail
+      }
     }
 
 
@@ -170,9 +170,9 @@ object HTTPTransformStage {
       * TypeRow type to enable implicit resolution to find our encoder.
       */
     implicit val typedEncoder: Encoder[TransformedRow] = org.apache.spark.sql.catalyst.encoders.RowEncoder(typedSchema)
-    
+
     var transformedDF = try {
-      df.mapPartitions[TransformedRow] { partition: Iterator[Row] => 
+      df.mapPartitions[TransformedRow] { partition: Iterator[Row] =>
         val poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager()
         poolingHttpClientConnectionManager.setMaxTotal(50)
         val httpClient = HttpClients.custom
@@ -196,12 +196,12 @@ object HTTPTransformStage {
         // group so we can send multiple rows per request
         val groupedPartition = bufferedPartition.grouped(stageBatchSize)
 
-        groupedPartition.flatMap[TransformedRow] { groupedRow => 
+        groupedPartition.flatMap[TransformedRow] { groupedRow =>
           val post = new HttpPost(uri)
 
           // add headers
           for ((k,v) <- stageHeaders) {
-            post.addHeader(k,v) 
+            post.addHeader(k,v)
           }
 
           // add payload
@@ -211,7 +211,7 @@ object HTTPTransformStage {
                 stageDelimiter
               } else {
                 ""
-              }        
+              }
               new StringEntity(groupedRow.map(row => row.getString(fieldIndex)).mkString(stageDelimiter))
             }
             case _: BinaryType => {
@@ -224,7 +224,7 @@ object HTTPTransformStage {
             }
           }
           post.setEntity(entity)
-          
+
           try {
             // send the request
             val requestStartTime = System.currentTimeMillis
@@ -243,7 +243,7 @@ object HTTPTransformStage {
             } else {
               Array(Source.fromInputStream(content).mkString)
             }
-            response.close 
+            response.close
 
             if (body.length != groupedRow.length) {
               throw new Exception(s"""HTTPTransform expects the response to contain same number of results as 'batchSize' (${stageBatchSize}) but server responded with ${body.length}.""")
@@ -264,9 +264,9 @@ object HTTPTransformStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
-    } 
+    }
 
     // re-attach metadata to result
     df.schema.fields.foreach(field => {
@@ -275,11 +275,11 @@ object HTTPTransformStage {
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => transformedDF.repartition(numPartitions)
           case None => transformedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -289,7 +289,7 @@ object HTTPTransformStage {
           case None => transformedDF.repartition(partitionCols:_*)
         }
       }
-    } 
+    }
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
@@ -298,8 +298,8 @@ object HTTPTransformStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-      }      
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
     }
 
     Option(repartitionedDF)

@@ -23,7 +23,7 @@ import ai.tripl.arc.util._
 
 class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val inputView = "inputView"
   val outputView = "outputView"
   val uri = s"http://tensorflow_serving:9001/v1/models/simple/versions/1:predict"
@@ -41,7 +41,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")     
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
@@ -52,7 +52,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
   after {
     session.stop
-  }    
+  }
 
   test("HTTPTransform: Can call TensorflowServing via REST" ) {
     implicit val spark = session
@@ -63,9 +63,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     df.createOrReplaceTempView(inputView)
 
     var payloadDataset = spark.sql(s"""
-    SELECT 
+    SELECT
       id
-      ,TO_JSON(NAMED_STRUCT('instances', ARRAY(id))) AS value 
+      ,TO_JSON(NAMED_STRUCT('instances', ARRAY(id))) AS value
     FROM ${inputView}
     """)
     payloadDataset.createOrReplaceTempView(inputView)
@@ -87,7 +87,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter="",
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast          
+        failMode=FailModeTypeFailFast
       )
     ).get
 
@@ -98,7 +98,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
     assert(output.first.getAs[scala.collection.mutable.WrappedArray[Integer]](0)(0) == 11)
     assert(output.schema.fields(0).dataType.toString == "ArrayType(IntegerType,false)")
-  }  
+  }
 
   test("HTTPTransform: Can call TensorflowServing via REST: inputField" ) {
     implicit val spark = session
@@ -109,9 +109,9 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     df.createOrReplaceTempView(inputView)
 
     var payloadDataset = spark.sql(s"""
-    SELECT 
+    SELECT
       id
-      ,TO_JSON(NAMED_STRUCT('instances', ARRAY(id))) AS input 
+      ,TO_JSON(NAMED_STRUCT('instances', ARRAY(id))) AS input
     FROM ${inputView}
     """)
     payloadDataset.createOrReplaceTempView(inputView)
@@ -133,7 +133,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter="",
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast          
+        failMode=FailModeTypeFailFast
       )
     ).get
 
@@ -144,6 +144,6 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
     assert(output.first.getAs[scala.collection.mutable.WrappedArray[Integer]](0)(0) == 11)
     assert(output.schema.fields(0).dataType.toString == "ArrayType(IntegerType,false)")
-  }    
+  }
 
 }

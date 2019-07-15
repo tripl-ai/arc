@@ -25,7 +25,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
@@ -48,7 +48,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
     assert(df.first.getAs[scala.collection.mutable.WrappedArray[Long]](0)(0) == 2147483648L)
     assert(df.schema.fields(0).dataType.toString == "ArrayType(LongType,false)")
-  }       
+  }
 
   test("get_json_double_array") {
     implicit val spark = session
@@ -59,7 +59,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
     assert(df.first.getAs[scala.collection.mutable.WrappedArray[Double]](0)(0) == 0.1)
     assert(df.schema.fields(0).dataType.toString == "ArrayType(DoubleType,false)")
-  }   
+  }
 
   test("get_json_integer_array") {
     implicit val spark = session
@@ -70,7 +70,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
     assert(df.first.getAs[scala.collection.mutable.WrappedArray[Integer]](0)(0) == 1)
     assert(df.schema.fields(0).dataType.toString == "ArrayType(IntegerType,false)")
-  }    
+  }
 
   test("get_json_long_array") {
     implicit val spark = session
@@ -81,7 +81,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
     assert(df.first.getAs[scala.collection.mutable.WrappedArray[Long]](0)(0) == 2147483648L)
     assert(df.schema.fields(0).dataType.toString == "ArrayType(LongType,false)")
-  } 
+  }
 
   test("random") {
     implicit val spark = session
@@ -93,5 +93,5 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.first.getDouble(0) > 0.0)
     assert(df.first.getDouble(0) < 1.0)
     assert(df.schema.fields(0).dataType.toString == "DoubleType")
-  }       
+  }
 }

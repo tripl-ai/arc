@@ -21,14 +21,14 @@ import ai.tripl.arc.util.ControlUtils._
 
 class BytesExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
 
   val pathView = "pathView"
   val outputView = "outputView"
   val targetFile = getClass.getResource("/notes.xml.zip").toString
-  val emptyDirectory = FileUtils.getTempDirectoryPath() + "missing.binary" 
-  val missingDirectory = FileUtils.getTempDirectoryPath() + "/missing/missing.binary" 
-  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.binary" 
+  val emptyDirectory = FileUtils.getTempDirectoryPath() + "missing.binary"
+  val missingDirectory = FileUtils.getTempDirectoryPath() + "/missing/missing.binary"
+  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.binary"
 
   before {
     implicit val spark = SparkSession
@@ -40,7 +40,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")        
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -61,7 +61,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.BytesExtract,
         name="dataset",
         description=None,
-        outputView=outputView, 
+        outputView=outputView,
         input=Right(targetFile),
         authentication=None,
         persist=false,
@@ -74,7 +74,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
 
     assert(dataset.filter($"_filename".contains(targetFile)).count != 0)
     assert(dataset.count == 1)
-  }    
+  }
 
   test("BytesExtract: pathView") {
     implicit val spark = session
@@ -90,7 +90,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.BytesExtract,
         name="dataset",
         description=None,
-        outputView=outputView, 
+        outputView=outputView,
         input=Left(pathView),
         authentication=None,
         persist=false,
@@ -102,7 +102,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     assert(dataset.count == 2)
-  }    
+  }
 
   test("BytesExtract: FailModeTypeFailFast") {
     implicit val spark = session
@@ -117,7 +117,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
           plugin=new extract.BytesExtract,
           name="dataset",
           description=None,
-          outputView=outputView, 
+          outputView=outputView,
           input=Right(emptyWildcardDirectory),
           authentication=None,
           persist=false,
@@ -125,11 +125,11 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
           contiguousIndex=true,
           params=Map.empty,
           failMode=FailModeTypeFailFast
-        )        
+        )
       )
     }
     assert(thrown0.getMessage === "BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.")
-    
+
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
       extract.BytesExtractStage.execute(
@@ -137,7 +137,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
           plugin=new extract.BytesExtract,
           name="dataset",
           description=None,
-          outputView=outputView, 
+          outputView=outputView,
           input=Right(emptyDirectory),
           authentication=None,
           persist=false,
@@ -145,11 +145,11 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
           contiguousIndex=true,
           params=Map.empty,
           failMode=FailModeTypeFailFast
-        )  
+        )
       )
     }
     assert(thrown1.getMessage === "BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.")
-    
+
     // try without providing column metadata
     val thrown2 = intercept[Exception with DetailException] {
       extract.BytesExtractStage.execute(
@@ -157,7 +157,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
           plugin=new extract.BytesExtract,
           name="dataset",
           description=None,
-          outputView=outputView, 
+          outputView=outputView,
           input=Right(missingDirectory),
           authentication=None,
           persist=false,
@@ -165,7 +165,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
           contiguousIndex=true,
           params=Map.empty,
           failMode=FailModeTypeFailFast
-        )  
+        )
       )
     }
     assert(thrown2.getMessage === "BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.")
@@ -176,7 +176,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.BytesExtract,
         name="dataset",
         description=None,
-        outputView=outputView, 
+        outputView=outputView,
         input=Right(emptyWildcardDirectory),
         authentication=None,
         persist=false,
@@ -184,12 +184,12 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         contiguousIndex=true,
         params=Map.empty,
         failMode=FailModeTypePermissive
-      )  
+      )
     ).get
 
     val expected = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], BinaryContent.schema)
     assert(TestUtils.datasetEquality(expected, actual))
 
-  }  
+  }
 
 }

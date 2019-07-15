@@ -37,12 +37,12 @@ class MLTransform extends PipelineStagePlugin {
     val outputView = getValue[String]("outputView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))        
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)      
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, inputURI, model, inputView, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputURI), Right(model), Right(inputView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(inputURI), Right(model), Right(inputView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) =>
 
         val stage = MLTransformStage(
           plugin=this,
@@ -58,9 +58,9 @@ class MLTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        stage.stageDetail.put("inputURI", inputURI.toString)  
-        stage.stageDetail.put("inputView", inputView)  
-        stage.stageDetail.put("outputView", outputView)   
+        stage.stageDetail.put("inputURI", inputURI.toString)
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
@@ -74,9 +74,9 @@ class MLTransform extends PipelineStagePlugin {
 
   def getModel(path: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: com.typesafe.config.Config): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
-    
+
     authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))
-    
+
     try {
       Right(Left(PipelineModel.load(uri.toString)))
     } catch {
@@ -94,15 +94,15 @@ class MLTransform extends PipelineStagePlugin {
 
 case class MLTransformStage(
     plugin: MLTransform,
-    name: String, 
-    description: Option[String], 
-    inputURI: URI, 
-    model: Either[PipelineModel, CrossValidatorModel], 
-    inputView: String, 
-    outputView: String, 
-    params: Map[String, String], 
-    persist: Boolean, 
-    numPartitions: Option[Int], 
+    name: String,
+    description: Option[String],
+    inputURI: URI,
+    model: Either[PipelineModel, CrossValidatorModel],
+    inputView: String,
+    outputView: String,
+    params: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
     partitionBy: List[String]
   ) extends ai.tripl.arc.api.API.PipelineStage {
 
@@ -119,30 +119,30 @@ object MLTransformStage {
     val model = stage.model match {
       case Right(crossValidatorModel) => crossValidatorModel
       case Left(pipelineModel) => pipelineModel
-    }    
+    }
 
     val stages = try {
       stage.model match {
         case Right(crossValidatorModel) => crossValidatorModel.bestModel.asInstanceOf[PipelineModel].stages
         case Left(pipelineModel) => pipelineModel.stages
-      } 
+      }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }             
+        override val detail = stage.stageDetail
+      }
+    }
 
     // apply model
     val fullTransformedDF = try {
       model.transform(df)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    } 
+        override val detail = stage.stageDetail
+      }
+    }
 
     // select only input fields, predictedCol(s), probabilityCol(s)
-    val inputCols = df.schema.fields.map(f => col(f.name)) 
+    val inputCols = df.schema.fields.map(f => col(f.name))
     val predictionCols = stages
       .filter(stage => stage.hasParam("predictionCol"))
       .map(stage => stage.get(stage.getParam("predictionCol")))
@@ -156,7 +156,7 @@ object MLTransformStage {
       .map(_.toString)
       .map(col(_))
     var transformedDF = fullTransformedDF.select((inputCols ++ predictionCols ++ probabilityCols): _*)
-    
+
     // if any probability columns exist replace with the max value in the probability vector using a custom UDF
     val maxProbability = udf((v: Vector) => v.toArray.max)
     probabilityCols.foreach(col => {
@@ -165,11 +165,11 @@ object MLTransformStage {
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => transformedDF.repartition(numPartitions)
           case None => transformedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -188,7 +188,7 @@ object MLTransformStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
 
         // add percentiles to list for logging
         var approxQuantileMap = new java.util.HashMap[String, Array[java.lang.Double]]()
@@ -197,9 +197,9 @@ object MLTransformStage {
         })
         if (approxQuantileMap.size > 0) {
           stage.stageDetail.put("percentiles", approxQuantileMap)
-        }        
-      }      
-    }    
+        }
+      }
+    }
 
     Option(repartitionedDF)
   }

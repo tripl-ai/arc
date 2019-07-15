@@ -32,18 +32,18 @@ class TextLoad extends PipelineStagePlugin {
     val inputView = getValue[String]("inputView")
     val outputURI = getValue[String]("outputURI") |> parseURI("outputURI") _
     val numPartitions = getOptionalValue[Int]("numPartitions")
-    val authentication = readAuthentication("authentication")  
+    val authentication = readAuthentication("authentication")
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
     val singleFile = getValue[java.lang.Boolean]("singleFile", default = Some(false))
     val prefix = getValue[String]("prefix", default = Some(""))
     val separator = getValue[String]("separator", default = Some(""))
     val suffix = getValue[String]("suffix", default = Some(""))
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(singleFile), Right(prefix), Right(separator), Right(suffix), Right(invalidKeys)) => 
-        
+      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(singleFile), Right(prefix), Right(separator), Right(suffix), Right(invalidKeys)) =>
+
         val stage = TextLoadStage(
           plugin=this,
           name=name,
@@ -60,8 +60,8 @@ class TextLoad extends PipelineStagePlugin {
           suffix=suffix
         )
 
-        stage.stageDetail.put("inputView", inputView)  
-        stage.stageDetail.put("outputURI", outputURI.toString)  
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("outputURI", outputURI.toString)
         stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
         stage.stageDetail.put("params", params.asJava)
 
@@ -77,17 +77,17 @@ class TextLoad extends PipelineStagePlugin {
 
 case class TextLoadStage(
     plugin: TextLoad,
-    name: String, 
-    description: Option[String], 
-    inputView: String, 
-    outputURI: URI, 
-    numPartitions: Option[Int], 
-    authentication: Option[Authentication], 
-    saveMode: SaveMode, 
-    params: Map[String, String], 
-    singleFile: Boolean, 
-    prefix: String, 
-    separator: String, 
+    name: String,
+    description: Option[String],
+    inputView: String,
+    outputURI: URI,
+    numPartitions: Option[Int],
+    authentication: Option[Authentication],
+    saveMode: SaveMode,
+    params: Map[String, String],
+    singleFile: Boolean,
+    prefix: String,
+    separator: String,
     suffix: String
   ) extends PipelineStage {
 
@@ -100,7 +100,7 @@ object TextLoadStage {
 
   def execute(stage: TextLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    val df = spark.table(stage.inputView)      
+    val df = spark.table(stage.inputView)
 
     if (!df.isStreaming) {
       stage.numPartitions match {
@@ -111,9 +111,9 @@ object TextLoadStage {
 
     if (df.schema.length != 1 || df.schema.fields(0).dataType != StringType) {
       throw new Exception(s"""TextLoad supports only a single text column but the input view has ${df.schema.length} columns.""") with DetailException {
-        override val detail = stage.stageDetail          
-      } 
-    }      
+        override val detail = stage.stageDetail
+      }
+    }
 
     // set write permissions
     CloudUtils.setHadoopConfiguration(stage.authentication)
@@ -130,7 +130,7 @@ object TextLoadStage {
             }
             case SaveMode.Ignore => {
               None
-            }          
+            }
             case SaveMode.Overwrite => {
               Option(fs.create(path, true))
             }
@@ -161,7 +161,7 @@ object TextLoadStage {
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stage.stageDetail
-      }     
+      }
     }
 
     Option(df)

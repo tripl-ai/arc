@@ -18,7 +18,7 @@ import ai.tripl.arc.util._
 
 class SQLValidateSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   var testName = ""
   var testURI = FileUtils.getTempDirectoryPath()
   val signature = "SQLValidate requires query to return 1 row with [outcome: boolean, message: string] signature."
@@ -33,7 +33,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -64,13 +64,13 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
         }
       ]
     }"""
-    
+
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(_) => assert(false)
       case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
-    }  
+    }
   }
 
   test("SQLValidate: true, null") {
@@ -90,7 +90,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty
       )
     )
-  }  
+  }
 
   test("SQLValidate: true, string") {
     implicit val spark = session
@@ -101,7 +101,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
         plugin=new validate.SQLValidate,
-        name=testName, 
+        name=testName,
         description=None,
         inputURI=new URI(testURI),
         sql="SELECT true, 'message'",
@@ -109,7 +109,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty
       )
     )
-  }   
+  }
 
   test("SQLValidate: true, json") {
     implicit val spark = session
@@ -120,7 +120,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
         plugin=new validate.SQLValidate,
-        name=testName, 
+        name=testName,
         description=None,
         inputURI=new URI(testURI),
         sql="""SELECT true, '{"stringKey": "stringValue", "numKey": 123}'""",
@@ -128,7 +128,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty
       )
     )
-  }    
+  }
 
   test("SQLValidate: false, null") {
     implicit val spark = session
@@ -140,7 +140,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
-          name=testName, 
+          name=testName,
           description=None,
           inputURI=new URI(testURI),
           sql="SELECT false, null",
@@ -150,7 +150,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown.getMessage === "SQLValidate failed with message: 'null'.")
-  }  
+  }
 
   test("SQLValidate: false, string") {
     implicit val spark = session
@@ -162,7 +162,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
-          name=testName, 
+          name=testName,
           description=None,
           inputURI=new URI(testURI),
           sql="SELECT false, 'this is my message'",
@@ -184,7 +184,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
-          name=testName, 
+          name=testName,
           description=None,
           inputURI=new URI(testURI),
           sql="""SELECT false, TO_JSON(NAMED_STRUCT('stringKey', 'stringValue', 'numKey', 123))""",
@@ -195,7 +195,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(thrown.getMessage === """SQLValidate failed with message: '{"stringKey":"stringValue","numKey":123}'.""")
-  }  
+  }
 
   test("SQLValidate: string, boolean") {
     implicit val spark = session
@@ -207,7 +207,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
-          name=testName, 
+          name=testName,
           description=None,
           inputURI=new URI(testURI),
           sql="SELECT 'string', true",
@@ -217,7 +217,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown.getMessage === s"${signature} Query returned 1 rows of type [string, boolean].")
-  } 
+  }
 
   test("SQLValidate: rows != 1") {
     implicit val spark = session
@@ -229,7 +229,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
-          name=testName, 
+          name=testName,
           description=None,
           inputURI=new URI(testURI),
           sql="SELECT true, 'message' WHERE false",
@@ -244,7 +244,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
-          name=testName, 
+          name=testName,
           description=None,
           inputURI=new URI(testURI),
           sql="SELECT true, 'message' UNION ALL SELECT true, 'message'",
@@ -254,7 +254,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown1.getMessage === s"${signature} Query returned 2 rows of type [boolean, string].")
-  }  
+  }
 
   test("SQLValidate: columns != 2") {
     implicit val spark = session
@@ -266,7 +266,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
-          name=testName, 
+          name=testName,
           description=None,
           inputURI=new URI(testURI),
           sql="SELECT true",
@@ -281,7 +281,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
-          name=testName, 
+          name=testName,
           description=None,
           inputURI=new URI(testURI),
           sql="SELECT true, 'message', true",
@@ -291,7 +291,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown1.getMessage === s"${signature} Query returned 1 rows of type [boolean, string, boolean].")
-  }    
+  }
 
   test("SQLValidate: sqlParams") {
     implicit val spark = session
@@ -302,7 +302,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
         plugin=new validate.SQLValidate,
-        name=testName, 
+        name=testName,
         description=None,
         inputURI=new URI(testURI),
         sql="""SELECT 0.1 > ${threshold}, 'message'""",
@@ -315,7 +315,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
-          name=testName, 
+          name=testName,
           description=None,
           inputURI=new URI(testURI),
           sql="""SELECT 0.01 > ${threshold}, 'message'""",
@@ -325,7 +325,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown.getMessage === s"SQLValidate failed with message: 'message'.")
-  } 
+  }
 
   test("SQLValidate: No rows") {
     implicit val spark = session
@@ -337,7 +337,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
-          name=testName, 
+          name=testName,
           description=None,
           inputURI=new URI(testURI),
           sql="SELECT CAST(NULL AS BOOLEAN), CAST(NULL AS STRING)",
@@ -346,7 +346,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown.getMessage === s"SQLValidate requires query to return 1 row with [outcome: boolean, message: string] signature. Query returned [null, null].")    
+    assert(thrown.getMessage === s"SQLValidate requires query to return 1 row with [outcome: boolean, message: string] signature. Query returned [null, null].")
   }
 
 

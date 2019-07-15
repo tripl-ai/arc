@@ -21,7 +21,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -51,7 +51,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("Test commandLineArguments precedence") { 
+  test("Test commandLineArguments precedence") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     val commandLineArguments = Map[String, String]("ARGS_MAP_VALUE" -> "before\"${arc.paramvalue}\"after")
@@ -71,8 +71,8 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
         println(pipeline)
         fail("expected PipelineStage")
       }
-    } 
-  }     
+    }
+  }
 
   test("Read config with dynamic configuration plugin environments ") {
     implicit val spark = session
@@ -93,6 +93,6 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
       case _ => fail("expected PipelineStage")
     }
-  }    
+  }
 
 }

@@ -17,7 +17,7 @@ import ai.tripl.arc.util._
 
 class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   var connection: java.sql.Connection = _
 
   val sqlserverurl = "jdbc:sqlserver://sqlserver:1433"
@@ -25,7 +25,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
   val outputView = "dataset"
   var testURI = FileUtils.getTempDirectoryPath()
   val user = "sa"
-  val password = "SecretPass!2018" // see docker-compose.yml for password  
+  val password = "SecretPass!2018" // see docker-compose.yml for password
   val fullsqlserverurl = s"jdbc:sqlserver://sqlserver:1433;user=${user};password=${password};"
 
   before {
@@ -39,13 +39,13 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")       
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
 
     // early resolution of jdbc drivers or else cannot find message
-    DriverManager.getDrivers    
+    DriverManager.getDrivers
   }
 
   after {
@@ -66,7 +66,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     |
     |DROP TABLE IF EXISTS master.dbo.sys_views;
     |
-    |SELECT * 
+    |SELECT *
     |INTO master.dbo.sys_views
     |FROM INFORMATION_SCHEMA.VIEWS;
     |
@@ -76,11 +76,11 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
       ai.tripl.arc.execute.JDBCExecuteStage(
         plugin=new ai.tripl.arc.execute.JDBCExecute,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputURI=new URI(testURI), 
+        inputURI=new URI(testURI),
         jdbcURL=sqlserverurl,
-        sql=transaction, 
+        sql=transaction,
         params=Map("user" -> user, "password" -> password),
         sqlParams=Map.empty
       )
@@ -113,7 +113,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     |
     |DROP TABLE IF EXISTS master.dbo.sys_views;
     |
-    |SELECT * 
+    |SELECT *
     |INTO master.dbo.sys_views
     |FROM INFORMATION_SCHEMA.VIEWS;
     |
@@ -123,11 +123,11 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
       ai.tripl.arc.execute.JDBCExecuteStage(
         plugin=new ai.tripl.arc.execute.JDBCExecute,
-        name=outputView, 
+        name=outputView,
         description=None,
-        inputURI=new URI(testURI), 
+        inputURI=new URI(testURI),
         jdbcURL=fullsqlserverurl,
-        sql=transaction, 
+        sql=transaction,
         params=Map.empty,
         sqlParams=Map.empty
       )
@@ -144,7 +144,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(actual.count == 1)
-  }  
+  }
 
   test("JDBCExecute: sqlserver failure statement") {
     implicit val spark = session
@@ -155,7 +155,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     val transaction = s"""
     |SET XACT_ABORT ON;
     |
-    |SELECT * 
+    |SELECT *
     |INTO master.dbo.sys_failure
     |FROM INFORMATION_SCHEMA.DOES_NOT_EXIST;
     """.stripMargin
@@ -164,16 +164,16 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
       ai.tripl.arc.execute.JDBCExecuteStage(
         plugin=new ai.tripl.arc.execute.JDBCExecute,
-          name=outputView, 
+          name=outputView,
           description=None,
-          inputURI=new URI(testURI), 
+          inputURI=new URI(testURI),
           jdbcURL=sqlserverurl,
-          sql=transaction, 
+          sql=transaction,
           params=Map("user" -> user, "password" -> password),
           sqlParams=Map.empty
         )
       )
     }
-    assert(thrown.getMessage.contains("""Invalid object name 'INFORMATION_SCHEMA.DOES_NOT_EXIST'"""))  
+    assert(thrown.getMessage.contains("""Invalid object name 'INFORMATION_SCHEMA.DOES_NOT_EXIST'"""))
   }
 }

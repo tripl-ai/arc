@@ -21,7 +21,7 @@ trait ConfigReader[A] {
     def read(path: String, c: Config): A
 
 }
-  
+
 object ConfigReader {
 
     def getConfigValue[A](path: String, c: Config, expectedType: String,
@@ -99,7 +99,7 @@ object ConfigReader {
 
         def read(path: String, c: Config): IntList = c.getIntList(path).asScala.map(f => f.toInt).toList
 
-    }    
+    }
 
     implicit object BooleanConfigReader extends ConfigReader[Boolean] {
 

@@ -49,7 +49,7 @@ class ZipCompressorStream(outputStream: OutputStream, compressor: Compressor) ex
 
   override def write(b: Array[Byte], off: Int, len: Int) = {
     zipOutputStream.write(b, off, len)
-  }    
+  }
 
   override def resetState() = compressor.reset()
 
@@ -60,7 +60,7 @@ class ZipCompressorStream(outputStream: OutputStream, compressor: Compressor) ex
   override def finish() = {
     zipOutputStream.closeEntry()
     zipOutputStream.finish()
-  }  
+  }
 }
 
 class ZipCodec extends CompressionCodec {

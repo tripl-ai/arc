@@ -20,6 +20,7 @@ Arc 2.0.0 is a major (breaking) change which has been done for multiple reasons:
 - remove the `Dockerfile` and put it in separate repo: (https://github.com/tripl-ai/docker)
 
 **CHANGES**
+- changed `inputURI` field for `TypingTransform` to `schemaURI` to allow addition of `schemaView`.
 - add `CypherTransform` and `GraphTransform` stages to support the https://github.com/opencypher/morpheus project (https://github.com/tripl-ai/arc-graph-pipeline-plugin).
 - add `MongoDBExtract` and `MongoDBLoad` stages (https://github.com/tripl-ai/arc-mongodb-pipeline-plugin).
 - move `ElasticsearchExtract` and `ElasticsearchLoad` to their own repository https://github.com/tripl-ai/arc-elasticsearch-pipeline-plugin.

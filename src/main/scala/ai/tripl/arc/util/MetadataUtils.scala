@@ -9,31 +9,26 @@ import org.apache.spark.sql.types._
 
 object MetadataUtils {
 
-  // turns a schema into a dataframe
+  // convertes the schema of an input dataframe into a dataframe [name, nullable, type, metadata]
   def createMetadataDataframe(input: DataFrame)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
     import spark.implicits._
 
-    // this is a hack but having to deal with StructTypes and StructFields is not fun
+    // this is a hack but having to create a StructType using union of all metadata maps is not trivial
     val schemaDataframe = spark.sparkContext.parallelize(Seq(input.schema.json)).toDF.as[String]
     val parsedSchema = spark.read.json(schemaDataframe)
-    parsedSchema.createOrReplaceTempView("parsedSchema")
 
-    val schema = spark.sql("""
-    SELECT 
-      field.name AS name
-      ,field.type AS type
-      ,field.nullable AS nullable
-      ,field.metadata AS metadata
-    FROM (
-      SELECT 
-        EXPLODE(fields) AS field 
-      FROM parsedSchema
-    ) subquery
-    """)
+    // create schema dataframe
+    val schema = parsedSchema.select(explode(col("fields"))).select("col.*")
 
-    schema.cache.count
-    spark.catalog.dropTempView("parsedSchema")
-    schema
+    // add metadata column if missing
+    val output = if (schema.columns.contains("metadata")) {
+      schema
+    } else {
+      schema.withColumn("metadata", typedLit(Map[String, String]()))
+    }
+
+    output.cache.count
+    output
   }
 
   // attach metadata by column name name to input dataframe
@@ -70,7 +65,7 @@ object MetadataUtils {
           trueValuesArray.add("true")
 
           val falseValuesArray = node.putArray("falseValues")
-          falseValuesArray.add("false")    
+          falseValuesArray.add("false")
 
           node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
           node.set("trim", jsonNodeFactory.booleanNode(true))
@@ -79,7 +74,7 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())               
+          node.set("metadata", jsonNodeFactory.objectNode())
 
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
@@ -87,9 +82,9 @@ object MetadataUtils {
           node.set("id", jsonNodeFactory.textNode(""))
           node.set("name", jsonNodeFactory.textNode(field.name))
           node.set("description", jsonNodeFactory.textNode(""))
-                    
+
           node.set("type", jsonNodeFactory.textNode("date"))
-          
+
           val formattersArray = node.putArray("formatters")
           formattersArray.add("uuuu-MM-dd")
 
@@ -100,7 +95,7 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())           
+          node.set("metadata", jsonNodeFactory.objectNode())
 
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
@@ -108,7 +103,7 @@ object MetadataUtils {
           node.set("id", jsonNodeFactory.textNode(""))
           node.set("name", jsonNodeFactory.textNode(field.name))
           node.set("description", jsonNodeFactory.textNode(""))
-                          
+
           val decimalField = field.dataType.asInstanceOf[DecimalType]
 
           node.set("type", jsonNodeFactory.textNode("decimal"))
@@ -122,7 +117,7 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())       
+          node.set("metadata", jsonNodeFactory.objectNode())
 
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
@@ -130,7 +125,7 @@ object MetadataUtils {
           node.set("id", jsonNodeFactory.textNode(""))
           node.set("name", jsonNodeFactory.textNode(field.name))
           node.set("description", jsonNodeFactory.textNode(""))
-                          
+
           node.set("type", jsonNodeFactory.textNode("double"))
 
           node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
@@ -140,15 +135,15 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())             
+          node.set("metadata", jsonNodeFactory.objectNode())
 
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
-        case _: IntegerType => { 
+        case _: IntegerType => {
           node.set("id", jsonNodeFactory.textNode(""))
           node.set("name", jsonNodeFactory.textNode(field.name))
           node.set("description", jsonNodeFactory.textNode(""))
-                          
+
           node.set("type", jsonNodeFactory.textNode("integer"))
 
           node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
@@ -158,15 +153,15 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())            
+          node.set("metadata", jsonNodeFactory.objectNode())
 
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
-        case _: LongType => { 
+        case _: LongType => {
           node.set("id", jsonNodeFactory.textNode(""))
           node.set("name", jsonNodeFactory.textNode(field.name))
           node.set("description", jsonNodeFactory.textNode(""))
-                
+
           node.set("type", jsonNodeFactory.textNode("long"))
 
           node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
@@ -176,15 +171,15 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())      
+          node.set("metadata", jsonNodeFactory.objectNode())
 
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
-        case _: StringType => { 
+        case _: StringType => {
           node.set("id", jsonNodeFactory.textNode(""))
           node.set("name", jsonNodeFactory.textNode(field.name))
           node.set("description", jsonNodeFactory.textNode(""))
-                
+
           node.set("type", jsonNodeFactory.textNode("string"))
 
           node.set("nullable", jsonNodeFactory.booleanNode(field.nullable))
@@ -194,7 +189,7 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())             
+          node.set("metadata", jsonNodeFactory.objectNode())
 
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
@@ -202,7 +197,7 @@ object MetadataUtils {
           node.set("id", jsonNodeFactory.textNode(""))
           node.set("name", jsonNodeFactory.textNode(field.name))
           node.set("description", jsonNodeFactory.textNode(""))
-                          
+
           node.set("type", jsonNodeFactory.textNode("timestamp"))
 
           val formattersArray = node.putArray("formatters")
@@ -217,7 +212,7 @@ object MetadataUtils {
           nullableValuesArray.add("")
           nullableValuesArray.add("null")
 
-          node.set("metadata", jsonNodeFactory.objectNode())          
+          node.set("metadata", jsonNodeFactory.objectNode())
 
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }

@@ -246,7 +246,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
           case (_, _) => assert(false)
         }
       }
-    }  
+    }
 
     //test multiple formatter
     {
@@ -263,7 +263,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
           case (_, _) => assert(false)
         }
       }
-    }  
+    }
 
     //test formatter in error message
     {
@@ -280,6 +280,6 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
           case (_, _) => assert(false)
         }
       }
-    }     
+    }
   }
 }

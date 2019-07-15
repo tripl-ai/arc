@@ -18,11 +18,11 @@ import ai.tripl.arc.util.TestUtils
 
 class XMLExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "extract.xml" 
-  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.xml" 
-  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.xml" 
-  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.xml.gz" 
+  var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "extract.xml"
+  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.xml"
+  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.xml"
+  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.xml.gz"
   val zipSingleRecord = getClass.getResource("/note.xml.zip").toString
   val zipMultipleRecord =  getClass.getResource("/notes.xml.zip").toString
   val inputView = "dataset"
@@ -38,18 +38,18 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     spark.sparkContext.hadoopConfiguration.set("io.compression.codecs", classOf[ai.tripl.arc.util.ZipCodec].getName)
 
     // recreate test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
-    FileUtils.deleteQuietly(new java.io.File(emptyDirectory)) 
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
+    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
     FileUtils.forceMkdir(new java.io.File(emptyDirectory))
 
     // force com.sun.xml.* implementation for writing xml to be compatible with spark-xml library
-    System.setProperty("javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl")    
+    System.setProperty("javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl")
     // XML will silently drop NullType on write
     TestUtils.getKnownDataset.write.option("rowTag", "testRow").format("com.databricks.spark.xml").save(targetFile)
   }
@@ -58,8 +58,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))     
-    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))     
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
+    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
   }
 
   test("XMLExtract") {
@@ -69,7 +69,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.XMLExtractStage.execute(
       extract.XMLExtractStage(
@@ -89,21 +89,21 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     // test that the filename is correctly populated
-    assert(dataset.filter($"_filename".contains(targetFile)).count != 0)    
+    assert(dataset.filter($"_filename".contains(targetFile)).count != 0)
 
     val expected = TestUtils.getKnownDataset
       .withColumn("decimalDatum", col("decimalDatum").cast("double"))
       .drop($"nullDatum")
-  
+
     val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
     val actual = dataset.drop(internal:_*)
 
     assert(TestUtils.datasetEquality(expected, actual))
 
     // test metadata
-    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata    
-    assert(timestampDatumMetadata.getLong("securityLevel") == 7)        
-  }  
+    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata
+    assert(timestampDatumMetadata.getLong("securityLevel") == 7)
+  }
 
   test("XMLExtract: Caching") {
     implicit val spark = session
@@ -147,8 +147,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         contiguousIndex=true
       )
     )
-    assert(spark.catalog.isCached(outputView) === true)     
-  }  
+    assert(spark.catalog.isCached(outputView) === true)
+  }
 
   test("XMLExtract: Empty Dataset") {
     implicit val spark = session
@@ -156,7 +156,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val schema = 
+    val schema =
       BooleanColumn(
         id="1",
         name="booleanDatum",
@@ -164,11 +164,11 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         nullable=true,
         nullReplacementValue=None,
         trim=false,
-        nullableValues=Nil, 
-        trueValues=Nil, 
+        nullableValues=Nil,
+        trueValues=Nil,
         falseValues=Nil,
-        metadata=None        
-      ) :: Nil    
+        metadata=None
+      ) :: Nil
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
@@ -190,7 +190,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown0.getMessage === "XMLExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-    
+
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
       extract.XMLExtractStage.execute(
@@ -211,7 +211,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown1.getMessage === "XMLExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-    
+
     // try with column
     val dataset = extract.XMLExtractStage.execute(
       extract.XMLExtractStage(
@@ -233,10 +233,10 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val expected = TestUtils.getKnownDataset.select($"booleanDatum").limit(0)
 
     val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val actual = dataset.drop(internal:_*)    
+    val actual = dataset.drop(internal:_*)
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }  
+  }
 
   test("XMLExtract: .zip single record") {
     implicit val spark = session
@@ -262,9 +262,9 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     // test that the filename is correctly populated
-    assert(dataset.filter($"_filename".contains(zipSingleRecord)).count != 0)    
+    assert(dataset.filter($"_filename".contains(zipSingleRecord)).count != 0)
     assert(dataset.schema.fieldNames.contains("body"))
-  }  
+  }
 
   test("XMLExtract: .zip multiple record") {
     implicit val spark = session
@@ -290,11 +290,11 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     // test that the filename is correctly populated
-    assert(dataset.filter($"_filename".contains(zipMultipleRecord)).count != 0)    
+    assert(dataset.filter($"_filename".contains(zipMultipleRecord)).count != 0)
     assert(dataset.schema.fieldNames.contains("body"))
     assert(dataset.count == 2)
 
-  } 
+  }
 
   test("XMLExtract: Dataframe") {
     implicit val spark = session
@@ -303,7 +303,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // temporarily remove the delimiter so all the data is loaded as a single line
-    spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", s"${0x0 : Char}")       
+    spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", s"${0x0 : Char}")
 
     val textFile = spark.sparkContext.textFile(targetFileGlob)
     textFile.toDF.createOrReplaceTempView(inputView)
@@ -328,12 +328,12 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val expected = TestUtils.getKnownDataset
       .withColumn("decimalDatum", col("decimalDatum").cast("double"))
       .drop($"nullDatum")
-  
+
     val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
     val actual = dataset.drop(internal:_*)
 
     assert(TestUtils.datasetEquality(expected, actual))
 
-  }  
+  }
 
 }

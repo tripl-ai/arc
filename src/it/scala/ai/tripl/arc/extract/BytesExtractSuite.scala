@@ -19,7 +19,7 @@ import ai.tripl.arc.util.ControlUtils._
 
 class BytesExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
 
   val outputView = "outputView"
   val dogImage = getClass.getResource("/flask_serving/dog.jpg").toString
@@ -36,7 +36,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -57,7 +57,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.BytesExtract,
         name="dataset",
         description=None,
-        outputView=outputView, 
+        outputView=outputView,
         input=Right(dogImage),
         authentication=None,
         persist=false,
@@ -84,12 +84,12 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         batchSize=1,
         delimiter="",
         numPartitions=None,
-        partitionBy=Nil,        
-        failMode=FailModeTypeFailFast          
+        partitionBy=Nil,
+        failMode=FailModeTypeFailFast
       )
-    ).get    
+    ).get
 
     assert(spark.sql(s"""SELECT * FROM ${outputView} WHERE body LIKE '%predictions%'""").count != 0)
-  }    
+  }
 
 }

@@ -18,12 +18,12 @@ import ai.tripl.arc.util._
 class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
   // currently assuming local file system
-  var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "extract.csv" 
-  val customDelimiterTargetFile = FileUtils.getTempDirectoryPath() + "extract_custom.csv" 
-  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.csv" 
-  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.csv" 
-  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.csv.gz" 
+  var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "extract.csv"
+  val customDelimiterTargetFile = FileUtils.getTempDirectoryPath() + "extract_custom.csv"
+  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.csv"
+  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.csv"
+  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.csv.gz"
   val inputView = "inputView"
   val outputView = "outputView"
 
@@ -37,15 +37,15 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")      
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
 
     // recreate test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
-    FileUtils.deleteQuietly(new java.io.File(customDelimiterTargetFile)) 
-    FileUtils.deleteQuietly(new java.io.File(emptyDirectory)) 
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
+    FileUtils.deleteQuietly(new java.io.File(customDelimiterTargetFile))
+    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
     FileUtils.forceMkdir(new java.io.File(emptyDirectory))
     // Delimited does not support writing NullType
     TestUtils.getKnownDataset.drop($"nullDatum").write.option("header", true).csv(targetFile)
@@ -56,9 +56,9 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))     
-    FileUtils.deleteQuietly(new java.io.File(customDelimiterTargetFile))     
-    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))     
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
+    FileUtils.deleteQuietly(new java.io.File(customDelimiterTargetFile))
+    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
   }
 
   test("DelimitedExtract") {
@@ -68,7 +68,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
@@ -112,16 +112,16 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     assert(TestUtils.datasetEquality(expected, actual))
 
     // test metadata
-    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata    
-    assert(timestampDatumMetadata.getLong("securityLevel") == 7)    
-  }  
+    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata
+    assert(timestampDatumMetadata.getLong("securityLevel") == 7)
+  }
 
   test("DelimitedExtract inputView") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
- 
+
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView("dataset")
     var payloadDataset = spark.sql(s"""
@@ -155,14 +155,14 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
     assert(dataset.count === 2)
     assert(dataset.columns.length === 4)
-  }    
+  }
 
   test("DelimitedExtract Caching") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-  
+
     // no cache
     extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
@@ -205,8 +205,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         inputField=None
       )
     )
-    assert(spark.catalog.isCached(outputView) === true)     
-  }  
+    assert(spark.catalog.isCached(outputView) === true)
+  }
 
   test("DelimitedExtract Empty Dataset") {
     implicit val spark = session
@@ -214,7 +214,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val schema = 
+    val schema =
       BooleanColumn(
         id="1",
         name="booleanDatum",
@@ -222,11 +222,11 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         nullable=true,
         nullReplacementValue=None,
         trim=false,
-        nullableValues=Nil, 
-        trueValues=Nil, 
+        nullableValues=Nil,
+        trueValues=Nil,
         falseValues=Nil,
         metadata=None
-      ) :: Nil    
+      ) :: Nil
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
@@ -251,7 +251,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown0.getMessage === "DelimitedExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-    
+
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
       val dataset = extract.DelimitedExtractStage.execute(
@@ -306,7 +306,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val expectedExceptActualCount = expected.except(actual).count
     if (actualExceptExpectedCount != 0 || expectedExceptActualCount != 0) {
       actual.show(false)
-      expected.show(false)      
+      expected.show(false)
     }
     assert(actual.except(expected).count === 0)
     assert(expected.except(actual).count === 0)
@@ -343,8 +343,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
     assert(actual.count == TestUtils.getKnownDataset.count)
     assert(actual.columns.length == 1)
-  }  
-  
+  }
+
   test("DelimitedExtract: Settings Custom Delimiter") {
     implicit val spark = session
     import spark.implicits._
@@ -389,7 +389,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }  
+  }
 
   test("DelimitedExtract: Settings Header") {
     implicit val spark = session
@@ -422,8 +422,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = dataset.drop(internal:_*)
 
     // spark.read.csv seems to have non-deterministic ordering
-    assert(actual.orderBy($"_c0").first.getString(0) == "booleanDatum")  
-  }   
+    assert(actual.orderBy($"_c0").first.getString(0) == "booleanDatum")
+  }
 
   test("DelimitedExtract: Settings inferSchema") {
     implicit val spark = session
@@ -456,7 +456,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
     // try to read boolean which will fail if not inferSchema
     actual.first.getBoolean(0)
-  }    
+  }
 
   test("DelimitedExtract: Structured Streaming") {
     implicit val spark = session
@@ -465,7 +465,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
@@ -489,7 +489,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
     val writeStream = dataset
       .writeStream
-      .queryName("extract") 
+      .queryName("extract")
       .format("memory")
       .start
 
@@ -500,6 +500,6 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       df.first.getBoolean(0)
     } finally {
       writeStream.stop
-    }  
-  }     
+    }
+  }
 }

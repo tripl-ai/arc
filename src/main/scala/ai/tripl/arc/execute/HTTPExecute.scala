@@ -38,11 +38,11 @@ class HTTPExecute extends PipelineStagePlugin {
     val payloads = readMap("payloads", c)
     val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, uri, validStatusCodes, invalidKeys) match {
-      case (Right(name), Right(description), Right(uri), Right(validStatusCodes), Right(invalidKeys)) => 
-        
+      case (Right(name), Right(description), Right(uri), Right(validStatusCodes), Right(invalidKeys)) =>
+
         val stage = HTTPExecuteStage(
           plugin=this,
           name=name,
@@ -54,7 +54,7 @@ class HTTPExecute extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("uri", uri.toString)      
+        stage.stageDetail.put("uri", uri.toString)
         stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
         stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
         stage.stageDetail.put("params", params.asJava)
@@ -71,12 +71,12 @@ class HTTPExecute extends PipelineStagePlugin {
 
 case class HTTPExecuteStage(
     plugin: HTTPExecute,
-    name: String, 
-    description: Option[String], 
-    uri: URI, 
-    headers: Map[String, String], 
-    payloads: Map[String, String], 
-    validStatusCodes: List[Int], 
+    name: String,
+    description: Option[String],
+    uri: URI,
+    headers: Map[String, String],
+    payloads: Map[String, String],
+    validStatusCodes: List[Int],
     params: Map[String, String]
   ) extends PipelineStage {
 
@@ -94,7 +94,7 @@ object HTTPExecuteStage {
 
     // add headers
     for ((k,v) <- stage.headers) {
-      post.addHeader(k,v) 
+      post.addHeader(k,v)
     }
 
     // create json payload
@@ -107,22 +107,22 @@ object HTTPExecuteStage {
       val stringEntity = new StringEntity(json)
       post.setEntity(stringEntity)
     }
-    
+
     // send the request
     val response = client.execute(post)
-    response.close 
+    response.close
 
     val responseMap = new java.util.HashMap[String, Object]()
     responseMap.put("statusCode", new java.lang.Integer(response.getStatusLine.getStatusCode))
-    responseMap.put("reasonPhrase", response.getStatusLine.getReasonPhrase)   
-    stage.stageDetail.put("response", responseMap)   
+    responseMap.put("reasonPhrase", response.getStatusLine.getReasonPhrase)
+    stage.stageDetail.put("response", responseMap)
 
     // verify status code is correct
     if (!stage.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
       throw new Exception(s"""HTTPExecute expects a response StatusCode in [${stage.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""") with DetailException {
         override val detail = stage.stageDetail
       }
-    } 
+    }
 
     None
   }

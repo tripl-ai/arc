@@ -29,10 +29,10 @@ class DiffTransform extends PipelineStagePlugin {
     val outputRightView = getOptionalValue[String]("outputRightView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputLeftView), Right(inputRightView), Right(outputIntersectionView), Right(outputLeftView), Right(outputRightView), Right(persist), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(inputLeftView), Right(inputRightView), Right(outputIntersectionView), Right(outputLeftView), Right(outputRightView), Right(persist), Right(invalidKeys)) =>
 
         val stage = DiffTransformStage(
           plugin=this,
@@ -47,18 +47,18 @@ class DiffTransform extends PipelineStagePlugin {
           persist=persist
         )
 
-        stage.stageDetail.put("inputLeftView", inputLeftView)  
-        stage.stageDetail.put("inputRightView", inputRightView)   
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))      
+        stage.stageDetail.put("inputLeftView", inputLeftView)
+        stage.stageDetail.put("inputRightView", inputRightView)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         for (outputIntersectionView <- outputIntersectionView) {
-          stage.stageDetail.put("outputIntersectionView", outputIntersectionView)  
-        }  
+          stage.stageDetail.put("outputIntersectionView", outputIntersectionView)
+        }
         for (outputLeftView <- outputLeftView) {
-          stage.stageDetail.put("outputLeftView", outputLeftView)  
-        } 
+          stage.stageDetail.put("outputLeftView", outputLeftView)
+        }
         for (outputRightView <- outputRightView) {
-          stage.stageDetail.put("outputRightView", outputRightView)  
-        }                 
+          stage.stageDetail.put("outputRightView", outputRightView)
+        }
         stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
@@ -74,14 +74,14 @@ class DiffTransform extends PipelineStagePlugin {
 
 case class DiffTransformStage(
     plugin: DiffTransform,
-    name: String, 
-    description: Option[String], 
-    inputLeftView: String, 
-    inputRightView: String, 
-    outputIntersectionView: Option[String], 
-    outputLeftView: Option[String], 
-    outputRightView: Option[String], 
-    params: Map[String, String], 
+    name: String,
+    description: Option[String],
+    inputLeftView: String,
+    inputRightView: String,
+    outputIntersectionView: Option[String],
+    outputLeftView: Option[String],
+    outputRightView: Option[String],
+    params: Map[String, String],
     persist: Boolean
   ) extends PipelineStage {
 
@@ -94,8 +94,8 @@ object DiffTransformStage {
 
   def execute(stage: DiffTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    val inputLeftDF = spark.table(stage.inputLeftView)   
-    val inputRightDF = spark.table(stage.inputRightView)   
+    val inputLeftDF = spark.table(stage.inputLeftView)
+    val inputRightDF = spark.table(stage.inputRightView)
 
     // do a full join on a calculated hash of all values in row on each dataset
     // trying to calculate the hash value inside the joinWith method produced an inconsistent result
@@ -105,7 +105,7 @@ object DiffTransformStage {
 
     if (stage.persist && !transformedDF.isStreaming) {
       transformedDF.persist(arcContext.storageLevel)
-    }   
+    }
 
     val outputIntersectionDF = transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).select(col("_1.*")).drop("_hash")
     val outputLeftDF = transformedDF.filter(col("_2").isNull).select(col("_1.*")).drop("_hash")
@@ -117,7 +117,7 @@ object DiffTransformStage {
     }
     for (outputLeftView <- stage.outputLeftView) {
       if (arcContext.immutableViews) outputLeftDF.createTempView(outputLeftView) else outputLeftDF.createOrReplaceTempView(outputLeftView)
-    }    
+    }
     for (outputRightView <- stage.outputRightView) {
       if (arcContext.immutableViews) outputRightDF.createTempView(outputRightView) else outputRightDF.createOrReplaceTempView(outputRightView)
     }

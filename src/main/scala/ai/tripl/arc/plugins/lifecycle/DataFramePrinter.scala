@@ -22,7 +22,7 @@ class DataFramePrinter extends LifecyclePlugin {
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (numRows, truncate, invalidKeys) match {
-      case (Right(numRows), Right(truncate), Right(invalidKeys)) => 
+      case (Right(numRows), Right(truncate), Right(invalidKeys)) =>
         Right(DataFramePrinterInstance(
           plugin=this,
           numRows=numRows,
@@ -43,22 +43,22 @@ case class DataFramePrinterInstance(
   ) extends LifecyclePluginInstance {
 
   override def before(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
-    logger.trace()        
+    logger.trace()
       .field("event", "before")
       .field("stage", stage.name)
-      .log()  
+      .log()
   }
 
   override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
-    logger.trace()        
+    logger.trace()
       .field("event", "after")
       .field("stage", stage.name)
       .field("isLast", java.lang.Boolean.valueOf(isLast))
-      .log() 
+      .log()
 
     result match {
       case Some(df) => df.show(numRows, truncate)
       case None =>
     }
-  } 
+  }
 }

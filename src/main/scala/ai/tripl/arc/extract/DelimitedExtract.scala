@@ -54,7 +54,7 @@ class DelimitedExtract extends PipelineStagePlugin {
     (name, description, inputView, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath) match {
       case (Right(name), Right(description), Right(inputView), Right(parsedGlob), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(header), Right(authentication), Right(contiguousIndex), Right(delimiter), Right(quote), Right(_), Right(customDelimiter), Right(inputField), Right(basePath)) =>
         val input = if(c.hasPath("inputView")) {
-          Left(inputView) 
+          Left(inputView)
         } else {
           Right(parsedGlob)
         }
@@ -74,7 +74,7 @@ class DelimitedExtract extends PipelineStagePlugin {
           partitionBy=partitionBy,
           contiguousIndex=contiguousIndex,
           basePath=basePath,
-          inputField=inputField  
+          inputField=inputField
         )
 
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
@@ -88,14 +88,14 @@ class DelimitedExtract extends PipelineStagePlugin {
           case Left(view) => view
           case Right(glob) => glob
         }
-        stage.stageDetail.put("input", inputValue)  
+        stage.stageDetail.put("input", inputValue)
         stage.stageDetail.put("options", options.asJava)
         for (inputField <- inputField) {
-          stage.stageDetail.put("inputField", inputField)  
+          stage.stageDetail.put("inputField", inputField)
         }
         stage.stageDetail.put("params", params.asJava)
 
-        Right(stage)            
+        Right(stage)
       case _ =>
         val allErrors: Errors = List(name, description, inputView, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
@@ -108,19 +108,19 @@ class DelimitedExtract extends PipelineStagePlugin {
 
 case class DelimitedExtractStage(
     plugin: DelimitedExtract,
-    name: String, 
-    description: Option[String], 
-    schema: Either[String, List[ExtractColumn]], 
-    outputView: String, 
+    name: String,
+    description: Option[String],
+    schema: Either[String, List[ExtractColumn]],
+    outputView: String,
     input: Either[String, String],
-    settings: Delimited, 
-    authentication: Option[Authentication], 
-    params: Map[String, String], 
-    persist: Boolean, 
-    numPartitions: Option[Int], 
-    partitionBy: List[String], 
-    contiguousIndex: Boolean, 
-    inputField: Option[String], 
+    settings: Delimited,
+    authentication: Option[Authentication],
+    params: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
+    partitionBy: List[String],
+    contiguousIndex: Boolean,
+    inputField: Option[String],
     basePath: Option[String]
   ) extends PipelineStage {
 
@@ -143,15 +143,15 @@ object DelimitedExtractStage {
       case Left(view) => view
       case Right(glob) => glob
     }
-    
+
     // try to get the schema
     val optionSchema = try {
       ExtractUtils.getSchema(stage.schema)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }        
+        override val detail = stage.stageDetail
+      }
+    }
 
     val df = try {
       if (arcContext.isStreaming) {
@@ -162,11 +162,11 @@ object DelimitedExtractStage {
             optionSchema match {
               case Some(schema) => spark.readStream.options(options).schema(schema).csv(glob)
               case None => throw new Exception("CSVExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
-            }       
+            }
           }
           case Left(view) => throw new Exception("CSVExtract does not support the use of 'inputView' if Arc is running in streaming mode.")
         }
-      } else {      
+      } else {
         stage.input match {
           case Right(glob) =>
             CloudUtils.setHadoopConfiguration(stage.authentication)
@@ -182,19 +182,19 @@ object DelimitedExtractStage {
                 spark.emptyDataFrame
               case e: Exception => throw e
             }
-            
+
           case Left(view) => {
             stage.inputField match {
               case Some(inputField) => spark.read.options(options).csv(spark.table(view).select(col(inputField).as("value")).as[String])
               case None => spark.read.options(options).csv(spark.table(view).as[String])
             }
           }
-        }   
-      }      
-    } catch { 
+        }
+      }
+    } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }    
+        override val detail = stage.stageDetail
+      }
     }
 
     // if incoming dataset has 0 columns then create empty dataset with correct schema
@@ -210,9 +210,9 @@ object DelimitedExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }      
+        override val detail = stage.stageDetail
+      }
+    }
 
     // add internal columns data _filename, _index
     val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, stage.contiguousIndex)
@@ -220,16 +220,16 @@ object DelimitedExtractStage {
     // set column metadata if exists
     val enrichedDF = optionSchema match {
         case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
-        case None => sourceEnrichedDF   
+        case None => sourceEnrichedDF
     }
-         
+
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => enrichedDF.repartition(numPartitions)
           case None => enrichedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -239,7 +239,7 @@ object DelimitedExtractStage {
           case None => enrichedDF.repartition(partitionCols:_*)
         }
       }
-    } 
+    }
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
@@ -250,7 +250,7 @@ object DelimitedExtractStage {
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
-      }      
+      }
     }
 
     Option(repartitionedDF)

@@ -29,7 +29,7 @@ class ParquetExtract extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val params = readMap("params", c)
     val description = getOptionalValue[String]("description")
-    val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _     
+    val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _
     val outputView = getValue[String]("outputView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
@@ -37,13 +37,13 @@ class ParquetExtract extends PipelineStagePlugin {
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
     val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
-    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")  
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val basePath = getOptionalValue[String]("basePath")
 
     (name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys, basePath) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(_), Right(basePath)) => 
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(_), Right(basePath)) =>
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
-        
+
         val stage = ParquetExtractStage(
           plugin=this,
           name=name,
@@ -60,13 +60,13 @@ class ParquetExtract extends PipelineStagePlugin {
           contiguousIndex=contiguousIndex
         )
 
-        stage.stageDetail.put("input", parsedGlob) 
-        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("input", parsedGlob)
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
         for (basePath <- basePath) {
-          stage.stageDetail.put("basePath", basePath)  
-        } 
+          stage.stageDetail.put("basePath", basePath)
+        }
         stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
@@ -80,12 +80,12 @@ class ParquetExtract extends PipelineStagePlugin {
 }
 
 case class ParquetExtractStage(
-  plugin: ParquetExtract, 
-  name: String, 
-  description: Option[String], 
+  plugin: ParquetExtract,
+  name: String,
+  description: Option[String],
   schema: Either[String, List[ExtractColumn]],
-  outputView: String, 
-  input: String, 
+  outputView: String,
+  input: String,
   authentication: Option[Authentication],
   params: Map[String, String],
   persist: Boolean,
@@ -108,9 +108,9 @@ object ParquetExtractStage {
       ExtractUtils.getSchema(stage.schema)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    } 
+        override val detail = stage.stageDetail
+      }
+    }
 
     CloudUtils.setHadoopConfiguration(stage.authentication)
 
@@ -120,20 +120,20 @@ object ParquetExtractStage {
         optionSchema match {
           case Some(schema) => spark.readStream.option("mergeSchema", "true").schema(schema).parquet(stage.input)
           case None => throw new Exception("ParquetExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
-        }       
-      } else {    
+        }
+      } else {
         stage.basePath match {
           case Some(basePath) => spark.read.option("mergeSchema", "true").option("basePath", basePath).parquet(stage.input)
-          case None => spark.read.option("mergeSchema", "true").parquet(stage.input)   
-        }             
+          case None => spark.read.option("mergeSchema", "true").parquet(stage.input)
+        }
       }
     } catch {
-      case e: AnalysisException if (e.getMessage == "Unable to infer schema for Parquet. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) => 
+      case e: AnalysisException if (e.getMessage == "Unable to infer schema for Parquet. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) =>
         spark.emptyDataFrame
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
-    }    
+    }
 
     // if incoming dataset has 0 columns then create empty dataset with correct schema
     val emptyDataframeHandlerDF = try {
@@ -148,9 +148,9 @@ object ParquetExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }    
+        override val detail = stage.stageDetail
+      }
+    }
 
     // add internal columns data _filename, _index
     val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, stage.contiguousIndex)
@@ -158,16 +158,16 @@ object ParquetExtractStage {
     // set column metadata if exists
     val enrichedDF = optionSchema match {
         case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
-        case None => sourceEnrichedDF   
+        case None => sourceEnrichedDF
     }
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => enrichedDF.repartition(numPartitions)
           case None => enrichedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -177,9 +177,9 @@ object ParquetExtractStage {
           case None => enrichedDF.repartition(partitionCols:_*)
         }
       }
-    } 
+    }
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
-    
+
     if (!repartitionedDF.isStreaming) {
       stage.stageDetail.put("inputFiles", Integer.valueOf(repartitionedDF.inputFiles.length))
       stage.stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
@@ -187,8 +187,8 @@ object ParquetExtractStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-      }      
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
     }
 
     Option(repartitionedDF)

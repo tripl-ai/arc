@@ -22,7 +22,7 @@ class ARC extends ai.tripl.arc.plugins.UDFPlugin {
     spark.sqlContext.udf.register("get_json_integer_array", ARCPlugin.getJSONIntArray _ )
     spark.sqlContext.udf.register("get_json_long_array", ARCPlugin.getJSONLongArray _ )
     spark.sqlContext.udf.register("random", ARCPlugin.getRandom _ )
-    
+
   }
 }
 
@@ -54,7 +54,7 @@ object ARCPlugin {
     val node = jsonPath(json, path)
     node.map(_.asInt).toArray
   }
-  
+
   // get json array cast as long
   def getJSONLongArray(json: String, path: String): Array[Long] = {
     val node = jsonPath(json, path)

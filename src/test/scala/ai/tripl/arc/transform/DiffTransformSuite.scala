@@ -19,7 +19,7 @@ import ai.tripl.arc.util.TestUtils
 
 class DiffTransformSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val inputLeftView = "inputLeftView"
   val inputRightView = "inputRightView"
   val outputIntersectionView = "outputIntersectionView"
@@ -36,10 +36,10 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
-    import spark.implicits._ 
+    import spark.implicits._
   }
 
   after {
@@ -62,7 +62,7 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
     transform.DiffTransformStage.execute(
       transform.DiffTransformStage(
         plugin=new transform.DiffTransform,
-        name="DiffTransform", 
+        name="DiffTransform",
         description=None,
         inputLeftView=inputLeftView,
         inputRightView=inputRightView,
@@ -77,5 +77,5 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
     assert(spark.table(outputIntersectionView).filter($"integerDatum" === 17).count == 1)
     assert(spark.table(outputLeftView).filter($"integerDatum" === 34).count == 1)
     assert(spark.table(outputRightView).filter($"integerDatum" === 35).count == 1)
-  }  
+  }
 }

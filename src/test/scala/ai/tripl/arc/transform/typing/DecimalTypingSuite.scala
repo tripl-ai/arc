@@ -260,7 +260,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
           case (_, _) => assert(false)
         }
       }
-    }    
+    }
 
     //test negative decimal
     {
@@ -312,7 +312,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
           case (_, _) => assert(false)
         }
       }
-    }  
+    }
 
     //test multiple formatter
     {
@@ -330,7 +330,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
           case (_, _) => assert(false)
         }
       }
-    }      
+    }
 
     //test formatter in error message
     {
@@ -348,6 +348,6 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
           case (_, _) => assert(false)
         }
       }
-    }      
+    }
   }
 }

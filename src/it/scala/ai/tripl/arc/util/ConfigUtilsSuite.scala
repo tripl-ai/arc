@@ -42,7 +42,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")         
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -74,10 +74,10 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
             "accessKeyID": "${minioAccessKey}",
             "secretAccessKey": "${minioSecretKey}",
             "endpoint": "${minioHostPort}"
-          },                 
+          },
           "outputView": "akc_breed_info",
           "delimiter": "Comma",
-          "header": true          
+          "header": true
         },
         {
           "type": "SQLTransform",
@@ -96,7 +96,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
             "accessKeyID": "${minioAccessKey}",
             "secretAccessKey": "${minioSecretKey}",
             "endpoint": "${minioHostPort}"
-          }          
+          }
         }
       ]
     }"""
@@ -105,7 +105,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(_) => {
-        println(pipelineEither)  
+        println(pipelineEither)
         assert(false)
       }
       case Right((pipeline, _)) => {

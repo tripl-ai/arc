@@ -26,7 +26,7 @@ class TextExtract extends PipelineStagePlugin {
     val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _     
+    val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _
     val outputView = getValue[String]("outputView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
@@ -39,14 +39,14 @@ class TextExtract extends PipelineStagePlugin {
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, extractColumns, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(basePath), Right(invalidKeys)) => 
-        
+      case (Right(name), Right(description), Right(extractColumns), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(basePath), Right(invalidKeys)) =>
+
       val stage = TextExtractStage(
           plugin=this,
           name=name,
           description=description,
           schema=Right(extractColumns),
-          outputView=outputView, 
+          outputView=outputView,
           input=parsedGlob,
           authentication=authentication,
           persist=persist,
@@ -58,13 +58,13 @@ class TextExtract extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
-        stage.stageDetail.put("input", parsedGlob)  
+        stage.stageDetail.put("input", parsedGlob)
         stage.stageDetail.put("multiLine", java.lang.Boolean.valueOf(multiLine))
-        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         for (basePath <- basePath) {
-          stage.stageDetail.put("basePath", basePath)  
-        } 
+          stage.stageDetail.put("basePath", basePath)
+        }
         stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
@@ -108,9 +108,9 @@ object TextExtractStage {
       ExtractUtils.getSchema(stage.schema)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }        
+        override val detail = stage.stageDetail
+      }
+    }
 
     val df = try {
       if (arcContext.isStreaming) {
@@ -119,7 +119,7 @@ object TextExtractStage {
         optionSchema match {
           case Some(schema) => spark.readStream.schema(schema).text(stage.input)
           case None => throw new Exception("JSONExtract requires 'schemaURI' to be set if Arc is running in streaming mode.")
-        }             
+        }
       } else {
         CloudUtils.setHadoopConfiguration(stage.authentication)
         // spark does not cope well reading many small files into json directly from hadoop file systems
@@ -129,8 +129,8 @@ object TextExtractStage {
           if (stage.multiLine) {
             stage.basePath match {
               case Some(basePath) => spark.read.option("mergeSchema", "true").option("basePath", basePath).parquet(stage.input)
-              case None => spark.read.option("wholetext", "true").textFile(stage.input).toDF  
-            }  
+              case None => spark.read.option("wholetext", "true").textFile(stage.input).toDF
+            }
           } else {
             spark.read.option("wholetext", "false").textFile(stage.input).toDF
           }
@@ -143,7 +143,7 @@ object TextExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
     }
 
@@ -160,9 +160,9 @@ object TextExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }    
+        override val detail = stage.stageDetail
+      }
+    }
 
     // add internal columns data _filename, _index
     val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, stage.contiguousIndex)
@@ -170,14 +170,14 @@ object TextExtractStage {
     // // set column metadata if exists
     val enrichedDF = optionSchema match {
         case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
-        case None => sourceEnrichedDF   
+        case None => sourceEnrichedDF
     }
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.numPartitions match {
       case Some(numPartitions) => enrichedDF.repartition(numPartitions)
       case None => enrichedDF
-    }   
+    }
 
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
@@ -188,8 +188,8 @@ object TextExtractStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-      }      
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
     }
 
     Option(repartitionedDF)

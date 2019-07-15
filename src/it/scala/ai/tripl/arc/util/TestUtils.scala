@@ -19,17 +19,17 @@ import com.fasterxml.jackson.core._
 
 import ai.tripl.arc.api.API.ARCContext
 import ai.tripl.arc.plugins._
-import ai.tripl.arc.util.log.LoggerFactory 
+import ai.tripl.arc.util.log.LoggerFactory
 import org.apache.log4j.{Level, Logger}
 
 case class KnownData(
-    booleanDatum: Boolean, 
-    dateDatum: Date, 
-    decimalDatum: Decimal, 
-    doubleDatum: Double, 
-    integerDatum: Integer, 
-    longDatum: Long, 
-    stringDatum: String, 
+    booleanDatum: Boolean,
+    dateDatum: Date,
+    decimalDatum: Decimal,
+    doubleDatum: Double,
+    integerDatum: Integer,
+    longDatum: Long,
+    stringDatum: String,
     timeDatum: String,
     timestampDatum: Timestamp,
     nullDatum: Null
@@ -48,13 +48,13 @@ object TestUtils {
       val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
 
       ARCContext(
-        jobId=None, 
-        jobName=None, 
-        environment=Option(environment), 
-        environmentId=None, 
-        configUri=None, 
-        isStreaming=isStreaming, 
-        ignoreEnvironments=false, 
+        jobId=None,
+        jobName=None,
+        environment=Option(environment),
+        environmentId=None,
+        configUri=None,
+        isStreaming=isStreaming,
+        ignoreEnvironments=false,
         commandLineArguments=commandLineArguments,
         storageLevel=StorageLevel.MEMORY_AND_DISK_SER,
         immutableViews=false,
@@ -65,11 +65,11 @@ object TestUtils {
         udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList,
         userData=collection.mutable.Map.empty
       )
-    }    
+    }
 
     def getKnownDataset()(implicit spark: SparkSession): DataFrame = {
         import spark.implicits._
-        
+
         val dataset = Seq(
             KnownData(booleanDatum=true, dateDatum=Date.valueOf("2016-12-18"), decimalDatum=Decimal(54.321, 10, 3), doubleDatum=42.4242, integerDatum=17, longDatum=1520828868, stringDatum="test,breakdelimiter", timestampDatum=Timestamp.from(ZonedDateTime.of(2017, 12, 20, 21, 46, 54, 0, ZoneId.of("UTC")).toInstant), timeDatum="12:34:56", nullDatum=null),
             KnownData(booleanDatum=false, dateDatum=Date.valueOf("2016-12-19"), decimalDatum=Decimal(12.345, 10, 3), doubleDatum=21.2121, integerDatum=34, longDatum=1520828123, stringDatum="breakdelimiter,test", timestampDatum=Timestamp.from(ZonedDateTime.of(2017, 12, 29, 17, 21, 49, 0, ZoneId.of("UTC")).toInstant), timeDatum="23:45:16", nullDatum=null)
@@ -81,7 +81,7 @@ object TestUtils {
     // modified dataset for DiffTransform test
     def getKnownAlteredDataset()(implicit spark: SparkSession): DataFrame = {
         import spark.implicits._
-        
+
         val dataset = Seq(
             // same first row
             KnownData(booleanDatum=true, dateDatum=Date.valueOf("2016-12-18"), decimalDatum=Decimal(54.321, 10, 3), doubleDatum=42.4242, integerDatum=17, longDatum=1520828868, stringDatum="test,breakdelimiter", timestampDatum=Timestamp.from(ZonedDateTime.of(2017, 12, 20, 21, 46, 54, 0, ZoneId.of("UTC")).toInstant), timeDatum="12:34:56", nullDatum=null),
@@ -90,7 +90,7 @@ object TestUtils {
         )
 
         dataset.toDF
-    }    
+    }
 
     def knownDatasetPrettyJSON(row: Int)(implicit spark: SparkSession): String = {
         val json = getKnownDataset().toJSON.collect.toList(row)
@@ -212,7 +212,7 @@ object TestUtils {
             "formatters": [
                 "HH:mm:ss"
             ]
-        },        
+        },
         {
             "id": "8e42c8f0-22a8-40db-9798-6dd533c1de36",
             "name": "timestampDatum",
@@ -228,7 +228,7 @@ object TestUtils {
                 "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
             ],
             "timezoneId": "UTC"
-        }       
+        }
     ]
     """
     }

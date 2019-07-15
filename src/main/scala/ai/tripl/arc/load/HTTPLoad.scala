@@ -40,11 +40,11 @@ class HTTPLoad extends PipelineStagePlugin {
     val headers = readMap("headers", c)
     val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)     
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, outputURI, inputView, validStatusCodes, invalidKeys) match {
-      case (Right(name), Right(description), Right(outputURI), Right(inputView), Right(validStatusCodes), Right(invalidKeys)) => 
-        
+      case (Right(name), Right(description), Right(outputURI), Right(inputView), Right(validStatusCodes), Right(invalidKeys)) =>
+
         val stage = HTTPLoadStage(
           plugin=this,
           name=name,
@@ -56,8 +56,8 @@ class HTTPLoad extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("inputView", inputView)  
-        stage.stageDetail.put("outputURI", outputURI.toString)  
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("outputURI", outputURI.toString)
         stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
         stage.stageDetail.put("params", params.asJava)
 
@@ -74,12 +74,12 @@ class HTTPLoad extends PipelineStagePlugin {
   // case class HTTPLoad() extends Load { val getType = "HTTPLoad" }
 case class HTTPLoadStage(
     plugin: HTTPLoad,
-    name: String, 
-    description: Option[String], 
-    inputView: String, 
-    outputURI: URI, 
-    headers: Map[String, String], 
-    validStatusCodes: List[Int], 
+    name: String,
+    description: Option[String],
+    inputView: String,
+    outputURI: URI,
+    headers: Map[String, String],
+    validStatusCodes: List[Int],
     params: Map[String, String]
   ) extends PipelineStage {
 
@@ -101,16 +101,16 @@ object HTTPLoadStage {
 
     val signature = "HTTPLoad requires inputView to be dataset with [value: string] signature."
 
-    val df = spark.table(stage.inputView)      
+    val df = spark.table(stage.inputView)
     val stageOutputURI = stage.outputURI
     val stageHeaders = stage.headers
-    val stageValidStatusCodes = stage.validStatusCodes    
+    val stageValidStatusCodes = stage.validStatusCodes
 
     if (df.schema.length != 1 || df.schema(0).dataType != StringType) {
         throw new Exception(s"${signature} inputView '${stage.inputView}' has ${df.schema.length} columns of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
-          override val detail = stage.stageDetail          
-      }      
-    }    
+          override val detail = stage.stageDetail
+      }
+    }
 
     val responses = try {
       if (arcContext.isStreaming) {
@@ -135,20 +135,20 @@ object HTTPLoadStage {
 
               // add headers
               for ((k,v) <- stageHeaders) {
-                post.addHeader(k,v) 
+                post.addHeader(k,v)
               }
 
-              post.setEntity(new StringEntity(row.getString(0)))       
+              post.setEntity(new StringEntity(row.getString(0)))
 
               val response = httpClient.execute(post)
 
               // verify status code is correct
               if (!stageValidStatusCodes.contains(response.getStatusLine.getStatusCode)) {
                 throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${stageValidStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
-              }      
+              }
 
               response.close
-              post.releaseConnection      
+              post.releaseConnection
             }
 
             def close(errorOrNull: Throwable): Unit = {
@@ -157,7 +157,7 @@ object HTTPLoadStage {
               poolingHttpClientConnectionManager.close
 
               errorOrNull match {
-                case null => 
+                case null =>
                 case _ => throw new Exception(errorOrNull)
               }
             }
@@ -185,14 +185,14 @@ object HTTPLoadStage {
           val dataType = bufferedPartition.hasNext match {
             case true => bufferedPartition.head.schema(fieldIndex).dataType
             case false => NullType
-          }        
+          }
 
           bufferedPartition.map(row => {
             val post = new HttpPost(uri)
 
             // add headers
             for ((k,v) <- stageHeaders) {
-              post.addHeader(k,v) 
+              post.addHeader(k,v)
             }
 
             // add payload
@@ -201,11 +201,11 @@ object HTTPLoadStage {
               case _: BinaryType => new ByteArrayEntity(row.get(fieldIndex).asInstanceOf[Array[scala.Byte]])
             }
             post.setEntity(entity)
-            
+
             try {
               // send the request
               val response = httpClient.execute(post)
-              
+
               // verify status code is correct
               if (!stageValidStatusCodes.contains(response.getStatusLine.getStatusCode)) {
                 throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${stageValidStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
@@ -214,7 +214,7 @@ object HTTPLoadStage {
               // read and close response
               val responseEntity = response.getEntity.getContent
               val body = Source.fromInputStream(responseEntity).mkString
-              response.close 
+              response.close
 
               Response(response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, body)
             } finally {
@@ -227,10 +227,10 @@ object HTTPLoadStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
     }
-    
+
     responses
   }
 }

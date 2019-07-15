@@ -39,12 +39,12 @@ class XMLExtract extends PipelineStagePlugin {
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
     val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
-    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")  
+    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(invalidKeys)) =>
         val input = if(c.hasPath("inputView")) Left(inputView) else Right(parsedGlob)
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
@@ -63,8 +63,8 @@ class XMLExtract extends PipelineStagePlugin {
           contiguousIndex=contiguousIndex
         )
 
-        stage.stageDetail.put("input", input)  
-        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("input", input)
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
         stage.stageDetail.put("params", params.asJava)
@@ -81,16 +81,16 @@ class XMLExtract extends PipelineStagePlugin {
 
 case class XMLExtractStage(
     plugin: XMLExtract,
-    name: String, 
-    description: Option[String], 
-    schema: Either[String, List[ExtractColumn]], 
-    outputView: String, 
-    input: Either[String, String], 
-    authentication: Option[Authentication], 
-    params: Map[String, String], 
-    persist: Boolean, 
-    numPartitions: Option[Int], 
-    partitionBy: List[String], 
+    name: String,
+    description: Option[String],
+    schema: Either[String, List[ExtractColumn]],
+    outputView: String,
+    input: Either[String, String],
+    authentication: Option[Authentication],
+    params: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
+    partitionBy: List[String],
     contiguousIndex: Boolean
   ) extends PipelineStage {
 
@@ -112,9 +112,9 @@ object XMLExtractStage {
       ExtractUtils.getSchema(stage.schema)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    } 
+        override val detail = stage.stageDetail
+      }
+    }
 
     val df = try {
       stage.input match {
@@ -125,7 +125,7 @@ object XMLExtractStage {
           val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
           val newDelimiter = s"${0x0 : Char}"
           // temporarily remove the delimiter so all the data is loaded as a single line
-          spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)              
+          spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)
 
           // read the file but do not cache. caching will break the input_file_name() function
           val textFile = spark.sparkContext.textFile(glob)
@@ -135,25 +135,25 @@ object XMLExtractStage {
 
           // reset delimiter
           if (oldDelimiter == null) {
-            spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")              
+            spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")
           } else {
-            spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)        
+            spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)
           }
 
-          xml            
+          xml
         }
         case Left(view) => {
           val xmlReader = new XmlReader
           xmlReader.xmlRdd(spark, spark.table(view).as[String].rdd)
         }
-      }     
+      }
     } catch {
       case e: org.apache.hadoop.mapred.InvalidInputException if (e.getMessage.contains("matches 0 files")) => {
         spark.emptyDataFrame
-      }         
+      }
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
+        override val detail = stage.stageDetail
+      }
     }
 
     // if incoming dataset has 0 columns then create empty dataset with correct schema
@@ -169,8 +169,8 @@ object XMLExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
+        override val detail = stage.stageDetail
+      }
     }
 
     // try to explode the rows returned by the XML reader
@@ -182,7 +182,7 @@ object XMLExtractStage {
       }
     } else {
       emptyDataframeHandlerDF
-    }    
+    }
 
     // add internal columns data _filename, _index
     val sourceEnrichedDF = ExtractUtils.addInternalColumns(flattenedDF, stage.contiguousIndex)
@@ -190,16 +190,16 @@ object XMLExtractStage {
     // set column metadata if exists
     val enrichedDF = optionSchema match {
         case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
-        case None => sourceEnrichedDF   
+        case None => sourceEnrichedDF
     }
-         
+
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => enrichedDF.repartition(numPartitions)
           case None => enrichedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -209,7 +209,7 @@ object XMLExtractStage {
           case None => enrichedDF.repartition(partitionCols:_*)
         }
       }
-    } 
+    }
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
@@ -219,9 +219,9 @@ object XMLExtractStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-      }      
-    }  
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
+    }
 
     Option(repartitionedDF)
   }

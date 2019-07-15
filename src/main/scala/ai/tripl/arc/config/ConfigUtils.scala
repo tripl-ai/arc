@@ -46,18 +46,18 @@ object ConfigUtils {
           scala.io.Source.fromInputStream(is).mkString
         }
         Right(etlConfString)
-      }      
+      }
       // databricks file system
       case "dbfs" => {
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
-      }    
+      }
       // amazon s3
       case "s3a" => {
         val s3aAccessKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY"))
         val s3aSecretKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY"))
         val s3aEndpoint: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
-        val s3aConnectionSSLEnabled: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.connection.ssl.enabled").orElse(envOrNone("ETL_CONF_S3A_CONNECTION_SSL_ENABLED"))        
+        val s3aConnectionSSLEnabled: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.connection.ssl.enabled").orElse(envOrNone("ETL_CONF_S3A_CONNECTION_SSL_ENABLED"))
 
         val accessKey = s3aAccessKey match {
           case Some(value) => value
@@ -76,7 +76,7 @@ object ConfigUtils {
             }
           }
           case None => None
-        }        
+        }
 
         CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(accessKey, secretKey, s3aEndpoint, connectionSSLEnabled)))
         val etlConfString = CloudUtils.getTextBlob(uri)
@@ -135,7 +135,7 @@ object ConfigUtils {
         CloudUtils.setHadoopConfiguration(Some(Authentication.AzureDataLakeStorageGen2AccountKey(accountName, accountKey)))
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
-      }      
+      }
       // google cloud
       case "gs" => {
         val gsProjectID: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.gs.project.id").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_PROJECT_ID"))
@@ -169,7 +169,7 @@ object ConfigUtils {
         // typesafe config will emit them if the key string contains dot (.) characters because they could be used as a reference
         val k = e.getKey.replaceAll("^\"|\"$", "")
         val v = e.getValue.unwrapped.toString
-        
+
         // append string value to map
         k -> v
       }).toMap
@@ -208,7 +208,7 @@ object ConfigUtils {
       k <- keys
       v = inputUTF8.levenshteinDistance(UTF8String.fromString(k)) if v < limit
     } yield k
-  } 
+  }
 
   def parseGlob(path: String)(glob: String)(implicit c: Config): Either[Errors, String] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
@@ -223,7 +223,7 @@ object ConfigUtils {
   }
 
   def readAuthentication(path: String)(implicit c: Config): Either[Errors, Option[Authentication]] = {
-  
+
     def err(lineNumber: Option[Int], msg: String): Either[Errors, Option[Authentication]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
@@ -237,37 +237,37 @@ object ConfigUtils {
               val accountName = authentication.get("accountName") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AzureSharedKey' requires 'accountName' parameter.")
-              } 
+              }
               if (accountName.contains("fs.azure")) {
                 throw new Exception(s"Authentication method 'AzureSharedKey' 'accountName' should be just the account name not 'fs.azure.account.key...''.")
               }
               val signature = authentication.get("signature") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AzureSharedKey' requires 'signature' parameter.")
-              }            
+              }
               Right(Some(Authentication.AzureSharedKey(accountName, signature)))
             }
             case Some("AzureSharedAccessSignature") => {
               val accountName = authentication.get("accountName") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AzureSharedAccessSignature' requires 'accountName' parameter.")
-              } 
+              }
               if (accountName.contains("fs.azure")) {
                 throw new Exception(s"Authentication method 'AzureSharedAccessSignature' 'accountName' should be just the account name not 'fs.azure.account.key...''.")
-              }              
+              }
               val container = authentication.get("container") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AzureSharedAccessSignature' requires 'container' parameter.")
-              } 
+              }
               if (accountName.contains("fs.azure")) {
                 throw new Exception(s"Authentication method 'AzureSharedAccessSignature' 'container' should be just the container name not 'fs.azure.account.key...''.")
-              }                
+              }
               val token = authentication.get("token") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AzureSharedAccessSignature' requires 'container' parameter.")
-              }                 
+              }
               Right(Some(Authentication.AzureSharedAccessSignature(accountName, container, token)))
-            } 
+            }
             case Some("AzureDataLakeStorageToken") => {
               val clientID = authentication.get("clientID") match {
                 case Some(v) => v
@@ -278,7 +278,7 @@ object ConfigUtils {
                 case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageToken' requires 'refreshToken' parameter.")
               }
               Right(Some(Authentication.AzureDataLakeStorageToken(clientID, refreshToken)))
-            }          
+            }
             case Some("AzureDataLakeStorageGen2AccountKey") => {
               val accountName = authentication.get("accountName") match {
                 case Some(v) => v
@@ -289,7 +289,7 @@ object ConfigUtils {
                 case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageGen2AccountKey' requires 'accessKey' parameter.")
               }
               Right(Some(Authentication.AzureDataLakeStorageGen2AccountKey(accountName, accessKey)))
-            }   
+            }
             case Some("AzureDataLakeStorageGen2OAuth") => {
               val clientID = authentication.get("clientID") match {
                 case Some(v) => v
@@ -302,18 +302,18 @@ object ConfigUtils {
               val directoryID = authentication.get("directoryID") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AzureDataLakeStorageGen2OAuth' requires 'directoryID' parameter.")
-              }              
+              }
               Right(Some(Authentication.AzureDataLakeStorageGen2OAuth(clientID, secret, directoryID)))
-            }                            
+            }
             case Some("AmazonAccessKey") => {
               val accessKeyID = authentication.get("accessKeyID") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AmazonAccessKey' requires 'accessKeyID' parameter.")
-              } 
+              }
               val secretAccessKey = authentication.get("secretAccessKey") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AmazonAccessKey' requires 'secretAccessKey' parameter.")
-              }       
+              }
               val endpoint = authentication.get("endpoint") match {
                 case Some(v) => {
                   // try to resolve URI
@@ -331,22 +331,22 @@ object ConfigUtils {
                   } catch {
                     case e: Exception => throw new IllegalArgumentException(s"Authentication method 'AmazonAccessKey' expects 'sslEnabled' parameter to be boolean.")
                   }
-                }                
+                }
                 case None => None
-              }          
+              }
               Right(Some(Authentication.AmazonAccessKey(accessKeyID, secretAccessKey, endpoint, sslEnabled)))
             }
             case Some("GoogleCloudStorageKeyFile") => {
               val projectID = authentication.get("projectID") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'GoogleCloudStorageKeyFile' requires 'projectID' parameter.")
-              } 
+              }
               val keyFilePath = authentication.get("keyFilePath") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'GoogleCloudStorageKeyFile' requires 'keyFilePath' parameter.")
-              }       
+              }
               Right(Some(Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)))
-            }                                 
+            }
             case _ =>  throw new Exception(s"""Unable to parse authentication method: '${authentication.get("method").getOrElse("")}'""")
           }
         }
@@ -417,7 +417,7 @@ object ConfigUtils {
       case "hexadecimal" => Right(EncodingTypeHexadecimal)
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
-  }  
+  }
 
   def parseSaveMode(path: String)(delim: String)(implicit c: Config): Either[Errors, SaveMode] = {
     delim.toLowerCase.trim match {
@@ -427,7 +427,7 @@ object ConfigUtils {
       case "overwrite" => Right(SaveMode.Overwrite)
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
-  }  
+  }
 
   def parseOutputModeType(path: String)(delim: String)(implicit c: Config): Either[Errors, OutputModeType] = {
     delim.toLowerCase.trim match {
@@ -436,7 +436,7 @@ object ConfigUtils {
       case "update" => Right(OutputModeTypeUpdate)
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
-  }    
+  }
 
   def parseFailMode(path: String)(delim: String)(implicit c: Config): Either[Errors, FailModeType] = {
     delim.toLowerCase.trim match {
@@ -444,7 +444,7 @@ object ConfigUtils {
       case "failfast" => Right(FailModeTypeFailFast)
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
-  } 
+  }
 
   def parseDelimiter(path: String)(delim: String)(implicit c: Config): Either[Errors, Delimiter] = {
     delim.toLowerCase.trim match {
@@ -454,8 +454,8 @@ object ConfigUtils {
       case "custom" => Right(Delimiter.Custom)
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
-  }  
- 
+  }
+
   def parseQuote(path: String)(quote: String)(implicit c: Config): Either[Errors, QuoteCharacter] = {
     quote.toLowerCase.trim match {
       case "doublequote" => Right(QuoteCharacter.DoubleQuote)
@@ -463,8 +463,8 @@ object ConfigUtils {
       case "none" => Right(QuoteCharacter.Disabled)
       case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
     }
-  }  
-  
+  }
+
   def getJDBCDriver(path: String)(uri: String)(implicit c: Config): Either[Errors, java.sql.Driver] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, java.sql.Driver] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
@@ -483,13 +483,13 @@ object ConfigUtils {
   // inject params inline
   def injectSQLParams(path: String, sqlParams: Map[String, String], allowMissing: Boolean)(sql: String)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, String] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
-    
+
     try {
       Right(SQLUtils.injectParameters(sql, sqlParams, allowMissing))
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
-  }    
+  }
 
   // validateSQL uses the parsePlan method to verify if the sql command is parseable/valid. it will not check table existence.
   def validateSQL(path: String)(sql: String)(implicit spark: SparkSession, c: Config): Either[Errors, String] = {
@@ -502,5 +502,5 @@ object ConfigUtils {
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
-  }    
+  }
 }

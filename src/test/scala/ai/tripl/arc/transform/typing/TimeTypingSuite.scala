@@ -311,7 +311,7 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
           }
           case (_,_) => assert(false)
         }
-      }  
+      }
 
       {
         val timeValue = "12:34:56"
@@ -323,7 +323,7 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
           }
           case (_,_) => assert(false)
         }
-      }       
+      }
 
       {
         val timeValue = "12:34:00"
@@ -335,8 +335,8 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
           }
           case (_,_) => assert(false)
         }
-      }                         
-    }    
+      }
+    }
 
     // Test bad inputs
     {
@@ -352,7 +352,7 @@ class TimeTypingSuite extends FunSuite with BeforeAndAfter {
           }
           case (_,_) => assert(false)
         }
-      }                 
-    }        
+      }
+    }
   }
 }

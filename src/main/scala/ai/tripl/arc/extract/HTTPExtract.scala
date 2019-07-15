@@ -52,31 +52,31 @@ class HTTPExtract extends PipelineStagePlugin {
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, inputView, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys, uriField, bodyField) match {
-      case (Right(name), Right(description), Right(inputView), Right(parsedURI), Right(outputView), Right(persist), Right(numPartitions), Right(method), Right(body), Right(partitionBy), Right(validStatusCodes), Right(invalidKeys), Right(uriField), Right(bodyField)) => 
+      case (Right(name), Right(description), Right(inputView), Right(parsedURI), Right(outputView), Right(persist), Right(numPartitions), Right(method), Right(body), Right(partitionBy), Right(validStatusCodes), Right(invalidKeys), Right(uriField), Right(bodyField)) =>
         val input = if(c.hasPath("inputView")) Left(inputView) else Right(parsedURI)
 
         val stage = HTTPExtractStage(
           plugin=this,
-          name=name, 
-          description=description, 
-          input=input, 
-          method=method, 
-          headers=headers, 
+          name=name,
+          description=description,
+          input=input,
+          method=method,
+          headers=headers,
           uriField=uriField,
-          bodyField=bodyField,             
-          body=body, 
-          validStatusCodes=validStatusCodes, 
-          outputView=outputView, 
-          params=params, 
-          persist=persist, 
-          numPartitions=numPartitions, 
+          bodyField=bodyField,
+          body=body,
+          validStatusCodes=validStatusCodes,
+          outputView=outputView,
+          params=params,
+          persist=persist,
+          numPartitions=numPartitions,
           partitionBy=partitionBy
         )
 
         stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
-        stage.stageDetail.put("input", if(c.hasPath("inputView")) inputView else parsedURI)  
+        stage.stageDetail.put("input", if(c.hasPath("inputView")) inputView else parsedURI)
         stage.stageDetail.put("method", method)
-        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
         stage.stageDetail.put("params", params.asJava)
@@ -94,19 +94,19 @@ class HTTPExtract extends PipelineStagePlugin {
 
 case class HTTPExtractStage(
     plugin: HTTPExtract,
-    name: String, 
-    description: Option[String], 
-    input: Either[String, URI], 
-    method: String, 
-    headers: Map[String, String], 
+    name: String,
+    description: Option[String],
+    input: Either[String, URI],
+    method: String,
+    headers: Map[String, String],
     uriField: Option[String],
-    bodyField: Option[String],   
-    body: Option[String], 
-    validStatusCodes: List[Int], 
-    outputView: String, 
-    params: Map[String, String], 
-    persist: Boolean, 
-    numPartitions: Option[Int], 
+    bodyField: Option[String],
+    body: Option[String],
+    validStatusCodes: List[Int],
+    outputView: String,
+    params: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
     partitionBy: List[String]
   ) extends PipelineStage {
 
@@ -133,7 +133,7 @@ object HTTPExtractStage {
     import spark.implicits._
 
     // create a StructType schema for RequestResponse
-    val typedSchema = ScalaReflection.schemaFor[RequestResponse].dataType.asInstanceOf[StructType]      
+    val typedSchema = ScalaReflection.schemaFor[RequestResponse].dataType.asInstanceOf[StructType]
 
     val stageInput = stage.input
     val stageUriField = stage.uriField
@@ -145,7 +145,7 @@ object HTTPExtractStage {
 
     /** Create a dynamic RowEncoder from the provided schema. We use the phantom
       * TypeRow type to enable implicit resolution to find our encoder.
-      */    
+      */
     implicit val typedEncoder: Encoder[RequestResponseRow] = org.apache.spark.sql.catalyst.encoders.RowEncoder(typedSchema)
 
     val responses = try {
@@ -154,7 +154,7 @@ object HTTPExtractStage {
         case Left(view) => spark.table(view)
       }
 
-      df.mapPartitions[RequestResponseRow] { partition: Iterator[Row] => 
+      df.mapPartitions[RequestResponseRow] { partition: Iterator[Row] =>
         val poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager()
         poolingHttpClientConnectionManager.setMaxTotal(50)
         val httpClient = HttpClients.custom()
@@ -187,20 +187,20 @@ object HTTPExtractStage {
             case (Some(bodyFieldIndex), Some(_)) => row.getString(bodyFieldIndex)
             case (None, Some(body)) => body
             case (None, None) => ""
-          } 
+          }
 
           val request = stageMethod match {
             case "GET" => new HttpGet(uri)
-            case "POST" => { 
+            case "POST" => {
               val post = new HttpPost(uri)
               post.setEntity(new StringEntity(body))
-              post 
+              post
             }
           }
 
           // add headers
           for ((k,v) <- stageHeaders) {
-            request.addHeader(k,v) 
+            request.addHeader(k,v)
           }
 
           try {
@@ -217,7 +217,7 @@ object HTTPExtractStage {
               case 0 => None
               case _ => Option(Source.fromInputStream(response.getEntity.getContent).mkString)
             }
-            response.close 
+            response.close
 
             // cast to a RequestResponseRow to fit the Dataset map method requirements
             val result = Seq(uri, response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, Option(response.getEntity.getContentType).map(_.toString).orNull, body.orNull)
@@ -229,19 +229,19 @@ object HTTPExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
     }
 
     val df = responses.toDF
-    
+
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => df.repartition(numPartitions)
           case None => df
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -251,7 +251,7 @@ object HTTPExtractStage {
           case None => df.repartition(partitionCols:_*)
         }
       }
-    } 
+    }
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
@@ -259,8 +259,8 @@ object HTTPExtractStage {
 
     if (stage.persist) {
       repartitionedDF.persist(arcContext.storageLevel)
-      stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-    }    
+      stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+    }
 
     Option(repartitionedDF)
   }

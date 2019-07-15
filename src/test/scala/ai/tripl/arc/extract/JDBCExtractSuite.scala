@@ -18,7 +18,7 @@ import ai.tripl.arc.util.TestUtils
 
 class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   var connection: java.sql.Connection = _
 
   val url = "jdbc:derby:memory:JDBCExtractSuite"
@@ -36,7 +36,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
@@ -75,25 +75,25 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
+    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.JDBCExtractStage.execute(
       extract.JDBCExtractStage(
         plugin=new extract.JDBCExtract,
-        name=outputView, 
+        name=outputView,
         description=None,
         schema=Right(cols.right.getOrElse(Nil)),
-        outputView=dbtable, 
+        outputView=dbtable,
         jdbcURL=url,
         driver=DriverManager.getDriver(url),
-        tableName=dbtable, 
-        numPartitions=None, 
+        tableName=dbtable,
+        numPartitions=None,
         partitionBy=Nil,
-        fetchsize=None, 
+        fetchsize=None,
         customSchema=None,
         partitionColumn=None,
         predicates=Nil,
-        params=Map.empty, 
+        params=Map.empty,
         persist=false
       )
     ).get
@@ -104,9 +104,9 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     assert(TestUtils.datasetEquality(expected, actual))
 
     // test metadata
-    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata    
-    assert(timestampDatumMetadata.getLong("securityLevel") == 7)        
-  }     
+    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata
+    assert(timestampDatumMetadata.getLong("securityLevel") == 7)
+  }
 
   test("JDBCExtract: Query") {
     implicit val spark = session
@@ -117,20 +117,20 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JDBCExtractStage.execute(
       extract.JDBCExtractStage(
         plugin=new extract.JDBCExtract,
-        name=outputView, 
+        name=outputView,
         description=None,
         schema=Right(Nil),
-        outputView=dbtable, 
-        jdbcURL=url, 
+        outputView=dbtable,
+        jdbcURL=url,
         driver=DriverManager.getDriver(url),
-        tableName=s"(SELECT * FROM ${dbtable}) dbtable", 
+        tableName=s"(SELECT * FROM ${dbtable}) dbtable",
         numPartitions=None,
         partitionBy=Nil,
-        fetchsize=None, 
+        fetchsize=None,
         customSchema=None,
         partitionColumn=None,
         predicates=Nil,
-        params=Map.empty, 
+        params=Map.empty,
         persist=false
       )
     ).get
@@ -139,7 +139,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val expected = TestUtils.getKnownDataset.drop($"nullDatum")
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }   
+  }
 
   test("JDBCExtract: Query returning Empty Dataset") {
     implicit val spark = session
@@ -150,20 +150,20 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JDBCExtractStage.execute(
       extract.JDBCExtractStage(
         plugin=new extract.JDBCExtract,
-        name=outputView, 
+        name=outputView,
         description=None,
         schema=Right(Nil),
-        outputView=dbtable, 
-        jdbcURL=url, 
+        outputView=dbtable,
+        jdbcURL=url,
         driver=DriverManager.getDriver(url),
-        tableName=s"(SELECT * FROM ${dbtable} WHERE false) dbtable", 
+        tableName=s"(SELECT * FROM ${dbtable} WHERE false) dbtable",
         numPartitions=None,
         partitionBy=Nil,
-        fetchsize=None, 
+        fetchsize=None,
         customSchema=None,
         partitionColumn=None,
         predicates=Nil,
-        params=Map.empty, 
+        params=Map.empty,
         persist=false
       )
     ).get
@@ -173,5 +173,5 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
 
     // data types will mismatch due to derby but test that we have at least same column names
     assert(actual.schema.map(_.name) === expected.schema.map(_.name))
-  }   
+  }
 }

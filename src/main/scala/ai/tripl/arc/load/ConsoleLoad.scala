@@ -26,10 +26,10 @@ class ConsoleLoad extends PipelineStagePlugin {
     val inputView = getValue[String]("inputView")
     val outputMode = getValue[String]("outputMode", default = Some("Append"), validValues = "Append" :: "Complete" :: "Update" :: Nil) |> parseOutputModeType("outputMode") _
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, inputView, outputMode, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputMode), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(inputView), Right(outputMode), Right(invalidKeys)) =>
         val stage = ConsoleLoadStage(
           plugin=this,
           name=name,
@@ -39,8 +39,8 @@ class ConsoleLoad extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("inputView", stage.inputView)  
-        stage.stageDetail.put("outputMode", stage.outputMode.sparkString)  
+        stage.stageDetail.put("inputView", stage.inputView)
+        stage.stageDetail.put("outputMode", stage.outputMode.sparkString)
         stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
@@ -56,10 +56,10 @@ class ConsoleLoad extends PipelineStagePlugin {
 
 case class ConsoleLoadStage(
     plugin: ConsoleLoad,
-    name: String, 
-    description: Option[String], 
-    inputView: String, 
-    outputMode: OutputModeType, 
+    name: String,
+    description: Option[String],
+    inputView: String,
+    outputMode: OutputModeType,
     params: Map[String, String]
   ) extends PipelineStage {
 
@@ -73,13 +73,13 @@ object ConsoleLoadStage {
 
   def execute(stage: ConsoleLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    val df = spark.table(stage.inputView)   
+    val df = spark.table(stage.inputView)
 
     if (!df.isStreaming) {
       throw new Exception("ConsoleLoad can only be executed in streaming mode.") with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
-    }      
+    }
 
     df.writeStream
         .format("console")

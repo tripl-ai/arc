@@ -25,8 +25,8 @@ object ExtractUtils {
         }
       }
     }
-  }   
-  
+  }
+
   def addInternalColumns(input: DataFrame, contiguousIndex: Boolean): DataFrame = {
     if (!input.isStreaming) {
       // add meta columns including sequential index

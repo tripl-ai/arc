@@ -18,11 +18,11 @@ import ai.tripl.arc.util.TestUtils
 
 class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "extract.parquet" 
-  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.parquet" 
-  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.parquet" 
-  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.parquet.gz" 
+  var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "extract.parquet"
+  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.parquet"
+  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.parquet"
+  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.parquet.gz"
   val outputView = "dataset"
 
   before {
@@ -35,14 +35,14 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
-    import spark.implicits._    
+    import spark.implicits._
 
     // recreate test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
-    FileUtils.deleteQuietly(new java.io.File(emptyDirectory)) 
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
+    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
     FileUtils.forceMkdir(new java.io.File(emptyDirectory))
     // parquet does not support writing NullType
     TestUtils.getKnownDataset.drop($"nullDatum").write.parquet(targetFile)
@@ -52,8 +52,8 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))     
-    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))     
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
+    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
   }
 
   test("ParquetExtract: end-to-end") {
@@ -76,7 +76,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         }
       ]
     }"""
-    
+
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
@@ -87,7 +87,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, _)) => {
         val df = ARC.run(pipeline)(spark, logger, arcContext)
       }
-    }  
+    }
   }
 
   test("ParquetExtract: Metadata from columns") {
@@ -97,7 +97,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
@@ -128,9 +128,9 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     assert(TestUtils.datasetEquality(expected, actual))
 
     // test metadata
-    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata    
-    assert(timestampDatumMetadata.getLong("securityLevel") == 7)        
-  }  
+    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata
+    assert(timestampDatumMetadata.getLong("securityLevel") == 7)
+  }
 
   test("ParquetExtract: Caching") {
     implicit val spark = session
@@ -175,8 +175,8 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         contiguousIndex=true
       )
     )
-    assert(spark.catalog.isCached(outputView) === true)     
-  }  
+    assert(spark.catalog.isCached(outputView) === true)
+  }
 
   test("ParquetExtract: Empty Dataset") {
     implicit val spark = session
@@ -184,7 +184,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val schema = 
+    val schema =
       BooleanColumn(
         id="1",
         name="booleanDatum",
@@ -192,11 +192,11 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         nullable=true,
         nullReplacementValue=None,
         trim=false,
-        nullableValues=Nil, 
-        trueValues=Nil, 
+        nullableValues=Nil,
+        trueValues=Nil,
         falseValues=Nil,
         metadata=None
-      ) :: Nil    
+      ) :: Nil
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
@@ -219,7 +219,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown0.getMessage === "ParquetExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-    
+
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
       extract.ParquetExtractStage.execute(
@@ -241,7 +241,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown1.getMessage === "ParquetExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-    
+
     // try with column
     val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
@@ -267,7 +267,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     val expected = TestUtils.getKnownDataset.select($"booleanDatum").limit(0)
 
     assert(TestUtils.datasetEquality(expected, actual))
-  }  
+  }
 
   test("ParquetExtract: Structured Streaming") {
     implicit val spark = session
@@ -276,7 +276,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)    
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
@@ -298,7 +298,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
 
     val writeStream = dataset
       .writeStream
-      .queryName("extract") 
+      .queryName("extract")
       .format("memory")
       .start
 
@@ -310,6 +310,6 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       df.first.getBoolean(0)
     } finally {
       writeStream.stop
-    }  
-  }    
+    }
+  }
 }

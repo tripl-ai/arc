@@ -43,10 +43,10 @@ class JSONExtract extends PipelineStagePlugin {
     val inputField = getOptionalValue[String]("inputField")
     val basePath = getOptionalValue[String]("basePath")
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)    
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, inputField, basePath, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(inputField), Right(basePath), Right(invalidKeys)) => 
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(inputField), Right(basePath), Right(invalidKeys)) =>
         val input = if(c.hasPath("inputView")) Left(inputView) else Right(parsedGlob)
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
@@ -69,15 +69,15 @@ class JSONExtract extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
-        stage.stageDetail.put("input", input)  
-        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("input", input)
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("options", JSON.toSparkOptions(stage.settings).asJava)
         for (basePath <- basePath) {
-          stage.stageDetail.put("basePath", basePath)  
-        }        
+          stage.stageDetail.put("basePath", basePath)
+        }
         for (inputField <- inputField) {
-          stage.stageDetail.put("inputField", inputField)  
+          stage.stageDetail.put("inputField", inputField)
         }
         stage.stageDetail.put("params", params.asJava)
 
@@ -94,19 +94,19 @@ class JSONExtract extends PipelineStagePlugin {
 
 case class JSONExtractStage(
     plugin: JSONExtract,
-    name: String, 
-    description: Option[String], 
-    schema: Either[String, List[ExtractColumn]], 
-    outputView: String, 
-    input: Either[String, String], 
-    settings: JSON, 
-    authentication: Option[Authentication], 
-    params: Map[String, String], 
-    persist: Boolean, 
-    numPartitions: Option[Int], 
-    partitionBy: List[String], 
-    contiguousIndex: Boolean, 
-    inputField: Option[String], 
+    name: String,
+    description: Option[String],
+    schema: Either[String, List[ExtractColumn]],
+    outputView: String,
+    input: Either[String, String],
+    settings: JSON,
+    authentication: Option[Authentication],
+    params: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
+    partitionBy: List[String],
+    contiguousIndex: Boolean,
+    inputField: Option[String],
     basePath: Option[String]
   ) extends PipelineStage {
 
@@ -125,14 +125,14 @@ object JSONExtractStage {
       ExtractUtils.getSchema(stage.schema)(spark, logger)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }       
+        override val detail = stage.stageDetail
+      }
+    }
 
     val options = stage.basePath match {
       case Some(basePath) => JSON.toSparkOptions(stage.settings) + ("basePath" -> basePath)
       case None => JSON.toSparkOptions(stage.settings)
-    }    
+    }
 
     val df = try {
       if (arcContext.isStreaming) {
@@ -143,7 +143,7 @@ object JSONExtractStage {
             optionSchema match {
               case Some(schema) => spark.readStream.options(options).schema(schema).json(glob)
               case None => throw new Exception("JSONExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
-            }       
+            }
           }
           case Left(view) => throw new Exception("JSONExtract does not support the use of 'inputView' if Arc is running in streaming mode.")
         }
@@ -161,7 +161,7 @@ object JSONExtractStage {
                 val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
                 val newDelimiter = s"${0x0 : Char}"
                 // temporarily remove the delimiter so all the data is loaded as a single line
-                spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)              
+                spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)
 
                 // read the file but do not cache. caching will break the input_file_name() function
                 val textFile = spark.sparkContext.textFile(glob)
@@ -169,18 +169,18 @@ object JSONExtractStage {
                 val json = optionSchema match {
                   case Some(schema) => spark.read.options(options).schema(schema).json(textFile.toDS)
                   case None => spark.read.options(options).json(textFile.toDS)
-                }             
+                }
 
                 // reset delimiter
                 if (oldDelimiter == null) {
-                  spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")              
+                  spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")
                 } else {
-                  spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)        
+                  spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)
                 }
 
                 json
               } else {
-                // read the file but do not cache. caching will break the input_file_name() function              
+                // read the file but do not cache. caching will break the input_file_name() function
                 val textFile = spark.sparkContext.textFile(glob)
 
                 val json = optionSchema match {
@@ -188,7 +188,7 @@ object JSONExtractStage {
                   case None => spark.read.options(options).json(textFile.toDS)
                 }
 
-                json              
+                json
               }
             } catch {
               case e: org.apache.hadoop.mapred.InvalidInputException => {
@@ -206,7 +206,7 @@ object JSONExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
     }
 
@@ -223,9 +223,9 @@ object JSONExtractStage {
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
-        override val detail = stage.stageDetail          
-      }      
-    }    
+        override val detail = stage.stageDetail
+      }
+    }
 
     // add internal columns data _filename, _index
     val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, stage.contiguousIndex)
@@ -233,16 +233,16 @@ object JSONExtractStage {
     // // set column metadata if exists
     val enrichedDF = optionSchema match {
         case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
-        case None => sourceEnrichedDF   
+        case None => sourceEnrichedDF
     }
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
-      case Nil => { 
+      case Nil => {
         stage.numPartitions match {
           case Some(numPartitions) => enrichedDF.repartition(numPartitions)
           case None => enrichedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
@@ -252,7 +252,7 @@ object JSONExtractStage {
           case None => enrichedDF.repartition(partitionCols:_*)
         }
       }
-    } 
+    }
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
@@ -262,8 +262,8 @@ object JSONExtractStage {
 
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
-        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
-      }      
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
     }
 
     Option(repartitionedDF)

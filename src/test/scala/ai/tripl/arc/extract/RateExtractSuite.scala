@@ -20,7 +20,7 @@ import ai.tripl.arc.util.ControlUtils._
 
 class RateExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
 
   val outputView = "outputView"
 
@@ -34,7 +34,7 @@ class RateExtractSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -55,7 +55,7 @@ class RateExtractSuite extends FunSuite with BeforeAndAfter {
         plugin=new extract.RateExtract,
         name="dataset",
         description=None,
-        outputView=outputView, 
+        outputView=outputView,
         rowsPerSecond=10,
         rampUpTime=0,
         numPartitions=1,
@@ -65,7 +65,7 @@ class RateExtractSuite extends FunSuite with BeforeAndAfter {
 
     val writeStream = dataset
       .writeStream
-      .queryName("extract") 
+      .queryName("extract")
       .format("memory")
       .start
 
@@ -76,6 +76,6 @@ class RateExtractSuite extends FunSuite with BeforeAndAfter {
       assert(df.count != 0)
     } finally {
       writeStream.stop
-    }  
-  }    
+    }
+  }
 }

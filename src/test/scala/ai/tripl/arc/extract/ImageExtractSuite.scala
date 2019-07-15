@@ -18,9 +18,9 @@ import ai.tripl.arc.util.TestUtils
 
 class ImageExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val targetFile = getClass.getResource("/puppy.jpg").toString
-  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.jpg" 
+  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.jpg"
   val outputView = "dataset"
 
   before {
@@ -33,10 +33,10 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
-    import spark.implicits._    
+    import spark.implicits._
   }
 
   after {
@@ -72,7 +72,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     assert(dataset.filter("image.height == 960").count == 1)
     assert(dataset.filter("image.nChannels == 3").count == 1)
     assert(dataset.filter("image.mode == 16").count == 1)
-  }  
+  }
 
   test("ImageExtract: Caching") {
     implicit val spark = session
@@ -115,8 +115,8 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         dropInvalid=true
       )
     )
-    assert(spark.catalog.isCached(outputView) === true)     
-  }  
+    assert(spark.catalog.isCached(outputView) === true)
+  }
 
   test("ImageExtract: Empty Dataset") {
     implicit val spark = session
@@ -140,9 +140,9 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         dropInvalid=true
       )
     ).get
-    
+
     assert(dataset.count == 0)
-  }  
+  }
 
   test("ImageExtract:: Structured Streaming") {
     implicit val spark = session
@@ -163,13 +163,13 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        dropInvalid=true        
+        dropInvalid=true
       )
     ).get
 
     val writeStream = dataset
       .writeStream
-      .queryName("extract") 
+      .queryName("extract")
       .format("memory")
       .start
 
@@ -181,6 +181,6 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
       assert(df.filter($"image.origin".contains(targetFile.replace("file:", "file://"))).count != 0)
     } finally {
       writeStream.stop
-    }  
-  }    
+    }
+  }
 }

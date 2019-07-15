@@ -20,7 +20,7 @@ import ai.tripl.arc.util.TestUtils
 
 class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   var testName = "EqualityValidate"
   val leftView = "leftViewName"
   val rightView = "rightViewName"
@@ -36,7 +36,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
     spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -59,7 +59,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       validate.EqualityValidateStage.execute(
         validate.EqualityValidateStage(
           plugin=new validate.EqualityValidate,
-          name=testName, 
+          name=testName,
           description=None,
           leftView=leftView,
           rightView=rightView,
@@ -69,7 +69,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(thrown.getMessage === s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${leftView}' (10 columns) contains columns: ['booleanDatum'] that are not in '${rightView}' and '${rightView}' (9 columns) contains columns: [] that are not in '${leftView}'. Columns are not equal so cannot the data be compared.""")
-  }    
+  }
 
   test("EqualityValidate: different order of columns") {
     implicit val spark = session
@@ -85,7 +85,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       validate.EqualityValidateStage.execute(
         validate.EqualityValidateStage(
           plugin=new validate.EqualityValidate,
-          name=testName, 
+          name=testName,
           description=None,
           leftView=leftView,
           rightView=rightView,
@@ -95,7 +95,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(thrown.getMessage === s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${leftView}' contains columns (ordered): ['booleanDatum', 'dateDatum', 'decimalDatum', 'doubleDatum', 'integerDatum', 'longDatum', 'stringDatum', 'timeDatum', 'timestampDatum', 'nullDatum'] and '${rightView}' contains columns (ordered): ['dateDatum', 'decimalDatum', 'doubleDatum', 'integerDatum', 'longDatum', 'stringDatum', 'timeDatum', 'timestampDatum', 'nullDatum', 'booleanDatum']. Columns are not equal so cannot the data be compared.""")
-  }   
+  }
 
   test("EqualityValidate: different type of columns") {
     implicit val spark = session
@@ -111,7 +111,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       validate.EqualityValidateStage.execute(
         validate.EqualityValidateStage(
           plugin=new validate.EqualityValidate,
-          name=testName, 
+          name=testName,
           description=None,
           leftView=leftView,
           rightView=rightView,
@@ -121,7 +121,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(thrown.getMessage === s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${leftView}' contains column types (ordered): ['boolean', 'date', 'decimal(38,18)', 'double', 'integer', 'long', 'string', 'string', 'timestamp', 'null'] and '${rightView}' contains column types (ordered): ['string', 'date', 'decimal(38,18)', 'double', 'integer', 'long', 'string', 'string', 'timestamp', 'null']. Columns are not equal so cannot the data be compared.""")
-  }    
+  }
 
   test("EqualityValidate: value") {
     implicit val spark = session
@@ -137,7 +137,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       validate.EqualityValidateStage.execute(
         validate.EqualityValidateStage(
           plugin=new validate.EqualityValidate,
-          name=testName, 
+          name=testName,
           description=None,
           leftView=leftView,
           rightView=rightView,
@@ -147,6 +147,6 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(thrown.getMessage === s"""EqualityValidate ensures the two input datasets are the same (including column order), but '${leftView}' (2 rows) contains 1 rows that are not in '${rightView}' and '${rightView}' (2 rows) contains 1 rows which are not in '${leftView}'.""")
-  }   
+  }
 
 }

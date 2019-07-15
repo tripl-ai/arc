@@ -7,5 +7,3 @@ package object config {
   type IntList = List[Int]
 
 }
-
-
