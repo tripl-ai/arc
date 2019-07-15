@@ -212,7 +212,7 @@ object HTTPTransformStage {
               } else {
                 ""
               }        
-              new StringEntity(groupedRow.map(row => row.getString(fieldIndex)).mkString(stageDelimiter))
+              new StringEntity(groupedRow.map(row => row.getString(fieldIndex)).mkString(delimiter))
             }
             case _: BinaryType => {
               val delimiter = if (stageBatchSize > 1) {

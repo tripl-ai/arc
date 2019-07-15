@@ -191,7 +191,7 @@ object MLTransformStage {
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count)) 
 
         // add percentiles to list for logging
-        var approxQuantileMap = new java.util.HashMap[String, Array[java.lang.Double]]()
+        val approxQuantileMap = new java.util.HashMap[String, Array[java.lang.Double]]()
         probabilityCols.foreach(col => {
             approxQuantileMap.put(col.toString, repartitionedDF.stat.approxQuantile(col.toString, Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0), 0.1).map(col => java.lang.Double.valueOf(col)))
         })

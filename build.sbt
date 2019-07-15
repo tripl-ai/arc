@@ -36,6 +36,10 @@ scalacOptions := Seq(
   "-target:jvm-1.8",
   "-unchecked"
 
+  //"-Ywarn-dead-code",
+  //"-Ywarn-extra-implicit",
+  //"-Ywarn-inaccessible",
+  //"-Ywarn-infer-any",
   //"-Ywarn-unused:privates",
   //"-Ywarn-unused:imports"
 )

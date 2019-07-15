@@ -121,7 +121,6 @@ object ORCLoadStage {
         stage.partitionBy match {
           case Nil => nonNullDF.writeStream.format("orc").option("path", stage.outputURI.toString).start
           case partitionBy => {
-            val partitionCols = partitionBy.map(col => nonNullDF(col))
             nonNullDF.writeStream.partitionBy(partitionBy:_*).format("orc").option("path", stage.outputURI.toString).start
           }
         }

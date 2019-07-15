@@ -231,7 +231,6 @@ object JDBCLoadStage {
       stage.partitionBy match {
         case Nil => nonNullDF.writeStream.foreach(jdbcSink).start
         case partitionBy => {
-          val partitionCols = partitionBy.map(col => nonNullDF(col))
           nonNullDF.writeStream.partitionBy(partitionBy:_*).foreach(jdbcSink).start
         }
       }
