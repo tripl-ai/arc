@@ -1,10 +1,5 @@
 package ai.tripl.arc.util
 
-import java.net.URI
-import java.time.Instant
-
-import org.apache.spark.sql._
-
 object HTTPUtils {
 
   // mask headers to 20% length in this list to prevent logs from printing keys

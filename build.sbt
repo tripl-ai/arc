@@ -29,7 +29,16 @@ lazy val root = (project in file(".")).
 
 fork in run := true  
 
-scalacOptions := Seq("-target:jvm-1.8", "-unchecked", "-deprecation")
+scalacOptions := Seq(
+  "-deprecation",
+  "-encoding", "utf-8",
+  "-explaintypes",
+  "-target:jvm-1.8",
+  "-unchecked"
+
+  //"-Ywarn-unused:privates",
+  //"-Ywarn-unused:imports"
+)
 
 test in assembly := {}
 

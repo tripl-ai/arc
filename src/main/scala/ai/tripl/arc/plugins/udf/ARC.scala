@@ -1,8 +1,7 @@
 package ai.tripl.arc.plugins.udf
 
-import java.util
-
 import scala.collection.JavaConverters._
+
 import com.fasterxml.jackson.databind._
 
 import org.apache.spark.sql.SparkSession

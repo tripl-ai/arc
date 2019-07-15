@@ -2,9 +2,6 @@ package ai.tripl.arc.util
 
 import org.apache.spark.sql._
 import org.apache.spark.scheduler._
-import ai.tripl.arc.util.log.logger.JsonLogger
-
-import org.apache.spark.scheduler.SparkListenerInterface
 
 object ListenerUtils {
 

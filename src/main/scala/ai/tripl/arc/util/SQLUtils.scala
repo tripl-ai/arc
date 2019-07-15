@@ -1,12 +1,10 @@
 package ai.tripl.arc.util
 
-import scala.collection.JavaConverters._
-
 import java.io.File
 import java.net.URI
 
-import org.apache.commons.io.IOUtils
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.IOUtils
 
 object SQLUtils {
 

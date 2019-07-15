@@ -5,17 +5,10 @@ import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
-import org.apache.spark.storage.StorageLevel
 import org.apache.spark.ml._
-import org.apache.spark.ml.classification._
-import org.apache.spark.ml.feature._
 import org.apache.spark.ml.tuning._
-import org.apache.spark.ml.evaluation._
 import org.apache.spark.ml.linalg.Vector
 
-import com.typesafe.config._
-
-import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
@@ -23,9 +16,6 @@ import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
-import ai.tripl.arc.util.ExtractUtils
-import ai.tripl.arc.util.MetadataUtils
-import ai.tripl.arc.util.ListenerUtils
 import ai.tripl.arc.util.Utils
 
 class MLTransform extends PipelineStagePlugin {
@@ -82,7 +72,7 @@ class MLTransform extends PipelineStagePlugin {
     }
   }
 
-  def getModel(path: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = {
+  def getModel(path: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: com.typesafe.config.Config): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
     
     authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))

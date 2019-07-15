@@ -7,28 +7,19 @@ import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.{StringEntity, ByteArrayEntity}
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
-import org.apache.http.impl.client.LaxRedirectStrategy
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.functions._
 
 import scala.io.Source
 
-import com.typesafe.config._
-
-import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.plugins.PipelineStagePlugin
-import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
-import ai.tripl.arc.util.ExtractUtils
-import ai.tripl.arc.util.MetadataUtils
-import ai.tripl.arc.util.ListenerUtils
 import ai.tripl.arc.util.HTTPUtils
 import ai.tripl.arc.util.Utils
 
@@ -128,7 +119,7 @@ object HTTPLoadStage {
           new ForeachWriter[Row] {
             var poolingHttpClientConnectionManager: PoolingHttpClientConnectionManager = _
             var httpClient: CloseableHttpClient = _
-            var uri: String = stageOutputURI.toString
+            val uri: String = stageOutputURI.toString
 
             def open(partitionId: Long, epochId: Long): Boolean = {
               // create connection pool

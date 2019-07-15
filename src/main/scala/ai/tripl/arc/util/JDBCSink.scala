@@ -1,10 +1,8 @@
 package ai.tripl.arc.util
 
-import java.net.URI
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.PreparedStatement
-import java.sql.Statement
 import java.sql.SQLException
 import java.util.Locale
 import java.util.Properties
@@ -13,7 +11,6 @@ import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.execution.datasources.jdbc._
-import org.apache.spark.sql.functions._
 import org.apache.spark.sql.jdbc.{JdbcDialect, JdbcDialects, JdbcType}
 import org.apache.spark.sql.types._
 

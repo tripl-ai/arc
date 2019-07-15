@@ -1,19 +1,10 @@
 package ai.tripl.arc.extract
 
-import java.net.URI
-import java.util.Properties
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
-import org.apache.spark.storage.StorageLevel
 
-import com.typesafe.config._
-
-import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.CloudUtils

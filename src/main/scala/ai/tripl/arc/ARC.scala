@@ -16,11 +16,9 @@ object ARC {
   import scala.util.Properties._
 
   import org.apache.spark.sql._
-  import org.apache.spark.sql.types._
   import org.apache.spark.storage.StorageLevel
 
   import ai.tripl.arc.api.API._
-  import ai.tripl.arc.config._
   import ai.tripl.arc.util.{DetailException, Utils, ListenerUtils}
   import ai.tripl.arc.util.log.LoggerFactory 
 
@@ -83,7 +81,7 @@ object ARC {
         val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
         val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
-        var detail = new java.util.HashMap[String, Object]()
+        val detail = new java.util.HashMap[String, Object]()
         detail.put("event", "exception")
         detail.put("messages", exceptionThrowablesMessages)
         detail.put("stackTrace", exceptionThrowablesStackTraces)
@@ -214,7 +212,7 @@ object ARC {
         val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
         val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
-        var detail = new java.util.HashMap[String, Object]()
+        val detail = new java.util.HashMap[String, Object]()
         detail.put("event", "exception")
         detail.put("messages", exceptionThrowablesMessages)
         detail.put("stackTrace", exceptionThrowablesStackTraces)
@@ -258,7 +256,7 @@ object ARC {
         val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
         val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
-        var detail = new java.util.HashMap[String, Object]()
+        val detail = new java.util.HashMap[String, Object]()
         detail.put("event", "exception")
         detail.put("messages", exceptionThrowablesMessages)
         detail.put("stackTrace", exceptionThrowablesStackTraces)
@@ -313,7 +311,7 @@ object ARC {
             val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
             val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
-            var detail = new java.util.HashMap[String, Object]()
+            val detail = new java.util.HashMap[String, Object]()
             detail.put("event", "exception")
             detail.put("messages", exceptionThrowablesMessages)
             detail.put("stackTrace", exceptionThrowablesStackTraces)

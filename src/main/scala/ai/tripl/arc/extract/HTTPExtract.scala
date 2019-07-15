@@ -4,7 +4,6 @@ import java.net.URI
 import scala.collection.JavaConverters._
 
 import org.apache.http.client.methods.{HttpGet, HttpPost}
-import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 import org.apache.http.entity.StringEntity
@@ -12,24 +11,16 @@ import org.apache.http.impl.client.LaxRedirectStrategy
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.apache.spark.storage.StorageLevel
 
 import scala.io.Source
 
-import com.typesafe.config._
-
-import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.plugins.PipelineStagePlugin
-import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
-import ai.tripl.arc.util.ExtractUtils
-import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.HTTPUtils
 import ai.tripl.arc.util.Utils
 
@@ -53,7 +44,6 @@ class HTTPExtract extends PipelineStagePlugin {
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
-    val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
     val method = getValue[String]("method", default = Some("GET"), validValues = "GET" :: "POST" :: Nil)
     val uriField = getOptionalValue[String]("uriField")
     val bodyField = getOptionalValue[String]("bodyField")

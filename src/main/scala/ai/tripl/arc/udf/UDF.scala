@@ -1,14 +1,10 @@
 package ai.tripl.arc.udf
 
-import java.util.ServiceLoader
 import scala.collection.JavaConverters._
 
-import ai.tripl.arc.plugins.UDFPlugin
-import ai.tripl.arc.util.Utils
 import ai.tripl.arc.api.API.ARCContext
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions
 
 object UDF {
 

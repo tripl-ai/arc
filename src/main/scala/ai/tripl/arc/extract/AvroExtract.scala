@@ -2,19 +2,15 @@ package ai.tripl.arc.extract
 
 import java.io._
 import java.lang._
-import java.net.URI
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.avro._
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types._
-import org.apache.spark.storage.StorageLevel
 
 import com.typesafe.config._
 import com.fasterxml.jackson.databind.ObjectMapper
 
-import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._

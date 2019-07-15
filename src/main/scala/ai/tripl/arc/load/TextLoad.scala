@@ -9,19 +9,12 @@ import org.apache.spark.sql.types._
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 
-import com.typesafe.config._
-
-import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
-import ai.tripl.arc.util.ExtractUtils
-import ai.tripl.arc.util.MetadataUtils
-import ai.tripl.arc.util.ListenerUtils
 import ai.tripl.arc.util.Utils
 
 class TextLoad extends PipelineStagePlugin {

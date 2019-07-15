@@ -5,22 +5,16 @@ import scala.collection.JavaConverters._
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.apache.spark.storage.StorageLevel
 
 import org.apache.hadoop.mapreduce.lib.input.InvalidInputException
-import com.typesafe.config._
 
-import ai.tripl.arc.datasource.BinaryContent
-import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
+import ai.tripl.arc.datasource.BinaryContent
 import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
-import ai.tripl.arc.util.ExtractUtils
-import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
 class BytesExtract extends PipelineStagePlugin {

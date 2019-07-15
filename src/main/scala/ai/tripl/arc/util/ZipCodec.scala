@@ -1,6 +1,6 @@
 package ai.tripl.arc.util
 
-import java.io.{BufferedOutputStream, OutputStream, BufferedInputStream, InputStream}
+import java.io.{OutputStream, BufferedInputStream, InputStream}
 import java.util.zip._
 
 import org.apache.hadoop.io.compress._

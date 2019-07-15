@@ -1,6 +1,5 @@
 package ai.tripl.arc.util
 
-import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 
 object TensorFlowUtils {

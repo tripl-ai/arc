@@ -4,20 +4,16 @@ import java.net.URI
 import scala.collection.JavaConverters._
 
 import org.apache.http.client.methods.HttpPost
-import org.apache.http.entity.{StringEntity, ByteArrayEntity}
+import org.apache.http.entity.StringEntity
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.impl.client.LaxRedirectStrategy
 
 import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.node._
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
-import org.apache.spark.rdd._
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.functions._
-import org.apache.spark.storage.StorageLevel
 
 import scala.io.Source
 
@@ -26,17 +22,12 @@ import ai.tripl.arc.util._
 
 import com.typesafe.config._
 
-import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.plugins.PipelineStagePlugin
-import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
-import ai.tripl.arc.util.ExtractUtils
-import ai.tripl.arc.util.MetadataUtils
-import ai.tripl.arc.util.ListenerUtils
 import ai.tripl.arc.util.Utils
 
 class TensorFlowServingTransform extends PipelineStagePlugin {

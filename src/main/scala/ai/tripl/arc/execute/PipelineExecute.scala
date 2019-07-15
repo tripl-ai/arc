@@ -1,31 +1,13 @@
 package ai.tripl.arc.execute
 
 import java.net.URI
-import scala.collection.JavaConverters._
-
-import org.apache.http.client.methods.HttpPost
-import org.apache.http.impl.client.HttpClientBuilder
-import org.apache.http.entity.StringEntity
-
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
 import org.apache.spark.sql._
 
-import com.typesafe.config._
-
-import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.plugins.PipelineStagePlugin
-import ai.tripl.arc.util.CloudUtils
-import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
-import ai.tripl.arc.util.ExtractUtils
-import ai.tripl.arc.util.MetadataUtils
-import ai.tripl.arc.util.ListenerUtils
-import ai.tripl.arc.util.HTTPUtils
 import ai.tripl.arc.util.Utils
 
 class PipelineExecute extends PipelineStagePlugin {
@@ -44,7 +26,6 @@ class PipelineExecute extends PipelineStagePlugin {
     val uri = getValue[String]("uri") |> parseURI("uri") _ 
     val authentication = readAuthentication("authentication")  
     val textContent = uri |> textContentForURI("uri", authentication) _
-    val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, uri, textContent, invalidKeys) match {

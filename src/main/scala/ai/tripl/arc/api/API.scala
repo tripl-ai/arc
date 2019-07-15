@@ -1,13 +1,11 @@
 package ai.tripl.arc.api
 
-import java.net.URI
 import java.time.LocalTime
 
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.types.MetadataBuilder
-import org.apache.spark.sql.SaveMode
 import org.apache.spark.storage.StorageLevel
 
 import ai.tripl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin, UDFPlugin}

@@ -21,7 +21,6 @@ import ai.tripl.arc.api.API._
 import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.ControlUtils._
 import ai.tripl.arc.util.EitherUtils._
-import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.MetadataSchema
 

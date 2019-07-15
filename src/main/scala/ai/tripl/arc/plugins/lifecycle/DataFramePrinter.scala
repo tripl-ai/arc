@@ -1,13 +1,10 @@
 package ai.tripl.arc.plugins.lifecycle
 
-import java.util
-
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.plugins.LifecyclePlugin
 import ai.tripl.arc.util.Utils
-import ai.tripl.arc.util.log.logger.Logger
 import ai.tripl.arc.config.Error._
 
 class DataFramePrinter extends LifecyclePlugin {

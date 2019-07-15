@@ -1,16 +1,11 @@
 package ai.tripl.arc.util
 
 import java.net.URI
-import java.time.Instant
 
 import scala.io.Source
 
 import org.apache.http.client.methods.{HttpGet}
-import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.impl.client.HttpClients
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
-import org.apache.http.entity.StringEntity
-import org.apache.http.impl.client.LaxRedirectStrategy
 
 import org.apache.spark.sql._
 

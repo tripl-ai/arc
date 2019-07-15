@@ -1,8 +1,6 @@
 package ai.tripl.arc.load
 
-import java.net.URI
 import java.sql.DriverManager
-import java.sql.Connection
 import java.util.Properties
 import scala.collection.JavaConverters._
 
@@ -13,19 +11,15 @@ import org.apache.spark.sql.execution.datasources.jdbc._
 import com.typesafe.config._
 
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.api._
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.config._
 import ai.tripl.arc.plugins.PipelineStagePlugin
-import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.ControlUtils._
 import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
-import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.JDBCSink
 import ai.tripl.arc.util.JDBCUtils
 import ai.tripl.arc.util.ListenerUtils
-import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
 class JDBCLoad extends PipelineStagePlugin {
