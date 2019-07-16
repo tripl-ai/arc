@@ -20,13 +20,12 @@ import org.apache.spark.sql.functions._
 import ai.tripl.arc.util._
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
-import ai.tripl.arc.util.TestDataUtils
+import ai.tripl.arc.util.TestUtils
 
 class ARCSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val targetFile = FileUtils.getTempDirectoryPath()
   val inputView = "inputView"
   val outputView = "outputView"
@@ -38,10 +37,10 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
       .config("spark.ui.port", "9999")
       .appName("Spark ETL Test")
       .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")       
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -50,36 +49,4 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  test("ARCSuite") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
-
-    val dataset = TestDataUtils.getKnownDataset
-    dataset.createOrReplaceTempView(inputView)
-
-    val pipeline = ETLPipeline(
-        SQLTransform(
-          name="SQLTransformName", 
-          description=None,
-          inputURI=new URI(targetFile),
-          sql=s"SELECT * FROM ${inputView} WHERE booleanDatum = fasdf",
-          outputView=outputView,
-          persist=false,
-          sqlParams=Map.empty,
-          params=Map.empty,
-          numPartitions=None,
-          partitionBy=Nil             
-        ) :: Nil
-    )
-
-    val thrown = intercept[Exception with DetailException] {
-        ARC.run(pipeline)
-    }
-
-    assert(thrown.getMessage.contains("cannot resolve '`fasdf`' given input columns"))
-  }    
 }
-
-

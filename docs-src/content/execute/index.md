@@ -47,10 +47,8 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
 |jdbcURL|String|true|{{< readfile file="/content/partials/fields/jdbcURL.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
-|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} All parameters will be added to the Connection Properties.|
-|password|String|false|Database password for the given user. Optional, can also be in the url or params.|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Any parameters provided will be added to the JDBC connection object. These are not logged so it is safe to put passwords here.|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
-|user|String|false|Database username to connect as. Optional, can also be in the url or params.|
 
 ### Examples
 
@@ -63,6 +61,9 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
 
 ## KafkaCommitExecute
 ##### Since: 1.0.8 - Supports Streaming: False
+{{< note title="Plugin" >}}
+The `KafkaCommitExecute` is provided by the https://github.com/tripl-ai/arc-kafka-pipeline-plugin package.
+{{</note>}}
 
 The `KafkaCommitExecute` takes the resulting `DataFrame` from a [KafkaExtract](../extract/#kafkaextract) stage and commits the offsets back to Kafka. This is used so that a user is able to perform a quasi-transaction by specifing a series of stages that must be succesfully executed prior to `committing` the offset back to Kafka. To use this stage ensure that the `autoCommit` option on the [KafkaExtract](../extract/#kafkaextract) stage is set to `false`.
 
@@ -82,7 +83,7 @@ For example, if a job reads from a Kafka topic and writes the results to `parque
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/KafkaCommitExecuteMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/KafkaCommitExecuteMin" highlight="json" >}} 
 
 ## PipelineExecute
 ##### Since: 1.0.9 - Supports Streaming: True

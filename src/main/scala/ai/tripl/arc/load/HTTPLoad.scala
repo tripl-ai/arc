@@ -7,57 +7,110 @@ import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.{StringEntity, ByteArrayEntity}
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClients
-import org.apache.http.impl.client.LaxRedirectStrategy
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.functions._
 
 import scala.io.Source
 
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util._
+import ai.tripl.arc.config._
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.plugins.PipelineStagePlugin
+import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.util.HTTPUtils
+import ai.tripl.arc.util.Utils
 
-case class Response(
+class HTTPLoad extends PipelineStagePlugin {
+
+  val version = Utils.getFrameworkVersion
+
+  def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
+
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "headers" :: "validStatusCodes" :: "params" :: Nil
+    val name = getValue[String]("name")
+    val description = getOptionalValue[String]("description")
+    val inputView = getValue[String]("inputView")
+    val outputURI = getValue[String]("outputURI") |> parseURI("outputURI") _
+    val headers = readMap("headers", c)
+    val validStatusCodes = getValue[IntList]("validStatusCodes", default = Some(200 :: 201 :: 202 :: Nil))
+    val params = readMap("params", c)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    (name, description, outputURI, inputView, validStatusCodes, invalidKeys) match {
+      case (Right(name), Right(description), Right(outputURI), Right(inputView), Right(validStatusCodes), Right(invalidKeys)) =>
+
+        val stage = HTTPLoadStage(
+          plugin=this,
+          name=name,
+          description=description,
+          inputView=inputView,
+          outputURI=outputURI,
+          headers=headers,
+          validStatusCodes=validStatusCodes,
+          params=params
+        )
+
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("outputURI", outputURI.toString)
+        stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
+        stage.stageDetail.put("params", params.asJava)
+
+        Right(stage)
+      case _ =>
+        val allErrors: Errors = List(name, description, outputURI, inputView, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+}
+
+  // case class HTTPLoad() extends Load { val getType = "HTTPLoad" }
+case class HTTPLoadStage(
+    plugin: HTTPLoad,
+    name: String,
+    description: Option[String],
+    inputView: String,
+    outputURI: URI,
+    headers: Map[String, String],
+    validStatusCodes: List[Int],
+    params: Map[String, String]
+  ) extends PipelineStage {
+
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    HTTPLoadStage.execute(this)
+  }
+}
+
+object HTTPLoadStage {
+
+  case class Response(
     statusCode: Int,
     reasonPhrase: String,
     body: String
-)
+  )
 
-
-
-
-object HTTPLoad {
-
-  def load(load: HTTPLoad)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+  def execute(stage: HTTPLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
-    val startTime = System.currentTimeMillis() 
-    val maskedHeaders = HTTPUtils.maskHeaders(load.headers)
-    val stageDetail = new java.util.HashMap[String, Object]()
-    stageDetail.put("type", load.getType)
-    stageDetail.put("name", load.name)
-    for (description <- load.description) {
-      stageDetail.put("description", description)    
-    }    
-    stageDetail.put("inputView", load.inputView)  
-    stageDetail.put("outputURI", load.outputURI.toString)  
-    stageDetail.put("headers", maskedHeaders.asJava)
-
-    logger.info()
-      .field("event", "enter")
-      .map("stage", stageDetail)      
-      .log()
 
     val signature = "HTTPLoad requires inputView to be dataset with [value: string] signature."
 
-    val df = spark.table(load.inputView)      
+    val df = spark.table(stage.inputView)
+    val stageOutputURI = stage.outputURI
+    val stageHeaders = stage.headers
+    val stageValidStatusCodes = stage.validStatusCodes
 
     if (df.schema.length != 1 || df.schema(0).dataType != StringType) {
-        throw new Exception(s"${signature} inputView '${load.inputView}' has ${df.schema.length} columns of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
-          override val detail = stageDetail          
-      }      
-    }    
+        throw new Exception(s"${signature} inputView '${stage.inputView}' has ${df.schema.length} columns of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
+          override val detail = stage.stageDetail
+      }
+    }
 
     val responses = try {
       if (arcContext.isStreaming) {
@@ -66,7 +119,7 @@ object HTTPLoad {
           new ForeachWriter[Row] {
             var poolingHttpClientConnectionManager: PoolingHttpClientConnectionManager = _
             var httpClient: CloseableHttpClient = _
-            var uri: String = load.outputURI.toString
+            val uri: String = stageOutputURI.toString
 
             def open(partitionId: Long, epochId: Long): Boolean = {
               // create connection pool
@@ -81,21 +134,21 @@ object HTTPLoad {
               val post = new HttpPost(uri)
 
               // add headers
-              for ((k,v) <- load.headers) {
-                post.addHeader(k,v) 
+              for ((k,v) <- stageHeaders) {
+                post.addHeader(k,v)
               }
 
-              post.setEntity(new StringEntity(row.getString(0)))       
+              post.setEntity(new StringEntity(row.getString(0)))
 
               val response = httpClient.execute(post)
 
               // verify status code is correct
-              if (!load.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
-                throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${load.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
-              }      
+              if (!stageValidStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+                throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${stageValidStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
+              }
 
               response.close
-              post.releaseConnection      
+              post.releaseConnection
             }
 
             def close(errorOrNull: Throwable): Unit = {
@@ -104,7 +157,7 @@ object HTTPLoad {
               poolingHttpClientConnectionManager.close
 
               errorOrNull match {
-                case null => 
+                case null =>
                 case _ => throw new Exception(errorOrNull)
               }
             }
@@ -120,7 +173,7 @@ object HTTPLoad {
           val httpClient = HttpClients.custom()
                   .setConnectionManager(poolingHttpClientConnectionManager)
                   .build()
-          val uri = load.outputURI.toString
+          val uri = stageOutputURI.toString
 
           // we are using a BufferedIterator so we can 'peek' at the first row to get column types without advancing the iterator
           // meaning we don't have to keep finding fieldIndex and dataType for each row (inefficient as they will not change)
@@ -132,14 +185,14 @@ object HTTPLoad {
           val dataType = bufferedPartition.hasNext match {
             case true => bufferedPartition.head.schema(fieldIndex).dataType
             case false => NullType
-          }        
+          }
 
           bufferedPartition.map(row => {
             val post = new HttpPost(uri)
 
             // add headers
-            for ((k,v) <- load.headers) {
-              post.addHeader(k,v) 
+            for ((k,v) <- stageHeaders) {
+              post.addHeader(k,v)
             }
 
             // add payload
@@ -148,20 +201,20 @@ object HTTPLoad {
               case _: BinaryType => new ByteArrayEntity(row.get(fieldIndex).asInstanceOf[Array[scala.Byte]])
             }
             post.setEntity(entity)
-            
+
             try {
               // send the request
               val response = httpClient.execute(post)
-              
+
               // verify status code is correct
-              if (!load.validStatusCodes.contains(response.getStatusLine.getStatusCode)) {
-                throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${load.validStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
+              if (!stageValidStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+                throw new Exception(s"""HTTPLoad expects all response StatusCode(s) in [${stageValidStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
               }
 
               // read and close response
               val responseEntity = response.getEntity.getContent
               val body = Source.fromInputStream(responseEntity).mkString
-              response.close 
+              response.close
 
               Response(response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, body)
             } finally {
@@ -174,16 +227,9 @@ object HTTPLoad {
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        println("here")
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail
       }
     }
-
-    logger.info()
-      .field("event", "exit")
-      .field("duration", System.currentTimeMillis() - startTime)
-      .map("stage", stageDetail)      
-      .log()
 
     responses
   }

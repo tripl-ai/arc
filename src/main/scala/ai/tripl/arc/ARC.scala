@@ -5,7 +5,6 @@ import ai.tripl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, Pipeli
 
 object ARC {
 
-  import java.lang._
   import java.util.UUID
   import java.util.ServiceLoader
   import org.apache.commons.lang3.exception.ExceptionUtils
@@ -17,18 +16,18 @@ object ARC {
   import scala.util.Properties._
 
   import org.apache.spark.sql._
-  import org.apache.spark.sql.types._
+  import org.apache.spark.storage.StorageLevel
 
   import ai.tripl.arc.api.API._
-  import ai.tripl.arc.util._
-  import ai.tripl.arc.util.log.LoggerFactory 
+  import ai.tripl.arc.util.{DetailException, Utils, ListenerUtils}
+  import ai.tripl.arc.util.log.LoggerFactory
 
   def main(args: Array[String]) {
     val startTime = System.currentTimeMillis()
 
     // read command line arguments into a map
     // must be in --key=value format
-    val argsMap = collection.mutable.Map[String, String]()
+    val clArgs = collection.mutable.Map[String, String]()
     val (opts, vals) = args.partition {
       _.startsWith("--")
     }
@@ -36,45 +35,36 @@ object ARC {
       // regex split on only single = signs not at start or end of line
       val pair = x.split("=(?!=)(?!$)", 2)
       if (pair.length == 2) {
-        argsMap += (pair(0).split("-{1,2}")(1) -> pair(1))
+        clArgs += (pair(0).split("-{1,2}")(1) -> pair(1))
       }
     }
+    val commandLineArguments = clArgs.toMap
 
-    val jobName: Option[String] = argsMap.get("etl.config.job.name").orElse(envOrNone("ETL_CONF_JOB_NAME"))
+    val jobName: Option[String] = commandLineArguments.get("etl.config.job.name").orElse(envOrNone("ETL_CONF_JOB_NAME"))
     for (j <- jobName) {
-        MDC.put("jobName", j) 
-    }    
+        MDC.put("jobName", j)
+    }
 
-    val jobId: Option[String] = argsMap.get("etl.config.job.id").orElse(envOrNone("ETL_CONF_JOB_ID"))
+    val jobId: Option[String] = commandLineArguments.get("etl.config.job.id").orElse(envOrNone("ETL_CONF_JOB_ID"))
     for (j <- jobId) {
-        MDC.put("jobId", j) 
-    }    
+        MDC.put("jobId", j)
+    }
 
-    val streaming: Option[String] = argsMap.get("etl.config.streaming").orElse(envOrNone("ETL_CONF_STREAMING"))
-    val isStreaming = streaming match {
+    val isStreaming = commandLineArguments.get("etl.config.streaming").orElse(envOrNone("ETL_CONF_STREAMING")) match {
       case Some(v) if v.trim.toLowerCase == "true" => true
       case Some(v) if v.trim.toLowerCase == "false" => false
       case _ => false
     }
-    MDC.put("streaming", isStreaming.toString) 
+    MDC.put("streaming", isStreaming.toString)
 
-    val ignoreEnv: Option[String] = argsMap.get("etl.config.ignoreEnvironments").orElse(envOrNone("ETL_CONF_IGNORE_ENVIRONMENTS"))
-    val ignoreEnvironments = ignoreEnv match {
+    val ignoreEnvironments = commandLineArguments.get("etl.config.ignoreEnvironments").orElse(envOrNone("ETL_CONF_IGNORE_ENVIRONMENTS")) match {
       case Some(v) if v.trim.toLowerCase == "true" => true
       case Some(v) if v.trim.toLowerCase == "false" => false
       case _ => false
     }
-    MDC.put("ignoreEnvironments", ignoreEnvironments.toString)     
+    MDC.put("ignoreEnvironments", ignoreEnvironments.toString)
 
-    val disableDepVal: Option[String] = argsMap.get("etl.config.disableDependencyValidation").orElse(envOrNone("ETL_CONF_DISABLE_DEPENDENCY_VALIDATION"))
-    val disableDependencyValidation = disableDepVal match {
-      case Some(v) if v.trim.toLowerCase == "true" => true
-      case Some(v) if v.trim.toLowerCase == "false" => false
-      case _ => false
-    }
-    MDC.put("ignoreEnvironments", ignoreEnvironments.toString)         
-
-    val configUri: Option[String] = argsMap.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))    
+    val configUri: Option[String] = commandLineArguments.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))
 
     val frameworkVersion = Utils.getFrameworkVersion
 
@@ -84,14 +74,14 @@ object ARC {
         .appName(jobId.getOrElse(s"arc:${frameworkVersion}-${UUID.randomUUID.toString}"))
         .config("spark.debug.maxToStringFields", "8192")
         .config("spark.sql.orc.impl", "native") // needed to overcome structured streaming write issue
-        .getOrCreate()  
+        .getOrCreate()
     } catch {
-      case e: Exception => 
+      case e: Exception =>
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
         val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
         val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
-        var detail = new java.util.HashMap[String, Object]()
+        val detail = new java.util.HashMap[String, Object]()
         detail.put("event", "exception")
         detail.put("messages", exceptionThrowablesMessages)
         detail.put("stackTrace", exceptionThrowablesStackTraces)
@@ -100,24 +90,22 @@ object ARC {
         logger.error()
           .field("event", "exit")
           .field("status", "failure")
-          .field("success", Boolean.valueOf(false))
+          .field("success", java.lang.Boolean.valueOf(false))
           .field("duration", System.currentTimeMillis() - startTime)
           .field("reason", detail)
-          .log()   
+          .log()
 
         // silently try to shut down log so that all messages are sent before stopping the spark session
         try {
           org.apache.log4j.LogManager.shutdown
         } catch {
-          case e: Exception => 
+          case e: Exception =>
         }
 
-        // stop spark session and return fail error code 
-        sys.exit(1)          
+        // stop spark session and return fail error code
+        sys.exit(1)
     }
 
-
-    import spark.implicits._
 
     // add spark config to log
     val sparkConf = new java.util.HashMap[String, String]()
@@ -127,8 +115,8 @@ object ARC {
 
     implicit val logger = LoggerFactory.getLogger(jobId.getOrElse(spark.sparkContext.applicationId))
 
-    // add tags 
-    val tags: Option[String] = argsMap.get("etl.config.tags").orElse(envOrNone("ETL_CONF_TAGS"))
+    // add tags
+    val tags: Option[String] = commandLineArguments.get("etl.config.tags").orElse(envOrNone("ETL_CONF_TAGS"))
     for (tgs <- tags) {
       val t = tgs.split(" ")
       t.foreach { x =>
@@ -137,100 +125,136 @@ object ARC {
         if (pair.length == 2) {
           MDC.put(pair(0), pair(1))
         }
-      }      
-    }
-
-    val environment: Option[String] = argsMap.get("etl.config.environment").orElse(envOrNone("ETL_CONF_ENV"))
-    val env = environment match {
-      case Some(value) => value
-      case None => {
-        logger.warn()
-          .field("event", "deprecation")
-          .field("message", "command line argument 'etl.config.environment' or 'ETL_CONF_ENV' will be required in next release. defaulting to 'prd'")        
-          .log()
-
-        "prd"      
       }
-    }  
-    MDC.put("environment", env) 
-    
-    val environmentId: Option[String] = argsMap.get("etl.config.environment.id").orElse(envOrNone("ETL_CONF_ENV_ID"))
-    for (e <- environmentId) {
-        MDC.put("environmentId", e) 
     }
 
-    MDC.put("applicationId", spark.sparkContext.applicationId) 
+    val environment: Option[String] = commandLineArguments.get("etl.config.environment").orElse(envOrNone("ETL_CONF_ENV"))
+    for (environment <- environment) {
+      MDC.put("environment", environment)
+    }
 
-    val arcContext = ARCContext(jobId=jobId, jobName=jobName, environment=env, environmentId=environmentId, configUri=configUri, isStreaming=isStreaming, ignoreEnvironments=ignoreEnvironments, lifecyclePlugins=Nil, disableDependencyValidation=disableDependencyValidation)
-    
+    val environmentId: Option[String] = commandLineArguments.get("etl.config.environment.id").orElse(envOrNone("ETL_CONF_ENV_ID"))
+    for (e <- environmentId) {
+        MDC.put("environmentId", e)
+    }
+
+    MDC.put("applicationId", spark.sparkContext.applicationId)
+
+    // read storagelevel
+    val (storageLevel, storageLevelName) = commandLineArguments.get("etl.config.storageLevel").orElse(envOrNone("ETL_CONF_STORAGE_LEVEL")) match {
+      case Some(v) if v.trim.toUpperCase == "DISK_ONLY" => (StorageLevel.DISK_ONLY, "DISK_ONLY")
+      case Some(v) if v.trim.toUpperCase == "DISK_ONLY_2" => (StorageLevel.DISK_ONLY_2, "DISK_ONLY_2")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK" => (StorageLevel.MEMORY_AND_DISK, "MEMORY_AND_DISK")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK_2" => (StorageLevel.MEMORY_AND_DISK_2, "MEMORY_AND_DISK_2")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK_SER" => (StorageLevel.MEMORY_AND_DISK_SER, "MEMORY_AND_DISK_SER")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK_SER_2" => (StorageLevel.MEMORY_AND_DISK_SER_2, "MEMORY_AND_DISK_SER_2")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_ONLY" => (StorageLevel.MEMORY_ONLY, "MEMORY_ONLY")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_ONLY_SER" => (StorageLevel.MEMORY_ONLY_SER, "MEMORY_ONLY_SER")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_ONLY_SER_2" => (StorageLevel.MEMORY_ONLY_SER_2, "MEMORY_ONLY_SER_2")
+      case _ => (StorageLevel.MEMORY_AND_DISK_SER, "MEMORY_AND_DISK_SER")
+    }
+
+    // read immutableViews
+    val immutableViews = commandLineArguments.get("etl.config.immutableViews").orElse(envOrNone("ETL_CONF_IMMUTABLE_VIEWS")) match {
+      case Some(v) if v.trim.toLowerCase == "true" => true
+      case Some(v) if v.trim.toLowerCase == "false" => false
+      case _ => false
+    }
+
     // log available plugins
     val loader = Utils.getContextOrSparkClassLoader
-    val dynamicConfigurationPlugins = ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
-    val lifecyclePlugins = ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
-    val pipelineStagePlugins = ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
-    val udfPlugins = ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList.map(c => c.getClass.getName).asJava   
 
-    logger.info()
-      .field("event", "enter")
-      .field("config", sparkConf)
-      .field("sparkVersion", spark.version)
-      .field("frameworkVersion", frameworkVersion)
-      .field("scalaVersion", scala.util.Properties.versionNumberString)
-      .field("javaVersion", System.getProperty("java.runtime.version"))
-      .field("environment", env)
-      .field("dynamicConfigurationPlugins", dynamicConfigurationPlugins)
-      .field("lifecyclePlugins", lifecyclePlugins)
-      .field("pipelineStagePlugins", pipelineStagePlugins)
-      .field("udfPlugins", udfPlugins)
-      .log()   
+    val arcContext = ARCContext(
+      jobId=jobId,
+      jobName=jobName,
+      environment=environment,
+      environmentId=environmentId,
+      configUri=configUri,
+      isStreaming=isStreaming,
+      ignoreEnvironments=ignoreEnvironments,
+      storageLevel=storageLevel,
+      immutableViews=immutableViews,
+      commandLineArguments=commandLineArguments,
+      dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
+      lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
+      activeLifecyclePlugins=Nil,
+      pipelineStagePlugins=ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList,
+      udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList,
+      userData=collection.mutable.Map.empty
+    )
 
-    // add spark listeners
+    // add spark listeners and register udfs
     try {
       if (logger.isTraceEnabled) {
         ListenerUtils.addExecutorListener()(spark, logger)
       }
+      val registeredUDFs = UDF.registerUDFs()(spark, logger, arcContext)
+      logger.info()
+        .field("event", "enter")
+        .field("config", sparkConf)
+        .field("sparkVersion", spark.version)
+        .field("frameworkVersion", frameworkVersion)
+        .field("scalaVersion", scala.util.Properties.versionNumberString)
+        .field("javaVersion", System.getProperty("java.runtime.version"))
+        .field("environment", environment.getOrElse(""))
+        .field("storageLevel", storageLevelName)
+        .field("immutableViews", java.lang.Boolean.valueOf(immutableViews))
+        .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
+        .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
+        .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
+        .field("udfPlugins", registeredUDFs)
+        .log()
     } catch {
-      case e: Exception => 
+      case e: Exception =>
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
         val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
         val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
-        var detail = new java.util.HashMap[String, Object]()
+        val detail = new java.util.HashMap[String, Object]()
         detail.put("event", "exception")
         detail.put("messages", exceptionThrowablesMessages)
         detail.put("stackTrace", exceptionThrowablesStackTraces)
 
         logger.error()
           .field("event", "exit")
+          .field("sparkVersion", spark.version)
+          .field("frameworkVersion", frameworkVersion)
+          .field("scalaVersion", scala.util.Properties.versionNumberString)
+          .field("javaVersion", System.getProperty("java.runtime.version"))
+          .field("environment", environment.getOrElse(""))
+          .field("storageLevel", storageLevelName)
+          .field("immutableViews", java.lang.Boolean.valueOf(immutableViews))
+          .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
+          .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
+          .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
           .field("status", "failure")
-          .field("success", Boolean.valueOf(false))
+          .field("success", java.lang.Boolean.valueOf(false))
           .field("duration", System.currentTimeMillis() - startTime)
           .field("reason", detail)
-          .log()   
+          .log()
 
         // silently try to shut down log so that all messages are sent before stopping the spark session
         try {
           org.apache.log4j.LogManager.shutdown
         } catch {
-          case e: Exception => 
+          case e: Exception =>
         }
 
-        // stop spark session and return fail error code 
+        // stop spark session and return fail error code
         spark.stop()
-        sys.exit(1)    
+        sys.exit(1)
     }
 
     // try to parse config
     val pipelineConfig = try {
-      val dependencyGraph = ConfigUtils.Graph(Nil, Nil, false)
-      ConfigUtils.parsePipeline(configUri, argsMap, dependencyGraph, arcContext)(spark, logger)
+      ai.tripl.arc.config.ArcPipeline.parsePipeline(configUri, arcContext)(spark, logger)
     } catch {
-      case e: Exception => 
+      case e: Exception =>
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
         val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
         val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
-        var detail = new java.util.HashMap[String, Object]()
+        val detail = new java.util.HashMap[String, Object]()
         detail.put("event", "exception")
         detail.put("messages", exceptionThrowablesMessages)
         detail.put("stackTrace", exceptionThrowablesStackTraces)
@@ -238,31 +262,30 @@ object ARC {
         logger.error()
           .field("event", "exit")
           .field("status", "failure")
-          .field("success", Boolean.valueOf(false))
+          .field("success", java.lang.Boolean.valueOf(false))
           .field("duration", System.currentTimeMillis() - startTime)
           .field("reason", detail)
-          .log()   
+          .log()
 
         // silently try to shut down log so that all messages are sent before stopping the spark session
         try {
           org.apache.log4j.LogManager.shutdown
         } catch {
-          case e: Exception => 
+          case e: Exception =>
         }
 
-        // stop spark session and return fail error code 
+        // stop spark session and return fail error code
         spark.stop()
         sys.exit(1)
     }
 
     val error: Boolean = pipelineConfig match {
-      case Right( (pipeline, _, arcCtx) ) =>
+      case Right((pipeline, ctx)) =>
         try {
-          UDF.registerUDFs(spark.sqlContext)
-          ARC.run(pipeline)(spark, logger, arcCtx)
+          ARC.run(pipeline)(spark, logger, ctx)
           false
         } catch {
-          case e: Exception with DetailException => 
+          case e: Exception with DetailException =>
             val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
             val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
             val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
@@ -274,19 +297,19 @@ object ARC {
             logger.error()
               .field("event", "exit")
               .field("status", "failure")
-              .field("success", Boolean.valueOf(false))
+              .field("success", java.lang.Boolean.valueOf(false))
               .field("duration", System.currentTimeMillis() - startTime)
-              .map("stage", e.detail)
-              .log()       
-            
+              .map("stage", e.detail.asJava)
+              .log()
+
             true
 
-          case e: Exception => 
+          case e: Exception =>
             val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
             val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
             val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
-            var detail = new java.util.HashMap[String, Object]()
+            val detail = new java.util.HashMap[String, Object]()
             detail.put("event", "exception")
             detail.put("messages", exceptionThrowablesMessages)
             detail.put("stackTrace", exceptionThrowablesStackTraces)
@@ -294,23 +317,24 @@ object ARC {
             logger.error()
               .field("event", "exit")
               .field("status", "failure")
-              .field("success", Boolean.valueOf(false))
+              .field("success", java.lang.Boolean.valueOf(false))
               .field("duration", System.currentTimeMillis() - startTime)
               .field("reason", detail)
-              .log()   
-              
+              .log()
+
             true
         }
+
       case Left(errors) => {
         logger.error()
           .field("event", "exit")
           .field("status", "failure")
-          .field("success", Boolean.valueOf(false))
-          .field("duration", System.currentTimeMillis() - startTime)        
-          .list("reason", ConfigUtils.Error.pipelineErrorJSON(errors))
-          .log()   
+          .field("success", java.lang.Boolean.valueOf(false))
+          .field("duration", System.currentTimeMillis() - startTime)
+          .list("reason", ai.tripl.arc.config.Error.pipelineErrorJSON(errors))
+          .log()
 
-        println(s"ETL Config contains errors:\n${ConfigUtils.Error.pipelineErrorMsg(errors)}\n")
+        println(s"ETL Config contains errors:\n${ai.tripl.arc.config.Error.pipelineErrorMsg(errors)}\n")
 
         true
       }
@@ -321,17 +345,17 @@ object ARC {
         logger.info()
           .field("event", "exit")
           .field("status", "success")
-          .field("success", Boolean.valueOf(true))
+          .field("success", java.lang.Boolean.valueOf(true))
           .field("duration", System.currentTimeMillis() - startTime)
-          .log()   
+          .log()
       }
 
-      if (error) {  
+      if (error) {
         // silently try to shut down log so that all messages are sent before stopping the spark session
         try {
           org.apache.log4j.LogManager.shutdown
         } catch {
-          case e: Exception => 
+          case e: Exception =>
         }
 
         // stop spark session and return error code to indicate sucess/failure
@@ -349,23 +373,23 @@ object ARC {
           try {
             org.apache.log4j.LogManager.shutdown
           } catch {
-            case e: Exception => 
+            case e: Exception =>
           }
 
           // stop spark session and return error code to indicate sucess/failure
           spark.stop()
-          sys.exit(0)   
+          sys.exit(0)
         }
       }
     } else {
       try {
         spark.streams.active(0).awaitTermination
       } catch {
-        case e: Exception => 
+        case e: Exception =>
       }
     }
 
-  }  
+  }
 
   /** An ETL Pipeline submits each of its stages in order to Spark.
     * The submission order will match the order declared in the pipeline
@@ -381,14 +405,14 @@ object ARC {
   (implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     def before(stage: PipelineStage): Unit = {
-      for (p <- arcContext.lifecyclePlugins) {
+      for (p <- arcContext.activeLifecyclePlugins) {
         logger.trace().message(s"Executing before() on LifecyclePlugin: ${p.getClass.getName}")
         p.before(stage)
       }
     }
 
     def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean): Unit = {
-      for (p <- arcContext.lifecyclePlugins) {
+      for (p <- arcContext.activeLifecyclePlugins) {
         logger.trace().message(s"Executing after(last = $isLast) on LifecyclePlugin: ${p.getClass.getName}")
         p.after(stage, result, isLast)
       }
@@ -415,103 +439,22 @@ object ARC {
   }
 
   def processStage(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    stage match {
-      case e : AvroExtract =>
-        extract.AvroExtract.extract(e)  
-      case e : AzureCosmosDBExtract =>
-        extract.AzureCosmosDBExtract.extract(e)          
-      case e : BytesExtract =>
-        extract.BytesExtract.extract(e)    
-      case e : DatabricksDeltaExtract =>
-        extract.DatabricksDeltaExtract.extract(e)                             
-      case e : DelimitedExtract =>
-        extract.DelimitedExtract.extract(e)
-      case e : ElasticsearchExtract =>
-        extract.ElasticsearchExtract.extract(e)        
-      case e : HTTPExtract =>
-        extract.HTTPExtract.extract(e)              
-      case e : ImageExtract =>
-        extract.ImageExtract.extract(e)         
-      case e : JDBCExtract =>
-        extract.JDBCExtract.extract(e)             
-      case e : JSONExtract =>
-        extract.JSONExtract.extract(e)
-      case e : KafkaExtract =>
-        extract.KafkaExtract.extract(e)                             
-      case e : ORCExtract =>
-        extract.ORCExtract.extract(e)              
-      case e : ParquetExtract =>
-        extract.ParquetExtract.extract(e)
-      case e : RateExtract =>
-        extract.RateExtract.extract(e)             
-      case e : TextExtract =>
-        extract.TextExtract.extract(e)          
-      case e : XMLExtract =>
-        extract.XMLExtract.extract(e)
+    val startTime = System.currentTimeMillis()
 
-      case t : DiffTransform =>
-        transform.DiffTransform.transform(t)
-      case t : HTTPTransform =>
-        transform.HTTPTransform.transform(t)          
-      case t : JSONTransform =>
-        transform.JSONTransform.transform(t)
-      case t : MetadataFilterTransform =>
-        transform.MetadataFilterTransform.transform(t)                 
-      case t : MLTransform =>
-        transform.MLTransform.transform(t)          
-      case t : SQLTransform =>
-        transform.SQLTransform.transform(t)      
-      case t : TensorFlowServingTransform =>
-        transform.TensorFlowServingTransform.transform(t)              
-      case t : TypingTransform =>
-        transform.TypingTransform.transform(t)
+    logger.info()
+      .field("event", "enter")
+      .map("stage", stage.stageDetail.asJava)
+      .log()
 
-      case l : AvroLoad =>
-        load.AvroLoad.load(l)
-      case l : AzureEventHubsLoad =>
-        load.AzureEventHubsLoad.load(l)          
-      case l : ConsoleLoad =>
-        load.ConsoleLoad.load(l)          
-      case l : DatabricksDeltaLoad =>
-        load.DatabricksDeltaLoad.load(l)        
-      case l : DatabricksSQLDWLoad =>
-        load.DatabricksSQLDWLoad.load(l)              
-      case l : DelimitedLoad =>
-        load.DelimitedLoad.load(l)
-      case l : ElasticsearchLoad =>
-        load.ElasticsearchLoad.load(l)        
-      case l : HTTPLoad =>
-        load.HTTPLoad.load(l)             
-      case l : JDBCLoad =>
-        load.JDBCLoad.load(l)          
-      case l : JSONLoad =>
-        load.JSONLoad.load(l)
-      case l : KafkaLoad =>
-        load.KafkaLoad.load(l)                              
-      case l : ORCLoad =>
-        load.ORCLoad.load(l)             
-      case l : ParquetLoad =>
-        load.ParquetLoad.load(l)   
-      case l : TextLoad =>
-        load.TextLoad.load(l)    
-      case l : XMLLoad =>
-        load.XMLLoad.load(l)            
+    val df = stage.execute()
 
-      case x : HTTPExecute =>
-        execute.HTTPExecute.execute(x)  
-      case x : JDBCExecute =>
-        execute.JDBCExecute.execute(x)
-      case x : KafkaCommitExecute =>
-        execute.KafkaCommitExecute.execute(x)
-      case _ : PipelineExecute => None // skip as placeholder for other pipeline stages
+    logger.info()
+      .field("event", "exit")
+      .field("duration", System.currentTimeMillis() - startTime)
+      .map("stage", stage.stageDetail.asJava)
+      .log()
 
-      case v : EqualityValidate =>
-        validate.EqualityValidate.validate(v)           
-      case v : SQLValidate =>
-        validate.SQLValidate.validate(v)
+    df
+  }
 
-      case c : CustomStage =>
-        c.stage.execute(c.name, c.params)
-    }
-  }  
 }

@@ -17,7 +17,6 @@ import scala.io.Source
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util._
 
@@ -30,13 +29,13 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
         } else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)
         }
-        HttpConnection.getCurrentConnection().getRequest().setHandled(true) 
+        HttpConnection.getCurrentConnection().getRequest().setHandled(true)
     }
-  } 
+  }
 
     class PayloadsHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
-        
+
         val body = Source.fromInputStream(request.getInputStream).mkString
 
         if (body == """{"custom":"success"}""") {
@@ -44,11 +43,11 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
         } else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)
         }
-        HttpConnection.getCurrentConnection().getRequest().setHandled(true) 
+        HttpConnection.getCurrentConnection().getRequest().setHandled(true)
     }
-  } 
+  }
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val port = 1080
   val server = new Server(port)
   val outputView = "dataset"
@@ -63,25 +62,25 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")      
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
-    import spark.implicits._  
+    import spark.implicits._
 
     // register handlers
     val headersHandler = new ContextHandler("/headers");
     headersHandler.setHandler(new HeadersHandler)
     val payloadsHandler = new ContextHandler("/payloads");
-    payloadsHandler.setHandler(new PayloadsHandler)    
+    payloadsHandler.setHandler(new PayloadsHandler)
     val contexts = new ContextHandlerCollection()
     contexts.setHandlers(Array(headersHandler, payloadsHandler));
     server.setHandler(contexts)
 
     // start http server
-    server.start    
+    server.start
   }
 
   after {
@@ -96,10 +95,12 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExecute: Set Header") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    ai.tripl.arc.execute.HTTPExecute.execute(
-      HTTPExecute(
+    ai.tripl.arc.execute.HTTPExecuteStage.execute(
+      ai.tripl.arc.execute.HTTPExecuteStage(
+        plugin=new ai.tripl.arc.execute.HTTPExecute,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
@@ -109,16 +110,18 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty
       )
     )
-  }  
+  }
 
   test("HTTPExecute: Do Not Set Header") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception] {
-      ai.tripl.arc.execute.HTTPExecute.execute(
-        HTTPExecute(
+      ai.tripl.arc.execute.HTTPExecuteStage.execute(
+        ai.tripl.arc.execute.HTTPExecuteStage(
+          plugin=new ai.tripl.arc.execute.HTTPExecute,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
@@ -129,16 +132,18 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown.getMessage == "HTTPExecute expects a response StatusCode in [200, 201, 202] but server responded with 401 (Unauthorized).")        
-  }    
+    assert(thrown.getMessage == "HTTPExecute expects a response StatusCode in [200, 201, 202] but server responded with 401 (Unauthorized).")
+  }
 
   test("HTTPExecute: Set Payload") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    ai.tripl.arc.execute.HTTPExecute.execute(
-      HTTPExecute(
+    ai.tripl.arc.execute.HTTPExecuteStage.execute(
+      ai.tripl.arc.execute.HTTPExecuteStage(
+        plugin=new ai.tripl.arc.execute.HTTPExecute,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
@@ -153,11 +158,13 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExecute: Do Not Set Payload") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception] {
-      ai.tripl.arc.execute.HTTPExecute.execute(
-        HTTPExecute(
+      ai.tripl.arc.execute.HTTPExecuteStage.execute(
+        ai.tripl.arc.execute.HTTPExecuteStage(
+          plugin=new ai.tripl.arc.execute.HTTPExecute,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
@@ -168,17 +175,19 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown.getMessage == "HTTPExecute expects a response StatusCode in [200, 201, 202] but server responded with 401 (Unauthorized).")            
+    assert(thrown.getMessage == "HTTPExecute expects a response StatusCode in [200, 201, 202] but server responded with 401 (Unauthorized).")
   }
 
   test("HTTPExecute: no validStatusCodes") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception] {
-      ai.tripl.arc.execute.HTTPExecute.execute(
-        HTTPExecute(
+      ai.tripl.arc.execute.HTTPExecuteStage.execute(
+        ai.tripl.arc.execute.HTTPExecuteStage(
+          plugin=new ai.tripl.arc.execute.HTTPExecute,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
@@ -189,16 +198,18 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown.getMessage == "HTTPExecute expects a response StatusCode in [200, 201, 202] but server responded with 401 (Unauthorized).")            
-  }      
+    assert(thrown.getMessage == "HTTPExecute expects a response StatusCode in [200, 201, 202] but server responded with 401 (Unauthorized).")
+  }
 
   test("HTTPExecute: override validStatusCodes") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    ai.tripl.arc.execute.HTTPExecute.execute(
-      HTTPExecute(
+    ai.tripl.arc.execute.HTTPExecuteStage.execute(
+      ai.tripl.arc.execute.HTTPExecuteStage(
+        plugin=new ai.tripl.arc.execute.HTTPExecute,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
@@ -208,5 +219,5 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
         params=Map.empty
       )
     )
-  }    
+  }
 }

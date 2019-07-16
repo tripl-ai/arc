@@ -14,9 +14,8 @@ import org.apache.spark.sql._
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.api.{Delimited, Delimiter, QuoteCharacter}
-import ai.tripl.arc.util.log.LoggerFactory
-import ai.tripl.arc.util.ConfigUtils
-import ai.tripl.arc.util.ConfigUtils._
+import ai.tripl.arc.config.ArcPipeline
+import ai.tripl.arc.util._
 
 import com.typesafe.config._
 
@@ -33,15 +32,16 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   val minioSecretKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 
   before {
-    val spark = SparkSession
+    implicit val spark = SparkSession
                   .builder()
                   .master("local[*]")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
+    implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")         
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -52,8 +52,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
   test("ConfigUtilsSuite: Ensure remote data and config references can be parsed") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // note: initial files are created in the src/it/resources/minio/Dockerfile
     // then mounted in the minio command in src/it/resources/docker-compose.yml
@@ -73,10 +73,10 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
             "accessKeyID": "${minioAccessKey}",
             "secretAccessKey": "${minioSecretKey}",
             "endpoint": "${minioHostPort}"
-          },                 
+          },
           "outputView": "akc_breed_info",
           "delimiter": "Comma",
-          "header": true          
+          "header": true
         },
         {
           "type": "SQLTransform",
@@ -95,22 +95,20 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
             "accessKeyID": "${minioAccessKey}",
             "secretAccessKey": "${minioSecretKey}",
             "endpoint": "${minioHostPort}"
-          }          
+          }
         }
       ]
     }"""
 
-    val argsMap = collection.mutable.Map[String, String]()
-    val graph = ConfigUtils.Graph(Nil, Nil, false)
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(_) => {
-        println(pipelineEither)  
+        println(pipelineEither)
         assert(false)
       }
-      case Right((pl, _, _)) => {
-        ARC.run(pl)
+      case Right((pipeline, _)) => {
+        ARC.run(pipeline)
       }
     }
 

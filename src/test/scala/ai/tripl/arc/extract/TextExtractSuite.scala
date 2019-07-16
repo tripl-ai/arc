@@ -14,19 +14,18 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util._
 import ai.tripl.arc.util.ControlUtils._
 
 class TextExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
 
   val outputView = "outputView"
   val targetFile = getClass.getResource("/conf/simple.conf").toString
   val targetDirectory = s"""${getClass.getResource("/conf").toString}/*.conf"""
-  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.text" 
+  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.text"
 
   before {
     implicit val spark = SparkSession
@@ -35,10 +34,10 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("FATAL")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -51,15 +50,16 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
   test("TextExtract: multiLine false") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val extractDataset = extract.TextExtract.extract(
-      TextExtract(
+    val dataset = extract.TextExtractStage.execute(
+      extract.TextExtractStage(
+        plugin=new extract.TextExtract,
         name="dataset",
         description=None,
-        cols=Right(List.empty),
-        outputView=outputView, 
+        schema=Right(List.empty),
+        outputView=outputView,
         input=targetFile,
         authentication=None,
         persist=false,
@@ -71,22 +71,23 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    assert(extractDataset.filter($"_filename".contains(targetFile.replace("file:", "file://"))).count != 0)
-    assert(extractDataset.count == 29)
-  }    
+    assert(dataset.filter($"_filename".contains(targetFile.replace("file:", "file://"))).count != 0)
+    assert(dataset.count == 29)
+  }
 
   test("TextExtract: multiLine true") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val extractDataset = extract.TextExtract.extract(
-      TextExtract(
+    val dataset = extract.TextExtractStage.execute(
+      extract.TextExtractStage(
+        plugin=new extract.TextExtract,
         name="dataset",
         description=None,
-        cols=Right(List.empty),
-        outputView=outputView, 
+        schema=Right(List.empty),
+        outputView=outputView,
         input=targetFile,
         authentication=None,
         persist=false,
@@ -98,24 +99,25 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    assert(extractDataset.filter($"_filename".contains(targetFile.replace("file:", "file://"))).count != 0)
-    assert(extractDataset.count == 1)
-  }    
+    assert(dataset.filter($"_filename".contains(targetFile.replace("file:", "file://"))).count != 0)
+    assert(dataset.count == 1)
+  }
 
   test("TextExtract: Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
-      val extractDataset = extract.TextExtract.extract(
-        TextExtract(
+      extract.TextExtractStage.execute(
+        extract.TextExtractStage(
+          plugin=new extract.TextExtract,
           name="dataset",
           description=None,
-          cols=Right(List.empty),
-          outputView=outputView, 
+          schema=Right(List.empty),
+          outputView=outputView,
           input=emptyDirectory,
           authentication=None,
           persist=false,
@@ -129,13 +131,13 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(thrown0.getMessage === "TextExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-  }  
+  }
 
   test("TextExtract: Structured Streaming") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     val jsonSchema = """
     [
@@ -165,14 +167,15 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
       }
     ]
     """
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(jsonSchema)
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(jsonSchema)
 
-    val extractDataset = extract.TextExtract.extract(
-      TextExtract(
+    val dataset = extract.TextExtractStage.execute(
+      extract.TextExtractStage(
+        plugin=new extract.TextExtract,
         name="dataset",
         description=None,
-        cols=Right(cols.right.getOrElse(Nil)),
-        outputView=outputView, 
+        schema=Right(schema.right.getOrElse(Nil)),
+        outputView=outputView,
         input=targetDirectory,
         authentication=None,
         persist=false,
@@ -184,9 +187,9 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    val writeStream = extractDataset
+    val writeStream = dataset
       .writeStream
-      .queryName("extract") 
+      .queryName("extract")
       .format("memory")
       .start
 
@@ -197,6 +200,6 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
       assert(df.count != 0)
     } finally {
       writeStream.stop
-    }  
-  }    
+    }
+  }
 }

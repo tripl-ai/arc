@@ -1,61 +1,87 @@
 package ai.tripl.arc.api
 
-import java.net.URI
 import java.time.LocalTime
 
-import ai.tripl.arc.plugins.{LifecyclePlugin, PipelineStagePlugin}
-import org.apache.spark.ml.PipelineModel
-import org.apache.spark.ml.tuning.CrossValidatorModel
+import org.apache.spark.sql.{DataFrame, SparkSession}
+
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.types.MetadataBuilder
-import org.apache.spark.sql.SaveMode
+import org.apache.spark.storage.StorageLevel
 
-import com.microsoft.azure.cosmosdb.spark.config.Config
+import ai.tripl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin, UDFPlugin}
 
 /** The API defines the model for a pipline. It is made up of stages,
   * extract, transform and load with their respective settings.
   */
 object API {
 
-  /** ARCContext is used to define immutable global run parameters. 
+  /** ARCContext is used to define immutable global run parameters.
   */
   case class ARCContext(
     /** the job identifier
-      */        
+      */
     jobId: Option[String],
 
     /** the name of the job
-      */    
+      */
     jobName: Option[String],
 
     /** the running environment
-      */    
-    environment: String,
+      */
+    environment: Option[String],
 
     /** the running environment identifier
-      */    
-    environmentId: Option[String],    
+      */
+    environmentId: Option[String],
 
     /** the job configuration path
-      */    
+      */
     configUri: Option[String],
 
     /** whether the job is in structured streaming or batch mode
-      */    
+      */
     isStreaming: Boolean,
 
     /** whether to ignore environments and process everything
-      */    
+      */
     ignoreEnvironments: Boolean,
 
+    /** the storage level for any dataframe persistence
+      */
+    storageLevel: StorageLevel,
+
+    /** whether to use createTempView or createOrReplaceTempView at runtime
+      */
+    immutableViews: Boolean,
+
+    /** the command line arguments
+      */
+    commandLineArguments: Map[String, String],
+
+    /** a list of dynamic configuration plugins which are resolved before parsing the config
+      */
+    dynamicConfigurationPlugins: List[DynamicConfigurationPlugin],
+
     /** a list of lifecycle plugins which are called before and after each stage
-      */    
+      */
     lifecyclePlugins: List[LifecyclePlugin],
 
-    /** an escape hatch for graph dependency validation in case of defects in the sometimes very complex plan matching
-      */    
-    disableDependencyValidation: Boolean
+    /** a list of active lifecycle plugins which are called before and after each stage
+      */
+    activeLifecyclePlugins: List[LifecyclePluginInstance],
 
+    /** a list of pipeline stage plugins which are executed in the pipeline
+      */
+    pipelineStagePlugins: List[PipelineStagePlugin],
+
+    /** a list of udf plugins which are registered before running the pipeline
+      */
+    udfPlugins: List[UDFPlugin],
+
+    /** a map of objects which can be attached to the context for plugins
+      * try to avoid using this as it is hacky
+      */
+    userData: collection.mutable.Map[String, Object]
   )
 
   /** ExtractColumns are used to define schemas for typing transforms
@@ -64,7 +90,7 @@ object API {
     */
   sealed trait ExtractColumn {
 
-    /** The immutable id for the this column, normally a GUID. Used in 
+    /** The immutable id for the this column, normally a GUID. Used in
       * constructing the initial hash for lineage as well as a general
       * reference.
       */
@@ -92,9 +118,16 @@ object API {
     def metadata(): Option[String]
   }
 
+  object Extract {
+    def toStructType(cols: List[ExtractColumn]): StructType = {
+      val fields = cols.map(c => ExtractColumn.toStructField(c))
+      StructType(fields)
+    }
+  }
+
   object ExtractColumn {
 
-    /** Converts an ExtractColumn to a Spark StructField in order to create a 
+    /** Converts an ExtractColumn to a Spark StructField in order to create a
       * Schema. Adds additional internal metadata that will be persisted in
       * parquet.
       */
@@ -182,144 +215,54 @@ object API {
 
   case class MetadataSchema(name: String, format: MetadataFormat)
 
+  // a VersionedPlugin requires the version argument
+  trait VersionedPlugin extends Serializable {
+
+    def version: String
+
+  }
+
+  // a ConfigPlugin reads a typesafe config and produces a plugin instance
+  trait ConfigPlugin[T] extends VersionedPlugin {
+
+    def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], T]
+
+  }
+
   // A Pipeline has 1 or more stages
-  sealed trait PipelineStage {
+  trait PipelineStage {
+
+    def plugin: PipelineStagePlugin
+
     def name: String
 
-    def getType: String
-  }
+    def description: Option[String]
 
-  case class CustomStage(name: String, params: Map[String, String], stage: PipelineStagePlugin) extends PipelineStage {
-    val getType = stage.getClass().getName()
-  }
-
-  /** An extract that provides its own schema e.g. parquet
-    */
-  sealed trait Extract extends PipelineStage {
-  }
-
-  object Extract {
-    def toStructType(cols: List[ExtractColumn]): StructType = {
-      val fields = cols.map(c => ExtractColumn.toStructField(c))
-      StructType(fields)
+    lazy val stageDetail: collection.mutable.Map[String, Object] = {
+      val detail = new collection.mutable.HashMap[String, Object]()
+      detail.put("type", plugin.getClass.getSimpleName)
+      detail.put("plugin", s"${plugin.getClass.getName}:${plugin.version}")
+      detail.put("name", name)
+      for (d <- description) {
+        detail.put("description", d)
+      }
+      detail
     }
-  }  
 
-  /** An extract that is persistable
-    */
-  sealed trait PersistableExtract extends Extract {
-    def persist: Boolean
+    def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = None
+
   }
 
-  /** A columnar extract requires a schema to be provided e.g. parquet vs Delimited.
-    */
-  sealed trait ColumnarExtract extends PersistableExtract {
-    def cols: Either[String, List[ExtractColumn]]
+  // A LifecyclePluginInstance executes before and after PipelineStage execution
+  trait LifecyclePluginInstance {
+
+    def plugin: LifecyclePlugin
+
+    def before(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext)
+
+    def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext)
+
   }
-
-  case class AvroExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, basePath: Option[String], avroSchema: Option[org.apache.avro.Schema], inputField: Option[String]) extends ColumnarExtract { val getType = "AvroExtract" }  
-
-  case class AzureCosmosDBExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], config: Map[String, String]) extends Extract { val getType = "AzureCosmosDBExtract" }
-
-  case class BytesExtract(name: String, description: Option[String], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Boolean, failMode: FailModeType) extends Extract { val getType = "BytesExtract" }
-
-  case class DatabricksDeltaExtract(name: String, description: Option[String], outputView: String, input: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "DeltaExtract" }
-
-  case class DelimitedExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], settings: Delimited, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, inputField: Option[String], basePath: Option[String]) extends ColumnarExtract { val getType = "DelimitedExtract" }
-
-  case class ElasticsearchExtract(name: String, description: Option[String], input: String, outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "ElasticsearchExtract" }
-
-  case class HTTPExtract(name: String, description: Option[String], input: Either[String, URI], method: String, headers: Map[String, String], body: Option[String], validStatusCodes: List[Int], outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], uriField: Option[String], bodyField: Option[String]) extends Extract { val getType = "HTTPExtract" }
-
-  case class ImageExtract(name: String, description: Option[String], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], dropInvalid: Boolean, basePath: Option[String]) extends Extract { val getType = "ImageExtract" }
-
-  case class JDBCExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, jdbcURL: String, tableName: String, numPartitions: Option[Int], fetchsize: Option[Int], customSchema: Option[String], driver: java.sql.Driver, partitionColumn: Option[String], params: Map[String, String], persist: Boolean, partitionBy: List[String], predicates: List[String]) extends Extract { val getType = "JDBCExtract" }
-
-  case class JSONExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], settings: JSON, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, inputField: Option[String], basePath: Option[String]) extends ColumnarExtract { val getType = "JSONExtract" }
-
-  case class KafkaExtract(name: String, description: Option[String], outputView: String, topic: String, bootstrapServers: String, groupID: String, maxPollRecords: Int, timeout: Long, autoCommit: Boolean, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends Extract { val getType = "KafkaExtract" }
-
-  case class ORCExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, basePath: Option[String]) extends ColumnarExtract { val getType = "ORCExtract" }
-
-  case class ParquetExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean, basePath: Option[String]) extends ColumnarExtract { val getType = "ParquetExtract" }
-
-  case class RateExtract(name: String,  description: Option[String], outputView: String, params: Map[String, String], rowsPerSecond: Int, rampUpTime: Int, numPartitions: Int) extends Extract { val getType = "RateExtract" }
-
-  case class TextExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: String, authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], contiguousIndex: Boolean, multiLine: Boolean, basePath: Option[String]) extends ColumnarExtract { val getType = "TextExtract" }
-
-  case class XMLExtract(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], outputView: String, input: Either[String, String], authentication: Option[Authentication], params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String], contiguousIndex: Boolean) extends Extract { val getType = "XMLExtract" }
-
-
-  sealed trait PersistableTransform extends PipelineStage {
-    def persist: Boolean
-  }
-
-  case class DiffTransform(name: String, description: Option[String], inputLeftView: String, inputRightView: String, outputIntersectionView: Option[String], outputLeftView: Option[String], outputRightView: Option[String], params: Map[String, String], persist: Boolean) extends PersistableTransform { val getType = "DiffTransform" }
-
-  case class HTTPTransform(name: String, description: Option[String], uri: URI, headers: Map[String, String], validStatusCodes: List[Int], inputView: String, outputView: String, inputField: String, params: Map[String, String], persist: Boolean, batchSize: Int, delimiter: String, numPartitions: Option[Int], partitionBy: List[String], failMode: FailModeType) extends PersistableTransform { val getType = "HTTPTransform" }  
-  
-  case class JSONTransform(name: String, description: Option[String], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends PersistableTransform { val getType = "JSONTransform" }
-
-  case class MetadataFilterTransform(name: String, description: Option[String], inputView: String, inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends PersistableTransform { val getType = "MetadataFilterTransform" }
-
-  case class MLTransform(name: String, description: Option[String], inputURI: URI, model: Either[PipelineModel, CrossValidatorModel], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends PersistableTransform { val getType = "MLTransform" }
-
-  case class SQLTransform(name: String, description: Option[String], inputURI: URI, sql: String, outputView:String, params: Map[String, String], sqlParams: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends PersistableTransform { val getType = "SQLTransform" }
-
-  case class TensorFlowServingTransform(name: String, description: Option[String], inputView: String, outputView: String, uri: URI, signatureName: Option[String], responseType: ResponseType, batchSize: Int, inputField: String, params: Map[String, String], persist: Boolean, numPartitions: Option[Int], partitionBy: List[String]) extends PersistableTransform { val getType = "TensorFlowServingTransform" }
-
-  case class TypingTransform(name: String, description: Option[String], cols: Either[String, List[ExtractColumn]], inputView: String, outputView: String, params: Map[String, String], persist: Boolean, failMode: FailModeType, numPartitions: Option[Int], partitionBy: List[String]) extends PersistableTransform with ColumnarExtract { val getType = "TypingTransform" }
-
-
-  sealed trait Load extends PipelineStage
-
-  case class AvroLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "AvroLoad" }
-
-  case class AzureEventHubsLoad(name: String, description: Option[String], inputView: String, namespaceName: String, eventHubName: String, sharedAccessSignatureKeyName: String, sharedAccessSignatureKey: String, numPartitions: Option[Int], retryMinBackoff: Long, retryMaxBackoff: Long, retryCount: Int, params: Map[String, String]) extends Load { val getType = "AzureEventHubsLoad" }
-
-  case class ConsoleLoad(name: String, description: Option[String], inputView: String, outputMode: OutputModeType, params: Map[String, String]) extends Load { val getType = "ConsoleLoad" }
-
-  case class DatabricksDeltaLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ParquetLoad" }
-
-  case class DatabricksSQLDWLoad(name: String, description: Option[String], inputView: String, jdbcURL: String, driver: java.sql.Driver, tempDir: String, dbTable: String, forwardSparkAzureStorageCredentials: Boolean, tableOptions: Option[String], maxStrLength: Int, authentication: Option[Authentication], params: Map[String, String]) extends Load { val getType = "DatabricksSQLDWLoad" }
-
-  case class DelimitedLoad(name: String, description: Option[String], inputView: String, outputURI: URI, settings: Delimited, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "DelimitedLoad" }
-
-  case class ElasticsearchLoad(name: String, description: Option[String], inputView: String, output: String, partitionBy: List[String], numPartitions: Option[Int], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ElasticsearchLoad" }
-
-  case class HTTPLoad(name: String, description: Option[String], inputView: String, outputURI: URI, headers: Map[String, String], validStatusCodes: List[Int], params: Map[String, String]) extends Load { val getType = "HTTPLoad" }
-
-  case class JDBCLoad(name: String, description: Option[String], inputView: String, jdbcURL: String, tableName: String, partitionBy: List[String], numPartitions: Option[Int], isolationLevel: IsolationLevelType, batchsize: Int, truncate: Boolean, createTableOptions: Option[String], createTableColumnTypes: Option[String], saveMode: SaveMode, driver: java.sql.Driver, bulkload: Boolean, tablock: Boolean, params: Map[String, String]) extends Load { val getType = "JDBCLoad" }
-
-  case class JSONLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "JSONLoad" }
-
-  case class KafkaLoad(name: String, description: Option[String], inputView: String, topic: String, bootstrapServers: String, acks: Int, numPartitions: Option[Int], retries: Int, batchSize: Int, params: Map[String, String]) extends Load { val getType = "KafkaLoad" }
-  
-  case class ORCLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ORCLoad" }
-
-  case class ParquetLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "ParquetLoad" }
-
-  case class TextLoad(name: String, description: Option[String], inputView: String, outputURI: URI, numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String], singleFile: Boolean, prefix: String, separator: String, suffix: String) extends Load { val getType = "TextLoad" }
-
-  case class XMLLoad(name: String, description: Option[String], inputView: String, outputURI: URI, partitionBy: List[String], numPartitions: Option[Int], authentication: Option[Authentication], saveMode: SaveMode, params: Map[String, String]) extends Load { val getType = "XMLLoad" }
-
-
-  sealed trait Execute extends PipelineStage
-
-  case class JDBCExecute(name: String, description: Option[String], inputURI: URI, jdbcURL: String, user: Option[String], password: Option[String], sql: String, sqlParams: Map[String, String], params: Map[String, String]) extends Execute { val getType = "JDBCExecute" }
-
-  case class HTTPExecute(name: String, description: Option[String], uri: URI, headers: Map[String, String], payloads: Map[String, String], validStatusCodes: List[Int], params: Map[String, String]) extends Execute  { val getType = "HTTPExecute" }
-
-  case class KafkaCommitExecute(name: String, description: Option[String], inputView: String, bootstrapServers: String, groupID: String, params: Map[String, String]) extends Execute  { val getType = "KafkaCommitExecute" }
-
-  case class PipelineExecute(name: String, description: Option[String], uri: URI, pipeline: ETLPipeline) extends Execute  { val getType = "PipelineExecute" }
-
-
-  sealed trait Validate extends PipelineStage
-
-  case class EqualityValidate(name: String, description: Option[String], leftView: String, rightView: String, params: Map[String, String]) extends Validate { val getType = "EqualityValidate" }
-
-  case class SQLValidate(name: String, description: Option[String], inputURI: URI, sql: String, sqlParams: Map[String, String], params: Map[String, String]) extends Validate { val getType = "SQLValidate" }
 
 
   sealed trait FailModeType {
@@ -359,7 +302,7 @@ object API {
     case class AzureSharedAccessSignature(accountName: String, container: String, token: String) extends Authentication
     case class AzureDataLakeStorageToken(clientID: String, refreshToken: String) extends Authentication
     case class AzureDataLakeStorageGen2AccountKey(accountName: String, accessKey: String) extends Authentication
-    case class AzureDataLakeStorageGen2OAuth(clientID: String, secret: String, directoryId: String) extends Authentication    
+    case class AzureDataLakeStorageGen2OAuth(clientID: String, secret: String, directoryId: String) extends Authentication
     case class GoogleCloudStorageKeyFile(projectID: String, keyFilePath: String) extends Authentication
   }
 
@@ -406,13 +349,13 @@ object Delimiter {
   }
   case object DefaultHive extends Delimiter {
     val value = s"${0x01 : Char}"
-  }  
+  }
   case object Pipe extends Delimiter {
     val value = "|"
   }
   case object Custom extends Delimiter {
     val value = ""
-  }  
+  }
 }
 
 sealed trait QuoteCharacter {
@@ -422,7 +365,7 @@ sealed trait QuoteCharacter {
 object QuoteCharacter {
   case object Disabled extends QuoteCharacter {
     val value = s"${0x0 : Char}"
-  }    
+  }
   case object DoubleQuote extends QuoteCharacter {
     val value = "\""
   }
@@ -448,7 +391,7 @@ case class JSON(
 }
 
 case class Delimited(
-  sep: Delimiter = Delimiter.DefaultHive, 
+  sep: Delimiter = Delimiter.DefaultHive,
   quote: QuoteCharacter = QuoteCharacter.DoubleQuote,
   header: Boolean = false,
   inferSchema: Boolean = false,

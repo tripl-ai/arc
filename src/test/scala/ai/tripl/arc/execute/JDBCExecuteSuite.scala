@@ -13,13 +13,12 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util._
 
 class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   var connection: java.sql.Connection = _
 
   val url = "jdbc:derby:memory:JDBCExecuteSuite"
@@ -36,10 +35,10 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
-    
+    spark.sparkContext.setLogLevel("INFO")
+
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
@@ -51,7 +50,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
 
     // create known table
     // JDBC does not support creating a table with NullType column (understandably)
-    TestDataUtils.getKnownDataset.drop($"nullDatum")
+    TestUtils.getKnownDataset.drop($"nullDatum")
       .write
       .format("jdbc")
       .option("url", url)
@@ -74,18 +73,18 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
   test("JDBCExecute") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    ai.tripl.arc.execute.JDBCExecute.execute(
-      JDBCExecute(
-        name=outputView, 
+    ai.tripl.arc.execute.JDBCExecuteStage.execute(
+      ai.tripl.arc.execute.JDBCExecuteStage(
+        plugin=new ai.tripl.arc.execute.JDBCExecute,
+        name=outputView,
         description=None,
-        inputURI=new URI(testURI), 
+        inputURI=new URI(testURI),
         jdbcURL = url,
-        user = None,
-        password = None,
-        sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-        params= Map.empty, 
+        sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+        params= Map.empty,
         sqlParams=Map.empty
       )
     )
@@ -101,21 +100,44 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     assert(actual.count == 0)
   }
 
+  test("JDBCExecute: Bad serverName") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val thrown = intercept[Exception with DetailException] {
+      ai.tripl.arc.execute.JDBCExecuteStage.execute(
+        ai.tripl.arc.execute.JDBCExecuteStage(
+          plugin=new ai.tripl.arc.execute.JDBCExecute,
+          name=outputView,
+          description=None,
+          inputURI=new URI(testURI),
+          jdbcURL = "jdbc:derby:invalid",
+          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+          params= Map.empty,
+          sqlParams=Map.empty
+        )
+      )
+    }
+    assert(thrown.getMessage == "java.sql.SQLException: Database 'invalid' not found.")
+  }
+
   test("JDBCExecute: sqlParams") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    ai.tripl.arc.execute.JDBCExecute.execute(
-      JDBCExecute(
-        name=outputView, 
+    ai.tripl.arc.execute.JDBCExecuteStage.execute(
+      ai.tripl.arc.execute.JDBCExecuteStage(
+        plugin=new ai.tripl.arc.execute.JDBCExecute,
+        name=outputView,
         description=None,
-        inputURI=new URI(testURI), 
+        inputURI=new URI(testURI),
         jdbcURL = url,
-        user = None,
-        password = None,
-        sql=s"CREATE TABLE ${newTable} (${newColumn} VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-        params= Map.empty, 
+        sql=s"CREATE TABLE ${newTable} (${newColumn} VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+        params= Map.empty,
         sqlParams=Map("column_name" -> "COLUMN0")
       )
     )
@@ -129,111 +151,87 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(actual.count == 0)
-  }  
-
-  test("JDBCExecute: Bad serverName") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
-    val thrown = intercept[Exception with DetailException] {
-      ai.tripl.arc.execute.JDBCExecute.execute(
-        JDBCExecute(
-          name=outputView, 
-          description=None,
-          inputURI=new URI(testURI), 
-          jdbcURL = "jdbc:derby:invalid",
-          user = None,
-          password = None,
-          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-          params= Map.empty, 
-          sqlParams=Map.empty
-        )
-      )
-    }
-    assert(thrown.getMessage == "java.sql.SQLException: Database 'invalid' not found.")
-  }  
+  }
 
   test("JDBCExecute: Bad sqlserver connection parameters") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
-      ai.tripl.arc.execute.JDBCExecute.execute(
-        JDBCExecute(
-          name=outputView, 
+      ai.tripl.arc.execute.JDBCExecuteStage.execute(
+        ai.tripl.arc.execute.JDBCExecuteStage(
+          plugin=new ai.tripl.arc.execute.JDBCExecute,
+          name=outputView,
           description=None,
-          inputURI=new URI(testURI), 
+          inputURI=new URI(testURI),
           jdbcURL = "0.0.0.0",
-          user = None,
-          password = None,
-          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-          params= Map.empty, 
+          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+          params= Map.empty,
           sqlParams=Map.empty
         )
       )
     }
     assert(thrown.getMessage.contains("No suitable driver found"))
-  }    
+  }
 
   test("JDBCExecute: Bad jdbcType") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
-      ai.tripl.arc.execute.JDBCExecute.execute(
-        JDBCExecute(
-          name=outputView, 
+      ai.tripl.arc.execute.JDBCExecuteStage.execute(
+        ai.tripl.arc.execute.JDBCExecuteStage(
+          plugin=new ai.tripl.arc.execute.JDBCExecute,
+          name=outputView,
           description=None,
-          inputURI=new URI(testURI), 
+          inputURI=new URI(testURI),
           jdbcURL = "",
-          user = None,
-          password = None,
-          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-          params= Map.empty, 
+          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+          params= Map.empty,
           sqlParams=Map.empty
         )
       )
     }
     assert(thrown.getMessage == "java.sql.SQLException: No suitable driver found for ")
-  }    
+  }
 
   test("JDBCExecute: Connection Params") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val thrown = intercept[Exception with DetailException] {
-      ai.tripl.arc.execute.JDBCExecute.execute(
-        JDBCExecute(
-          name=outputView, 
+      ai.tripl.arc.execute.JDBCExecuteStage.execute(
+        ai.tripl.arc.execute.JDBCExecuteStage(
+          plugin=new ai.tripl.arc.execute.JDBCExecute,
+          name=outputView,
           description=None,
-          inputURI=new URI(testURI), 
+          inputURI=new URI(testURI),
           jdbcURL = "jdbc:derby:memory:JDBCExecuteSuite/connectionParamsTestDB",
-          user = None,
-          password = None,
-          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-          params=Map.empty, 
+          sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+          params=Map.empty,
           sqlParams=Map.empty
         )
       )
     }
     assert(thrown.getMessage == "java.sql.SQLException: Database 'memory:JDBCExecuteSuite/connectionParamsTestDB' not found.")
 
-    ai.tripl.arc.execute.JDBCExecute.execute(
-      JDBCExecute(
-        name=outputView, 
+    ai.tripl.arc.execute.JDBCExecuteStage.execute(
+      ai.tripl.arc.execute.JDBCExecuteStage(
+        plugin=new ai.tripl.arc.execute.JDBCExecute,
+        name=outputView,
         description=None,
-        inputURI=new URI(testURI), 
+        inputURI=new URI(testURI),
         jdbcURL = "jdbc:derby:memory:JDBCExecuteSuite/connectionParamsTestDB",
-        user = None,
-        password = None,
-        sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))", 
-        params=Map("create" -> "true"), 
+        sql=s"CREATE TABLE ${newTable} (COLUMN0 VARCHAR(100) NOT NULL, PRIMARY KEY (COLUMN0))",
+        params=Map("create" -> "true"),
         sqlParams=Map.empty
       )
     )
-  }    
+  }
 }

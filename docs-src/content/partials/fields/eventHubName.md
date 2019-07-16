@@ -1,1 +1,0 @@
-The Event Hubs entity.

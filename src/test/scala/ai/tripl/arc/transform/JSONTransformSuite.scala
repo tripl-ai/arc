@@ -6,13 +6,12 @@ import org.scalatest.BeforeAndAfter
 import org.apache.spark.sql._
 
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
-import ai.tripl.arc.util.TestDataUtils
+import ai.tripl.arc.util.TestUtils
 
 class JSONTransformSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val inputView = "inputView"
   val outputView = "outputView"
 
@@ -23,10 +22,10 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
@@ -38,34 +37,37 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
 
   test("JSONTransform") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    TestDataUtils.getKnownDataset.createOrReplaceTempView(inputView)
+    TestUtils.getKnownDataset.createOrReplaceTempView(inputView)
 
-    val transformed = transform.JSONTransform.transform(
-      JSONTransform(
-        name="JSONTransform", 
+    val dataset = transform.JSONTransformStage.execute(
+      transform.JSONTransformStage(
+        plugin=new transform.JSONTransform,
+        name="JSONTransform",
         description=None,
         inputView=inputView,
         outputView=outputView,
         persist=false,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
     // check constants in case of change in future spark version
-    assert(transformed.count == 2)
-    assert(transformed.schema(0).name == "value")
+    assert(dataset.count == 2)
+    assert(dataset.schema(0).name == "value")
 
     // check data
-    assert(transformed.first.getString(0) == """{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-20T21:46:54.000Z"}""")
-  }  
+    assert(dataset.first.getString(0) == """{"booleanDatum":true,"dateDatum":"2016-12-18","decimalDatum":54.321000000000000000,"doubleDatum":42.4242,"integerDatum":17,"longDatum":1520828868,"stringDatum":"test,breakdelimiter","timeDatum":"12:34:56","timestampDatum":"2017-12-20T21:46:54.000Z"}""")
+  }
 
   test("JSONTransform: Structured Streaming") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     val readStream = spark
       .readStream
@@ -75,22 +77,23 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
 
     readStream.createOrReplaceTempView(inputView)
 
-    val transformDataset = transform.JSONTransform.transform(
-      JSONTransform(
-        name="JSONTransform", 
+    val dataset = transform.JSONTransformStage.execute(
+      transform.JSONTransformStage(
+        plugin=new transform.JSONTransform,
+        name="JSONTransform",
         description=None,
         inputView=inputView,
         outputView=outputView,
         persist=false,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
-    val writeStream = transformDataset
+    val writeStream = dataset
       .writeStream
-      .queryName("transformed") 
+      .queryName("transformed")
       .format("memory")
       .start
 
@@ -101,6 +104,6 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
       assert(df.first.getString(0).contains(""""value":0"""))
     } finally {
       writeStream.stop
-    }    
-  }    
+    }
+  }
 }

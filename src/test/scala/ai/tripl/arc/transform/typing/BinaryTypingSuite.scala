@@ -1,4 +1,4 @@
-package ai.tripl.arc.util
+package ai.tripl.arc.transform
 
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
@@ -50,7 +50,7 @@ class BinaryTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }  
+  }
 
   test("BinaryTyping: invalid base64") {
     val col = BinaryColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some(""), trim=true, nullableValues=""::Nil, encoding=EncodingTypeBase64, metadata=None)
@@ -79,5 +79,5 @@ class BinaryTypingSuite extends FunSuite with BeforeAndAfter {
         assert(false)
       }
     }
-  }  
+  }
 }

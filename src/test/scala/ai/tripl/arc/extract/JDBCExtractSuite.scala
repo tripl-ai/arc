@@ -13,13 +13,12 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
-import ai.tripl.arc.util.TestDataUtils
+import ai.tripl.arc.util.TestUtils
 
 class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   var connection: java.sql.Connection = _
 
   val url = "jdbc:derby:memory:JDBCExtractSuite"
@@ -33,10 +32,11 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
+    implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
@@ -48,7 +48,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
 
     // create known table
     // JDBC does not support creating a table with NullType column (understandably)
-    TestDataUtils.getKnownDataset.drop($"nullDatum")
+    TestUtils.getKnownDataset.drop($"nullDatum")
       .write
       .format("jdbc")
       .option("url", url)
@@ -71,104 +71,107 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
   test("JDBCExtract: Table") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
+    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
-    val result = extract.JDBCExtract.extract(
-      JDBCExtract(
-        name=outputView, 
+    val dataset = extract.JDBCExtractStage.execute(
+      extract.JDBCExtractStage(
+        plugin=new extract.JDBCExtract,
+        name=outputView,
         description=None,
-        cols=Right(cols.right.getOrElse(Nil)),
-        outputView=dbtable, 
+        schema=Right(cols.right.getOrElse(Nil)),
+        outputView=dbtable,
         jdbcURL=url,
         driver=DriverManager.getDriver(url),
-        tableName=dbtable, 
-        numPartitions=None, 
+        tableName=dbtable,
+        numPartitions=None,
         partitionBy=Nil,
-        fetchsize=None, 
+        fetchsize=None,
         customSchema=None,
         partitionColumn=None,
         predicates=Nil,
-        params=Map.empty, 
+        params=Map.empty,
         persist=false
       )
     ).get
 
-    var actual = result.withColumn("decimalDatum", col("decimalDatum").cast("decimal(38,18)"))
-    val expected = TestDataUtils.getKnownDataset.drop($"nullDatum")
+    var actual = dataset.withColumn("decimalDatum", col("decimalDatum").cast("decimal(38,18)"))
+    val expected = TestUtils.getKnownDataset.drop($"nullDatum")
 
-    assert(TestDataUtils.datasetEquality(expected, actual))
+    assert(TestUtils.datasetEquality(expected, actual))
 
     // test metadata
-    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata    
-    assert(timestampDatumMetadata.getLong("securityLevel") == 7)        
-  }     
+    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata
+    assert(timestampDatumMetadata.getLong("securityLevel") == 7)
+  }
 
   test("JDBCExtract: Query") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val result = extract.JDBCExtract.extract(
-      JDBCExtract(
-        name=outputView, 
+    val dataset = extract.JDBCExtractStage.execute(
+      extract.JDBCExtractStage(
+        plugin=new extract.JDBCExtract,
+        name=outputView,
         description=None,
-        cols=Right(Nil),
-        outputView=dbtable, 
-        jdbcURL=url, 
+        schema=Right(Nil),
+        outputView=dbtable,
+        jdbcURL=url,
         driver=DriverManager.getDriver(url),
-        tableName=s"(SELECT * FROM ${dbtable}) dbtable", 
+        tableName=s"(SELECT * FROM ${dbtable}) dbtable",
         numPartitions=None,
         partitionBy=Nil,
-        fetchsize=None, 
+        fetchsize=None,
         customSchema=None,
         partitionColumn=None,
         predicates=Nil,
-        params=Map.empty, 
+        params=Map.empty,
         persist=false
       )
     ).get
 
-    var actual = result.withColumn("decimalDatum", col("decimalDatum").cast("decimal(38,18)"))
-    val expected = TestDataUtils.getKnownDataset.drop($"nullDatum")
+    var actual = dataset.withColumn("decimalDatum", col("decimalDatum").cast("decimal(38,18)"))
+    val expected = TestUtils.getKnownDataset.drop($"nullDatum")
 
-    assert(TestDataUtils.datasetEquality(expected, actual))
-  }   
+    assert(TestUtils.datasetEquality(expected, actual))
+  }
 
   test("JDBCExtract: Query returning Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val result = extract.JDBCExtract.extract(
-      JDBCExtract(
-        name=outputView, 
+    val dataset = extract.JDBCExtractStage.execute(
+      extract.JDBCExtractStage(
+        plugin=new extract.JDBCExtract,
+        name=outputView,
         description=None,
-        cols=Right(Nil),
-        outputView=dbtable, 
-        jdbcURL=url, 
+        schema=Right(Nil),
+        outputView=dbtable,
+        jdbcURL=url,
         driver=DriverManager.getDriver(url),
-        tableName=s"(SELECT * FROM ${dbtable} WHERE false) dbtable", 
+        tableName=s"(SELECT * FROM ${dbtable} WHERE false) dbtable",
         numPartitions=None,
         partitionBy=Nil,
-        fetchsize=None, 
+        fetchsize=None,
         customSchema=None,
         partitionColumn=None,
         predicates=Nil,
-        params=Map.empty, 
+        params=Map.empty,
         persist=false
       )
     ).get
 
-    var actual = result.withColumn("decimalDatum", col("decimalDatum").cast("decimal(38,18)"))
-    val expected = TestDataUtils.getKnownDataset.drop($"nullDatum")
+    var actual = dataset.withColumn("decimalDatum", col("decimalDatum").cast("decimal(38,18)"))
+    val expected = TestUtils.getKnownDataset.drop($"nullDatum")
 
     // data types will mismatch due to derby but test that we have at least same column names
     assert(actual.schema.map(_.name) === expected.schema.map(_.name))
-  }   
+  }
 }

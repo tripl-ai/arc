@@ -2,7 +2,7 @@ package ai.tripl.arc.util
 
 import java.sql.Timestamp
 
-import java.time.{ZoneId, ZonedDateTime}
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 object TimestampUtils {

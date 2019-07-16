@@ -14,14 +14,12 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
-
 import ai.tripl.arc.util._
 import ai.tripl.arc.util.ControlUtils._
 
 class BytesExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
 
   val outputView = "outputView"
   val dogImage = getClass.getResource("/flask_serving/dog.jpg").toString
@@ -34,10 +32,11 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("FATAL")
+    spark.sparkContext.setLogLevel("INFO")
+    implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -50,14 +49,15 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
   test("BytesExtract: Test calling flask_serving") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    extract.BytesExtract.extract(
-      BytesExtract(
+    extract.BytesExtractStage.execute(
+      extract.BytesExtractStage(
+        plugin=new extract.BytesExtract,
         name="dataset",
         description=None,
-        outputView=outputView, 
+        outputView=outputView,
         input=Right(dogImage),
         authentication=None,
         persist=false,
@@ -68,8 +68,9 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       )
     )
 
-    val actual = transform.HTTPTransform.transform(
-      HTTPTransform(
+    transform.HTTPTransformStage.execute(
+      transform.HTTPTransformStage(
+        plugin=new transform.HTTPTransform,
         name="transform",
         description=None,
         uri=new URI(uri),
@@ -83,12 +84,12 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         batchSize=1,
         delimiter="",
         numPartitions=None,
-        partitionBy=Nil,        
-        failMode=FailModeTypeFailFast          
+        partitionBy=Nil,
+        failMode=FailModeTypeFailFast
       )
-    ).get    
+    ).get
 
     assert(spark.sql(s"""SELECT * FROM ${outputView} WHERE body LIKE '%predictions%'""").count != 0)
-  }    
+  }
 
 }

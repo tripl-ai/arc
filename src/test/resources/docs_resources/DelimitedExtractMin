@@ -5,6 +5,6 @@
     "production",
     "test"
   ],
-  "inputURI": "hdfs://input_data/customer/*.csv",
+  "inputURI": "hdfs://datalake/customer/*.csv",
   "outputView": "customer"
 }

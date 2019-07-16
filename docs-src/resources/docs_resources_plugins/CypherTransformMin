@@ -1,0 +1,10 @@
+{
+  "type": "CypherTransform",
+  "name": "create recommendations",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/cypher/recommendations.cypher",
+  "outputView": "recommendations"
+} 

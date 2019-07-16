@@ -1,0 +1,1 @@
+Name of the constructed graph in the catalog. Graph will be accessible via 'session.[outputGraph]'.

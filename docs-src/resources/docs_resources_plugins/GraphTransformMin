@@ -1,0 +1,15 @@
+{
+  "type": "GraphTransform",
+  "name": "create friends graph",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "nodes": [
+    {"label": "Person", "view": "persons"}
+  ],
+  "relationships": [
+    {"type": "FRIEND", "view": "friends"}
+  ],
+  "outputGraph": "friends"
+} 

@@ -8,6 +8,8 @@ import org.scalatest.BeforeAndAfter
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 
+import org.apache.log4j.{Level, Logger}
+
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.classification.LogisticRegression
 import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
@@ -16,14 +18,14 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
-
+import ai.tripl.arc.config._
 import ai.tripl.arc.util._
+import ai.tripl.arc.util.log.LoggerFactory
 
 class SQLTransformSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "transform.parquet" 
+  var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "transform.parquet"
   val inputView = "inputView"
   val outputView = "outputView"
 
@@ -34,39 +36,42 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
+    Logger.getLogger("org").setLevel(Level.ERROR)
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
 
     // recreate test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
     // parquet does not support writing NullType
     // include partition by to test pushdown
-    TestDataUtils.getKnownDataset.drop($"nullDatum").withColumn("_monotonically_increasing_id", monotonically_increasing_id()).write.partitionBy("dateDatum").parquet(targetFile)  
+    TestUtils.getKnownDataset.drop($"nullDatum").withColumn("_monotonically_increasing_id", monotonically_increasing_id()).write.partitionBy("dateDatum").parquet(targetFile)
   }
 
   after {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))         
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
   test("SQLTransform") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val dataset = TestDataUtils.getKnownDataset
-    dataset.createOrReplaceTempView(inputView)
+    val df = TestUtils.getKnownDataset
+    df.createOrReplaceTempView(inputView)
 
-    val transformed = transform.SQLTransform.transform(
-      SQLTransform(
-        name="SQLTransform", 
+    val dataset = transform.SQLTransformStage.execute(
+      transform.SQLTransformStage(
+        plugin=new transform.SQLTransform,
+        name="SQLTransform",
         description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM ${inputView} WHERE booleanDatum = FALSE",
@@ -75,20 +80,20 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
-    val actual = transformed.drop($"nullDatum")
-    val expected = dataset.filter(dataset("booleanDatum")===false).drop($"nullDatum")
+    val actual = dataset.drop($"nullDatum")
+    val expected = df.filter(dataset("booleanDatum")===false).drop($"nullDatum")
 
-    assert(TestDataUtils.datasetEquality(expected, actual))
-  }  
+    assert(TestUtils.datasetEquality(expected, actual))
+  }
 
   test("SQLTransform: end-to-end") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val conf = s"""{
       "stages": [
@@ -109,28 +114,31 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         }
       ]
     }"""
-    
-    val argsMap = collection.mutable.Map[String, String]()
-    val graph = ConfigUtils.Graph(Nil, Nil, false)
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(_) => assert(false)
-      case Right((pipeline, _, _)) => ARC.run(pipeline)(spark, logger, arcContext)
-    }  
+      case Left(_) => {
+        println(pipelineEither)
+        assert(false)
+      }
+      case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
+    }
   }
 
   test("SQLTransform: persist") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val dataset = TestDataUtils.getKnownDataset
-    dataset.createOrReplaceTempView(inputView)
+    val df = TestUtils.getKnownDataset
+    df.createOrReplaceTempView(inputView)
 
-    transform.SQLTransform.transform(
-      SQLTransform(
-        name="SQLTransform", 
+    transform.SQLTransformStage.execute(
+      transform.SQLTransformStage(
+        plugin=new transform.SQLTransform,
+        name="SQLTransform",
         description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM ${inputView}",
@@ -139,14 +147,15 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
 
-    transform.SQLTransform.transform(
-      SQLTransform(
-        name="SQLTransform", 
+    transform.SQLTransformStage.execute(
+      transform.SQLTransformStage(
+        plugin=new transform.SQLTransform,
+        name="SQLTransform",
         description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM ${inputView}",
@@ -155,23 +164,25 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     )
-    assert(spark.catalog.isCached(outputView) === true)    
-  }    
+    assert(spark.catalog.isCached(outputView) === true)
+  }
 
   test("SQLTransform: sqlParams") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val dataset = TestDataUtils.getKnownDataset
-    dataset.createOrReplaceTempView(inputView)
+    val df = TestUtils.getKnownDataset
+    df.createOrReplaceTempView(inputView)
 
-    val transformed = transform.SQLTransform.transform(
-      SQLTransform(
-        name="SQLTransform", 
+    val dataset = transform.SQLTransformStage.execute(
+      transform.SQLTransformStage(
+        plugin=new transform.SQLTransform,
+        name="SQLTransform",
         description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM ${inputView} WHERE booleanDatum = $${sql_boolean_param}",
@@ -180,26 +191,28 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map("sql_boolean_param" -> "FALSE"),
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
-    val actual = transformed.drop($"nullDatum")
-    val expected = dataset.filter(dataset("booleanDatum")===false).drop($"nullDatum")
+    val actual = dataset.drop($"nullDatum")
+    val expected = df.filter(df("booleanDatum")===false).drop($"nullDatum")
 
-    assert(TestDataUtils.datasetEquality(expected, actual))
-  }     
+    assert(TestUtils.datasetEquality(expected, actual))
+  }
 
   test("SQLTransform: sqlParams missing") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
-      val transformed = transform.SQLTransform.transform(
-        SQLTransform(
-          name="SQLTransform", 
+      transform.SQLTransformStage.execute(
+        transform.SQLTransformStage(
+          plugin=new transform.SQLTransform,
+          name="SQLTransform",
           description=None,
           inputURI=new URI(targetFile),
           sql=s"SELECT * FROM ${inputView} WHERE stringDatum = $${sql_string_param} AND booleanDatum = $${sql_boolean}",
@@ -208,62 +221,64 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
           sqlParams=Map("sql_string_param" -> "test"),
           params=Map.empty,
           numPartitions=None,
-          partitionBy=Nil           
+          partitionBy=Nil
         )
       ).get
     }
-    assert(thrown0.getMessage === "No replacement value found in sqlParams [sql_string_param] for placeholders: [${sql_boolean}].")
-  }     
+    assert(thrown0.getMessage === "No replacement value found in parameters: [sql_string_param] for placeholders: [${sql_boolean}].")
+  }
 
-  test("SQLTransform: partitionPushdown") {
-    implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+  // test("SQLTransform: partitionPushdown") {
+  //   implicit val spark = session
+  //   implicit val logger = TestUtils.getLogger()
+  //   implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
-    extract.ParquetExtract.extract(
-      ParquetExtract(
-        name=inputView,
-        description=None,
-        cols=Right(Nil),
-        outputView=outputView,
-        input=targetFile,
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil,
-        basePath=None,
-        contiguousIndex=true
-      )
-    )    
+  //   extract.ParquetExtract.extract(
+  //     extract.ParquetExtract(
+  //       name=inputView,
+  //       description=None,
+  //       cols=Right(Nil),
+  //       outputView=outputView,
+  //       input=targetFile,
+  //       authentication=None,
+  //       params=Map.empty,
+  //       persist=false,
+  //       numPartitions=None,
+  //       partitionBy=Nil,
+  //       basePath=None,
+  //       contiguousIndex=true
+  //     )
+  //   )
 
-    val transformed = transform.SQLTransform.transform(
-      SQLTransform(
-        name="SQLTransform", 
-        description=None,
-        inputURI=new URI(targetFile),
-        sql=s"SELECT * FROM ${outputView} WHERE dateDatum = TO_DATE('2016-12-19')",
-        outputView=outputView,
-        persist=false,
-        sqlParams=Map.empty,
-        params=Map.empty,
-        numPartitions=None,
-        partitionBy=Nil           
-      )
-    ).get
+  //   val transformed = transform.SQLTransform.transform(
+  //     SQLTransform(
+  //       name="SQLTransform",
+  //       description=None,
+  //       inputURI=new URI(targetFile),
+  //       sql=s"SELECT * FROM ${outputView} WHERE dateDatum = TO_DATE('2016-12-19')",
+  //       outputView=outputView,
+  //       persist=false,
+  //       sqlParams=Map.empty,
+  //       params=Map.empty,
+  //       numPartitions=None,
+  //       partitionBy=Nil
+  //     )
+  //   ).get
 
-    val partitionFilters = QueryExecutionUtils.getPartitionFilters(transformed.queryExecution.executedPlan).toArray.mkString(",")
-    assert(partitionFilters.contains("dateDatum"))
-    assert(partitionFilters.contains("isnotnull(dateDatum"))
-  }  
+  //   val partitionFilters = QueryExecutionUtils.getPartitionFilters(transformed.queryExecution.executedPlan).toArray.mkString(",")
+  //   assert(partitionFilters.contains("dateDatum"))
+  //   assert(partitionFilters.contains("isnotnull(dateDatum"))
+  // }
 
   test("SQLTransform: predicatePushdown") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val transformed = transform.SQLTransform.transform(
-      SQLTransform(
-        name="SQLTransform", 
+    val dataset = transform.SQLTransformStage.execute(
+      transform.SQLTransformStage(
+        plugin=new transform.SQLTransform,
+        name="SQLTransform",
         description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM parquet.`${targetFile}` WHERE booleanDatum = $${sql_boolean_param}",
@@ -272,67 +287,68 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map("sql_boolean_param" -> "FALSE"),
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
-    val dataFilters = QueryExecutionUtils.getDataFilters(transformed.queryExecution.executedPlan).toArray.mkString(",")
+    val dataFilters = QueryExecutionUtils.getDataFilters(dataset.queryExecution.executedPlan).toArray.mkString(",")
     assert(dataFilters.contains("isnotnull(booleanDatum"))
     assert(dataFilters.contains("),(booleanDatum"))
     assert(dataFilters.contains(" = false)"))
-  }    
+  }
 
-  test("SQLTransform: partitionPushdown and predicatePushdown") {
-    implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+  // test("SQLTransform: partitionPushdown and predicatePushdown") {
+  //   implicit val spark = session
+  //   implicit val logger = TestUtils.getLogger()
+  //   implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
 
-    extract.ParquetExtract.extract(
-      ParquetExtract(
-        name=inputView,
-        description=None,
-        cols=Right(Nil),
-        outputView=inputView,
-        input=targetFile,
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil,
-        basePath=None,
-        contiguousIndex=true
-      )
-    )
+  //   extract.ParquetExtract.extract(
+  //     extract.ParquetExtract(
+  //       name=inputView,
+  //       description=None,
+  //       cols=Right(Nil),
+  //       outputView=inputView,
+  //       input=targetFile,
+  //       authentication=None,
+  //       params=Map.empty,
+  //       persist=false,
+  //       numPartitions=None,
+  //       partitionBy=Nil,
+  //       basePath=None,
+  //       contiguousIndex=true
+  //     )
+  //   )
 
-    val transformed = transform.SQLTransform.transform(
-      SQLTransform(
-        name="SQLTransform", 
-        description=None,
-        inputURI=new URI(targetFile),
-        sql=s"SELECT * FROM ${inputView} WHERE DAY(dateDatum) = 19 AND booleanDatum = FALSE",
-        outputView=outputView,
-        persist=false,
-        sqlParams=Map.empty,
-        params=Map.empty,
-        numPartitions=None,
-        partitionBy=Nil           
-      )
-    ).get
+  //   val transformed = transform.SQLTransform.transform(
+  //     SQLTransform(
+  //       name="SQLTransform",
+  //       description=None,
+  //       inputURI=new URI(targetFile),
+  //       sql=s"SELECT * FROM ${inputView} WHERE DAY(dateDatum) = 19 AND booleanDatum = FALSE",
+  //       outputView=outputView,
+  //       persist=false,
+  //       sqlParams=Map.empty,
+  //       params=Map.empty,
+  //       numPartitions=None,
+  //       partitionBy=Nil
+  //     )
+  //   ).get
 
-    val partitionFilters = QueryExecutionUtils.getPartitionFilters(transformed.queryExecution.executedPlan).toArray.mkString(",")
-    assert(partitionFilters.contains("(dayofmonth(dateDatum"))
-    assert(partitionFilters.contains(") = 19)"))
-    val dataFilters = QueryExecutionUtils.getDataFilters(transformed.queryExecution.executedPlan).toArray.mkString(",")
-    assert(dataFilters.contains("isnotnull(booleanDatum"))
-    assert(dataFilters.contains("),(booleanDatum"))
-    assert(dataFilters.contains(" = false)"))
-  }    
+  //   val partitionFilters = QueryExecutionUtils.getPartitionFilters(transformed.queryExecution.executedPlan).toArray.mkString(",")
+  //   assert(partitionFilters.contains("(dayofmonth(dateDatum"))
+  //   assert(partitionFilters.contains(") = 19)"))
+  //   val dataFilters = QueryExecutionUtils.getDataFilters(transformed.queryExecution.executedPlan).toArray.mkString(",")
+  //   assert(dataFilters.contains("isnotnull(booleanDatum"))
+  //   assert(dataFilters.contains("),(booleanDatum"))
+  //   assert(dataFilters.contains(" = false)"))
+  // }
 
 
   test("SQLTransform: Execute with Structured Streaming" ) {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     val readStream = spark
       .readStream
@@ -342,9 +358,10 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
 
     readStream.createOrReplaceTempView("readstream")
 
-    val transformDataset = transform.SQLTransform.transform(
-      SQLTransform(
-        name="SQLTransform", 
+    val dataset = transform.SQLTransformStage.execute(
+      transform.SQLTransformStage(
+        plugin=new transform.SQLTransform,
+        name="SQLTransform",
         description=None,
         inputURI=new URI(targetFile),
         sql=s"SELECT * FROM readstream",
@@ -353,13 +370,13 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
-    val writeStream = transformDataset
+    val writeStream = dataset
       .writeStream
-      .queryName("transformed") 
+      .queryName("transformed")
       .format("memory")
       .start
 
@@ -371,5 +388,5 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     } finally {
       writeStream.stop
     }
-  }     
+  }
 }

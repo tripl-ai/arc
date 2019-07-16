@@ -1,9 +1,6 @@
 package ai.tripl.arc.load
 
-import java.lang._
-import java.net.URI
 import java.sql.DriverManager
-import java.sql.Connection
 import java.util.Properties
 import scala.collection.JavaConverters._
 
@@ -11,118 +8,199 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.execution.datasources.jdbc._
 
-// sqlserver bulk import - not limited to azure hosted sqlserver instances
-import com.microsoft.azure.sqldb.spark.connect._
+import com.typesafe.config._
 
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util._
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.config._
+import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.ControlUtils._
+import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.util.JDBCSink
+import ai.tripl.arc.util.JDBCUtils
+import ai.tripl.arc.util.ListenerUtils
+import ai.tripl.arc.util.Utils
 
+class JDBCLoad extends PipelineStagePlugin {
 
-object JDBCLoad {
+  val version = Utils.getFrameworkVersion
+
+  def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
+
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "jdbcURL" :: "tableName" :: "params" :: "batchsize" :: "createTableColumnTypes" :: "createTableOptions" :: "isolationLevel" :: "numPartitions" :: "saveMode" :: "tablock" :: "truncate" :: Nil
+    val name = getValue[String]("name")
+    val description = getOptionalValue[String]("description")
+    val inputView = getValue[String]("inputView")
+    val jdbcURL = getValue[String]("jdbcURL")
+    val driver = jdbcURL |> getJDBCDriver("jdbcURL") _
+    val tableName = getValue[String]("tableName")
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val isolationLevel = getValue[String]("isolationLevel", default = Some("READ_UNCOMMITTED"), validValues = "NONE" :: "READ_COMMITTED" :: "READ_UNCOMMITTED" :: "REPEATABLE_READ" :: "SERIALIZABLE" :: Nil) |> parseIsolationLevel("isolationLevel") _
+    val batchsize = getValue[Int]("batchsize", default = Some(1000))
+    val truncate = getValue[java.lang.Boolean]("truncate", default = Some(false))
+    val createTableOptions = getOptionalValue[String]("createTableOptions")
+    val createTableColumnTypes = getOptionalValue[String]("createTableColumnTypes")
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
+    val tablock = getValue[java.lang.Boolean]("tablock", default = Some(true))
+    val params = readMap("params", c)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    (name, description, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, tablock, partitionBy, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(jdbcURL), Right(driver), Right(tableName), Right(numPartitions), Right(isolationLevel), Right(batchsize), Right(truncate), Right(createTableOptions), Right(createTableColumnTypes), Right(saveMode), Right(tablock), Right(partitionBy), Right(invalidKeys)) =>
+
+        val stage = JDBCLoadStage(
+          plugin=this,
+          name=name,
+          description=description,
+          inputView=inputView,
+          jdbcURL=jdbcURL,
+          driver=driver,
+          tableName=tableName,
+          partitionBy=partitionBy,
+          numPartitions=numPartitions,
+          isolationLevel=isolationLevel,
+          batchsize=batchsize,
+          truncate=truncate,
+          createTableOptions=createTableOptions,
+          createTableColumnTypes=createTableColumnTypes,
+          saveMode=saveMode,
+          tablock=tablock,
+          params=params
+        )
+
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("jdbcURL", JDBCUtils.maskPassword(jdbcURL))
+        stage.stageDetail.put("tableName", tableName)
+        stage.stageDetail.put("batchsize", java.lang.Integer.valueOf(batchsize))
+        stage.stageDetail.put("driver", driver.getClass.toString)
+        stage.stageDetail.put("isolationLevel", isolationLevel.sparkString)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
+        stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
+        stage.stageDetail.put("tablock", java.lang.Boolean.valueOf(tablock))
+        stage.stageDetail.put("truncate", java.lang.Boolean.valueOf(truncate))
+        stage.stageDetail.put("createTableOptions", createTableOptions)
+        stage.stageDetail.put("createTableColumnTypes", createTableColumnTypes)
+
+        Right(stage)
+      case _ =>
+        val allErrors: Errors = List(name, description, inputView, jdbcURL, driver, tableName, numPartitions, isolationLevel, batchsize, truncate, createTableOptions, createTableColumnTypes, saveMode, tablock, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+
+  def parseIsolationLevel(path: String)(quote: String)(implicit c: Config): Either[Errors, IsolationLevelType] = {
+    quote.toLowerCase.trim match {
+      case "none" => Right(IsolationLevelNone)
+      case "read_committed" => Right(IsolationLevelReadCommitted)
+      case "read_uncommitted" => Right(IsolationLevelReadUncommitted)
+      case "repeatable_read" => Right(IsolationLevelRepeatableRead)
+      case "serializable" => Right(IsolationLevelSerializable)
+      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+    }
+  }
+}
+
+case class JDBCLoadStage(
+    plugin: JDBCLoad,
+    name: String,
+    description: Option[String],
+    inputView: String,
+    jdbcURL: String,
+    tableName: String,
+    partitionBy: List[String],
+    numPartitions: Option[Int],
+    isolationLevel: IsolationLevelType,
+    batchsize: Int,
+    truncate: Boolean,
+    createTableOptions: Option[String],
+    createTableColumnTypes: Option[String],
+    saveMode: SaveMode,
+    driver: java.sql.Driver,
+    tablock: Boolean,
+    params: Map[String, String]
+  ) extends PipelineStage {
+
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    JDBCLoadStage.execute(this)
+  }
+}
+
+object JDBCLoadStage {
 
   val SaveModeIgnore = -1
 
-  def load(load: JDBCLoad)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    val startTime = System.currentTimeMillis 
-    val stageDetail = new java.util.HashMap[String, Object]()
-    stageDetail.put("type", load.getType)
-    stageDetail.put("name", load.name)
-    for (description <- load.description) {
-      stageDetail.put("description", description)    
-    }    
-    stageDetail.put("inputView", load.inputView)  
-    stageDetail.put("jdbcURL", load.jdbcURL)  
-    stageDetail.put("tableName", load.tableName)  
-    stageDetail.put("batchsize", Integer.valueOf(load.batchsize))
-    stageDetail.put("bulkload", Boolean.valueOf(load.bulkload))
-    stageDetail.put("driver", load.driver.getClass.toString)  
-    stageDetail.put("isolationLevel", load.isolationLevel.sparkString)
-    stageDetail.put("partitionBy", load.partitionBy.asJava)
-    stageDetail.put("saveMode", load.saveMode.toString.toLowerCase)
-    stageDetail.put("tablock", Boolean.valueOf(load.tablock))
-    stageDetail.put("truncate", Boolean.valueOf(load.truncate))
+  def execute(stage: JDBCLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    val df = spark.table(load.inputView)
+    val df = spark.table(stage.inputView)
 
     if (!df.isStreaming) {
-      load.numPartitions match {
-        case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-        case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+      stage.numPartitions match {
+        case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
+        case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
       }
-    } 
-
-    logger.info()
-      .field("event", "enter")
-      .map("stage", stageDetail)      
-      .log()
-
-    // ensure table name appears correct
-    val tablePath = load.tableName.split("\\.")
-    if (tablePath.length != 3) {
-      throw new Exception(s"tableName should contain 3 components database.schema.table currently has ${tablePath.length} component(s).")    
     }
 
-    val databaseName = tablePath(0).replace("[", "").replace("]", "")
-    val tableName = s"${tablePath(1)}.${tablePath(2)}"
-
     // force cache the table so that when write verification is performed any upstream calculations are not executed twice
-    if (!df.isStreaming && !spark.catalog.isCached(load.inputView)) {
+    if (!df.isStreaming && !spark.catalog.isCached(stage.inputView)) {
       df.cache
     }
 
     // override defaults https://spark.apache.org/docs/latest/sql-programming-guide.html#jdbc-to-other-databases
     // Properties is a Hashtable<Object,Object> but gets mapped to <String,String> so ensure all values are strings
     val connectionProperties = new Properties
-    connectionProperties.put("user", load.params.get("user").getOrElse(""))
-    connectionProperties.put("password", load.params.get("password").getOrElse(""))    
-    connectionProperties.put("databaseName", databaseName)    
-    connectionProperties.put("dbtable", tableName)    
+    connectionProperties.put("dbtable", stage.tableName)
+    for ((key, value) <- stage.params) {
+      connectionProperties.put(key, value)
+    }
 
     // build spark JDBCOptions object so we can utilise their inbuilt dialect support
-    val jdbcOptions = new JdbcOptionsInWrite(Map("url"-> load.jdbcURL, "dbtable" -> tableName, "user" -> load.params.get("user").getOrElse(""), "password" -> load.params.get("password").getOrElse(""), "databaseName" -> databaseName))
+    val jdbcOptions = new JdbcOptionsInWrite(Map("url"-> stage.jdbcURL, "dbtable" -> stage.tableName))
 
     // execute a count query on target db to get intial count
     val targetPreCount = try {
-      using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>
+      using(DriverManager.getConnection(stage.jdbcURL, connectionProperties)) { connection =>
         // check if table exists
         if (JdbcUtils.tableExists(connection, jdbcOptions)) {
-          load.saveMode match {
+          stage.saveMode match {
             case SaveMode.ErrorIfExists => {
-              throw new Exception(s"Table '${tableName}' already exists in database '${databaseName}' and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
+              throw new Exception(s"Table '${stage.tableName}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
             }
             case SaveMode.Ignore => {
               // return a constant if table exists and SaveMode.Ignore
               SaveModeIgnore
-            }          
+            }
             case SaveMode.Overwrite => {
-              if (load.truncate) {
+              if (stage.truncate) {
                 JdbcUtils.truncateTable(connection, jdbcOptions)
               } else {
                 using(connection.createStatement) { statement =>
-                  statement.executeUpdate(s"DELETE FROM ${tableName}")
+                  statement.executeUpdate(s"DELETE FROM ${stage.tableName}")
                 }
               }
               0
             }
             case SaveMode.Append => {
               using(connection.createStatement) { statement =>
-                val resultSet = statement.executeQuery(s"SELECT COUNT(*) AS count FROM ${tableName}")
+                val resultSet = statement.executeQuery(s"SELECT COUNT(*) AS count FROM ${stage.tableName}")
                 resultSet.next
-                resultSet.getInt("count")                  
-              }              
+                resultSet.getInt("count")
+              }
             }
           }
         } else {
-          if (load.bulkload) {
-            throw new Exception(s"Table '${tableName}' does not exist in database '${databaseName}' and 'bulkLoad' equals 'true' so cannot continue.")
-          }
           0
         }
       }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail         
+        override val detail = stage.stageDetail
       }
     }
 
@@ -141,19 +219,18 @@ object JDBCLoad {
       dropMap.put("NullType", nulls.asJava)
     }
 
-    stageDetail.put("drop", dropMap)    
-    
-    val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)            
+    stage.stageDetail.put("drop", dropMap)
 
-    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+    val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)
+
+    val listener = ListenerUtils.addStageCompletedListener(stage.stageDetail)
 
     // if not table exists and SaveMode.Ignore
     val outputDF = if (nonNullDF.isStreaming) {
-      val jdbcSink = new JDBCSink(load.jdbcURL, connectionProperties)
-      load.partitionBy match {
+      val jdbcSink = new JDBCSink(stage.jdbcURL, connectionProperties)
+      stage.partitionBy match {
         case Nil => nonNullDF.writeStream.foreach(jdbcSink).start
         case partitionBy => {
-          val partitionCols = partitionBy.map(col => nonNullDF(col))
           nonNullDF.writeStream.partitionBy(partitionBy:_*).foreach(jdbcSink).start
         }
       }
@@ -161,98 +238,53 @@ object JDBCLoad {
     } else {
       if (targetPreCount != SaveModeIgnore) {
         val sourceCount = df.count
-        stageDetail.put("count", Long.valueOf(sourceCount))
+        stage.stageDetail.put("count", java.lang.Long.valueOf(sourceCount))
 
         val writtenDF =
           try {
-            // switch to custom jdbc actions based on driver
-            val resultDF = load.driver match {
-              // switch to custom sqlserver bulkloader
-              case _: com.microsoft.sqlserver.jdbc.SQLServerDriver if (load.bulkload) => {
+            connectionProperties.put("truncate", stage.truncate.toString)
+            connectionProperties.put("isolationLevel", stage.isolationLevel.sparkString)
+            connectionProperties.put("batchsize", stage.batchsize.toString)
 
-                // ensure schemas align after dropping invalid columns
-                using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>
-                  val inputSchema = nonNullDF.schema
-                  JdbcUtils.getSchemaOption(connection, jdbcOptions) match {
-                    case Some(targetSchema) => {
-                      // ensure column names, types and order on input and target align
-                      if (!inputSchema.zip(targetSchema).forall({ case (input, target) => input.name.toLowerCase == target.name.toLowerCase && input.dataType == target.dataType })) {
-                        throw new Exception(s"""Input dataset '${load.inputView}' has schema [${inputSchema.map(field => s"${field.name}: ${field.dataType.simpleString}").mkString(", ")}] which does not match target table '${tableName}' which has schema [${targetSchema.map(field => s"${field.name}: ${field.dataType.simpleString}").mkString(", ")}]. Ensure names, types and field orders align.""")
-                      }                  
-                    }
-                    case None => throw new Exception(s"Table '${tableName}' does not exist in database '${databaseName}' and 'bulkload' equals 'true' so cannot continue.")
-                  }
-                }  
+            for (numPartitions <- stage.numPartitions) {
+              connectionProperties.put("numPartitions", numPartitions.toString)
+            }
+            for (createTableOptions <- stage.createTableOptions) {
+              connectionProperties.put("createTableOptions", createTableOptions)
+            }
+            for (createTableColumnTypes <- stage.createTableColumnTypes) {
+              connectionProperties.put("createTableColumnTypes", createTableColumnTypes)
+            }
 
-                // remove the "jdbc:" prefix
-                val uri = new URI(load.jdbcURL.substring(5))
-
-                val bulkCopyConfig = com.microsoft.azure.sqldb.spark.config.Config(Map(
-                  "url"               -> s"${uri.getHost}:${uri.getPort}",
-                  "user"              -> load.params.get("user").getOrElse(""),
-                  "password"          -> load.params.get("password").getOrElse(""),
-                  "databaseName"      -> databaseName,
-                  "dbTable"           -> tableName,
-                  "bulkCopyBatchSize" -> load.batchsize.toString,
-                  "bulkCopyTableLock" -> load.tablock.toString,
-                  "bulkCopyTimeout"   -> "42300"
-                ))
-
-                val dfToWrite = load.numPartitions.map(nonNullDF.repartition(_)).getOrElse(nonNullDF)
-                dfToWrite.bulkCopyToSqlDB(bulkCopyConfig)
-                dfToWrite
+            stage.partitionBy match {
+              case Nil => {
+                nonNullDF.write.mode(stage.saveMode).jdbc(stage.jdbcURL, stage.tableName, connectionProperties)
               }
-
-              // default spark jdbc
-              case _ => {
-                connectionProperties.put("truncate", load.truncate.toString)
-                connectionProperties.put("isolationLevel", load.isolationLevel.sparkString)
-                connectionProperties.put("batchsize", load.batchsize.toString)
-
-                for (numPartitions <- load.numPartitions) {
-                  connectionProperties.put("numPartitions", numPartitions.toString)
-                }
-                for (createTableOptions <- load.createTableOptions) {
-                  connectionProperties.put("createTableOptions", createTableOptions)
-                  stageDetail.put("createTableOptions", createTableOptions)
-                }
-                for (createTableColumnTypes <- load.createTableColumnTypes) {
-                  connectionProperties.put("createTableColumnTypes", createTableColumnTypes)
-                  stageDetail.put("createTableColumnTypes", createTableColumnTypes)
-                }
-
-                load.partitionBy match {
-                  case Nil => {
-                    nonNullDF.write.mode(load.saveMode).jdbc(load.jdbcURL, tableName, connectionProperties)
-                  }
-                  case partitionBy => {
-                    nonNullDF.write.partitionBy(partitionBy:_*).mode(load.saveMode).jdbc(load.jdbcURL, tableName, connectionProperties)
-                  }
-                }
-                nonNullDF
+              case partitionBy => {
+                nonNullDF.write.partitionBy(partitionBy:_*).mode(stage.saveMode).jdbc(stage.jdbcURL, stage.tableName, connectionProperties)
               }
             }
 
             // execute a count query on target db to ensure correct number of rows
-            val targetPostCount = using(DriverManager.getConnection(load.jdbcURL, connectionProperties)) { connection =>
-              val resultSet = connection.createStatement.executeQuery(s"SELECT COUNT(*) AS count FROM ${tableName}")
+            val targetPostCount = using(DriverManager.getConnection(stage.jdbcURL, connectionProperties)) { connection =>
+              val resultSet = connection.createStatement.executeQuery(s"SELECT COUNT(*) AS count FROM ${stage.tableName}")
               resultSet.next
               resultSet.getInt("count")
             }
 
             // log counts
-            stageDetail.put("sourceCount", Long.valueOf(sourceCount))
-            stageDetail.put("targetPreCount", Long.valueOf(targetPreCount))
-            stageDetail.put("targetPostCount", Long.valueOf(targetPostCount))
+            stage.stageDetail.put("sourceCount", java.lang.Long.valueOf(sourceCount))
+            stage.stageDetail.put("targetPreCount", java.lang.Long.valueOf(targetPreCount))
+            stage.stageDetail.put("targetPostCount", java.lang.Long.valueOf(targetPostCount))
 
             if (sourceCount != targetPostCount - targetPreCount) {
-              throw new Exception(s"JDBCLoad should create same number of records in the target ('${tableName}') as exist in source ('${load.inputView}') but source has ${sourceCount} records and target created ${targetPostCount-targetPreCount} records.")
+              throw new Exception(s"JDBCLoad should create same number of records in the target ('${stage.tableName}') as exist in source ('${stage.inputView}') but source has ${sourceCount} records and target created ${targetPostCount-targetPreCount} records.")
             }
 
-            resultDF
+            nonNullDF
           } catch {
             case e: Exception => throw new Exception(e) with DetailException {
-              override val detail = stageDetail
+              override val detail = stage.stageDetail
             }
           }
         Option(writtenDF)
@@ -261,13 +293,7 @@ object JDBCLoad {
       }
     }
 
-    spark.sparkContext.removeSparkListener(listener)    
-
-    logger.info()
-      .field("event", "exit")
-      .field("duration", System.currentTimeMillis() - startTime)
-      .map("stage", stageDetail)
-      .log()
+    spark.sparkContext.removeSparkListener(listener)
 
     outputDF
   }

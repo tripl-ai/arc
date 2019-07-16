@@ -6,14 +6,14 @@
     "production",
     "test"
   ],
-  "inputURI": "hdfs://input_data/customer/*.txt",
+  "inputURI": "hdfs://datalake/customer/*.txt",
   "outputView": "customer",
   "authentication": {},
   "contiguousIndex": true,
   "multiLine": true,
   "numPartitions": 10,
   "persist": false,
-  "schemaURI": "hdfs://input_data/schema/customer.json",
+  "schemaURI": "hdfs://datalake/metadata/customer.json",
   "schemaView": "customer_schema",
-  "basePath": "hdfs://input_data/customer/"
+  "basePath": "hdfs://datalake/customer/"
 }

@@ -3,13 +3,11 @@ package ai.tripl.arc.util
 import org.apache.spark.sql.execution.SparkPlan
 import org.apache.spark.sql.execution.FileSourceScanExec
 
-import org.apache.spark.sql._
-
 object QueryExecutionUtils {
 
   def getPartitionFilters(plan: SparkPlan): List[String] = {
     plan.collect { case a: FileSourceScanExec => a }
-      .flatMap(fileSourceScanExec => 
+      .flatMap(fileSourceScanExec =>
         fileSourceScanExec
           .partitionFilters
           .toList

@@ -10,59 +10,35 @@ networks:
        - subnet: 172.19.0.0/24  
 
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:5.0.2
+  sbt:
+    container_name: sbt
+    image: mozilla/sbt:8u212_1.2.8 
     networks:
-      - arc-integration
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 32181
-      ZOOKEEPER_TICK_TIME: 2000
-
-  kafka:
-    image: confluentinc/cp-kafka:5.0.2
-    networks:
-      - arc-integration
-    depends_on:
-      - zookeeper
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:32181
-      KAFKA_LISTENERS: CLIENT://kafka:29092,PLAINTEXT://kafka:29093
-      KAFKA_ADVERTISED_LISTENERS: CLIENT://kafka:29092,PLAINTEXT://kafka:29093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CLIENT:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_NUM_PARTITIONS: 10
-  
-  kafka-rest:
-    image: confluentinc/cp-kafka-rest:5.0.2
-    networks:
-      - arc-integration
-    depends_on:
-      - zookeeper
-      - kafka
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_REST_BOOTSTRAP_SERVERS: kafka:29093
-      KAFKA_REST_HOST_NAME: kafka-rest
-      KAFKA_REST_LISTENERS: http://0.0.0.0:8082
-
-  kafka-schema-registry:
-    image: confluentinc/cp-schema-registry:5.0.2
-    networks:
-      - arc-integration
-    depends_on:
-      - zookeeper
-      - kafka
-    environment:
-      SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:32181
+      - arc-integration     
+    command: tail -f /dev/null
+    volumes:
+      - ${PWD}:/app  
+      - /tmp/pgp:/pgp
+    working_dir: /app
 
   tensorflow_serving:
     image: tensorflow_serving/simple:latest
     networks:
       - arc-integration    
+    ports:
+      - 9001:9001
     build: tensorflow_serving/.
+
+  postgres:
+    image: postgres:10.4-alpine-init
+    networks:
+      - arc-integration  
+    ports:
+      - 5432:5432          
+    build: postgres/.
+    environment:
+      POSTGRES_USER: sa
+      POSTGRES_PASSWORD: "SecretPass!2018"
 
   sqlserver:
     image: microsoft/mssql-server-linux:2017-CU9
@@ -73,34 +49,21 @@ services:
       SA_PASSWORD: "SecretPass!2018"
       MSSQL_PID: Express
 
-  postgres:
-    image: postgres:10.4-alpine-init
-    networks:
-      - arc-integration    
-    build: postgres/.
-    environment:
-      POSTGRES_USER: sa
-      POSTGRES_PASSWORD: "SecretPass!2018"
-
   flask_serving:
     image: flask_serving/simple:latest
     networks:
       - arc-integration    
+    ports:
+      - 5000:5000        
     build: flask_serving/.
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.0.1
-    networks:
-      - arc-integration
-    environment:
-      discovery.type: single-node
-      network.host: 0.0.0.0
   
   minio:
     image: minio/minio:it
     build: minio/.
     networks:
-      - arc-integration    
+      - arc-integration
+    ports:
+      - 9000:9000          
     command: server /it
     environment:
       MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
