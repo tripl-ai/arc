@@ -82,19 +82,6 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  class PostPayloadEchoHandler extends AbstractHandler {
-    override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
-      if (HttpConnection.getCurrentConnection.getRequest.getMethod == "POST" ) {
-        response.setContentType("text/html")
-        response.setStatus(HttpServletResponse.SC_OK)
-        response.getWriter().print(Source.fromInputStream(request.getInputStream).mkString)
-      } else {
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN)
-      }
-      HttpConnection.getCurrentConnection.getRequest.setHandled(true) 
-    }
-  }    
-
   class EmptyHandler extends AbstractHandler {
     override def handle(target: String, request: HttpServletRequest, response: HttpServletResponse, dispatch: Int) = {
       response.setContentType("text/html")
@@ -203,7 +190,6 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-
   test("HTTPExtract: Can read data (GET)") {
     implicit val spark = session
     import spark.implicits._
@@ -226,9 +212,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         method="GET",
-        body=None,
-        uriField=None,
-        bodyField=None        
+        body=None     
       )
     ).get
 
@@ -269,9 +253,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         method="POST",
-        body=None,
-        uriField=None,
-        bodyField=None
+        body=None
       )
     ).get
 
@@ -466,9 +448,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         method="GET",
-        body=None,
-        uriField=None,
-        bodyField=None
+        body=None
       )
     ).get
 
