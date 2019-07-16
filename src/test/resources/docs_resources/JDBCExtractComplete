@@ -28,6 +28,6 @@
     "id=3",
     "id=4"
   ],
-  "schemaURI": "hdfs://input_data/schema/customer.json",
+  "schemaURI": "hdfs://datalake/metadata/customer.json",
   "schemaView": "customer_schema"
 }

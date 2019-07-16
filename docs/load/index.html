@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.15.0</span></strong>
+          <span class="version">2.0.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -155,6 +155,24 @@
         <ul>
           
 
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://arc.tripl.ai/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
 
 
 
@@ -293,6 +311,42 @@
 
 
 
+<a  title="Deploy" href="https://arc.tripl.ai/deploy/">
+	
+	Deploy
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Plugins" href="https://arc.tripl.ai/plugins/">
+	
+	Plugins
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="Partials" href="https://arc.tripl.ai/partials/">
 	
 	Partials
@@ -314,60 +368,6 @@
 <a  title="Patterns" href="https://arc.tripl.ai/patterns/">
 	
 	Patterns
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Deploy" href="https://arc.tripl.ai/deploy/">
-	
-	Deploy
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Extend" href="https://arc.tripl.ai/extend/">
-	
-	Extend
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Contributing" href="https://arc.tripl.ai/contributing/">
-	
-	Contributing
 </a>
 
 
@@ -549,152 +549,6 @@
   <span class="nt">&#34;saveMode&#34;</span><span class="p">:</span> <span class="s2">&#34;Overwrite&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h2 id="azureeventhubsload">AzureEventHubsLoad</h2>
-
-<h5 id="since-1-0-0-supports-streaming-false-1">Since: 1.0.0 - Supports Streaming: False</h5>
-
-<p>The <code>AzureEventHubsLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://azure.microsoft.com/en-gb/services/event-hubs/">Azure Event Hubs</a> stream. The input to this stage needs to be a single column dataset of signature <code>value: string</code> and is intended to be used after a <a href="https://arc.tripl.ai/load/#jsontransform">JSONTransform</a> stage which would prepare the data for sending to the external server.</p>
-
-<p>In the future additional Transform stages (like <code>ProtoBufTransform</code>) could be added to prepare binary payloads instead of just <code>json</code> <code>string</code>.</p>
-
-<h3 id="parameters-1">Parameters</h3>
-
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>name</td>
-<td>String</td>
-<td>true</td>
-<td>Name of the stage for logging.</td>
-</tr>
-
-<tr>
-<td>environments</td>
-<td>Array[String]</td>
-<td>true</td>
-<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
-</tr>
-
-<tr>
-<td>inputView</td>
-<td>String</td>
-<td>true</td>
-<td>Name of incoming Spark dataset.</td>
-</tr>
-
-<tr>
-<td>namespaceName</td>
-<td>String</td>
-<td>true</td>
-<td>The Event Hubs namespace.</td>
-</tr>
-
-<tr>
-<td>eventHubName</td>
-<td>String</td>
-<td>true</td>
-<td>The Event Hubs entity.</td>
-</tr>
-
-<tr>
-<td>sharedAccessSignatureKeyName</td>
-<td>String</td>
-<td>true</td>
-<td>The Event Hubs Shared Access Signature Key Name.</td>
-</tr>
-
-<tr>
-<td>sharedAccessSignatureKey</td>
-<td>String</td>
-<td>true</td>
-<td>The Event Hubs Shared Access Signature Key.</td>
-</tr>
-
-<tr>
-<td>description</td>
-<td>String</td>
-<td>false</td>
-<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
-</tr>
-
-<tr>
-<td>numPartitions</td>
-<td>Integer</td>
-<td>false</td>
-<td>The number of partitions that will be used for controlling parallelism. Azure EventHubs will throw a <code>ServerBusyException</code> if too many executors write to a target in parallel which can be decreased by reducing the number of partitions.</td>
-</tr>
-
-<tr>
-<td>retryCount</td>
-<td>Integer</td>
-<td>false</td>
-<td>The maximum number of retries for the exponential backoff algorithm.<br><br>Default: 10.</td>
-</tr>
-
-<tr>
-<td>retryMaxBackoff</td>
-<td>Long</td>
-<td>false</td>
-<td>The maximum time (in seconds) for the exponential backoff algorithm to wait between retries.<br><br>Default: 30.</td>
-</tr>
-
-<tr>
-<td>retryMinBackoff</td>
-<td>Long</td>
-<td>false</td>
-<td>The minimum time (in seconds) for the exponential backoff algorithm to wait between retries.<br><br>Default: 0.</td>
-</tr>
-</tbody>
-</table>
-
-<h3 id="examples-1">Examples</h3>
-
-<h4 id="minimal-1">Minimal</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;AzureEventHubsLoad&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer to azure event hubs&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>
-  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;namespaceName&#34;</span><span class="p">:</span> <span class="s2">&#34;mynamespace&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;eventHubName&#34;</span><span class="p">:</span> <span class="s2">&#34;myeventhub&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;sharedAccessSignatureKeyName&#34;</span><span class="p">:</span> <span class="s2">&#34;mysignaturename&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;sharedAccessSignatureKey&#34;</span><span class="p">:</span> <span class="s2">&#34;ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=&#34;</span>
-<span class="p">}</span></code></pre></div>
-
-<h4 id="complete-1">Complete</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;AzureEventHubsLoad&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer to azure event hubs&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer to azure event hubs&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>
-  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;namespaceName&#34;</span><span class="p">:</span> <span class="s2">&#34;mynamespace&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;eventHubName&#34;</span><span class="p">:</span> <span class="s2">&#34;myeventhub&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;sharedAccessSignatureKeyName&#34;</span><span class="p">:</span> <span class="s2">&#34;mysignaturename&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;sharedAccessSignatureKey&#34;</span><span class="p">:</span> <span class="s2">&#34;ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
-  <span class="nt">&#34;retryCount&#34;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span>
-  <span class="nt">&#34;retryMaxBackoff&#34;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>
-  <span class="nt">&#34;retryMinBackoff&#34;</span><span class="p">:</span> <span class="mi">5</span>
-<span class="p">}</span></code></pre></div>
-
 <h2 id="consoleload">ConsoleLoad</h2>
 
 <h5 id="since-1-2-0-supports-streaming-true">Since: 1.2.0 - Supports Streaming: True</h5>
@@ -703,7 +557,7 @@
 
 <p>This stage has been included for testing Structured Streaming jobs as it can be very difficult to debug. Generally this stage would only be included when Arc is run in a test mode (i.e. the <code>environment</code> is set to <code>test</code>).</p>
 
-<h3 id="parameters-2">Parameters</h3>
+<h3 id="parameters-1">Parameters</h3>
 
 <table>
 <thead>
@@ -753,9 +607,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-2">Examples</h3>
+<h3 id="examples-1">Examples</h3>
 
-<h4 id="minimal-2">Minimal</h4>
+<h4 id="minimal-1">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ConsoleLoad&#34;</span><span class="p">,</span>
@@ -767,7 +621,7 @@
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-2">Complete</h4>
+<h4 id="complete-1">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ConsoleLoad&#34;</span><span class="p">,</span>
@@ -781,21 +635,18 @@
   <span class="nt">&#34;outputMode&#34;</span><span class="p">:</span> <span class="s2">&#34;Append&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h2 id="databricksdeltaload">DatabricksDeltaLoad</h2>
+<h2 id="deltalakeload">DeltaLakeLoad</h2>
 
-<h5 id="since-1-8-0-supports-streaming-true">Since: 1.8.0 - Supports Streaming: True</h5>
+<h5 id="since-2-0-0-supports-streaming-true">Since: 2.0.0 - Supports Streaming: True</h5>
 
 <div class="admonition note">
-<p class="admonition-title">Experimental</p>
-<p><p>The <code>DatabricksDeltaLoad</code> is currently in experimental state whilst the requirements become clearer.</p>
-
-<p>This means this API is likely to change.</p>
-</p>
+<p class="admonition-title">Plugin</p>
+<p>The <code>DeltaLakeLoad</code> is provided by the <a href="https://github.com/tripl-ai/arc-deltalake-pipeline-plugin">https://github.com/tripl-ai/arc-deltalake-pipeline-plugin</a> package.</p>
 </div>
 
-<p>The <code>DatabricksDeltaLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://databricks.com/product/databricks-delta/">Databricks Delta</a> file.</p>
+<p>The <code>DeltaLakeLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://delta.io/">DeltaLake</a> file.</p>
 
-<h3 id="parameters-3">Parameters</h3>
+<h3 id="parameters-2">Parameters</h3>
 
 <table>
 <thead>
@@ -866,9 +717,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-3">Examples</h3>
+<h3 id="examples-2">Examples</h3>
 
-<h4 id="minimal-3">Minimal</h4>
+<h4 id="minimal-2">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DatabricksDeltaLoad&#34;</span><span class="p">,</span>
@@ -881,7 +732,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;/delta/customers&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-3">Complete</h4>
+<h4 id="complete-2">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DatabricksDeltaLoad&#34;</span><span class="p">,</span>
@@ -900,183 +751,13 @@
   <span class="nt">&#34;saveMode&#34;</span><span class="p">:</span> <span class="s2">&#34;Overwrite&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h2 id="databrickssqldwload">DatabricksSQLDWLoad</h2>
-
-<h5 id="since-1-8-1-supports-streaming-false">Since: 1.8.1 - Supports Streaming: False</h5>
-
-<div class="admonition note">
-<p class="admonition-title">Experimental</p>
-<p><p>The <code>DatabricksSQLDWLoad</code> is currently in experimental state whilst the requirements become clearer.</p>
-
-<p>This means this API is likely to change.</p>
-</p>
-</div>
-
-<p>The <code>DatabricksSQLDWLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://azure.microsoft.com/en-au/services/sql-data-warehouse/">Azure SQL Data Warehouse</a> file using a <a href="https://docs.databricks.com/spark/latest/data-sources/azure/sql-data-warehouse.html">proprietary driver</a> within a Databricks Runtime Environment.</p>
-
-<p>Known limitations:</p>
-
-<ul>
-<li>SQL Server date fields can only be between range <code>1753-01-01</code> to <code>9999-12-31</code>.</li>
-</ul>
-
-<h3 id="parameters-4">Parameters</h3>
-
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>name</td>
-<td>String</td>
-<td>true</td>
-<td>Name of the stage for logging.</td>
-</tr>
-
-<tr>
-<td>environments</td>
-<td>Array[String]</td>
-<td>true</td>
-<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
-</tr>
-
-<tr>
-<td>inputView</td>
-<td>String</td>
-<td>true</td>
-<td>Name of incoming Spark dataset.</td>
-</tr>
-
-<tr>
-<td>jdbcURL</td>
-<td>URI</td>
-<td>true</td>
-<td>URI of the Delta file to write to.</td>
-</tr>
-
-<tr>
-<td>dbTable</td>
-<td>String</td>
-<td>true</td>
-<td>The table to create in SQL DW.</td>
-</tr>
-
-<tr>
-<td>tempDir</td>
-<td>URI</td>
-<td>true</td>
-<td>A Azure Blob Storage path to temporarily hold the data before executing the SQLDW load.</td>
-</tr>
-
-<tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>true</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.. Note this stage only works with the <code>AzureSharedKey</code> <a href="../partials/#authentication">authentication</a> method.</td>
-</tr>
-
-<tr>
-<td>description</td>
-<td>String</td>
-<td>false</td>
-<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
-</tr>
-
-<tr>
-<td>forwardSparkAzureStorageCredentials</td>
-<td>Boolean</td>
-<td>false</td>
-<td>If true, the library automatically discovers the credentials that Spark is using to connect to the Blob Storage container and forwards those credentials to SQL DW over JDBC.<br><br>Default: <code>true</code>.</td>
-</tr>
-
-<tr>
-<td>tableOptions</td>
-<td>String</td>
-<td>false</td>
-<td>Used to specify table options when creating the SQL DW table.</td>
-</tr>
-
-<tr>
-<td>maxStrLength</td>
-<td>Integer</td>
-<td>false</td>
-<td>The default length of <code>String</code>/<code>NVARCHAR</code> columns when creating the table in SQLDW.<br><br>Default: <code>256</code>.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Parameters for connecting to the <a href="https://azure.microsoft.com/en-au/services/sql-data-warehouse/">Azure SQL Data Warehouse</a> so that password is not logged.</td>
-</tr>
-</tbody>
-</table>
-
-<h3 id="examples-4">Examples</h3>
-
-<h4 id="minimal-4">Minimal</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DatabricksSQLDWLoad&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer extract&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>
-  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;method&#34;</span><span class="p">:</span> <span class="s2">&#34;AzureSharedKey&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;accountName&#34;</span><span class="p">:</span> <span class="s2">&#34;myaccount&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;signature&#34;</span><span class="p">:</span> <span class="s2">&#34;ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=&#34;</span>
-  <span class="p">},</span>
-  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:sqlserver://localhost;user=MyUserName&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;dbTable&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;tempDir&#34;</span><span class="p">:</span> <span class="s2">&#34;wasbs://&lt;your-container-name&gt;@&lt;your-storage-account-name&gt;.blob.core.windows.net/&lt;your-directory-name&gt;&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;password&#34;</span><span class="p">:</span> <span class="s2">&#34;notlogged&#34;</span>
-  <span class="p">}</span>
-<span class="p">}</span></code></pre></div>
-
-<h4 id="complete-4">Complete</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DatabricksSQLDWLoad&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;write customer extract&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>
-  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;method&#34;</span><span class="p">:</span> <span class="s2">&#34;AzureSharedKey&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;accountName&#34;</span><span class="p">:</span> <span class="s2">&#34;myaccount&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;signature&#34;</span><span class="p">:</span> <span class="s2">&#34;ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=&#34;</span>
-  <span class="p">},</span>  
-  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:sqlserver://localhost;user=MyUserName&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;dbTable&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;tempDir&#34;</span><span class="p">:</span> <span class="s2">&#34;wasbs://&lt;your-container-name&gt;@&lt;your-storage-account-name&gt;.blob.core.windows.net/&lt;your-directory-name&gt;&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;forwardSparkAzureStorageCredentials&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> 
-  <span class="nt">&#34;tableOptions&#34;</span><span class="p">:</span> <span class="s2">&#34;CLUSTERED COLUMNSTORE INDEX, DISTRIBUTION = ROUND_ROBIN&#34;</span><span class="p">,</span> 
-  <span class="nt">&#34;maxStrLength&#34;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
-  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;password&#34;</span><span class="p">:</span> <span class="s2">&#34;notlogged&#34;</span>
-  <span class="p">}</span>
-<span class="p">}</span></code></pre></div>
-
 <h2 id="delimitedload">DelimitedLoad</h2>
 
 <h5 id="since-1-0-0-supports-streaming-true">Since: 1.0.0 - Supports Streaming: True</h5>
 
 <p>The <code>DelimitedLoad</code> writes an input <code>DataFrame</code> to a target delimited file.</p>
 
-<h3 id="parameters-5">Parameters</h3>
+<h3 id="parameters-3">Parameters</h3>
 
 <table>
 <thead>
@@ -1182,9 +863,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-5">Examples</h3>
+<h3 id="examples-3">Examples</h3>
 
-<h4 id="minimal-5">Minimal</h4>
+<h4 id="minimal-3">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedLoad&#34;</span><span class="p">,</span>
@@ -1197,7 +878,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.csv&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-5">Complete</h4>
+<h4 id="complete-3">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedLoad&#34;</span><span class="p">,</span>
@@ -1226,16 +907,13 @@
 <h5 id="since-1-9-0-supports-streaming-false">Since: 1.9.0 - Supports Streaming: False</h5>
 
 <div class="admonition note">
-<p class="admonition-title">Experimental</p>
-<p><p>The <code>ElasticsearchLoad</code> is currently in experimental state whilst the requirements become clearer.</p>
-
-<p>This means this API is likely to change.</p>
-</p>
+<p class="admonition-title">Plugin</p>
+<p>The <code>ElasticsearchLoad</code> is provided by the <a href="https://github.com/tripl-ai/arc-elasticsearch-pipeline-plugin">https://github.com/tripl-ai/arc-elasticsearch-pipeline-plugin</a> package.</p>
 </div>
 
 <p>The <code>ElasticsearchLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://www.elastic.co/products/elasticsearch">Elasticsearch</a> cluster.</p>
 
-<h3 id="parameters-6">Parameters</h3>
+<h3 id="parameters-4">Parameters</h3>
 
 <table>
 <thead>
@@ -1306,9 +984,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-6">Examples</h3>
+<h3 id="examples-4">Examples</h3>
 
-<h4 id="minimal-6">Minimal</h4>
+<h4 id="minimal-4">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ElasticsearchLoad&#34;</span><span class="p">,</span>
@@ -1327,7 +1005,7 @@
   <span class="p">}</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-6">Complete</h4>
+<h4 id="complete-4">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ElasticsearchLoad&#34;</span><span class="p">,</span>
@@ -1359,7 +1037,7 @@
 
 <p>In the future additional Transform stages (like <code>ProtoBufTransform</code>) could be added to prepare binary payloads instead of just <code>json</code> <code>string</code>.</p>
 
-<h3 id="parameters-7">Parameters</h3>
+<h3 id="parameters-5">Parameters</h3>
 
 <table>
 <thead>
@@ -1423,9 +1101,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-7">Examples</h3>
+<h3 id="examples-5">Examples</h3>
 
-<h4 id="minimal-7">Minimal</h4>
+<h4 id="minimal-5">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPLoad&#34;</span><span class="p">,</span>
@@ -1438,7 +1116,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-7">Complete</h4>
+<h4 id="complete-5">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPLoad&#34;</span><span class="p">,</span>
@@ -1468,7 +1146,7 @@
 
 <p>Whilst it is possible to use <code>JDBCLoad</code> to create tables directly in the target database Spark only has a limited knowledge of the schema required in the destination database and so will translate things like <code>StringType</code> internally to a <code>TEXT</code> type in the target database (because internally Spark does not have limited length strings). The recommendation is to use a preceding <a href="../execute/#jdbcexecute">JDBCExecute</a> to execute a <code>CREATE TABLE</code> statement which creates the intended schema then inserting into that table with <code>saveMode</code> set to <code>Append</code>.</p>
 
-<h3 id="parameters-8">Parameters</h3>
+<h3 id="parameters-6">Parameters</h3>
 
 <table>
 <thead>
@@ -1519,8 +1197,8 @@
 <tr>
 <td>params</td>
 <td>Map[String, String]</td>
-<td>true</td>
-<td>Map of configuration parameters.. Currently requires <code>user</code> and <code>password</code> to be set here - see example below.</td>
+<td>false</td>
+<td>Map of configuration parameters.. Any parameters provided will be added to the JDBC connection object. These are not logged so it is safe to put passwords here.</td>
 </tr>
 
 <tr>
@@ -1595,9 +1273,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-8">Examples</h3>
+<h3 id="examples-6">Examples</h3>
 
-<h4 id="minimal-8">Minimal</h4>
+<h4 id="minimal-6">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCLoad&#34;</span><span class="p">,</span>
@@ -1615,7 +1293,7 @@
   <span class="p">}</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-8">Complete</h4>
+<h4 id="complete-6">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCLoad&#34;</span><span class="p">,</span>
@@ -1629,7 +1307,6 @@
   <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;tableName&#34;</span><span class="p">:</span> <span class="s2">&#34;mydatabase.myschema.customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;batchsize&#34;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
-  <span class="nt">&#34;bulkload&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;createTableColumnTypes&#34;</span><span class="p">:</span> <span class="s2">&#34;name CHAR(64), comments VARCHAR(1024)&#34;</span><span class="p">,</span>
   <span class="nt">&#34;createTableOptions&#34;</span><span class="p">:</span> <span class="s2">&#34;CREATE TABLE t (name string) ENGINE=InnoDB&#34;</span><span class="p">,</span>
   <span class="nt">&#34;isolationLevel&#34;</span><span class="p">:</span> <span class="s2">&#34;READ_COMMITTED&#34;</span><span class="p">,</span>
@@ -1649,7 +1326,7 @@
 
 <p>The <code>JSONLoad</code> writes an input <code>DataFrame</code> to a target JSON file.</p>
 
-<h3 id="parameters-9">Parameters</h3>
+<h3 id="parameters-7">Parameters</h3>
 
 <table>
 <thead>
@@ -1727,9 +1404,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-9">Examples</h3>
+<h3 id="examples-7">Examples</h3>
 
-<h4 id="minimal-9">Minimal</h4>
+<h4 id="minimal-7">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONLoad&#34;</span><span class="p">,</span>
@@ -1742,7 +1419,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.json&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-9">Complete</h4>
+<h4 id="complete-7">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONLoad&#34;</span><span class="p">,</span>
@@ -1766,11 +1443,16 @@
 
 <h5 id="since-1-0-8-supports-streaming-true">Since: 1.0.8 - Supports Streaming: True</h5>
 
+<div class="admonition note">
+<p class="admonition-title">Plugin</p>
+<p>The <code>KafkaLoad</code> is provided by the <a href="https://github.com/tripl-ai/arc-kafka-pipeline-plugin">https://github.com/tripl-ai/arc-kafka-pipeline-plugin</a> package.</p>
+</div>
+
 <p>The <code>KafkaLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://kafka.apache.org/">Kafka</a> <code>topic</code>. The input to this stage needs to be a single column dataset of signature <code>value: string</code> - intended to be used after a <a href="https://arc.tripl.ai/load/#jsontransform">JSONTransform</a> stage - or a two columns of signature <code>key: string, value: string</code> which could be created by a <a href="https://arc.tripl.ai/load/#sqltransform">SQLTransform</a> stage.</p>
 
 <p>In the future additional Transform stages (like <code>ProtoBufTransform</code>) may be added to prepare binary payloads instead of just <code>json</code> <code>string</code>.</p>
 
-<h3 id="parameters-10">Parameters</h3>
+<h3 id="parameters-8">Parameters</h3>
 
 <table>
 <thead>
@@ -1855,9 +1537,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-10">Examples</h3>
+<h3 id="examples-8">Examples</h3>
 
-<h4 id="minimal-10">Minimal</h4>
+<h4 id="minimal-8">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaLoad&#34;</span><span class="p">,</span>
@@ -1871,7 +1553,7 @@
   <span class="nt">&#34;topic&#34;</span><span class="p">:</span> <span class="s2">&#34;customers&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-10">Complete</h4>
+<h4 id="complete-8">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaLoad&#34;</span><span class="p">,</span>
@@ -1890,13 +1572,137 @@
   <span class="nt">&#34;retries&#34;</span><span class="p">:</span> <span class="mi">0</span>
 <span class="p">}</span></code></pre></div>
 
+<h2 id="mongodbload">MongoDBLoad</h2>
+
+<h5 id="since-2-0-0-supports-streaming-false">Since: 2.0.0 - Supports Streaming: False</h5>
+
+<div class="admonition note">
+<p class="admonition-title">Plugin</p>
+<p>The <code>MongoDBLoad</code> is provided by the <a href="https://github.com/tripl-ai/arc-mongo-pipeline-plugin">https://github.com/tripl-ai/arc-mongo-pipeline-plugin</a> package.</p>
+</div>
+
+<p>The <code>MongoDBLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://www.mongodb.com/">MongoDB</a> collection.</p>
+
+<h3 id="parameters-9">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>options</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Map of configuration parameters. These parameters are used to provide database connection/collection details.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>saveMode</td>
+<td>String</td>
+<td>false</td>
+<td>The mode for writing the output file to describe how errors are handled. Available options are: <code>Append</code>, <code>ErrorIfExists</code>, <code>Ignore</code>, <code>Overwrite</code>. Default is <code>Overwrite</code> if not specified.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-9">Examples</h3>
+
+<h4 id="minimal-9">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MongoDBLoad&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;options&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;mongodb://username:password@mongo:27017&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;database&#34;</span><span class="p">:</span> <span class="s2">&#34;local&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;collection&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customers&#34;</span>
+<span class="p">}</span> </code></pre></div>
+
+<h4 id="complete-9">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MongoDBLoad&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;options&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;mongodb://username:password@mongo:27017&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;database&#34;</span><span class="p">:</span> <span class="s2">&#34;local&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;collection&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;saveMode&#34;</span><span class="p">:</span> <span class="s2">&#34;Overwrite&#34;</span>
+<span class="p">}</span> 
+</code></pre></div>
+
 <h2 id="orcload">ORCLoad</h2>
 
 <h5 id="since-1-0-0-supports-streaming-true-4">Since: 1.0.0 - Supports Streaming: True</h5>
 
 <p>The <code>ORCLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://orc.apache.org/">Apache ORC</a> file.</p>
 
-<h3 id="parameters-11">Parameters</h3>
+<h3 id="parameters-10">Parameters</h3>
 
 <table>
 <thead>
@@ -1974,9 +1780,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-11">Examples</h3>
+<h3 id="examples-10">Examples</h3>
 
-<h4 id="minimal-11">Minimal</h4>
+<h4 id="minimal-10">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ORCLoad&#34;</span><span class="p">,</span>
@@ -1989,7 +1795,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.orc&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-11">Complete</h4>
+<h4 id="complete-10">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ORCLoad&#34;</span><span class="p">,</span>
@@ -2015,7 +1821,7 @@
 
 <p>The <code>ParquetLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://parquet.apache.org/">Apache Parquet</a> file.</p>
 
-<h3 id="parameters-12">Parameters</h3>
+<h3 id="parameters-11">Parameters</h3>
 
 <table>
 <thead>
@@ -2093,9 +1899,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-12">Examples</h3>
+<h3 id="examples-11">Examples</h3>
 
-<h4 id="minimal-12">Minimal</h4>
+<h4 id="minimal-11">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetLoad&#34;</span><span class="p">,</span>
@@ -2108,7 +1914,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.parquet&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-12">Complete</h4>
+<h4 id="complete-11">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetLoad&#34;</span><span class="p">,</span>
@@ -2134,7 +1940,7 @@
 
 <p>The <code>TextLoad</code> writes an input <code>DataFrame</code> to a target text file.</p>
 
-<h3 id="parameters-13">Parameters</h3>
+<h3 id="parameters-12">Parameters</h3>
 
 <table>
 <thead>
@@ -2240,9 +2046,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-13">Examples</h3>
+<h3 id="examples-12">Examples</h3>
 
-<h4 id="minimal-13">Minimal</h4>
+<h4 id="minimal-12">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TextLoad&#34;</span><span class="p">,</span>
@@ -2255,7 +2061,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.text&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-13">Complete</h4>
+<h4 id="complete-12">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TextLoad&#34;</span><span class="p">,</span>
@@ -2278,11 +2084,11 @@
 
 <h2 id="xmlload">XMLLoad</h2>
 
-<h5 id="since-1-0-0-supports-streaming-false-2">Since: 1.0.0 - Supports Streaming: False</h5>
+<h5 id="since-1-0-0-supports-streaming-false-1">Since: 1.0.0 - Supports Streaming: False</h5>
 
 <p>The <code>XMLLoad</code> writes an input <code>DataFrame</code> to a target XML file.</p>
 
-<h3 id="parameters-14">Parameters</h3>
+<h3 id="parameters-13">Parameters</h3>
 
 <table>
 <thead>
@@ -2360,9 +2166,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-14">Examples</h3>
+<h3 id="examples-13">Examples</h3>
 
-<h4 id="minimal-14">Minimal</h4>
+<h4 id="minimal-13">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLLoad&#34;</span><span class="p">,</span>
@@ -2375,7 +2181,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.xml&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-14">Complete</h4>
+<h4 id="complete-13">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLLoad&#34;</span><span class="p">,</span>

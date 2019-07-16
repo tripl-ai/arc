@@ -17,18 +17,18 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 import ai.tripl.arc.udf.UDF
 
 import ai.tripl.arc.util._
 
 class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val inputView = "inputView"
   val outputView = "outputView"
   val uri = s"http://tensorflow_serving:9001/v1/models/simple/versions/1:predict"
   var logger: ai.tripl.arc.util.log.logger.Logger = _
+  implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
   before {
     implicit val spark = SparkSession
@@ -37,42 +37,42 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
+    implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")     
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
 
-    logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-
     // register udf
-    UDF.registerUDFs(spark.sqlContext)(logger)
+    UDF.registerUDFs()(spark, logger, arcContext)
   }
 
   after {
     session.stop
-  }    
+  }
 
   test("HTTPTransform: Can call TensorflowServing via REST" ) {
     implicit val spark = session
-    implicit val l = logger
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
 
     var payloadDataset = spark.sql(s"""
-    SELECT 
+    SELECT
       id
-      ,TO_JSON(NAMED_STRUCT('instances', ARRAY(id))) AS value 
+      ,TO_JSON(NAMED_STRUCT('instances', ARRAY(id))) AS value
     FROM ${inputView}
     """)
     payloadDataset.createOrReplaceTempView(inputView)
 
-    val transformDataset = transform.HTTPTransform.transform(
-      HTTPTransform(
+    transform.HTTPTransformStage.execute(
+      transform.HTTPTransformStage(
+        plugin=new transform.HTTPTransform,
         description=None,
         name=outputView,
         uri=new URI(uri),
@@ -87,7 +87,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter="",
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast          
+        failMode=FailModeTypeFailFast
       )
     ).get
 
@@ -98,26 +98,27 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
     assert(output.first.getAs[scala.collection.mutable.WrappedArray[Integer]](0)(0) == 11)
     assert(output.schema.fields(0).dataType.toString == "ArrayType(IntegerType,false)")
-  }  
+  }
 
   test("HTTPTransform: Can call TensorflowServing via REST: inputField" ) {
     implicit val spark = session
-    implicit val l = logger
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
 
     var payloadDataset = spark.sql(s"""
-    SELECT 
+    SELECT
       id
-      ,TO_JSON(NAMED_STRUCT('instances', ARRAY(id))) AS input 
+      ,TO_JSON(NAMED_STRUCT('instances', ARRAY(id))) AS input
     FROM ${inputView}
     """)
     payloadDataset.createOrReplaceTempView(inputView)
 
-    val transformDataset = transform.HTTPTransform.transform(
-      HTTPTransform(
+    transform.HTTPTransformStage.execute(
+      transform.HTTPTransformStage(
+        plugin=new transform.HTTPTransform,
         description=None,
         name=outputView,
         uri=new URI(uri),
@@ -132,7 +133,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter="",
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast          
+        failMode=FailModeTypeFailFast
       )
     ).get
 
@@ -143,6 +144,6 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
 
     assert(output.first.getAs[scala.collection.mutable.WrappedArray[Integer]](0)(0) == 11)
     assert(output.schema.fields(0).dataType.toString == "ArrayType(IntegerType,false)")
-  }    
+  }
 
 }

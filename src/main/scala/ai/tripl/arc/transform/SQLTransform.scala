@@ -1,84 +1,170 @@
 package ai.tripl.arc.transform
 
-import java.lang._
+import java.net.URI
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
-import org.apache.spark.storage.StorageLevel
 
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util._
+import ai.tripl.arc.config._
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.plugins.PipelineStagePlugin
+import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.util.SQLUtils
+import ai.tripl.arc.util.QueryExecutionUtils
+import ai.tripl.arc.util.Utils
 
-object SQLTransform {
+class SQLTransform extends PipelineStagePlugin {
 
-  def transform(transform: SQLTransform)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
-    val startTime = System.currentTimeMillis() 
-    val stageDetail = new java.util.HashMap[String, Object]()
-    stageDetail.put("type", transform.getType)
-    stageDetail.put("name", transform.name)
-    for (description <- transform.description) {
-      stageDetail.put("description", description)    
-    }    
-    stageDetail.put("inputURI", transform.inputURI.toString)  
-    stageDetail.put("outputView", transform.outputView)   
-    stageDetail.put("sqlParams", transform.sqlParams.asJava)   
-    stageDetail.put("persist", Boolean.valueOf(transform.persist))
+  val version = Utils.getFrameworkVersion
 
-    // inject sql parameters
-    val stmt = SQLUtils.injectParameters(transform.sql, transform.sqlParams, false)
-    stageDetail.put("sql", stmt)
+  def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
 
-    logger.info()
-      .field("event", "enter")
-      .map("stage", stageDetail)      
-      .log()      
-    
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val name = getValue[String]("name")
+    val description = getOptionalValue[String]("description")
+    val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
+    val authentication = readAuthentication("authentication")
+    val inputSQL = parsedURI |> textContentForURI("inputURI", authentication) _
+    val sqlParams = readMap("sqlParams", c)
+    val validSQL = inputSQL |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
+    val outputView = getValue[String]("outputView")
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
+    val params = readMap("params", c)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    (name, description, parsedURI, inputSQL, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
+      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) =>
+
+        if (validSQL.toLowerCase() contains "now") {
+          logger.warn()
+            .field("event", "validateConfig")
+            .field("name", name)
+            .field("type", "SQLTransform")
+            .field("message", "sql contains NOW() function which may produce non-deterministic results")
+            .log()
+        }
+
+        if (validSQL.toLowerCase() contains "current_date") {
+          logger.warn()
+            .field("event", "validateConfig")
+            .field("name", name)
+            .field("type", "SQLTransform")
+            .field("message", "sql contains CURRENT_DATE() function which may produce non-deterministic results")
+            .log()
+        }
+
+        if (validSQL.toLowerCase() contains "current_timestamp") {
+          logger.warn()
+            .field("event", "validateConfig")
+            .field("name", name)
+            .field("type", "SQLTransform")
+            .field("message", "sql contains CURRENT_TIMESTAMP() function which may produce non-deterministic results")
+            .log()
+        }
+
+        val stage = SQLTransformStage(
+          plugin=this,
+          name=name,
+          description=description,
+          inputURI=parsedURI,
+          sql=inputSQL,
+          outputView=outputView,
+          params=params,
+          sqlParams=sqlParams,
+          persist=persist,
+          numPartitions=numPartitions,
+          partitionBy=partitionBy
+        )
+
+        stage.stageDetail.put("inputURI", parsedURI.toString)
+        stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
+        stage.stageDetail.put("sql", inputSQL)
+        stage.stageDetail.put("sqlParams", sqlParams.asJava)
+        stage.stageDetail.put("params", params.asJava)
+
+        Right(stage)
+      case _ =>
+        val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+}
+
+case class SQLTransformStage(
+    plugin: SQLTransform,
+    name: String,
+    description: Option[String],
+    inputURI: URI,
+    sql: String,
+    outputView:String,
+    params: Map[String, String],
+    sqlParams: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
+    partitionBy: List[String]
+  ) extends PipelineStage {
+
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    SQLTransformStage.execute(this)
+  }
+}
+
+object SQLTransformStage {
+
+  def execute(stage: SQLTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+
+    val stmt = SQLUtils.injectParameters(stage.sql, stage.sqlParams, false)
+    stage.stageDetail.put("sql", stmt)
+
     val transformedDF = try {
       spark.sql(stmt)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
+        override val detail = stage.stageDetail
       }
     }
 
     // repartition to distribute rows evenly
-    val repartitionedDF = transform.partitionBy match {
-      case Nil => { 
-        transform.numPartitions match {
+    val repartitionedDF = stage.partitionBy match {
+      case Nil => {
+        stage.numPartitions match {
           case Some(numPartitions) => transformedDF.repartition(numPartitions)
           case None => transformedDF
-        }   
+        }
       }
       case partitionBy => {
         // create a column array for repartitioning
         val partitionCols = partitionBy.map(col => transformedDF(col))
-        transform.numPartitions match {
+        stage.numPartitions match {
           case Some(numPartitions) => transformedDF.repartition(numPartitions, partitionCols:_*)
           case None => transformedDF.repartition(partitionCols:_*)
         }
       }
     }
-
-    repartitionedDF.createOrReplaceTempView(transform.outputView)    
+    if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
       // add partition and predicate pushdown detail to logs
-      stageDetail.put("partitionFilters", QueryExecutionUtils.getPartitionFilters(repartitionedDF.queryExecution.executedPlan).toArray)
-      stageDetail.put("dataFilters", QueryExecutionUtils.getDataFilters(repartitionedDF.queryExecution.executedPlan).toArray)
-      stageDetail.put("outputColumns", Integer.valueOf(repartitionedDF.schema.length))
-      stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
+      stage.stageDetail.put("partitionFilters", QueryExecutionUtils.getPartitionFilters(repartitionedDF.queryExecution.executedPlan).toArray)
+      stage.stageDetail.put("dataFilters", QueryExecutionUtils.getDataFilters(repartitionedDF.queryExecution.executedPlan).toArray)
+      stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
+      stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
-      if (transform.persist) {
-        repartitionedDF.persist(StorageLevel.MEMORY_AND_DISK_SER)
-        stageDetail.put("records", Long.valueOf(repartitionedDF.count)) 
-      }      
+      if (stage.persist) {
+        repartitionedDF.persist(arcContext.storageLevel)
+        stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+      }
     }
-
-    logger.info()
-      .field("event", "exit")
-      .field("duration", System.currentTimeMillis() - startTime)
-      .map("stage", stageDetail)      
-      .log()  
 
     Option(repartitionedDF)
   }

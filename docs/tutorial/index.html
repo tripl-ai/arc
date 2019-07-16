@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">1.15.0</span></strong>
+          <span class="version">2.0.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -155,6 +155,24 @@
         <ul>
           
 
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://arc.tripl.ai/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
 
 
 
@@ -293,6 +311,42 @@
 
 
 
+<a  title="Deploy" href="https://arc.tripl.ai/deploy/">
+	
+	Deploy
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Plugins" href="https://arc.tripl.ai/plugins/">
+	
+	Plugins
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="Partials" href="https://arc.tripl.ai/partials/">
 	
 	Partials
@@ -314,60 +368,6 @@
 <a  title="Patterns" href="https://arc.tripl.ai/patterns/">
 	
 	Patterns
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Deploy" href="https://arc.tripl.ai/deploy/">
-	
-	Deploy
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Extend" href="https://arc.tripl.ai/extend/">
-	
-	Extend
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Contributing" href="https://arc.tripl.ai/contributing/">
-	
-	Contributing
 </a>
 
 
@@ -423,22 +423,22 @@
 
 <p>This tutorial works through a real-world example using the <a href="http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml">New York City Taxi dataset</a> which has been used heavliy around the web (see: <a href="http://toddwschneider.com/posts/analyzing-1-1-billion-nyc-taxi-and-uber-trips-with-a-vengeance/">Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance</a> and <a href="http://tech.marksblogg.com/billion-nyc-taxi-rides-redshift.html">A Billion Taxi Rides in Redshift</a>) due to its 1 billion+ record count and scripted process available on <a href="https://github.com/toddwschneider/nyc-taxi-data">github</a>.</p>
 
-<p>It is a great dataset as it has a lot of the attributes of real-world data we want to demonstrate:</p>
+<p>It is a great dataset as it has a lot of the attributes of real-world data that need to be considered:</p>
 
 <ul>
 <li><a href="https://en.wikipedia.org/wiki/Schema_evolution">Schema Evolution</a> where fields are added/changed/removed over time or data is normalized as patterns emerge.</li>
-<li>How to reliably apply data typing to an untyped source - in this case <a href="https://en.wikipedia.org/wiki/Comma-separated_values">Comma-Separated Values</a> format.</li>
+<li>How to reliably apply data typing to an untyped source - in this case the <a href="https://en.wikipedia.org/wiki/Comma-separated_values">Comma-Separated Values</a> format.</li>
 <li>How to build a repeatable and reproducible process which will scale by adding more compute - the small example is ~40 million records and the large 1+ billion records.</li>
-<li>How reusable components can be composed to <a href="https://arc.tripl.ai/extract/#delimitedextract">extract data</a> with <a href="https://arc.tripl.ai/transform/#typingtransform">data types</a>, apply rules to ensure <a href="https://arc.tripl.ai/validate/#sqlvalidate">data quality</a>, enrich the data by executing <a href="https://arc.tripl.ai/transform/#sqltransform">SQL statements</a>, apply <a href="https://arc.tripl.ai/transform/#mltransform">machine learning transformations</a> and <a href="https://arc.tripl.ai/load">load the data</a> to one or more destinations.</li>
+<li>How reusable components can be composed to <a href="https://arc.tripl.ai/extract/#delimitedextract">extract data</a> with <a href="https://arc.tripl.ai/transform/#typingtransform">data types</a>, apply rules to ensure <a href="https://arc.tripl.ai/validate/#sqlvalidate">data quality</a>, enrich the data by executing <a href="https://arc.tripl.ai/transform/#sqltransform">SQL statements</a>, apply <a href="https://arc.tripl.ai/transform/#mltransform">machine learning transformations</a> and <a href="https://arc.tripl.ai/load">load the data</a> to one or more targets.</li>
 </ul>
 
 <h2 id="get-arc-starter">Get arc-starter</h2>
 
 <p><img src="https://arc.tripl.ai/img/arc-starter.png" alt="arc-starter" /></p>
 
-<p>The easiest way to build an Arc job is by using <a href="https://github.com/seddonm1/arc-starter">arc-starter</a> which is an interactive development environment using the <a href="https://jupyter.org/">Jupyter Notebooks</a> ecosystem. This tutorial assumes you have cloned this repository.</p>
+<p>The easiest way to build an Arc job is by using <a href="https://github.com/tripl-ai/arc-starter">arc-starter</a> which is an interactive development environment using the <a href="https://jupyter.org/">Jupyter Notebooks</a> ecosystem. This tutorial assumes you have cloned this repository.</p>
 
-<pre><code class="language-bash">git clone https://github.com/seddonm1/arc-starter.git
+<pre><code class="language-bash">git clone https://github.com/tripl-ai/arc-starter.git
 cd arc-starter
 </code></pre>
 
@@ -527,7 +527,7 @@ start-notebook.sh \
 
 <p>Paste this into the first sell and execute to set the environment variable.</p>
 
-<pre><code class="language-bash">%env ETL_CONF_BASE_URL=/home/jovyan/tutorial
+<pre><code class="language-scala">%env ETL_CONF_BASE_URL=/home/jovyan/tutorial
 </code></pre>
 
 <h2 id="extracting-data">Extracting Data</h2>
@@ -634,13 +634,13 @@ start-notebook.sh \
 
 <p>To make this data more useful for querying (for example doing aggregation by time period) we need to safely apply data typing.</p>
 
-<p>Add a new stage to apply a <code>TypingTransformation</code> to the data extracted in the first stage named <code>green_tripdata0_raw</code> which will parse the data and produce an output dataset called <code>green_tripdata0</code> with correctly typed data. To do this we have to tell Spark how to parse the text data back into their original data types. To do this transformation we need some way to pass in the description of how to parse the data and that is descriped in the <code>metadata</code> file passed in using the <code>inputURI</code> key and described in the next step.</p>
+<p>Add a new stage to apply a <code>TypingTransformation</code> to the data extracted in the first stage named <code>green_tripdata0_raw</code> which will parse the data and produce an output dataset called <code>green_tripdata0</code> with correctly typed data. To do this we have to tell Spark how to parse the text data back into their original data types. To do this transformation we need some way to pass in the description of how to parse the data and that is descriped in the <code>metadata</code> file passed in using the <code>schemaURI</code> key and described in the next step.</p>
 
 <pre><code class="language-json">{
   &quot;type&quot;: &quot;TypingTransform&quot;,
   &quot;name&quot;: &quot;apply green_tripdata/0 data types&quot;,
   &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-  &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/0/green_tripdata.json&quot;,
+  &quot;schemaURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/0/green_tripdata.json&quot;,
   &quot;inputView&quot;: &quot;green_tripdata0_raw&quot;,            
   &quot;outputView&quot;: &quot;green_tripdata0&quot;       
 }   
@@ -824,7 +824,7 @@ FROM (
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_BASE_URL=/home/jovyan/tutorial&quot; \
 -p 4040:4040 \
-triplai/arc:1.15.0 \
+triplai/arc:arc_2.0.0_spark_2.4.3_scala_2.11_hadoop_2.9.2 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=4G \
@@ -868,7 +868,7 @@ bin/spark-submit \
     &quot;type&quot;: &quot;TypingTransform&quot;,
     &quot;name&quot;: &quot;apply green_tripdata/0 data types&quot;,
     &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/0/green_tripdata.json&quot;,
+    &quot;schemaURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/0/green_tripdata.json&quot;,
     &quot;inputView&quot;: &quot;green_tripdata0_raw&quot;,            
     &quot;outputView&quot;: &quot;green_tripdata0&quot;       
   },
@@ -895,7 +895,7 @@ bin/spark-submit \
     &quot;type&quot;: &quot;TypingTransform&quot;,
     &quot;name&quot;: &quot;apply green_tripdata/1 data types&quot;,
     &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/1/green_tripdata.json&quot;,
+    &quot;schemaURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/1/green_tripdata.json&quot;,
     &quot;inputView&quot;: &quot;green_tripdata1_raw&quot;,            
     &quot;outputView&quot;: &quot;green_tripdata1&quot;       
   },
@@ -922,7 +922,7 @@ bin/spark-submit \
     &quot;type&quot;: &quot;TypingTransform&quot;,
     &quot;name&quot;: &quot;apply green_tripdata/2 data types&quot;,
     &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-    &quot;inputURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/2/green_tripdata.json&quot;,
+    &quot;schemaURI&quot;: ${ETL_CONF_BASE_URL}&quot;/meta/green_tripdata/2/green_tripdata.json&quot;,
     &quot;inputView&quot;: &quot;green_tripdata2_raw&quot;,            
     &quot;outputView&quot;: &quot;green_tripdata2&quot;       
   },
@@ -1379,6 +1379,22 @@ AND dropoff_latitude IS NOT NULL
 
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
+    
+    <a href="https://arc.tripl.ai/getting-started/" title="Getting started">
+      <span class="direction">
+        Previous
+      </span>
+      <div class="page">
+        <div class="button button-previous" role="button" aria-label="Previous">
+          <i class="icon icon-back"></i>
+        </div>
+        <div class="stretch">
+          <div class="title">
+            Getting started
+          </div>
+        </div>
+      </div>
+    </a>
     
   </div>
 

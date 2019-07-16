@@ -6,7 +6,7 @@
     "production",
     "test"
   ],
-  "inputURI": "hdfs://input_data/customer/*.xml",
+  "inputURI": "hdfs://datalake/customer/*.xml",
   "outputView": "customer",
   "authentication": {},
   "contiguousIndex": true,
@@ -15,6 +15,6 @@
     "country"
   ],
   "persist": false,
-  "schemaURI": "hdfs://input_data/schema/customer.json",
+  "schemaURI": "hdfs://datalake/metadata/customer.json",
   "schemaView": "customer_schema"
 }

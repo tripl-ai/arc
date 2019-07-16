@@ -1,5 +1,6 @@
 package ai.tripl.arc.util
 
+// Only needed for Scala 2.11.x can remove when supporting only 2.12.x and greater
 object EitherUtils {
 
     class MappableEither[L, R1](e: Either[L, R1]) {

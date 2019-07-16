@@ -5,5 +5,5 @@
     "production",
     "test"
   ],
-  "uri": "hdfs://datalake/jobs/active_customers.json"
+  "uri": "hdfs://datalake/job/active_customers.json"
 }

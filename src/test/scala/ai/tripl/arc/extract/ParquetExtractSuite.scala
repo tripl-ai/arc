@@ -12,18 +12,17 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 import ai.tripl.arc.util._
-
-import ai.tripl.arc.util.TestDataUtils
+import ai.tripl.arc.config._
+import ai.tripl.arc.util.TestUtils
 
 class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "extract.parquet" 
-  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.parquet" 
-  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.parquet" 
-  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.parquet.gz" 
+  var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "extract.parquet"
+  val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.parquet"
+  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.parquet"
+  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.parquet.gz"
   val outputView = "dataset"
 
   before {
@@ -33,44 +32,79 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
-    import spark.implicits._    
+    import spark.implicits._
 
     // recreate test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
-    FileUtils.deleteQuietly(new java.io.File(emptyDirectory)) 
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
+    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
     FileUtils.forceMkdir(new java.io.File(emptyDirectory))
     // parquet does not support writing NullType
-    TestDataUtils.getKnownDataset.drop($"nullDatum").write.parquet(targetFile)
+    TestUtils.getKnownDataset.drop($"nullDatum").write.parquet(targetFile)
   }
 
   after {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))     
-    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))     
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
+    FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
   }
 
-  test("ParquetExtract") {
+  test("ParquetExtract: end-to-end") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "ParquetExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${targetFile}",
+          "outputView": "${outputView}"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => {
+        println(err)
+        assert(false)
+      }
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext)
+      }
+    }
+  }
+
+  test("ParquetExtract: Metadata from columns") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
-    val extractDataset = extract.ParquetExtract.extract(
-      ParquetExtract(
+    val dataset = extract.ParquetExtractStage.execute(
+      extract.ParquetExtractStage(
+        plugin=new extract.ParquetExtract,
         name=outputView,
         description=None,
-        cols=Right(cols.right.getOrElse(Nil)),
+        schema=Right(schema.right.getOrElse(Nil)),
         outputView=outputView,
         input=targetFileGlob,
         authentication=None,
@@ -84,31 +118,32 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     // test that the filename is correctly populated
-    assert(extractDataset.filter($"_filename".contains(targetFile)).count != 0)
+    assert(dataset.filter($"_filename".contains(targetFile)).count != 0)
 
-    val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val actual = extractDataset.drop(internal:_*)
+    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = dataset.drop(internal:_*)
 
-    val expected = TestDataUtils.getKnownDataset.drop($"nullDatum")
+    val expected = TestUtils.getKnownDataset.drop($"nullDatum")
 
-    assert(TestDataUtils.datasetEquality(expected, actual))
+    assert(TestUtils.datasetEquality(expected, actual))
 
     // test metadata
-    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata    
-    assert(timestampDatumMetadata.getLong("securityLevel") == 7)        
-  }  
+    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata
+    assert(timestampDatumMetadata.getLong("securityLevel") == 7)
+  }
 
-  test("ParquetExtract Caching") {
+  test("ParquetExtract: Caching") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // no cache
-    extract.ParquetExtract.extract(
-      ParquetExtract(
+    extract.ParquetExtractStage.execute(
+      extract.ParquetExtractStage(
+        plugin=new extract.ParquetExtract,
         name=outputView,
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=outputView,
         input=targetFile,
         authentication=None,
@@ -123,11 +158,12 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     assert(spark.catalog.isCached(outputView) === false)
 
     // cache
-    extract.ParquetExtract.extract(
-      ParquetExtract(
+    extract.ParquetExtractStage.execute(
+      extract.ParquetExtractStage(
+        plugin=new extract.ParquetExtract,
         name=outputView,
         description=None,
-        cols=Right(Nil),
+        schema=Right(Nil),
         outputView=outputView,
         input=targetFile,
         authentication=None,
@@ -139,16 +175,16 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         contiguousIndex=true
       )
     )
-    assert(spark.catalog.isCached(outputView) === true)     
-  }  
+    assert(spark.catalog.isCached(outputView) === true)
+  }
 
-  test("ParquetExtract Empty Dataset") {
+  test("ParquetExtract: Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val cols = 
+    val schema =
       BooleanColumn(
         id="1",
         name="booleanDatum",
@@ -156,19 +192,20 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         nullable=true,
         nullReplacementValue=None,
         trim=false,
-        nullableValues=Nil, 
-        trueValues=Nil, 
+        nullableValues=Nil,
+        trueValues=Nil,
         falseValues=Nil,
         metadata=None
-      ) :: Nil    
+      ) :: Nil
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
-      val extractDataset = extract.ParquetExtract.extract(
-        ParquetExtract(
+      extract.ParquetExtractStage.execute(
+        extract.ParquetExtractStage(
+          plugin=new extract.ParquetExtract,
           name=outputView,
           description=None,
-          cols=Right(Nil),
+          schema=Right(Nil),
           outputView=outputView,
           input=emptyWildcardDirectory,
           authentication=None,
@@ -182,14 +219,15 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown0.getMessage === "ParquetExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-    
+
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
-      val extractDataset = extract.ParquetExtract.extract(
-        ParquetExtract(
+      extract.ParquetExtractStage.execute(
+        extract.ParquetExtractStage(
+          plugin=new extract.ParquetExtract,
           name=outputView,
           description=None,
-          cols=Right(Nil),
+          schema=Right(Nil),
           outputView=outputView,
           input=emptyDirectory,
           authentication=None,
@@ -203,13 +241,14 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       )
     }
     assert(thrown1.getMessage === "ParquetExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
-    
+
     // try with column
-    val extractDataset = extract.ParquetExtract.extract(
-      ParquetExtract(
+    val dataset = extract.ParquetExtractStage.execute(
+      extract.ParquetExtractStage(
+        plugin=new extract.ParquetExtract,
         name=outputView,
         description=None,
-        cols=Right(cols),
+        schema=Right(schema),
         outputView=outputView,
         input=emptyDirectory,
         authentication=None,
@@ -222,28 +261,29 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    val internal = extractDataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val actual = extractDataset.drop(internal:_*)
+    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = dataset.drop(internal:_*)
 
-    val expected = TestDataUtils.getKnownDataset.select($"booleanDatum").limit(0)
+    val expected = TestUtils.getKnownDataset.select($"booleanDatum").limit(0)
 
-    assert(TestDataUtils.datasetEquality(expected, actual))
-  }  
+    assert(TestUtils.datasetEquality(expected, actual))
+  }
 
   test("ParquetExtract: Structured Streaming") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     // parse json schema to List[ExtractColumn]
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)    
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
-    val extractDataset = extract.ParquetExtract.extract(
-      ParquetExtract(
+    val dataset = extract.ParquetExtractStage.execute(
+      extract.ParquetExtractStage(
+        plugin=new extract.ParquetExtract,
         name=outputView,
         description=None,
-        cols=Right(cols.right.getOrElse(Nil)),
+        schema=Right(schema.right.getOrElse(Nil)),
         outputView=outputView,
         input=targetFileGlob,
         authentication=None,
@@ -256,9 +296,9 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    val writeStream = extractDataset
+    val writeStream = dataset
       .writeStream
-      .queryName("extract") 
+      .queryName("extract")
       .format("memory")
       .start
 
@@ -270,6 +310,6 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       df.first.getBoolean(0)
     } finally {
       writeStream.stop
-    }  
-  }    
+    }
+  }
 }

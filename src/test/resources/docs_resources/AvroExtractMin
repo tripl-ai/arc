@@ -5,6 +5,6 @@
     "production",
     "test"
   ],
-  "inputURI": "hdfs://input_data/customer/*.avro",
+  "inputURI": "hdfs://datalake/customer/*.avro",
   "outputView": "customer"
 }

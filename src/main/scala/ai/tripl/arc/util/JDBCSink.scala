@@ -1,10 +1,8 @@
 package ai.tripl.arc.util
 
-import java.net.URI
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.PreparedStatement
-import java.sql.Statement
 import java.sql.SQLException
 import java.util.Locale
 import java.util.Properties
@@ -13,7 +11,6 @@ import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.execution.datasources.jdbc._
-import org.apache.spark.sql.functions._
 import org.apache.spark.sql.jdbc.{JdbcDialect, JdbcDialects, JdbcType}
 import org.apache.spark.sql.types._
 
@@ -48,8 +45,8 @@ class JDBCSink(url: String, connectionProperties: Properties) extends ForeachWri
       stmt = conn.prepareStatement(insertStatement)
       rowCount = 0
     }
-    
-    
+
+
     val setters = schema.fields.map(f => makeSetter(conn, dialect, f.dataType))
     val nullTypes = schema.fields.map(f => getJdbcType(f.dataType, dialect).jdbcNullType)
     val numFields = schema.fields.length
@@ -115,7 +112,7 @@ class JDBCSink(url: String, connectionProperties: Properties) extends ForeachWri
           case e: Exception => throw new Exception("Transaction succeeded, but closing failed", e)
         }
       }
-    }     
+    }
   }
 
   // this code is taken from the org.apache.spark.sql.execution.datasources.jdbc.JdbcUtils package:
@@ -196,7 +193,7 @@ class JDBCSink(url: String, connectionProperties: Properties) extends ForeachWri
   private def getJdbcType(dt: DataType, dialect: JdbcDialect): JdbcType = {
     dialect.getJDBCType(dt).orElse(JdbcUtils.getCommonJDBCType(dt)).getOrElse(
       throw new IllegalArgumentException(s"Can't get JDBC type for ${dt.simpleString}"))
-  }  
+  }
 
 }
 

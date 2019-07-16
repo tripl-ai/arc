@@ -6,7 +6,7 @@
     "production",
     "test"
   ],
-  "inputURI": "hdfs://input_data/customer/*.csv",
+  "inputURI": "hdfs://datalake/customer/*.csv",
   "outputView": "customer",
   "authentication": {},
   "contiguousIndex": true,
@@ -20,7 +20,7 @@
   ],
   "persist": false,
   "quote": "DoubleQuote",
-  "schemaURI": "hdfs://input_data/schema/customer.json",
+  "schemaURI": "hdfs://datalake/metadata/customer.json",
   "schemaView": "customer_schema",
-  "basePath": "hdfs://input_data/customer/"
+  "basePath": "hdfs://datalake/customer/"
 }

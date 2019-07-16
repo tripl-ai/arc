@@ -7,42 +7,102 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.types._
 
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util._
+import ai.tripl.arc.config._
+import ai.tripl.arc.config.Error._
+import ai.tripl.arc.plugins.PipelineStagePlugin
+import ai.tripl.arc.util.CloudUtils
+import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.util.ListenerUtils
+import ai.tripl.arc.util.Utils
 
-object XMLLoad {
+class XMLLoad extends PipelineStagePlugin {
 
-  def load(load: XMLLoad)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[DataFrame] = {
+  val version = Utils.getFrameworkVersion
+
+  def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
+    import ai.tripl.arc.config.ConfigReader._
+    import ai.tripl.arc.config.ConfigUtils._
+    implicit val c = config
+
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: Nil
+    val name = getValue[String]("name")
+    val description = getOptionalValue[String]("description")
+    val inputView = getValue[String]("inputView")
+    val outputURI = getValue[String]("outputURI") |> parseURI("outputURI") _
+    val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
+    val numPartitions = getOptionalValue[Int]("numPartitions")
+    val authentication = readAuthentication("authentication")
+    val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
+    val params = readMap("params", c)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
+
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(partitionBy), Right(invalidKeys)) =>
+
+        val stage = XMLLoadStage(
+          plugin=this,
+          name=name,
+          description=description,
+          inputView=inputView,
+          outputURI=outputURI,
+          partitionBy=partitionBy,
+          numPartitions=numPartitions,
+          authentication=authentication,
+          saveMode=saveMode,
+          params=params
+        )
+
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("outputURI", outputURI.toString)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
+        stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
+        stage.stageDetail.put("params", params.asJava)
+
+        Right(stage)
+      case _ =>
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val stageName = stringOrDefault(name, "unnamed stage")
+        val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
+        Left(err :: Nil)
+    }
+  }
+}
+
+case class XMLLoadStage(
+    plugin: XMLLoad,
+    name: String,
+    description: Option[String],
+    inputView: String,
+    outputURI: URI,
+    partitionBy: List[String],
+    numPartitions: Option[Int],
+    authentication: Option[Authentication],
+    saveMode: SaveMode,
+    params: Map[String, String]
+  ) extends PipelineStage {
+
+  override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+    XMLLoadStage.execute(this)
+  }
+}
+
+object XMLLoadStage {
+
+  def execute(stage: XMLLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     // force com.sun.xml.* implementation for writing xml to be compatible with spark-xml library
     System.setProperty("javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl")
 
-    val startTime = System.currentTimeMillis() 
-    val stageDetail = new java.util.HashMap[String, Object]()
-    stageDetail.put("type", load.getType)
-    stageDetail.put("name", load.name)
-    for (description <- load.description) {
-      stageDetail.put("description", description)    
-    }    
-    stageDetail.put("inputView", load.inputView)  
-    stageDetail.put("outputURI", load.outputURI.toString)  
-    stageDetail.put("partitionBy", load.partitionBy.asJava)
-    stageDetail.put("saveMode", load.saveMode.toString.toLowerCase)
+    val df = spark.table(stage.inputView)
 
-    val df = spark.table(load.inputView) 
-
-    load.numPartitions match {
-      case Some(partitions) => stageDetail.put("numPartitions", Integer.valueOf(partitions))
-      case None => stageDetail.put("numPartitions", Integer.valueOf(df.rdd.getNumPartitions))
+    stage.numPartitions match {
+      case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
+      case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
     }
 
-    logger.info()
-      .field("event", "enter")
-      .map("stage", stageDetail)      
-      .log()
-
-
     // set write permissions
-    CloudUtils.setHadoopConfiguration(load.authentication)
-     
+    CloudUtils.setHadoopConfiguration(stage.authentication)
+
     val dropMap = new java.util.HashMap[String, Object]()
 
     // XML does not need to deal with NullType as it is silenty dropped on write but we want logging to be explicit
@@ -51,40 +111,34 @@ object XMLLoad {
       dropMap.put("NullType", nulls.asJava)
     }
 
-    stageDetail.put("drop", dropMap) 
+    stage.stageDetail.put("drop", dropMap)
 
-    val listener = ListenerUtils.addStageCompletedListener(stageDetail)
+    val listener = ListenerUtils.addStageCompletedListener(stage.stageDetail)
 
     try {
-      load.partitionBy match {
-        case Nil => { 
-          load.numPartitions match {
-            case Some(n) => df.repartition(n).write.format("com.databricks.spark.xml").mode(load.saveMode).save(load.outputURI.toString)
-            case None => df.write.format("com.databricks.spark.xml").mode(load.saveMode).save(load.outputURI.toString)  
-          }   
+      stage.partitionBy match {
+        case Nil => {
+          stage.numPartitions match {
+            case Some(n) => df.repartition(n).write.format("com.databricks.spark.xml").mode(stage.saveMode).save(stage.outputURI.toString)
+            case None => df.write.format("com.databricks.spark.xml").mode(stage.saveMode).save(stage.outputURI.toString)
+          }
         }
         case partitionBy => {
           // create a column array for repartitioning
           val partitionCols = partitionBy.map(col => df(col))
-          load.numPartitions match {
-            case Some(n) => df.repartition(n, partitionCols:_*).write.format("com.databricks.spark.xml").partitionBy(partitionBy:_*).mode(load.saveMode).save(load.outputURI.toString)
-            case None => df.repartition(partitionCols:_*).write.format("com.databricks.spark.xml").partitionBy(partitionBy:_*).mode(load.saveMode).save(load.outputURI.toString)
-          }   
+          stage.numPartitions match {
+            case Some(n) => df.repartition(n, partitionCols:_*).write.format("com.databricks.spark.xml").partitionBy(partitionBy:_*).mode(stage.saveMode).save(stage.outputURI.toString)
+            case None => df.repartition(partitionCols:_*).write.format("com.databricks.spark.xml").partitionBy(partitionBy:_*).mode(stage.saveMode).save(stage.outputURI.toString)
+          }
         }
-      }    
+      }
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
-        override val detail = stageDetail          
-      }      
-    }        
+        override val detail = stage.stageDetail
+      }
+    }
 
-    spark.sparkContext.removeSparkListener(listener)           
-
-    logger.info()
-      .field("event", "exit")
-      .field("duration", System.currentTimeMillis() - startTime)
-      .map("stage", stageDetail)      
-      .log()
+    spark.sparkContext.removeSparkListener(listener)
 
     Option(df)
   }

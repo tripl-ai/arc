@@ -6,7 +6,7 @@
     "production",
     "test"
   ],
-  "inputURI": "hdfs://input_data/customer/*.jpg",
+  "inputURI": "hdfs://datalake/customer/*.jpg",
   "outputView": "customer",
   "authentication": {},
   "dropInvalid": true,
@@ -15,5 +15,5 @@
     "image.width"
   ],
   "persist": false,
-  "basePath": "hdfs://input_data/customer/"
+  "basePath": "hdfs://datalake/customer/"
 }

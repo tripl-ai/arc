@@ -12,16 +12,15 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 import ai.tripl.arc.util._
 
-import ai.tripl.arc.util.TestDataUtils
+import ai.tripl.arc.util.TestUtils
 
 class ImageExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val targetFile = getClass.getResource("/puppy.jpg").toString
-  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.jpg" 
+  val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.jpg"
   val outputView = "dataset"
 
   before {
@@ -31,13 +30,13 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
-    import spark.implicits._    
+    import spark.implicits._
   }
 
   after {
@@ -47,11 +46,12 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
   test("ImageExtract") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val extractDataset = extract.ImageExtract.extract(
-      ImageExtract(
+    val dataset = extract.ImageExtractStage.execute(
+      extract.ImageExtractStage(
+        plugin=new extract.ImageExtract,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -67,21 +67,22 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     // test that the filename is correctly populated
-    assert(extractDataset.filter($"image.origin".contains(targetFile.replace("file:", "file://"))).count == 1)
-    assert(extractDataset.filter("image.width = 640").count == 1)
-    assert(extractDataset.filter("image.height == 960").count == 1)
-    assert(extractDataset.filter("image.nChannels == 3").count == 1)
-    assert(extractDataset.filter("image.mode == 16").count == 1)
-  }  
+    assert(dataset.filter($"image.origin".contains(targetFile.replace("file:", "file://"))).count == 1)
+    assert(dataset.filter("image.width = 640").count == 1)
+    assert(dataset.filter("image.height == 960").count == 1)
+    assert(dataset.filter("image.nChannels == 3").count == 1)
+    assert(dataset.filter("image.mode == 16").count == 1)
+  }
 
-  test("ImageExtract Caching") {
+  test("ImageExtract: Caching") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // no cache
-    extract.ImageExtract.extract(
-      ImageExtract(
+    extract.ImageExtractStage.execute(
+      extract.ImageExtractStage(
+        plugin=new extract.ImageExtract,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -98,8 +99,9 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     assert(spark.catalog.isCached(outputView) === false)
 
     // cache
-    extract.ImageExtract.extract(
-      ImageExtract(
+    extract.ImageExtractStage.execute(
+      extract.ImageExtractStage(
+        plugin=new extract.ImageExtract,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -113,17 +115,18 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         dropInvalid=true
       )
     )
-    assert(spark.catalog.isCached(outputView) === true)     
-  }  
+    assert(spark.catalog.isCached(outputView) === true)
+  }
 
-  test("ImageExtract Empty Dataset") {
+  test("ImageExtract: Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val imageExtract = extract.ImageExtract.extract(
-      ImageExtract(
+    val dataset = extract.ImageExtractStage.execute(
+      extract.ImageExtractStage(
+        plugin=new extract.ImageExtract,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -137,18 +140,19 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         dropInvalid=true
       )
     ).get
-    
-    assert(imageExtract.count == 0)
-  }  
 
-  test("ImageExtract: Structured Streaming") {
+    assert(dataset.count == 0)
+  }
+
+  test("ImageExtract:: Structured Streaming") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
-    val extractDataset = extract.ImageExtract.extract(
-      ImageExtract(
+    val dataset = extract.ImageExtractStage.execute(
+      extract.ImageExtractStage(
+        plugin=new extract.ImageExtract,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -159,13 +163,13 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        dropInvalid=true        
+        dropInvalid=true
       )
     ).get
 
-    val writeStream = extractDataset
+    val writeStream = dataset
       .writeStream
-      .queryName("extract") 
+      .queryName("extract")
       .format("memory")
       .start
 
@@ -177,6 +181,6 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
       assert(df.filter($"image.origin".contains(targetFile.replace("file:", "file://"))).count != 0)
     } finally {
       writeStream.stop
-    }  
-  }    
+    }
+  }
 }

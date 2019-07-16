@@ -1,4 +1,4 @@
-package ai.tripl.arc.util
+package ai.tripl.arc.transform
 
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
@@ -45,7 +45,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }  
+  }
 
   test("BooleanTyping: value.isAllowedNullValue after trim -> nullReplacementValue") {
     val col = BooleanColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("true"), trim=true, nullableValues=""::Nil, trueValues=List("true","true"), falseValues=List("false","false"), metadata=None)
@@ -56,7 +56,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }  
+  }
 
   test("BooleanTyping: value.isAllowedNullValue") {
     val col = BooleanColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("true"), trim=true, nullableValues=""::Nil, trueValues=List("true","true"), falseValues=List("false","false"), metadata=None)
@@ -67,7 +67,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  } 
+  }
 
   test("BooleanTyping: null input WITH nullReplacementValue") {
     val col = BooleanColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("true"), trim=true, nullableValues=""::Nil, trueValues=List("true","true"), falseValues=List("false","false"), metadata=None)
@@ -78,7 +78,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  } 
+  }
 
   test("BooleanTyping: empty input WITHOUT nullReplacementValue") {
     val col = BooleanColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=true, nullableValues=""::Nil, trueValues=List("true","TRUE"), falseValues=List("false","FALSE"), metadata=None)
@@ -89,7 +89,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  } 
+  }
 
   test("BooleanTyping: null input WITHOUT nullReplacementValue") {
     val col = BooleanColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=true, nullableValues=""::Nil, trueValues=List("true","TRUE"), falseValues=List("false","FALSE"), metadata=None)
@@ -100,7 +100,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  } 
+  }
 
   test("BooleanTyping: invalid characters") {
     val col = BooleanColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=true, nullableValues=""::Nil, trueValues=List("true","TRUE"), falseValues=List("false","FALSE"), metadata=None)
@@ -122,7 +122,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }  
+  }
 
   test("BooleanTyping: allowed complex characters") {
     val col = BooleanColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=true, nullableValues=""::Nil, trueValues=List("true","TRUE","ኃይሌ"), falseValues=List("false","FALSE"), metadata=None)
@@ -133,5 +133,5 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }    
+  }
 }

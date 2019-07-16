@@ -16,14 +16,13 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
-
+import ai.tripl.arc.config._
 import ai.tripl.arc.util._
 
 class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
-  val targetFile = FileUtils.getTempDirectoryPath() + "MetadataFilterTransformSuite.csv"   
+  var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "MetadataFilterTransformSuite.csv"
   val inputView = "inputView"
   val outputView = "outputView"
 
@@ -34,52 +33,54 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("ERROR")
+    spark.sparkContext.setLogLevel("INFO")
+
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
 
     // recreate test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile)) 
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
     // Delimited does not support writing NullType
-    TestDataUtils.getKnownDataset.drop($"nullDatum").write.csv(targetFile)    
+    TestUtils.getKnownDataset.drop($"nullDatum").write.csv(targetFile)
   }
 
   after {
     session.stop()
 
     // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))     
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
   test("MetadataFilterTransform: end-to-end") {
     implicit val spark = session
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // load csv
-    val extractDataset = spark.read.csv(targetFile)
-    extractDataset.createOrReplaceTempView(inputView)
+    val df = spark.read.csv(targetFile)
+    df.createOrReplaceTempView(inputView)
 
     // parse json schema to List[ExtractColumn]
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
     // apply metadata
-    transform.TypingTransform.transform(
-      TypingTransform(
+    transform.TypingTransformStage.execute(
+      transform.TypingTransformStage(
+        plugin=new transform.TypingTransform,
         name="TypingTransform",
         description=None,
-        cols=Right(cols.right.getOrElse(null)), 
+        schema=Right(schema.right.getOrElse(null)),
         inputView=inputView,
-        outputView=outputView, 
+        outputView=outputView,
         params=Map.empty,
         persist=false,
         failMode=FailModeTypePermissive,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     )
 
@@ -98,50 +99,51 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
           "sqlParams": {
             "private": "true"
           }
-        }        
+        }
       ]
     }"""
-    
-    val argsMap = collection.mutable.Map[String, String]()
-    val graph = ConfigUtils.Graph(Nil, Nil, false)
-    val pipelineEither = ConfigUtils.parseConfig(Left(conf), argsMap, graph, arcContext)
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(_) => assert(false)
-      case Right((pipeline, _, _)) => ARC.run(pipeline)(spark, logger, arcContext)
-    }  
-  }  
+      case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
+    }
+  }
 
   test("MetadataFilterTransform: private=true") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // load csv
-    val extractDataset = spark.read.csv(targetFile)
-    extractDataset.createOrReplaceTempView(inputView)
+    val df = spark.read.csv(targetFile)
+    df.createOrReplaceTempView(inputView)
 
     // parse json schema to List[ExtractColumn]
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
-    transform.TypingTransform.transform(
-      TypingTransform(
+    transform.TypingTransformStage.execute(
+      transform.TypingTransformStage(
+        plugin=new transform.TypingTransform,
         name="TypingTransform",
         description=None,
-        cols=Right(cols.right.getOrElse(null)), 
+        schema=Right(schema.right.getOrElse(null)),
         inputView=inputView,
-        outputView=outputView, 
+        outputView=outputView,
         params=Map.empty,
         persist=false,
         failMode=FailModeTypePermissive,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     )
 
-    val transformed = transform.MetadataFilterTransform.transform(
-      MetadataFilterTransform(
-        name="MetadataFilterTransform", 
+    val dataset = transform.MetadataFilterTransformStage.execute(
+      transform.MetadataFilterTransformStage(
+        plugin=new transform.MetadataFilterTransform,
+        name="MetadataFilterTransform",
         description=None,
         inputView=outputView,
         inputURI=new URI(targetFile),
@@ -151,46 +153,49 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
-    val actual = transformed.drop($"_errors")
-    val expected = TestDataUtils.getKnownDataset.select($"booleanDatum", $"longDatum", $"stringDatum")
+    val actual = dataset.drop($"_errors")
+    val expected = TestUtils.getKnownDataset.select($"booleanDatum", $"longDatum", $"stringDatum")
 
-    assert(TestDataUtils.datasetEquality(expected, actual))
-  }  
+    assert(TestUtils.datasetEquality(expected, actual))
+  }
 
   test("MetadataFilterTransform: securityLevel") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // load csv
-    val extractDataset = spark.read.csv(targetFile)
-    extractDataset.createOrReplaceTempView(inputView)
+    val df = spark.read.csv(targetFile)
+    df.createOrReplaceTempView(inputView)
 
     // parse json schema to List[ExtractColumn]
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
-    transform.TypingTransform.transform(
-      TypingTransform(
+    transform.TypingTransformStage.execute(
+      transform.TypingTransformStage(
+        plugin=new transform.TypingTransform,
         name="TypingTransform",
         description=None,
-        cols=Right(cols.right.getOrElse(null)), 
+        schema=Right(schema.right.getOrElse(null)),
         inputView=inputView,
-        outputView=outputView, 
+        outputView=outputView,
         params=Map.empty,
         persist=false,
         failMode=FailModeTypePermissive,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     )
 
-    val transformed = transform.MetadataFilterTransform.transform(
-      MetadataFilterTransform(
-        name="MetadataFilterTransform", 
+    val dataset = transform.MetadataFilterTransformStage.execute(
+      transform.MetadataFilterTransformStage(
+        plugin=new transform.MetadataFilterTransform,
+        name="MetadataFilterTransform",
         description=None,
         inputView=outputView,
         inputURI=new URI(targetFile),
@@ -200,23 +205,24 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
-    val actual = transformed.drop($"_errors")
-    val expected = TestDataUtils.getKnownDataset.select($"booleanDatum", $"dateDatum", $"decimalDatum", $"longDatum", $"stringDatum")
+    val actual = dataset.drop($"_errors")
+    val expected = TestUtils.getKnownDataset.select($"booleanDatum", $"dateDatum", $"decimalDatum", $"longDatum", $"stringDatum")
 
-    assert(TestDataUtils.datasetEquality(expected, actual))
-  }   
+    assert(TestUtils.datasetEquality(expected, actual))
+  }
 
   test("MetadataFilterTransform: Structured Streaming") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
-    val dataset = TestDataUtils.getKnownStringDataset.drop("nullDatum")
-    dataset.createOrReplaceTempView("knownData")
+    val df = TestUtils.getKnownStringDataset.drop("nullDatum")
+    df.createOrReplaceTempView("knownData")
 
     val readStream = spark
       .readStream
@@ -236,26 +242,28 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     input.createOrReplaceTempView(inputView)
 
     // parse json schema to List[ExtractColumn]
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestDataUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
-    val transformDataset = transform.TypingTransform.transform(
-      TypingTransform(
+    transform.TypingTransformStage.execute(
+      transform.TypingTransformStage(
+        plugin=new transform.TypingTransform,
         name="dataset",
         description=None,
-        cols=Right(cols.right.getOrElse(Nil)), 
+        schema=Right(schema.right.getOrElse(Nil)),
         inputView=inputView,
-        outputView=outputView, 
+        outputView=outputView,
         params=Map.empty,
         persist=false,
         failMode=FailModeTypePermissive,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
-    ).get
+    )
 
-    val transformed = transform.MetadataFilterTransform.transform(
-      MetadataFilterTransform(
-        name="MetadataFilterTransform", 
+    val dataset = transform.MetadataFilterTransformStage.execute(
+      transform.MetadataFilterTransformStage(
+        plugin=new transform.MetadataFilterTransform,
+        name="MetadataFilterTransform",
         description=None,
         inputView=outputView,
         inputURI=new URI(targetFile),
@@ -265,23 +273,23 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         sqlParams=Map.empty,
         params=Map.empty,
         numPartitions=None,
-        partitionBy=Nil           
+        partitionBy=Nil
       )
     ).get
 
-    val writeStream = transformed
+    val writeStream = dataset
       .writeStream
-      .queryName("transformed") 
+      .queryName("transformed")
       .format("memory")
       .start
 
-    val df = spark.table("transformed")
+    val stream = spark.table("transformed")
 
     try {
       Thread.sleep(2000)
-      assert(df.schema.map(_.name).toSet.equals(Array("booleanDatum", "dateDatum", "decimalDatum", "longDatum", "stringDatum").toSet))
+      assert(stream.schema.map(_.name).toSet.equals(Array("booleanDatum", "dateDatum", "decimalDatum", "longDatum", "stringDatum").toSet))
     } finally {
       writeStream.stop
     }
-  }      
+  }
 }

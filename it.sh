@@ -9,5 +9,5 @@ docker-compose -f src/it/resources/docker-compose.yml up --build -d && \
 # run the test
 docker exec \
 -w /app \
-sbt \
-sbt it:test
+mozilla/sbt:8u212_1.2.8 \
+sbt "+it:test"

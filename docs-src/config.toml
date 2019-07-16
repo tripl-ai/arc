@@ -20,10 +20,12 @@ pygmentsUseClasses=true
 	repo_url = "https://github.com/tripl-ai/arc"
 
 	image = "triplai/arc"
-	version = "1.15.0"
+	version = "2.0.0"
 	arc_jupyter_image= "triplai/arc-jupyter"
 	arc_jupyter_version = "0.0.14"
 	spark_version = "2.4.3"
+	scala_version = "2.11"
+	hadoop_version = "2.9.2"
 	logo = "images/logo.png"
 	favicon = ""
 
@@ -47,10 +49,10 @@ pygmentsUseClasses=true
 [social]
 	github  = "tripl-ai"
 
-# [[menu.main]]
-# 	name   = "Getting started"
-# 	url    = "getting-started/"
-# 	weight = 10
+[[menu.main]]
+ 	name   = "Getting started"
+ 	url    = "getting-started/"
+ 	weight = 10
 
 [[menu.main]]
 	name   = "Tutorial"
@@ -88,29 +90,29 @@ pygmentsUseClasses=true
 	weight = 70	
 
 [[menu.main]]
+	name   = "Deploy"
+	url    = "deploy/"
+	weight = 80
+
+[[menu.main]]
+	name   = "Plugins"
+	url    = "plugins/"
+	weight = 85
+
+[[menu.main]]
 	name   = "Partials"
 	url    = "partials/"
-	weight = 80		
+	weight = 90		
 
 [[menu.main]]
 	name   = "Patterns"
 	url    = "patterns/"
-	weight = 90	
+	weight = 95	
 
-[[menu.main]]
-	name   = "Deploy"
-	url    = "deploy/"
-	weight = 95
-
-[[menu.main]]
-	name   = "Extend"
-	url    = "extend/"
-	weight = 98
-
-[[menu.main]]
-	name   = "Contributing"
-	url    = "contributing/"
-	weight = 100	
+#[[menu.main]]
+#	name   = "Contributing"
+#	url    = "contributing/"
+#	weight = 100	
 
 [[menu.main]]
 	name   = "License"

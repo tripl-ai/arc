@@ -14,14 +14,13 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.util.log.LoggerFactory 
 
 import ai.tripl.arc.util._
 import ai.tripl.arc.util.ControlUtils._
 
 class RateExtractSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
 
   val outputView = "outputView"
 
@@ -32,10 +31,10 @@ class RateExtractSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("FATAL")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")    
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
   }
@@ -48,14 +47,15 @@ class RateExtractSuite extends FunSuite with BeforeAndAfter {
   test("RateExtract: Structured Streaming") {
     implicit val spark = session
     import spark.implicits._
-    implicit val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=true, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
-    val extractDataset = extract.RateExtract.extract(
-      RateExtract(
+    val dataset = extract.RateExtractStage.execute(
+      extract.RateExtractStage(
+        plugin=new extract.RateExtract,
         name="dataset",
         description=None,
-        outputView=outputView, 
+        outputView=outputView,
         rowsPerSecond=10,
         rampUpTime=0,
         numPartitions=1,
@@ -63,9 +63,9 @@ class RateExtractSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    val writeStream = extractDataset
+    val writeStream = dataset
       .writeStream
-      .queryName("extract") 
+      .queryName("extract")
       .format("memory")
       .start
 
@@ -76,6 +76,6 @@ class RateExtractSuite extends FunSuite with BeforeAndAfter {
       assert(df.count != 0)
     } finally {
       writeStream.stop
-    }  
-  }    
+    }
+  }
 }

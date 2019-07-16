@@ -1,9 +1,6 @@
 package ai.tripl.arc.util
 
-import java.net.URI
 import java.time.Instant
-
-import org.apache.spark.sql._
 
 object LoadUtils {
 

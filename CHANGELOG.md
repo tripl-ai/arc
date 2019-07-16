@@ -1,5 +1,31 @@
 ## Change Log
 
+# 2.0.0
+
+Arc 2.0.0 is a major (breaking) change which has been done for multiple reasons:
+
+- to support both `Scala 2.11` and `Scala 2.12` as they are not binary compatible and the Spark project is moving to `Scala 2.12`. Arc will be published for both `Scala 2.11` and `Scala 2.12`.
+- to decouple stages/extensions reliant on third-party packages from the main repository so that Arc is not dependent on a library which does not yet support `Scala 2.12` (for example).
+- to support first-class plugins by providing a better API to allow the same type-safety when reading the job configuration as the core Arc pipeline stages (in fact all the core stages have been rebuilt as included plugins). This extends to allowing version number specification in stage resolution.
+
+**BREAKING**
+
+**REMOVED**
+- remove `AzureCosmosDBExtract` stage. This could be reimplemented as a [Lifecycle Plugin](https://tripl-ai.github.io/arc/extend/#lifecycle-plugins).
+- remove `AzureEventHubsLoad` stage. This could be reimplemented as a [Lifecycle Plugin](https://tripl-ai.github.io/arc/extend/#lifecycle-plugins).
+- remove `DatabricksDeltaExtract` and `DatabricksDeltaLoad` stages and replace with the open-source [DeltaLake](https://delta.io/) versions (`DeltaLakeExtract` and `DeltaLakeLoad`) implemented https://github.com/tripl-ai/arc-deltalake-pipeline-plugin.
+- remove `DatabricksSQLDWLoad`. This could be reimplemented as a  [Lifecycle Plugin](https://tripl-ai.github.io/arc/extend/#lifecycle-plugins).
+- remove `bulkload` mode from `JDBCLoad`. Any target specific JDBC behaviours could be implemented by a custom plugins if required.
+- remove `user` and `password` from `JDBCExecute` for consistency. Move details to either `jdbcURL` or `params`.
+- remove the `Dockerfile` and put it in separate repo: (https://github.com/tripl-ai/docker)
+
+**CHANGES**
+- changed `inputURI` field for `TypingTransform` to `schemaURI` to allow addition of `schemaView`.
+- add `CypherTransform` and `GraphTransform` stages to support the https://github.com/opencypher/morpheus project (https://github.com/tripl-ai/arc-graph-pipeline-plugin).
+- add `MongoDBExtract` and `MongoDBLoad` stages (https://github.com/tripl-ai/arc-mongodb-pipeline-plugin).
+- move `ElasticsearchExtract` and `ElasticsearchLoad` to their own repository https://github.com/tripl-ai/arc-elasticsearch-pipeline-plugin.
+- move `KafkaExtract`, `KafkaLoad` and `KafkaCommitExecute` to their own repository https://github.com/tripl-ai/arc-kafka-pipeline-plugin.
+
 # 1.15.0
 
 - added `uriField` and `bodyField` to `HTTPExtract` allowing dynamic data to be generated and `POST`ed to endpoints when using an `inputView`.

@@ -12,6 +12,14 @@ Arc is an **opinionated** framework for defining **predictable**, **repeatable**
 - **repeatable** in that if a job is executed multiple times it will produce the same result.
 - **manageable** in that execution considerations and logging has been baked in from the start.
 
+## Getting Started
+
+![Notebook](/img/arc-starter.png)
+
+Arc has an interactive [Jupyter Notebook](https://jupyter.org/) extension to help with rapid development of jobs. Start by cloning [https://github.com/tripl-ai/arc-starter](https://github.com/tripl-ai/arc-starter) and running through the [tutorial](https://arc.tripl.ai/tutorial/).
+
+This extension is available at [https://github.com/tripl-ai/arc-jupyter](https://github.com/tripl-ai/arc-jupyter).
+
 ## Principles
 
 Many of these principles have come from [12factor](https://12factor.net/):
