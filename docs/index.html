@@ -1,551 +1,502 @@
 <!DOCTYPE html>
+  
+  
+  
+  
+   <html class="no-js"> 
+
+  <head lang="en-us">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>Arc</title>
+    <meta name="generator" content="Hugo 0.51" />
+
+    
+    <meta name="description" content="Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.">
+    
+    <link rel="canonical" href="https://arc.tripl.ai/">
+    
+    <meta name="author" content="ai.tripl.arc">
+    
+
+    <meta property="og:url" content="https://arc.tripl.ai/">
+    <meta property="og:title" content="Arc">
+    <meta property="og:image" content="https://arc.tripl.ai/images/logo.png">
+    <meta name="apple-mobile-web-app-title" content="Arc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="shortcut icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
+
+    <style>
+      @font-face {
+        font-family: 'Icon';
+        src: url('https://arc.tripl.ai/fonts/icon.eot');
+        src: url('https://arc.tripl.ai/fonts/icon.eot')
+               format('embedded-opentype'),
+             url('https://arc.tripl.ai/fonts/icon.woff')
+               format('woff'),
+             url('https://arc.tripl.ai/fonts/icon.ttf')
+               format('truetype'),
+             url('https://arc.tripl.ai/fonts/icon.svg')
+               format('svg');
+        font-weight: normal;
+        font-style: normal;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/temporary.css">
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/palettes.css">
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/highlight/highlight.css">
+
+    
+    
+    
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu&#43;Mono">
+    <style>
+      body, input {
+        font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+      }
+      pre, code {
+        font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
+      }
+    </style>
+
+    
+    <script src="https://arc.tripl.ai/javascripts/modernizr.js"></script>
+
+    
+    <link href="https://arc.tripl.ai/index.xml" rel="alternate" type="application/rss+xml" title="Arc" />
+    <link href="https://arc.tripl.ai/index.xml" rel="feed" type="application/rss+xml" title="Arc" />
+    
+
+  </head>
+  <body class="palette-primary-red palette-accent-teal">
 
 
 
-
-<html class="no-js">
-
-<head lang="en-us">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
-  <meta http-equiv="X-UA-Compatible" content="IE=10" />
-  <title>Arc</title>
-  <meta name="generator" content="Hugo 0.51" />
+	
+	
 
 
-  <meta name="description"
-    content="Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.">
+<div class="backdrop">
+	<div class="backdrop-paper"></div>
+</div>
 
-  <link rel="canonical" href="https://arc.tripl.ai/">
+<input class="toggle" type="checkbox" id="toggle-drawer">
+<input class="toggle" type="checkbox" id="toggle-search">
+<label class="toggle-button overlay" for="toggle-drawer"></label>
 
-  <meta name="author" content="ai.tripl.arc">
-
-
-  <meta property="og:url" content="https://arc.tripl.ai/">
-  <meta property="og:title" content="Arc">
-  <meta property="og:image" content="https://arc.tripl.ai/images/logo.png">
-  <meta name="apple-mobile-web-app-title" content="Arc">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <link rel="shortcut icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
-  <link rel="icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
-
-  <style>
-    @font-face {
-      font-family: 'Icon';
-      src: url('https://arc.tripl.ai/fonts/icon.eot');
-      src: url('https://arc.tripl.ai/fonts/icon.eot') format('embedded-opentype'),
-        url('https://arc.tripl.ai/fonts/icon.woff') format('woff'),
-        url('https://arc.tripl.ai/fonts/icon.ttf') format('truetype'),
-        url('https://arc.tripl.ai/fonts/icon.svg') format('svg');
-      font-weight: normal;
-      font-style: normal;
-    }
-  </style>
-
-  <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
-  <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/temporary.css">
-  <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/palettes.css">
-  <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/highlight/highlight.css">
-
-
-
-
-  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu&#43;Mono">
-  <style>
-    body,
-    input {
-      font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
-    }
-
-    pre,
-    code {
-      font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
-    }
-  </style>
-
-
-  <script src="https://arc.tripl.ai/javascripts/modernizr.js"></script>
-
-
-  <link href="https://arc.tripl.ai/index.xml" rel="alternate" type="application/rss+xml" title="Arc" />
-  <link href="https://arc.tripl.ai/index.xml" rel="feed" type="application/rss+xml" title="Arc" />
-
-
-</head>
-
-<body class="palette-primary-red palette-accent-teal">
-
-
-
-
-
-
-
-  <div class="backdrop">
-    <div class="backdrop-paper"></div>
-  </div>
-
-  <input class="toggle" type="checkbox" id="toggle-drawer">
-  <input class="toggle" type="checkbox" id="toggle-search">
-  <label class="toggle-button overlay" for="toggle-drawer"></label>
-
-  <header class="header">
-    <nav aria-label="Header">
-      <div class="bar default">
-        <div class="button button-menu" role="button" aria-label="Menu">
-          <label class="toggle-button icon icon-menu" for="toggle-drawer">
-            <span></span>
-          </label>
-        </div>
-        <div class="stretch">
-          <div class="title">
-            Arc
-          </div>
-        </div>
-
-
-
-
-        <div class="button button-github" role="button" aria-label="GitHub">
-          <a href="https://github.com/tripl-ai/arc" title="@https://github.com/tripl-ai/arc on GitHub" target="_blank"
-            class="toggle-button icon icon-github"></a>
-        </div>
-
-
-
+<header class="header">
+	<nav aria-label="Header">
+  <div class="bar default">
+    <div class="button button-menu" role="button" aria-label="Menu">
+      <label class="toggle-button icon icon-menu" for="toggle-drawer">
+        <span></span>
+      </label>
+    </div>
+    <div class="stretch">
+      <div class="title">
+        Arc
       </div>
-      <div class="bar search">
-        <div class="button button-close" role="button" aria-label="Close">
-          <label class="toggle-button icon icon-back" for="toggle-search"></label>
-        </div>
-        <div class="stretch">
-          <div class="field">
-            <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off"
-              autocomplete="off" spellcheck>
-          </div>
-        </div>
-        <div class="button button-reset" role="button" aria-label="Search">
-          <button class="toggle-button icon icon-close" id="reset-search"></button>
-        </div>
-      </div>
-    </nav>
-  </header>
-
-  <main class="main">
-    <div class="drawer">
-      <nav aria-label="Navigation">
-        <a href="https://arc.tripl.ai/" class="project">
-          <div class="banner">
-
-            <div class="logo">
-              <img src="https://arc.tripl.ai/images/logo.png">
-            </div>
-
-            <div class="name">
-              <strong>Arc
-                <span class="version">2.0.0</span></strong>
-
-              <br> tripl-ai/arc
-            </div>
-          </div>
-        </a>
-
-        <div class="scrollable">
-          <div class="wrapper">
-
-
-            <div class="toc">
-
-              <ul>
-
-
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Getting started" href="https://arc.tripl.ai/getting-started/">
-
-                    Getting started
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Tutorial" href="https://arc.tripl.ai/tutorial/">
-
-                    Tutorial
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Extract" href="https://arc.tripl.ai/extract/">
-
-                    Extract
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Transform" href="https://arc.tripl.ai/transform/">
-
-                    Transform
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Load" href="https://arc.tripl.ai/load/">
-
-                    Load
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Execute" href="https://arc.tripl.ai/execute/">
-
-                    Execute
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Validate" href="https://arc.tripl.ai/validate/">
-
-                    Validate
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Metadata" href="https://arc.tripl.ai/metadata/">
-
-                    Metadata
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Deploy" href="https://arc.tripl.ai/deploy/">
-
-                    Deploy
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Plugins" href="https://arc.tripl.ai/plugins/">
-
-                    Plugins
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Partials" href="https://arc.tripl.ai/partials/">
-
-                    Partials
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="Patterns" href="https://arc.tripl.ai/patterns/">
-
-                    Patterns
-                  </a>
-
-
-
-
-                </li>
-
-
-
-                <li>
-
-
-
-
-
-                  <a title="License" href="https://arc.tripl.ai/license/">
-
-                    License
-                  </a>
-
-
-
-
-                </li>
-
-
-              </ul>
-
-              <hr>
-              <span class="section">The author</span>
-
-              <ul>
-
-                <li>
-                  <a href="https://github.com/tripl-ai" target="_blank" title="@tripl-ai on GitHub">
-                    @tripl-ai on GitHub
-                  </a>
-                </li>
-
-              </ul>
-
-            </div>
-          </div>
-        </div>
-      </nav>
     </div>
 
-    <article class="article">
-      <div class="wrapper">
+    
 
-        <h1>Arc </h1>
+    
+    <div class="button button-github" role="button" aria-label="GitHub">
+      <a href="https://github.com/tripl-ai/arc" title="@https://github.com/tripl-ai/arc on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
+    </div>
+    
+    
+        
+  </div>
+  <div class="bar search">
+    <div class="button button-close" role="button" aria-label="Close">
+      <label class="toggle-button icon icon-back" for="toggle-search"></label>
+    </div>
+    <div class="stretch">
+      <div class="field">
+        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+      </div>
+    </div>
+    <div class="button button-reset" role="button" aria-label="Search">
+      <button class="toggle-button icon icon-close" id="reset-search"></button>
+    </div>
+  </div>
+</nav>
+</header>
+
+<main class="main">
+	<div class="drawer">
+		<nav aria-label="Navigation">
+  <a href="https://arc.tripl.ai/" class="project">
+    <div class="banner">
+      
+      <div class="logo">
+        <img src="https://arc.tripl.ai/images/logo.png">
+      </div>
+      
+      <div class="name">
+        <strong>Arc 
+          <span class="version">2.0.0</span></strong>
+        
+        <br> tripl-ai/arc 
+      </div>
+    </div>
+  </a>
+
+  <div class="scrollable">
+    <div class="wrapper">
+      
+
+      <div class="toc">
+        
+        <ul>
+          
 
 
 
-        <h2 id="what-is-arc">What is Arc?</h2>
 
-        <p>Arc is an <strong>opinionated</strong> framework for defining <strong>predictable</strong>,
-          <strong>repeatable</strong> and <strong>manageable</strong> data transformation pipelines;</p>
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://arc.tripl.ai/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Tutorial" href="https://arc.tripl.ai/tutorial/">
+	
+	Tutorial
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Extract" href="https://arc.tripl.ai/extract/">
+	
+	Extract
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Transform" href="https://arc.tripl.ai/transform/">
+	
+	Transform
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Load" href="https://arc.tripl.ai/load/">
+	
+	Load
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Execute" href="https://arc.tripl.ai/execute/">
+	
+	Execute
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Validate" href="https://arc.tripl.ai/validate/">
+	
+	Validate
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Metadata" href="https://arc.tripl.ai/metadata/">
+	
+	Metadata
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Deploy" href="https://arc.tripl.ai/deploy/">
+	
+	Deploy
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Plugins" href="https://arc.tripl.ai/plugins/">
+	
+	Plugins
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Partials" href="https://arc.tripl.ai/partials/">
+	
+	Partials
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Patterns" href="https://arc.tripl.ai/patterns/">
+	
+	Patterns
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="License" href="https://arc.tripl.ai/license/">
+	
+	License
+</a>
+
+
+
+  
+</li>
+
+
+        </ul>
+         
+        <hr>
+        <span class="section">The author</span>
 
         <ul>
-          <li><strong>predictable</strong> in that data is used to define transformations - not code.</li>
-          <li><strong>repeatable</strong> in that if a job is executed multiple times it will produce the same result.
+           
+          <li>
+            <a href="https://github.com/tripl-ai" target="_blank" title="@tripl-ai on GitHub">
+              @tripl-ai on GitHub
+            </a>
           </li>
-          <li><strong>manageable</strong> in that execution considerations and logging has been baked in from the start.
-          </li>
+           
         </ul>
+        
+      </div>
+    </div>
+  </div>
+</nav>
+	</div>
 
-        <h2 id="getting-started">Getting Started</h2>
+	<article class="article">
+		<div class="wrapper">
+			
+				<h1>Arc </h1>
 
-        <p><img src="https://arc.tripl.ai/img/arc-starter.png" alt="Notebook" /></p>
+				
 
-        <p>Arc has an interactive <a href="https://jupyter.org/">Jupyter Notebook</a> extension to help with rapid
-          development of jobs. Start by cloning <a
-            href="https://github.com/tripl-ai/arc-starter">https://github.com/tripl-ai/arc-starter</a> and running
-          through the <a href="https://arc.tripl.ai/tutorial/">tutorial</a>.</p>
+<h2 id="what-is-arc">What is Arc?</h2>
 
-        <p>This extension is available at <a
-            href="https://github.com/tripl-ai/arc-jupyter">https://github.com/tripl-ai/arc-jupyter</a>.</p>
+<p>Arc is an <strong>opinionated</strong> framework for defining <strong>predictable</strong>, <strong>repeatable</strong> and <strong>manageable</strong> data transformation pipelines;</p>
 
-        <h2 id="principles">Principles</h2>
+<ul>
+<li><strong>predictable</strong> in that data is used to define transformations - not code.</li>
+<li><strong>repeatable</strong> in that if a job is executed multiple times it will produce the same result.</li>
+<li><strong>manageable</strong> in that execution considerations and logging has been baked in from the start.</li>
+</ul>
 
-        <p>Many of these principles have come from <a href="https://12factor.net/">12factor</a>:</p>
+<h2 id="getting-started">Getting Started</h2>
 
-        <ul>
-          <li><strong><a href="https://en.wikipedia.org/wiki/Single_responsibility_principle">single
-                responsibility</a></strong> components/stages.</li>
-          <li><strong>stateless</strong> jobs where possible and use of <a
-              href="https://en.wikipedia.org/wiki/Immutable_object">immutable</a> datasets.</li>
-          <li><strong>precise logging</strong> to allow management of jobs at scale.</li>
-          <li><strong>library dependencies</strong> are to be limited or avoided where possible.</li>
-        </ul>
+<p><img src="https://arc.tripl.ai/img/arc-starter.png" alt="Notebook" /></p>
 
-        <h2 id="not-just-for-data-engineers">Not just for data engineers</h2>
+<p>Arc has an interactive <a href="https://jupyter.org/">Jupyter Notebook</a> extension to help with rapid development of jobs. Start by cloning <a href="https://github.com/tripl-ai/arc-starter">https://github.com/tripl-ai/arc-starter</a> and running through the <a href="https://arc.tripl.ai/tutorial/">tutorial</a>.</p>
 
-        <p>The intent of the pipeline is to provide a simple way of creating Extract-Transform-Load (ETL) pipelines
-          which are able to be maintained in production, and captures the answers to simple operational questions
-          transparently to the user.</p>
+<p>This extension is available at <a href="https://github.com/tripl-ai/arc-jupyter">https://github.com/tripl-ai/arc-jupyter</a>.</p>
 
-        <ul>
-          <li><strong>monitoring</strong>: is it working each time it&rsquo;s run? and how much resource was consumed in
-            creating it?</li>
-          <li><strong>devops</strong>: is packaged as a Docker image to allow rapid deployment on ephemeral compute.
-          </li>
-        </ul>
+<h2 id="principles">Principles</h2>
 
-        <p>These concerns are supported at run time to ensure that as deployment grows in uses and complexity it does
-          not become opaque and unmanageable.</p>
+<p>Many of these principles have come from <a href="https://12factor.net/">12factor</a>:</p>
 
-        <h2 id="why-abstract-from-code">Why abstract from code?</h2>
+<ul>
+<li><strong><a href="https://en.wikipedia.org/wiki/Single_responsibility_principle">single responsibility</a></strong> components/stages.</li>
+<li><strong>stateless</strong> jobs where possible and use of <a href="https://en.wikipedia.org/wiki/Immutable_object">immutable</a> datasets.</li>
+<li><strong>precise logging</strong> to allow management of jobs at scale.</li>
+<li><strong>library dependencies</strong> are to be limited or avoided where possible.</li>
+</ul>
 
-        <p>From experience a very high proportion of data pipelines perform very similar extract, transform and load
-          actions on datasets. Unfortunately, whilst the desired outcomes are largely similar, the implementations are
-          vastly varied resulting in higher maintenance costs, lower test-coverage and high levels of rework.</p>
+<h2 id="not-just-for-data-engineers">Not just for data engineers</h2>
 
-        <p>The intention of this project is to define and implement an <strong>opinionated</strong> standard approach
-          for declaring data pipelines which is open and extensible. Abstraction from underlying code allows rapid
-          deployment, a consistent way of defining transformation tasks (such as data typing) and allows abstraction of
-          the pipeline definition from the pipeline execution (to support changing of the underlying execution engines)
-          - see <a href="https://en.wikipedia.org/wiki/Declarative_programming">declarative programming</a>.</p>
+<p>The intent of the pipeline is to provide a simple way of creating Extract-Transform-Load (ETL) pipelines which are able to be maintained in production, and captures the answers to simple operational questions transparently to the user.</p>
 
-        <p>Currently it is tightly coupled to <a href="https://spark.apache.org">Apache Spark</a> due to its
-          fault-tolerance, performance and solid API for standard data engineering tasks but the definitions are human
-          and machine readable <a href="https://github.com/lightbend/config/blob/master/HOCON.md">HOCON</a> (a JSON
-          derivative) allowing the transformation definitions to be implemented against future execution engines.</p>
+<ul>
+<li><strong>monitoring</strong>: is it working each time it&rsquo;s run? and how much resource was consumed in creating it?</li>
+<li><strong>devops</strong>: is packaged as a Docker image to allow rapid deployment on ephemeral compute.</li>
+</ul>
 
-        <h2 id="why-sql-first">Why SQL first?</h2>
+<p>These concerns are supported at run time to ensure that as deployment grows in uses and complexity it does not become opaque and unmanageable.</p>
 
-        <p>SQL first (based on the Mobile First UX principle) is an approach where, if possible, transformations are
-          done using Structured Query Language (SQL) as a preference. This is because SQL is a very good way of
-          expressing standard data transformation intent in a <a
-            href="https://en.wikipedia.org/wiki/Declarative_programming">declarative</a> way. SQL is so widely known and
-          taught that finding people who are able to understand the business context and able to write basic SQL is much
-          easier than finding a Scala developer who also understands the business context (for example).</p>
+<h2 id="why-abstract-from-code">Why abstract from code?</h2>
 
-        <p>Currently the <a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual">HIVE</a> dialect of
-          SQL is supported as <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL</a>
-          uses the same SQL dialect and has a lot of the same <a
-            href="https://spark.apache.org/docs/latest/api/sql/index.html">functions</a> that would be expected from
-          other SQL dialects. This could change in the future.</p>
+<p>From experience a very high proportion of data pipelines perform very similar extract, transform and load actions on datasets. Unfortunately, whilst the desired outcomes are largely similar, the implementations are vastly varied resulting in higher maintenance costs, lower test-coverage and high levels of rework.</p>
 
-        <h2 id="example-pipeline">Example pipeline</h2>
+<p>The intention of this project is to define and implement an <strong>opinionated</strong> standard approach for declaring data pipelines which is open and extensible. Abstraction from underlying code allows rapid deployment, a consistent way of defining transformation tasks (such as data typing) and allows abstraction of the pipeline definition from the pipeline execution (to support changing of the underlying execution engines) - see <a href="https://en.wikipedia.org/wiki/Declarative_programming">declarative programming</a>.</p>
 
-        <h3 id="logic">Logic</h3>
+<p>Currently it is tightly coupled to <a href="https://spark.apache.org">Apache Spark</a> due to its fault-tolerance, performance and solid API for standard data engineering tasks but the definitions are human and machine readable <a href="https://github.com/lightbend/config/blob/master/HOCON.md">HOCON</a> (a JSON derivative) allowing the transformation definitions to be implemented against future execution engines.</p>
 
-        <p>This is an example of a fairly standard pipeline:</p>
+<h2 id="why-sql-first">Why SQL first?</h2>
 
-        <ol>
-          <li>
-            <p>First load a set of CSV files from an input directory. Separator is a comma and the file does not have a
-              header.</p>
-          </li>
+<p>SQL first (based on the Mobile First UX principle) is an approach where, if possible, transformations are done using Structured Query Language (SQL) as a preference. This is because SQL is a very good way of expressing standard data transformation intent in a <a href="https://en.wikipedia.org/wiki/Declarative_programming">declarative</a> way. SQL is so widely known and taught that finding people who are able to understand the business context and able to write basic SQL is much easier than finding a Scala developer who also understands the business context (for example).</p>
 
-          <li>
-            <p>Convert the data to the correct datatypes using metadata defined in a separate JSON.</p>
-          </li>
+<p>Currently the <a href="https://cwiki.apache.org/confluence/display/Hive/LanguageManual">HIVE</a> dialect of SQL is supported as <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL</a> uses the same SQL dialect and has a lot of the same <a href="https://spark.apache.org/docs/latest/api/sql/index.html">functions</a> that would be expected from other SQL dialects. This could change in the future.</p>
 
-          <li>
-            <p>Execute a SQL statement that will perform custom validation to ensure the data conversion in the previous
-              step resulted in an acceptable data conversion error rate.</p>
-          </li>
+<h2 id="example-pipeline">Example pipeline</h2>
 
-          <li>
-            <p>Calculate some aggregates using a SQL Transformation substituting the <code>${year}</code> variable with
-              the value <code>2016</code>.</p>
-          </li>
+<h3 id="logic">Logic</h3>
 
-          <li>
-            <p>Write out the aggreate resultset to a Parquet target.</p>
-          </li>
-        </ol>
+<p>This is an example of a fairly standard pipeline:</p>
 
-        <h3 id="implementation">Implementation</h3>
+<ol>
+<li><p>First load a set of CSV files from an input directory. Separator is a comma and the file does not have a header.</p></li>
 
-        <div class="highlight">
-          <pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+<li><p>Convert the data to the correct datatypes using metadata defined in a separate JSON.</p></li>
+
+<li><p>Execute a SQL statement that will perform custom validation to ensure the data conversion in the previous step resulted in an acceptable data conversion error rate.</p></li>
+
+<li><p>Calculate some aggregates using a SQL Transformation substituting the <code>${year}</code> variable with the value <code>2016</code>.</p></li>
+
+<li><p>Write out the aggreate resultset to a Parquet target.</p></li>
+</ol>
+
+<h3 id="implementation">Implementation</h3>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;stages&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="p">{</span>
       <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedExtract&#34;</span><span class="p">,</span>
@@ -614,146 +565,135 @@
       <span class="p">]</span>
     <span class="p">}</span>
   <span class="p">]</span>
-<span class="p">}</span></code></pre>
+<span class="p">}</span></code></pre></div>
+
+<h2 id="contributing">Contributing</h2>
+
+<p>If you have suggestions of additional components or find issues that you believe need fixing then please raise an issue. An issue with a test case is even more appreciated.</p>
+
+<p>When you contribute code, you affirm that the contribution is your original work and that you license the work to the project under the project’s open source license. Whether or not you state this explicitly, by submitting any copyrighted material via pull request, email, or other means you agree to license the material under the project’s open source license and warrant that you have the legal authority to do so.</p>
+
+<h2 id="attribution">Attribution</h2>
+
+<p>Thanks to the following projects:</p>
+
+<ul>
+<li><a href="https://spark.apache.org/">Apache Spark</a> for the underlying framework that has made this library possible.</li>
+<li><a href="https://github.com/savoirtech/slf4j-json-logger">slf4j-json-logger</a> Copyright &copy; 2016 Savoir Technologies released under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 License</a>. We have slightly altered their library to change the default logging format.</li>
+<li><a href="https://github.com/Azure/azure-sqldb-spark">azure-sqldb-spark</a> for their Microsoft SQL Server bulkload driver. Currently included in /lib but will be pulled from Maven once available.</li>
+<li><a href="https://github.com/toddwschneider/nyc-taxi-data">nyc-taxi-data</a> for preparing an easy to use set of real-world data for the tutorial.</li>
+</ul>
+
+<h2 id="license">License</h2>
+
+<p>Arc is released under the <a href="https://opensource.org/licenses/MIT">MIT License</a>. See <a href="https://arc.tripl.ai/license">License</a> for full information.</p>
+
+			
+
+			<aside class="copyright" role="note">
+				
+				&copy; 2019 Released under the MIT license
+				
+			</aside>
+
+			<footer class="footer">
+				
+
+
+
+<nav class="pagination" aria-label="Footer">
+  <div class="previous">
+  </div>
+
+  
+  
+  <div class="next">
+    <a href="https://arc.tripl.ai/tutorial/" title="Tutorial">
+      <span class="direction">
+        Next
+      </span>
+      <div class="page">
+        <div class="stretch">
+          <div class="title">
+            Tutorial
+          </div>
         </div>
-
-        <h2 id="contributing">Contributing</h2>
-
-        <p>If you have suggestions of additional components or find issues that you believe need fixing then please
-          raise an issue. An issue with a test case is even more appreciated.</p>
-
-        <p>When you contribute code, you affirm that the contribution is your original work and that you license the
-          work to the project under the project’s open source license. Whether or not you state this explicitly, by
-          submitting any copyrighted material via pull request, email, or other means you agree to license the material
-          under the project’s open source license and warrant that you have the legal authority to do so.</p>
-
-        <h2 id="attribution">Attribution</h2>
-
-        <p>Thanks to the following projects:</p>
-
-        <ul>
-          <li><a href="https://spark.apache.org/">Apache Spark</a> for the underlying framework that has made this
-            library possible.</li>
-          <li><a href="https://github.com/savoirtech/slf4j-json-logger">slf4j-json-logger</a> Copyright &copy; 2016
-            Savoir Technologies released under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache 2.0
-              License</a>. We have slightly altered their library to change the default logging format.</li>
-          <li><a href="https://github.com/Azure/azure-sqldb-spark">azure-sqldb-spark</a> for their Microsoft SQL Server
-            bulkload driver. Currently included in /lib but will be pulled from Maven once available.</li>
-          <li><a href="https://github.com/toddwschneider/nyc-taxi-data">nyc-taxi-data</a> for preparing an easy to use
-            set of real-world data for the tutorial.</li>
-        </ul>
-
-        <h2 id="license">License</h2>
-
-        <p>Arc is released under the <a href="https://opensource.org/licenses/MIT">MIT License</a>. See <a
-            href="https://arc.tripl.ai/license">License</a> for full information.</p>
-
-
-
-        <aside class="copyright" role="note">
-
-          &copy; 2019 Released under the MIT license
-
-        </aside>
-
-        <footer class="footer">
-
-
-
-
-          <nav class="pagination" aria-label="Footer">
-            <div class="previous">
-            </div>
-
-
-
-            <div class="next">
-              <a href="https://arc.tripl.ai/tutorial/" title="Tutorial">
-                <span class="direction">
-                  Next
-                </span>
-                <div class="page">
-                  <div class="stretch">
-                    <div class="title">
-                      Tutorial
-                    </div>
-                  </div>
-                  <div class="button button-next" role="button" aria-label="Next">
-                    <i class="icon icon-forward"></i>
-                  </div>
-                </div>
-              </a>
-            </div>
-          </nav>
-
-
-        </footer>
-      </div>
-    </article>
-
-    <div class="results" role="status" aria-live="polite">
-      <div class="scrollable">
-        <div class="wrapper">
-          <div class="meta"></div>
-          <div class="list"></div>
+        <div class="button button-next" role="button" aria-label="Next">
+          <i class="icon icon-forward"></i>
         </div>
       </div>
-    </div>
-  </main>
-
-  <script>
-
-    var base_url = 'https:\/\/arc.tripl.ai\/';
-    var repo_id = 'tripl-ai\/arc';
-
-  </script>
-
-  <script src="https://arc.tripl.ai/javascripts/application.js"></script>
+    </a>
+  </div>
+</nav>
 
 
-  <script>
-    /* Add headers to scrollspy */
-    var headers = document.getElementsByTagName("h2");
-    var scrollspy = document.getElementById('scrollspy');
+			</footer>
+		</div>
+	</article>
 
-    if (scrollspy) {
-      if (headers.length > 0) {
-        for (var i = 0; i < headers.length; i++) {
-          var li = document.createElement("li");
-          li.setAttribute("class", "anchor");
+	<div class="results" role="status" aria-live="polite">
+		<div class="scrollable">
+			<div class="wrapper">
+				<div class="meta"></div>
+				<div class="list"></div>
+			</div>
+		</div>
+	</div>
+</main>
 
-          var a = document.createElement("a");
-          a.setAttribute("href", "#" + headers[i].id);
-          a.setAttribute("title", headers[i].innerHTML);
-          a.innerHTML = headers[i].innerHTML;
+    <script>
+    
+      var base_url = 'https:\/\/arc.tripl.ai\/';
+      var repo_id  = 'tripl-ai\/arc';
+    
+    </script>
 
-          li.appendChild(a)
-          scrollspy.appendChild(li);
+    <script src="https://arc.tripl.ai/javascripts/application.js"></script>
+    
+
+    <script>
+      /* Add headers to scrollspy */
+      var headers   = document.getElementsByTagName("h2");
+      var scrollspy = document.getElementById('scrollspy');
+
+      if(scrollspy) {
+        if(headers.length > 0) {
+          for(var i = 0; i < headers.length; i++) {
+            var li = document.createElement("li");
+            li.setAttribute("class", "anchor");
+
+            var a  = document.createElement("a");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", headers[i].innerHTML);
+            a.innerHTML = headers[i].innerHTML;
+
+            li.appendChild(a)
+            scrollspy.appendChild(li);
+          }
+        } else {
+          scrollspy.parentElement.removeChild(scrollspy)
         }
-      } else {
-        scrollspy.parentElement.removeChild(scrollspy)
+
+
+        /* Add permanent link next to the headers */
+        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+        for(var i = 0; i < headers.length; i++) {
+            var a = document.createElement("a");
+            a.setAttribute("class", "headerlink");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", "Permanent link")
+            a.innerHTML = "#";
+            headers[i].appendChild(a);
+        }
       }
+    </script>
 
+    
 
-      /* Add permanent link next to the headers */
-      var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
-
-      for (var i = 0; i < headers.length; i++) {
-        var a = document.createElement("a");
-        a.setAttribute("class", "headerlink");
-        a.setAttribute("href", "#" + headers[i].id);
-        a.setAttribute("title", "Permanent link")
-        a.innerHTML = "#";
-        headers[i].appendChild(a);
-      }
-    }
-  </script>
-
-
-
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
-  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
-</body>
-
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
 </html>
+

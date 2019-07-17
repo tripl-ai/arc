@@ -92,6 +92,38 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
 {{< readfile file="/resources/docs_resources/BytesExtractComplete" highlight="json" >}} 
 
 
+## CassandraExtract
+##### Since: 2.0.0 - Supports Streaming: False
+{{< note title="Plugin" >}}
+The `CassandraExtract` is provided by the https://github.com/tripl-ai/arc-cassandra-pipeline-plugin package.
+{{</note>}}
+
+The `CassandraExtract` reads directly from a [Cassandra](https://cassandra.apache.org/) cluster and returns a `DataFrame`. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|keyspace|String|true|The name of the Cassandra keyspace to extract from.|
+|table|String|true|The name of the Cassandra table to extract from.|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Any parameters provided will be added to the Cassandra connection object.|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/CassandraExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/CassandraExtractComplete" highlight="json" >}} 
+
+
 ## DeltaLakeExtract
 ##### Since: 2.0.0 - Supports Streaming: True
 {{< note title="Plugin" >}}

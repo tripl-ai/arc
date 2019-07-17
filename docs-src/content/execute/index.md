@@ -6,6 +6,35 @@ type: blog
 
 `*Execute` stages are used to execute arbitrary commands against external systems such as Databases and APIs.
 
+## CassandraExecute
+##### Since: 2.0.0 - Supports Streaming: False
+{{< note title="Plugin" >}}
+The `CassandraExecute` is provided by the https://github.com/tripl-ai/arc-cassandra-pipeline-plugin package.
+{{</note>}}
+
+The `CassandraExecute` executes a CQL statement against an external [Cassandra](https://cassandra.apache.org/) cluster.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|true|URI of the input file containing the CQL statement.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Any parameters provided will be added to the Cassandra connection object.|
+|sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/CassandraExecuteMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/CassandraExecuteComplete" highlight="json" >}} 
+
+
 ## HTTPExecute
 ##### Since: 1.0.0 - Supports Streaming: False
 

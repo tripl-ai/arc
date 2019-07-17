@@ -1,0 +1,19 @@
+{
+  "type": "CassandraExtract",
+  "name": "read",
+  "environments": [
+    "production",
+    "test"
+  ],  
+  "keyspace": "default",
+  "table": "customer",
+  "outputView": "customer",
+  "params": {
+    "spark.cassandra.connection.host": "cassandra"
+  },
+  "numPartitions": 10,
+  "partitionBy": [
+    "country"
+  ],
+  "persist": true         
+}

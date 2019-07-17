@@ -1,0 +1,15 @@
+{
+  "type": "CassandraExecute",
+  "name": "create table",
+  "environments": [
+    "production",
+    "test"
+  ],  
+  "inputURI": "hdfs://datalake/sql/create_table.cql",
+  "params": {
+    "spark.cassandra.connection.host": "cassandra"
+  },
+  "sqlParams": {
+    "keyspace": ${ETL_CONF_ENVIRONMENT}
+  }     
+}
