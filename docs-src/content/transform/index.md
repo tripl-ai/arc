@@ -113,6 +113,9 @@ The `GraphTransform` stage takes either a list of views of graph nodes and views
 
 The `HTTPTransform` stage transforms the incoming dataset by `POST`ing the value in the incoming dataset with column name `value` (must be of type `string` or `bytes`) and appending the response body from an external API as `body`.
 
+A good use case of the `HTTPTransform` stage is to call an external [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) machine learning model service. To see an example of how to host a simple model as a service see:<br>
+https://github.com/tripl-ai/arc/tree/master/src/it/resources/flask_serving
+
 ### Parameters
 
 | Attribute | Type | Required | Description |
@@ -335,6 +338,9 @@ This means this API is likely to change.
 {{</note>}}
 
 The `TensorFlowServingTransform` stage transforms the incoming dataset by calling a [TensorFlow Serving](https://www.tensorflow.org/serving/) service. Because each call is atomic the TensorFlow Serving instances could be behind a load balancer to increase throughput.
+
+To see how to host a simple model in [TensorFlow Serving](https://www.tensorflow.org/serving/) see:<br>
+https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving
 
 ### Parameters
 

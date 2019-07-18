@@ -897,6 +897,25 @@ FROM (
 ) valid
 </code></pre>
 
+<h2 id="machine-learning-model-as-a-service">Machine Learning Model as a Service</h2>
+
+<p>To see an example of how to host a simple model as a service (in this case <a href="https://www.kaggle.com/keras/resnet50">resnet50</a>) see:<br>
+<a href="https://github.com/tripl-ai/arc/tree/master/src/it/resources/flask_serving">https://github.com/tripl-ai/arc/tree/master/src/it/resources/flask_serving</a></p>
+
+<p>To see how to host a <a href="https://www.tensorflow.org/serving/">TensorFlow Serving</a> model see:<br>
+<a href="https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving">https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving</a></p>
+
+<p>To easily scale these services without managed infrastructure you can use <a href="https://docs.docker.com/engine/swarm/">Docker Swarm</a> which includes a basic load balancer to distribute load across many (<code>--replicas n</code>) single-threaded services:</p>
+
+<pre><code class="language-bash"># start docker services
+docker swarm init &amp;&amp; \
+docker service create --replicas 2 --publish 5000:5000 flask_serving/simple:latest 
+</code></pre>
+
+<pre><code class="language-bash"># to stop docker swarm
+docker swarm leave --force
+</code></pre>
+
 <h2 id="machine-learning-prediction-thresholds">Machine Learning Prediction Thresholds</h2>
 
 <p>When used for classification, the <a href="../transform/#mltransform">MLTransform</a> stage will add a <code>probability</code> column which exposes the highest probability score from the Spark ML probability vector which led to the predicted value. This can then be used as a boundary to prevent low probability predictions being sent to other systems if, for example, a change in input data resulted in a major change in predictions.</p>

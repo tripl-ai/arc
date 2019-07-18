@@ -303,6 +303,27 @@ FROM (
 ) valid
 ```
 
+## Machine Learning Model as a Service
+
+To see an example of how to host a simple model as a service (in this case [resnet50](https://www.kaggle.com/keras/resnet50)) see:<br>
+https://github.com/tripl-ai/arc/tree/master/src/it/resources/flask_serving
+
+To see how to host a [TensorFlow Serving](https://www.tensorflow.org/serving/) model see:<br>
+https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving
+
+To easily scale these services without managed infrastructure you can use [Docker Swarm](https://docs.docker.com/engine/swarm/) which includes a basic load balancer to distribute load across many (`--replicas n`) single-threaded services:
+
+```bash
+# start docker services
+docker swarm init && \
+docker service create --replicas 2 --publish 5000:5000 flask_serving/simple:latest 
+```
+
+```bash
+# to stop docker swarm
+docker swarm leave --force
+```
+
 ## Machine Learning Prediction Thresholds
 
 When used for classification, the [MLTransform](../transform/#mltransform) stage will add a `probability` column which exposes the highest probability score from the Spark ML probability vector which led to the predicted value. This can then be used as a boundary to prevent low probability predictions being sent to other systems if, for example, a change in input data resulted in a major change in predictions. 
