@@ -74,7 +74,10 @@ class HTTPExtract extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
-        stage.stageDetail.put("input", if(c.hasPath("inputView")) inputView else parsedURI)
+        input match {
+          case Left(inputView) => stage.stageDetail.put("inputView", inputView)
+          case Right(parsedGlob) =>stage.stageDetail.put("inputURI", parsedGlob)
+        }
         stage.stageDetail.put("method", method)
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
