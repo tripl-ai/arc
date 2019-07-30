@@ -34,7 +34,7 @@ object Plugins {
 
         // skip stage if not in environment
         if (!arcContext.ignoreEnvironments && !environments.contains(arcContext.environment.get)) {
-          logger.trace()
+          logger.info()
             .field("event", "validateConfig")
             .field("type", pluginType.right.getOrElse("unknown"))
             .field("stageIndex", index)

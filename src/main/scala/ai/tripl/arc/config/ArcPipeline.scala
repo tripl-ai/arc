@@ -78,7 +78,6 @@ object ArcPipeline {
           val lifecyclePluginsOrErrors = resolveConfigPlugins(resolvedConfig, "plugins.lifecycle", arcContext.lifecyclePlugins)(spark, logger, arcContext)
           val pipelinePluginsOrErrors = resolveConfigPlugins(resolvedConfig, "stages", arcContext.pipelineStagePlugins)(spark, logger, arcContext)
 
-
           (lifecyclePluginsOrErrors, pipelinePluginsOrErrors) match {
             case (Left(lifecycleErrors), Left(pipelineErrors)) => Left(lifecycleErrors.reverse ::: pipelineErrors.reverse)
             case (Right(_), Left(pipelineErrors)) => Left(pipelineErrors.reverse)
