@@ -85,6 +85,12 @@ FROM (
 ) valid
 ```
 
+The `FILTER` function can be used to select errors only from a certain field: 
+
+```sql
+SIZE(FILTER(_errors, _error -> _error.field == 'fieldname'))
+```
+
 With a text message:
 
 ```sql

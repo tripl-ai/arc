@@ -514,6 +514,12 @@ bin/spark-submit \
 </tr>
 
 <tr>
+<td>ETL_CONF_IGNORE_ENVIRONMENTS</td>
+<td>etl.config.ignoreEnvironments</td>
+<td>Allows skipping the <code>environments</code> tests and execute all stages/plugins.</td>
+</tr>
+
+<tr>
 <td>ETL_CONF_URI</td>
 <td>etl.config.uri</td>
 <td>The URI of the job file to execute.</td>
@@ -529,12 +535,6 @@ bin/spark-submit \
 <td>ETL_CONF_STORAGE_LEVEL</td>
 <td>etl.config.storageLevel</td>
 <td>The <a href="https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$">StorageLevel</a> used when persisting datasets. String default <code>MEMORY_AND_DISK_SER</code>.</td>
-</tr>
-
-<tr>
-<td>ETL_CONF_IMMUTABLE_VIEWS</td>
-<td>etl.config.immutableViews</td>
-<td>Prevent reusing view names multiple times within a job (calls <code>createTempView</code> instead of <code>createOrReplaceTempView</code>). Boolean default <code>false</code>.</td>
 </tr>
 </tbody>
 </table>

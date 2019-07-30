@@ -655,6 +655,11 @@ FROM (
 ) valid
 </code></pre>
 
+<p>The <code>FILTER</code> function can be used to select errors only from a certain field:</p>
+
+<pre><code class="language-sql">SIZE(FILTER(_errors, _error -&gt; _error.field == 'fieldname'))
+</code></pre>
+
 <p>With a text message:</p>
 
 <pre><code class="language-sql">SELECT 
