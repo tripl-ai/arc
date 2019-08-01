@@ -43,7 +43,7 @@ pygmentsUseClasses=true
 	highlight_css  = ""
 
 	[params.palette]
-    	primary = "blue-grey"
+    	primary = "red"
     	accent  = "red"
 
     [params.font]
