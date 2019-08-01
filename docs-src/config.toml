@@ -43,8 +43,8 @@ pygmentsUseClasses=true
 	highlight_css  = ""
 
 	[params.palette]
-    	primary = "red"
-    	accent  = "teal"
+    	primary = "blue-grey"
+    	accent  = "red"
 
     [params.font]
     	text = "Ubuntu"
