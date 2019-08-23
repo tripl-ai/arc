@@ -94,7 +94,7 @@ The `GraphTransform` stage takes either a list of views of graph nodes and views
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputURI|URI|true*|URI/Glob of the input Cypher query.|
 |nodes|Array[Object]|true*|List of node labels and node views to construct the graph from. See example below.|
-|relationships|Array[Object]|true*|List of relionship types and relionship views to construct the graph from. See example below.|
+|relationships|Array[Object]|true*|List of relationship types and relationship views to construct the graph from. See example below.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |cypherParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/cypherParams.md" markdown="true" >}}|
 |outputGraph|String|true|{{< readfile file="/content/partials/fields/outputGraph.md" markdown="true" >}}|
