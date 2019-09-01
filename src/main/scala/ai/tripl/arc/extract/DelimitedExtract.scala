@@ -84,11 +84,10 @@ class DelimitedExtract extends PipelineStagePlugin {
           case Some(basePath) => Delimited.toSparkOptions(stage.settings) + ("basePath" -> basePath)
           case None => Delimited.toSparkOptions(stage.settings)
         }
-        val inputValue = stage.input match {
-          case Left(view) => view
-          case Right(glob) => glob
+        input match {
+          case Left(inputView) => stage.stageDetail.put("inputView", inputView)
+          case Right(parsedGlob) =>stage.stageDetail.put("inputURI", parsedGlob)
         }
-        stage.stageDetail.put("input", inputValue)
         stage.stageDetail.put("options", options.asJava)
         for (inputField <- inputField) {
           stage.stageDetail.put("inputField", inputField)

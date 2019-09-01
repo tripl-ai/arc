@@ -61,7 +61,7 @@ class ORCExtract extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
-        stage.stageDetail.put("input", parsedGlob)
+        stage.stageDetail.put("inputURI", parsedGlob)
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         for (basePath <- basePath) {

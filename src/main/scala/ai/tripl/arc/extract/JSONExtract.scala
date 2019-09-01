@@ -69,7 +69,10 @@ class JSONExtract extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
-        stage.stageDetail.put("input", input)
+        input match {
+          case Left(inputView) => stage.stageDetail.put("inputView", inputView)
+          case Right(parsedGlob) =>stage.stageDetail.put("inputURI", parsedGlob)
+        }
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("options", JSON.toSparkOptions(stage.settings).asJava)

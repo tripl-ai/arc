@@ -63,7 +63,10 @@ class BytesExtract extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("failMode", stage.failMode.sparkString)
-        stage.stageDetail.put("input", if (c.hasPath("inputView")) inputView else parsedGlob)
+        input match {
+          case Left(inputView) => stage.stageDetail.put("inputView", inputView)
+          case Right(parsedGlob) =>stage.stageDetail.put("inputURI", parsedGlob)
+        }
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(stage.persist))
         stage.stageDetail.put("params", params.asJava)

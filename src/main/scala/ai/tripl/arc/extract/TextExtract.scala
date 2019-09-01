@@ -58,7 +58,7 @@ class TextExtract extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
-        stage.stageDetail.put("input", parsedGlob)
+        stage.stageDetail.put("inputURI", parsedGlob)
         stage.stageDetail.put("multiLine", java.lang.Boolean.valueOf(multiLine))
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))

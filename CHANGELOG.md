@@ -1,5 +1,10 @@
 ## Change Log
 
+# 2.0.1
+
+- update to [Spark 2.4.4](https://spark.apache.org/releases/spark-release-2-4-4.html).
+- update to Scala `2.12.9`
+
 # 2.0.0
 
 Arc 2.0.0 is a major (breaking) change which has been done for multiple reasons:

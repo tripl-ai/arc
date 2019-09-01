@@ -59,7 +59,7 @@ class ImageExtract extends PipelineStagePlugin {
           stage.stageDetail.put("basePath", basePath)
         }
         stage.stageDetail.put("dropInvalid", java.lang.Boolean.valueOf(dropInvalid))
-        stage.stageDetail.put("input", parsedGlob)
+        stage.stageDetail.put("inputURI", parsedGlob)
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("params", params.asJava)
