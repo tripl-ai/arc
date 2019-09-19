@@ -93,6 +93,14 @@ object ConfigReader {
 
     }
 
+    implicit object IntConfigReader extends ConfigReader[Int] {
+
+        val expectedType = "int"
+
+        def read(path: String, c: Config): Int = c.getInt(path)
+
+    }
+
     implicit object IntListConfigReader extends ConfigReader[IntList] {
 
         val expectedType = "integer array"
@@ -109,13 +117,13 @@ object ConfigReader {
 
     }
 
-    implicit object IntConfigReader extends ConfigReader[Int] {
+    implicit object BooleanListConfigReader extends ConfigReader[BooleanList] {
 
-        val expectedType = "int"
+        val expectedType = "boolean array"
 
-        def read(path: String, c: Config): Int = c.getInt(path)
+        def read(path: String, c: Config): BooleanList = c.getBooleanList(path).asScala.map(f => f.booleanValue).toList
 
-    }
+    }   
 
     implicit object LongConfigReader extends ConfigReader[Long] {
 
@@ -124,6 +132,30 @@ object ConfigReader {
         def read(path: String, c: Config): Long = c.getLong(path)
 
     }
+
+    implicit object LongListConfigReader extends ConfigReader[LongList] {
+
+        val expectedType = "long array"
+
+        def read(path: String, c: Config): LongList = c.getLongList(path).asScala.map(f => f.toLong).toList
+
+    }      
+
+    implicit object DoubleConfigReader extends ConfigReader[Double] {
+
+        val expectedType = "double"
+
+        def read(path: String, c: Config): Double = c.getDouble(path)
+
+    }   
+    
+    implicit object DoubleListConfigReader extends ConfigReader[DoubleList] {
+
+        val expectedType = "double array"
+
+        def read(path: String, c: Config): DoubleList = c.getDoubleList(path).asScala.map(f => f.toDouble).toList
+
+    }    
 
     def getValue[A](path: String, default: Option[A] = None, validValues: Seq[A] = Seq.empty)(implicit c: Config, reader: ConfigReader[A]): Either[Errors, A] = {
         reader.getValue(path, c, default, validValues)
