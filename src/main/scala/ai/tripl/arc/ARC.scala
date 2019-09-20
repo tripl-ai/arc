@@ -404,17 +404,17 @@ object ARC {
   def run(pipeline: ETLPipeline)
   (implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    def before(index: Int, stages: List[PipelineStage]): Unit = {
+    def before(currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Unit = {
       for (p <- arcContext.activeLifecyclePlugins) {
         logger.trace().message(s"Executing before() on LifecyclePlugin: ${p.getClass.getName}")
-        p.before(index, stages)
+        p.before(currentValue, index, stages)
       }
     }
 
-    def after(currentValue: Option[DataFrame], index: Int, stages: List[PipelineStage]): Unit = {
+    def after(result: Option[DataFrame], currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Unit = {
       for (p <- arcContext.activeLifecyclePlugins) {
         logger.trace().message(s"Executing after on LifecyclePlugin: ${stages(index).getClass.getName}")
-        p.after(currentValue, index, stages)
+        p.after(result, currentValue, index, stages)
       }
     }
 
@@ -425,20 +425,18 @@ object ARC {
         case head :: Nil =>
           val stage = head._1
           val index = head._2
-          val pipelineStages = stages.map(_._1)      
-          before(index, pipelineStages)
+          before(stage, index, pipeline.stages)
           val result = processStage(stage)
-          after(result, index, pipelineStages)
+          after(result, stage, index, pipeline.stages)
           result
 
           //currentValue[, index[, array]]
         case head :: tail =>
           val stage = head._1
           val index = head._2
-          val pipelineStages = stages.map(_._1)      
-          before(index, pipelineStages)
+          before(stage, index, pipeline.stages)
           val result = processStage(stage)
-          after(result, index, pipelineStages)
+          after(result, stage, index, pipeline.stages)
           runStages(tail)
       }
     }
