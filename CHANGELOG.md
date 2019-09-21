@@ -2,6 +2,7 @@
 
 # 2.1.0
 
+- add `SimilarityJoinTransform` a stage which performs a [fuzzy match](https://en.wikipedia.org/wiki/Approximate_string_matching) and can be used for dataset deduplication or approximate joins.
 - add missing types `BooleanList`, `Double`, `DoubleList`, `LongList` to config reader.
 
 **BREAKING**
