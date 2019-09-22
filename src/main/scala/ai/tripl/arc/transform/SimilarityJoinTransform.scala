@@ -28,7 +28,7 @@ class SimilarityJoinTransform extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "leftView" :: "leftFields" :: "rightView" :: "rightFields" :: "outputView" :: "shingleLength" :: "numHashTables" :: "threshold" :: "numPartitions" :: "partitionBy" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "leftView" :: "leftFields" :: "rightView" :: "rightFields" :: "outputView" :: "persist" :: "shingleLength" :: "numHashTables" :: "threshold" :: "caseSensitive" :: "numPartitions" :: "partitionBy" :: "params" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val leftView = getValue[String]("leftView")
