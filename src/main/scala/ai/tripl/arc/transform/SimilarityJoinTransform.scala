@@ -118,35 +118,33 @@ object SimilarityJoinTransformStage {
 
   def execute(stage: SimilarityJoinTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
+    // create a guid to name the two derived columns (leftView and rightView) to avoid collisions with existing column names
     val uuid = UUID.randomUUID.toString
 
     // split input string into individual characters
-    val regexTokenizer = { new RegexTokenizer()
+    val regexTokenizer = new RegexTokenizer()
       .setInputCol(uuid)
       .setPattern("")
       .setMinTokenLength(1)      
       .setToLowercase(!stage.caseSensitive)
-    }
 
     // produce ngrams to group the characters
-    val nGram = { new NGram()
+    val nGram = new NGram()
       .setInputCol(regexTokenizer.getOutputCol)
       .setN(stage.shingleLength)
-    }
 
     // convert to vector
-    val countVectorizer = { new CountVectorizer()
+    val countVectorizer = new CountVectorizer()
       .setInputCol(nGram.getOutputCol)
-    }
 
     // build locality-sensitive hashing model
-    val minHashLSH = { new MinHashLSH()
+    val minHashLSH = new MinHashLSH()
       .setInputCol(countVectorizer.getOutputCol)
       .setNumHashTables(stage.numHashTables)
       .setOutputCol("lsh")
-    }
 
-    val pipeline = new Pipeline().setStages(Array(regexTokenizer, nGram, countVectorizer, minHashLSH))
+    val pipeline = new Pipeline()
+      .setStages(Array(regexTokenizer, nGram, countVectorizer, minHashLSH))
 
     val transformedDF = try {
 
@@ -169,11 +167,16 @@ object SimilarityJoinTransformStage {
       val leftOutputColumns = leftView.columns.map{columnName => col(s"datasetA.${columnName}")}
       val rightOutputColumns = rightView.columns.map{columnName => col(s"datasetB.${columnName}")}
 
-      pipelineModel.stages(3).asInstanceOf[MinHashLSHModel]
-        .approxSimilarityJoin(datasetA, datasetB, (1.0-stage.threshold))
-        .select((leftOutputColumns ++ rightOutputColumns ++ List((lit(1.0)-col("distCol")).alias("similarity"))):_*)
+      pipelineModel.stages.collectFirst{ case minHashLSHModel: MinHashLSHModel => minHashLSHModel } match {
+        case Some(minHashLSHModel) => { 
+          minHashLSHModel
+            .approxSimilarityJoin(datasetA, datasetB, (1.0-stage.threshold))
+            .select((leftOutputColumns ++ rightOutputColumns ++ Seq((lit(1.0)-col("distCol")).alias("similarity"))):_*)
+        }
+        case None => throw new Exception("could not find MinHashLSHModel in trained model")
+      }
 
-      } catch {
+    } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stage.stageDetail
       }

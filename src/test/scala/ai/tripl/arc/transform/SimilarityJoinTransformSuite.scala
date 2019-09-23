@@ -60,7 +60,7 @@ class SimilarityJoinTransformSuite extends FunSuite with BeforeAndAfter {
 
     val rightDF = Seq(
       (0L,"U3 59 INVERNESS AVENUE","NSW 2222 PENSHURST"),
-      (1L,"74 CANYON DR", "NSW 2768 STANEHOPE GDNS."),
+      (1L,"74 CANYON DR", "NSW 2768 STANEHOPE GDNS.")
     ).toDF("id", "street", "state_postcode_suburb")
     rightDF.createOrReplaceTempView(rightView)
 

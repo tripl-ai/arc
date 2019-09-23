@@ -422,18 +422,13 @@ object ARC {
     def runStages(stages: List[(PipelineStage, Int)]): Option[DataFrame] = {
       stages match {
         case Nil => None // end
-        case head :: Nil =>
-          val stage = head._1
-          val index = head._2
+        case (stage, index) :: Nil =>
           before(stage, index, pipeline.stages)
           val result = processStage(stage)
           after(result, stage, index, pipeline.stages)
           result
 
-          //currentValue[, index[, array]]
-        case head :: tail =>
-          val stage = head._1
-          val index = head._2
+        case (stage, index) :: tail =>
           before(stage, index, pipeline.stages)
           val result = processStage(stage)
           after(result, stage, index, pipeline.stages)
