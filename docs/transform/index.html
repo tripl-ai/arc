@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.0.1</span></strong>
+          <span class="version">2.1.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -1439,6 +1439,204 @@ WHERE metadata.pii = (
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span>
 <span class="p">}</span></code></pre></div>
 
+<h2 id="similarityjointransform">SimilarityJoinTransform</h2>
+
+<h5 id="since-2-1-0-supports-streaming-true">Since: 2.1.0 - Supports Streaming: True</h5>
+
+<p>The <code>SimilarityJoinTransform</code> stage uses <a href="https://en.wikipedia.org/wiki/Approximate_string_matching">Approximate String Matching</a> (a.k.a. Fuzzy Matching) to find similar records between two datasets. It is possible to pass the same datasets into both the <code>leftView</code> and <code>rightView</code> to find duplicates (in which case the <code>threshold</code> value should be high to avoid a potentially very large cross-product resultset).</p>
+
+<h3 id="parameters-7">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>leftView</td>
+<td>String</td>
+<td>true</td>
+<td>The view name of the <code>left</code> dataset. This should be the bigger of the two input sets.</td>
+</tr>
+
+<tr>
+<td>rightView</td>
+<td>String</td>
+<td>true</td>
+<td>The view name of the <code>right</code> dataset.</td>
+</tr>
+
+<tr>
+<td>leftFields</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>Columns to include in the similarity join from the <code>left</code> dataset. These are order dependent.</td>
+</tr>
+
+<tr>
+<td>rightFields</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>Columns to include in the similarity join from the <code>right</code> dataset. These are order dependent.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>caseSensitive</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to use case sensitive comparison.<br><br>Default: <code>false</code>.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>numHashTables</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of hash tables which can be used to trade off execution time vs. false positive rate. Lower values should produce quicker exeuction but higher false positive rate.<br><br>Default: <code>5</code>.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Map of configuration parameters. Currently unused.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
+</tr>
+
+<tr>
+<td>shingleLength</td>
+<td>Integer</td>
+<td>false</td>
+<td>The length to split the input fields into. E.g. the string <code>1 Parliament Drive</code> would be split into [<code>1 P</code>, <code>Pa</code>, <code>Par</code>, <code>arl</code>&hellip;] if <code>shingleLength</code> is set to <code>3</code>. Longer or shorter <code>shingleLength</code> may help provide higher similarity depending on your dataset.<br><br>Default: <code>3</code>.</td>
+</tr>
+
+<tr>
+<td>threshold</td>
+<td>Double</td>
+<td>false</td>
+<td>The similarity threshold for evaluating the records as the same. The default, <code>0.8</code>, means that 80% of the character sequences must be the same for the records to be considered equal for joining.<br><br>Default: <code>0.8</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-7">Examples</h3>
+
+<h4 id="minimal-7">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SimilarityJoinTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;test&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;leftView&#34;</span><span class="p">:</span> <span class="s2">&#34;official_postal_addresses&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;leftFields&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;flat_number&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;number_first&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;street_name&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;street_type&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;locality_name&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;postcode&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;state&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;rightView&#34;</span><span class="p">:</span> <span class="s2">&#34;crm_addresses&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;rightFields&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;street&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;state_postcode_suburb&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;official_address_compare&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-7">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SimilarityJoinTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;test&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;leftView&#34;</span><span class="p">:</span> <span class="s2">&#34;official_postal_addresses&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;leftFields&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;flat_number&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;number_first&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;street_name&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;street_type&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;locality_name&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;postcode&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;state&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;rightView&#34;</span><span class="p">:</span> <span class="s2">&#34;crm_addresses&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;rightFields&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;street&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;state_postcode_suburb&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;official_address_compare&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;threshold&#34;</span><span class="p">:</span> <span class="mf">0.75</span><span class="p">,</span>
+  <span class="nt">&#34;shingleLength&#34;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+  <span class="nt">&#34;numHashTables&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;caseSensitive&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;state&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span>
+<span class="p">}</span></code></pre></div>
+
 <h2 id="sqltransform">SQLTransform</h2>
 
 <h5 id="since-1-0-0-supports-streaming-true-2">Since: 1.0.0 - Supports Streaming: True</h5>
@@ -1457,7 +1655,7 @@ WHERE metadata.pii = (
 </p>
 </div>
 
-<h3 id="parameters-7">Parameters</h3>
+<h3 id="parameters-8">Parameters</h3>
 
 <table>
 <thead>
@@ -1554,9 +1752,9 @@ FROM customer
 LEFT JOIN account ON account.customer_id = customer.customer_id
 </code></pre>
 
-<h3 id="examples-7">Examples</h3>
+<h3 id="examples-8">Examples</h3>
 
-<h4 id="minimal-7">Minimal</h4>
+<h4 id="minimal-8">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
@@ -1569,7 +1767,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-7">Complete</h4>
+<h4 id="complete-8">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
@@ -1612,7 +1810,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 <p>To see how to host a simple model in <a href="https://www.tensorflow.org/serving/">TensorFlow Serving</a> see:<br>
 <a href="https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving">https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving</a></p>
 
-<h3 id="parameters-8">Parameters</h3>
+<h3 id="parameters-9">Parameters</h3>
 
 <table>
 <thead>
@@ -1662,7 +1860,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <tr>
 <td>batchSize</td>
-<td>Int</td>
+<td>Integer</td>
 <td>false</td>
 <td>The number of records to sent to TensorFlow Serving in each call. A higher number will decrease the number of calls to TensorFlow Serving which may be more efficient.</td>
 </tr>
@@ -1705,7 +1903,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 <tr>
 <td>persist</td>
 <td>Boolean</td>
-<td>true</td>
+<td>false</td>
 <td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
 
@@ -1725,9 +1923,9 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tbody>
 </table>
 
-<h3 id="examples-8">Examples</h3>
+<h3 id="examples-9">Examples</h3>
 
-<h4 id="minimal-8">Minimal</h4>
+<h4 id="minimal-9">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TensorFlowServingTransform&#34;</span><span class="p">,</span>
@@ -1741,7 +1939,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
   <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-8">Complete</h4>
+<h4 id="complete-9">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TensorFlowServingTransform&#34;</span><span class="p">,</span>
@@ -1772,7 +1970,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <p>The logical process that is applied to perform the typing on a field-by-field basis is shown below.</p>
 
-<h3 id="parameters-9">Parameters</h3>
+<h3 id="parameters-10">Parameters</h3>
 
 <table>
 <thead>
@@ -1871,9 +2069,9 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tbody>
 </table>
 
-<h3 id="examples-9">Examples</h3>
+<h3 id="examples-10">Examples</h3>
 
-<h4 id="minimal-9">Minimal</h4>
+<h4 id="minimal-10">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>
@@ -1887,7 +2085,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-9">Complete</h4>
+<h4 id="complete-10">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>

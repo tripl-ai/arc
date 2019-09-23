@@ -2,7 +2,7 @@
 FROM python:3.6.8-slim-jessie
 
 # install python packages
-RUN pip install flask gevent requests keras tensorflow pillow
+RUN pip install flask gevent requests keras==2.2.5 tensorflow pillow
 
 # download model so it doesnt get downloaded each run (slow) as this model is ~100MB
 RUN apt-get update && \
