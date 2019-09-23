@@ -29,9 +29,9 @@ ai.tripl.arc.transform.JSONTransform
 ai.tripl.arc.transform.MetadataFilterTransform
 ai.tripl.arc.transform.MetadataTransform
 ai.tripl.arc.transform.MLTransform
+ai.tripl.arc.transform.SimilarityJoinTransform
 ai.tripl.arc.transform.SQLTransform
 ai.tripl.arc.transform.TensorFlowServingTransform
 ai.tripl.arc.transform.TypingTransform
 ai.tripl.arc.validate.EqualityValidate
 ai.tripl.arc.validate.SQLValidate
-

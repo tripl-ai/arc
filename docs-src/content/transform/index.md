@@ -271,6 +271,40 @@ The `MLTransform` stage transforms the incoming dataset with a pretrained Spark 
 #### Complete
 {{< readfile file="/resources/docs_resources/MLTransformComplete" highlight="json" >}} 
 
+## SimilarityJoinTransform
+##### Since: 2.1.0 - Supports Streaming: True
+
+The `SimilarityJoinTransform` stage uses [Approximate String Matching](https://en.wikipedia.org/wiki/Approximate_string_matching) (a.k.a. Fuzzy Matching) to find similar records between two datasets. It is possible to pass the same datasets into both the `leftView` and `rightView` to find duplicates (in which case the `threshold` value should be high to avoid a potentially very large cross-product resultset).
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|leftView|String|true|The view name of the `left` dataset. This should be the bigger of the two input sets.|
+|rightView|String|true|The view name of the `right` dataset.|
+|leftFields|Array[String]|true|Columns to include in the similarity join from the `left` dataset. These are order dependent.|
+|rightFields|Array[String]|true|Columns to include in the similarity join from the `right` dataset. These are order dependent.|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|caseSensitive|Boolean|false|Whether to use case sensitive comparison.<br><br>Default: `false`.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|numHashTables|Integer|false|The number of hash tables which can be used to trade off execution time vs. false positive rate. Lower values should produce quicker exeuction but higher false positive rate.<br><br>Default: `5`.|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|shingleLength|Integer|false|The length to split the input fields into. E.g. the string `1 Parliament Drive` would be split into [`1 P`, ` Pa`, `Par`, `arl`...] if `shingleLength` is set to `3`. Longer or shorter `shingleLength` may help provide higher similarity depending on your dataset.<br><br>Default: `3`.|
+|threshold|Double|false|The similarity threshold for evaluating the records as the same. The default, `0.8`, means that 80% of the character sequences must be the same for the records to be considered equal for joining.<br><br>Default: `0.8`.|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/SimilarityJoinTransformMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/SimilarityJoinTransformComplete" highlight="json" >}} 
+
 
 ## SQLTransform
 ##### Since: 1.0.0 - Supports Streaming: True
@@ -345,13 +379,13 @@ The `TensorFlowServingTransform` stage transforms the incoming dataset by callin
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |uri|String|true|The `URI` of the TensorFlow Serving REST end point.|
-|batchSize|Int|false|The number of records to sent to TensorFlow Serving in each call. A higher number will decrease the number of calls to TensorFlow Serving which may be more efficient.|
+|batchSize|Integer|false|The number of records to sent to TensorFlow Serving in each call. A higher number will decrease the number of calls to TensorFlow Serving which may be more efficient.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |inputField|String|false|The field to pass to the model. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
-|persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |responseType|String|false|The type returned by the TensorFlow Serving API. Expected to be `integer`, `double` or `object` (which may present as a `string` depending on how the model has been built).<br><br>Default: `object`.|
 |signatureName|String|false|{{< readfile file="/content/partials/fields/signatureName.md" markdown="true" >}}|
 

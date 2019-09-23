@@ -1,0 +1,33 @@
+{
+  "type": "SimilarityJoinTransform",
+  "name": "test",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "leftView": "official_postal_addresses",
+  "leftFields": [
+    "flat_number",
+    "number_first",
+    "street_name",
+    "street_type",
+    "locality_name",
+    "postcode",
+    "state"
+  ],
+  "rightView": "crm_addresses",
+  "rightFields": [
+    "street",
+    "state_postcode_suburb"
+  ],
+  "outputView": "official_address_compare",
+  "threshold": 0.75,
+  "shingleLength": 3,
+  "numHashTables": 10,
+  "caseSensitive": false,
+  "persist": false,
+  "partitionBy": [
+    "state"
+  ],
+  "numPartitions": 10
+}

@@ -1,5 +1,13 @@
 ## Change Log
 
+# 2.1.0
+
+- add `SimilarityJoinTransform` a stage which performs a [fuzzy match](https://en.wikipedia.org/wiki/Approximate_string_matching) and can be used for dataset deduplication or approximate joins.
+- add missing types `BooleanList`, `Double`, `DoubleList`, `LongList` to config reader.
+
+**BREAKING**
+- change API for `LifecyclePlugin` to pass the stage index and the full job pipeline so that the current and other stages can be accessed in the plugin.
+
 # 2.0.1
 
 - update to [Spark 2.4.4](https://spark.apache.org/releases/spark-release-2-4-4.html).

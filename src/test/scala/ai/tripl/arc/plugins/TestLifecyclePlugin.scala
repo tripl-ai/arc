@@ -42,15 +42,15 @@ case class TestLifecyclePluginInstance(
     key: String
   ) extends LifecyclePluginInstance {
 
-  override def before(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
+  override def before(stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
     import spark.implicits._
     val df = Seq((stage.name, "before", this.key)).toDF("stage","when","message")
     df.createOrReplaceTempView("before")
   }
 
-  override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
+  override def after(currentValue: Option[DataFrame], stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
     import spark.implicits._
-    val df = Seq((stage.name, "after", this.key, result.get.count, isLast)).toDF("stage","when","message","count","isLast")
+    val df = Seq((stage.name, "after", this.key, currentValue.get.count)).toDF("stage","when","message","count")
     df.createOrReplaceTempView("after")
   }
 }

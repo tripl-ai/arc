@@ -404,38 +404,39 @@ object ARC {
   def run(pipeline: ETLPipeline)
   (implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    def before(stage: PipelineStage): Unit = {
+    def before(currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Unit = {
       for (p <- arcContext.activeLifecyclePlugins) {
         logger.trace().message(s"Executing before() on LifecyclePlugin: ${p.getClass.getName}")
-        p.before(stage)
+        p.before(currentValue, index, stages)
       }
     }
 
-    def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean): Unit = {
+    def after(result: Option[DataFrame], currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Unit = {
       for (p <- arcContext.activeLifecyclePlugins) {
-        logger.trace().message(s"Executing after(last = $isLast) on LifecyclePlugin: ${p.getClass.getName}")
-        p.after(stage, result, isLast)
+        logger.trace().message(s"Executing after on LifecyclePlugin: ${stages(index).getClass.getName}")
+        p.after(result, currentValue, index, stages)
       }
     }
 
     @tailrec
-    def runStages(stages: List[PipelineStage]): Option[DataFrame] = {
+    def runStages(stages: List[(PipelineStage, Int)]): Option[DataFrame] = {
       stages match {
         case Nil => None // end
-        case head :: Nil =>
-          before(head)
-          val result = processStage(head)
-          after(head, result, true)
+        case (stage, index) :: Nil =>
+          before(stage, index, pipeline.stages)
+          val result = processStage(stage)
+          after(result, stage, index, pipeline.stages)
           result
-        case head :: tail =>
-          before(head)
-          val result = processStage(head)
-          after(head, result, false)
+
+        case (stage, index) :: tail =>
+          before(stage, index, pipeline.stages)
+          val result = processStage(stage)
+          after(result, stage, index, pipeline.stages)
           runStages(tail)
       }
     }
 
-    runStages(pipeline.stages)
+    runStages(pipeline.stages.zipWithIndex)
   }
 
   def processStage(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {

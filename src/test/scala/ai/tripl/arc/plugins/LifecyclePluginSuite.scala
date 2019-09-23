@@ -54,7 +54,7 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
     val expectedBefore = Seq(("delimited extract", "before", "testValue")).toDF("stage","when","message")
     assert(TestUtils.datasetEquality(expectedBefore, spark.table("before")))
 
-    val expectedAfter = Seq(("delimited extract", "after", "testValue", 1L, true)).toDF("stage","when","message","count","isLast")
+    val expectedAfter = Seq(("delimited extract", "after", "testValue", 1L)).toDF("stage","when","message","count")
     assert(TestUtils.datasetEquality(expectedAfter, spark.table("after")))
   }
 

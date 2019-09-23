@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.0.0</span></strong>
+          <span class="version">2.1.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -532,7 +532,7 @@ class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (returnName, lagDays, leadDays, formatter, currentDate, invalidKeys) match {
-      case (Right(returnName), Right(lagDays), Right(leadDays), Right(formatter), Right(currentDate), Right(invalidKeys)) =&gt; 
+      case (Right(returnName), Right(lagDays), Right(leadDays), Right(formatter), Right(currentDate), Right(invalidKeys)) =&gt;
 
         val res = (lagDays * -1 to leadDays).map { v =&gt;
           formatter.format(currentDate.plusDays(v))
@@ -547,8 +547,8 @@ class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
         val err = StageError(index, this.getClass.getName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
     }
-  }   
-  
+  }
+
   def parseFormatter(path: String)(formatter: String)(implicit c: Config): Either[Errors, DateTimeFormatter] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, DateTimeFormatter] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
@@ -557,7 +557,7 @@ class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
     } catch {
       case e: Exception =&gt; err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
-  }  
+  }
 
   def parseCurrentDate(path: String, formatter: DateTimeFormatter)(value: String)(implicit c: Config): Either[Errors, LocalDate] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, LocalDate] = Left(ConfigError(path, lineNumber, msg) :: Nil)
@@ -567,7 +567,7 @@ class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
     } catch {
       case e: Exception =&gt; err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
-  }    
+  }
 }
 
 </code></pre>
@@ -619,14 +619,11 @@ class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
 
 <pre><code class="language-scala">package ai.tripl.arc.plugins.lifecycle
 
-import java.util
-
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.plugins.LifecyclePlugin
 import ai.tripl.arc.util.Utils
-import ai.tripl.arc.util.log.logger.Logger
 import ai.tripl.arc.config.Error._
 
 class DataFramePrinter extends LifecyclePlugin {
@@ -644,7 +641,7 @@ class DataFramePrinter extends LifecyclePlugin {
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (numRows, truncate, invalidKeys) match {
-      case (Right(numRows), Right(truncate), Right(invalidKeys)) =&gt; 
+      case (Right(numRows), Right(truncate), Right(invalidKeys)) =&gt;
         Right(DataFramePrinterInstance(
           plugin=this,
           numRows=numRows,
@@ -664,30 +661,28 @@ case class DataFramePrinterInstance(
     truncate: Boolean
   ) extends LifecyclePluginInstance {
 
-  override def before(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
-    logger.trace()        
+  override def before(stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
+    logger.trace()
       .field(&quot;event&quot;, &quot;before&quot;)
       .field(&quot;stage&quot;, stage.name)
-      .log()  
+      .log()
   }
 
-  override def after(stage: PipelineStage, result: Option[DataFrame], isLast: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
-    logger.trace()        
+  override def after(result: Option[DataFrame], stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
+    logger.trace()
       .field(&quot;event&quot;, &quot;after&quot;)
       .field(&quot;stage&quot;, stage.name)
-      .field(&quot;isLast&quot;, java.lang.Boolean.valueOf(isLast))
-      .log() 
+      .log()
 
     result match {
       case Some(df) =&gt; df.show(numRows, truncate)
       case None =&gt;
     }
-  } 
+  }
 }
-
 </code></pre>
 
-<p>The plugin then needs to be registered by adding the full plugin name must be listed in your project’s <code>/resources/META-INF/services/ai.tripl.arc.plugins.LifecyclePlugin</code> file.</p>
+<p>The plugin then needs to be registered by adding the full plugin name must be listed in your project&rsquo;s <code>/resources/META-INF/services/ai.tripl.arc.plugins.LifecyclePlugin</code> file.</p>
 
 <p>To execute:</p>
 
@@ -727,7 +722,7 @@ case class DataFramePrinterInstance(
 <p>Ensure that any stage with a <code>mapPartitions</code> or <code>map</code> DataFrame does not require the <code>PipelineStage</code> instance to be passed into the <code>map</code> function. So instead of doing something like:</p>
 
 <pre><code class="language-scala">val transformedDF = try {
-  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =&gt; 
+  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =&gt;
     val uri = stage.uri.toString
 </code></pre>
 
@@ -736,7 +731,7 @@ case class DataFramePrinterInstance(
 <pre><code class="language-scala">val stageUri = stage.uri
 
 val transformedDF = try {
-  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =&gt; 
+  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =&gt;
     val uri = stageUri.toString
 </code></pre>
 
@@ -757,10 +752,10 @@ val transformedDF = try {
     val inputView = getValue[String](&quot;inputView&quot;)
     val outputMode = getValue[String](&quot;outputMode&quot;, default = Some(&quot;Append&quot;), validValues = &quot;Append&quot; :: &quot;Complete&quot; :: &quot;Update&quot; :: Nil) |&gt; parseOutputModeType(&quot;outputMode&quot;) _
     val params = readMap(&quot;params&quot;, c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, inputView, outputMode, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputMode), Right(invalidKeys)) =&gt; 
+      case (Right(name), Right(description), Right(inputView), Right(outputMode), Right(invalidKeys)) =&gt;
         val stage = ConsoleLoadStage(
           plugin=this,
           name=name,
@@ -770,8 +765,8 @@ val transformedDF = try {
           params=params
         )
 
-        stage.stageDetail.put(&quot;inputView&quot;, stage.inputView)  
-        stage.stageDetail.put(&quot;outputMode&quot;, stage.outputMode.sparkString)  
+        stage.stageDetail.put(&quot;inputView&quot;, stage.inputView)
+        stage.stageDetail.put(&quot;outputMode&quot;, stage.outputMode.sparkString)
         stage.stageDetail.put(&quot;params&quot;, params.asJava)
 
         Right(stage)
@@ -787,10 +782,10 @@ val transformedDF = try {
 
 case class ConsoleLoadStage(
     plugin: ConsoleLoad,
-    name: String, 
-    description: Option[String], 
-    inputView: String, 
-    outputMode: OutputModeType, 
+    name: String,
+    description: Option[String],
+    inputView: String,
+    outputMode: OutputModeType,
     params: Map[String, String]
   ) extends PipelineStage {
 
@@ -804,13 +799,13 @@ object ConsoleLoadStage {
 
   def execute(stage: ConsoleLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    val df = spark.table(stage.inputView)   
+    val df = spark.table(stage.inputView)
 
     if (!df.isStreaming) {
       throw new Exception(&quot;ConsoleLoad can only be executed in streaming mode.&quot;) with DetailException {
-        override val detail = stage.stageDetail          
+        override val detail = stage.stageDetail
       }
-    }      
+    }
 
     df.writeStream
         .format(&quot;console&quot;)
