@@ -8,6 +8,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions._
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.feature.{CountVectorizer, MinHashLSH, MinHashLSHModel, NGram, RegexTokenizer}
+import org.apache.spark.ml.linalg.SparseVector
 
 import com.typesafe.config._
 
@@ -44,11 +45,11 @@ class SimilarityJoinTransform extends PipelineStagePlugin {
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val params = readMap("params", c)
-    val invalidKeys = checkValidKeys(c)(expectedKeys)  
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (name, description, leftView, leftFields, rightView, rightFields, outputView, persist, shingleLength, numHashTables, threshold, caseSensitive, partitionBy, numPartitions, invalidKeys) match {
-      case (Right(name), Right(description), Right(leftView), Right(leftFields), Right(rightView), Right(rightFields), Right(outputView), Right(persist), Right(shingleLength), Right(numHashTables), Right(threshold), Right(caseSensitive), Right(partitionBy), Right(numPartitions), Right(invalidKeys)) => 
-      
+      case (Right(name), Right(description), Right(leftView), Right(leftFields), Right(rightView), Right(rightFields), Right(outputView), Right(persist), Right(shingleLength), Right(numHashTables), Right(threshold), Right(caseSensitive), Right(partitionBy), Right(numPartitions), Right(invalidKeys)) =>
+
         val stage = SimilarityJoinTransformStage(
           plugin=this,
           name=name,
@@ -68,14 +69,14 @@ class SimilarityJoinTransform extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("leftView", leftView)  
-        stage.stageDetail.put("leftFields", leftFields.asJava)  
-        stage.stageDetail.put("rightView", rightView)  
-        stage.stageDetail.put("rightFields", rightFields.asJava)  
-        stage.stageDetail.put("outputView", outputView)  
+        stage.stageDetail.put("leftView", leftView)
+        stage.stageDetail.put("leftFields", leftFields.asJava)
+        stage.stageDetail.put("rightView", rightView)
+        stage.stageDetail.put("rightFields", rightFields.asJava)
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("shingleLength", java.lang.Integer.valueOf(shingleLength))
-        stage.stageDetail.put("numHashTables", java.lang.Integer.valueOf(numHashTables)) 
+        stage.stageDetail.put("numHashTables", java.lang.Integer.valueOf(numHashTables))
         stage.stageDetail.put("threshold", java.lang.Double.valueOf(threshold))
         stage.stageDetail.put("caseSensitive", java.lang.Boolean.valueOf(caseSensitive))
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
@@ -92,11 +93,11 @@ class SimilarityJoinTransform extends PipelineStagePlugin {
 
 case class SimilarityJoinTransformStage(
     plugin: SimilarityJoinTransform,
-    name: String, 
-    description: Option[String], 
-    leftView: String, 
-    leftFields: List[String], 
-    rightView: String, 
+    name: String,
+    description: Option[String],
+    leftView: String,
+    leftFields: List[String],
+    rightView: String,
     rightFields: List[String],
     outputView: String,
     persist: Boolean,
@@ -104,8 +105,8 @@ case class SimilarityJoinTransformStage(
     numHashTables: Int,
     threshold: Double,
     caseSensitive: Boolean,
-    partitionBy: List[String], 
-    numPartitions: Option[Int], 
+    partitionBy: List[String],
+    numPartitions: Option[Int],
     params: Map[String, String]
   ) extends PipelineStage {
 
@@ -125,7 +126,7 @@ object SimilarityJoinTransformStage {
     val regexTokenizer = new RegexTokenizer()
       .setInputCol(uuid)
       .setPattern("")
-      .setMinTokenLength(1)      
+      .setMinTokenLength(1)
       .setToLowercase(!stage.caseSensitive)
 
     // produce ngrams to group the characters
@@ -141,34 +142,38 @@ object SimilarityJoinTransformStage {
     val minHashLSH = new MinHashLSH()
       .setInputCol(countVectorizer.getOutputCol)
       .setNumHashTables(stage.numHashTables)
-      .setOutputCol("lsh")
 
     val pipeline = new Pipeline()
       .setStages(Array(regexTokenizer, nGram, countVectorizer, minHashLSH))
 
+    val leftView = spark.table(stage.leftView)
+    val rightView = spark.table(stage.rightView)
+
+    // create a string space concatenated field
+    val inputLeftView = leftView.select(
+      col("*"), trim(concat(stage.leftFields.map{ field => when(col(field).isNotNull, concat(col(field).cast(StringType), lit(" "))).otherwise("") }:_*)).alias(uuid)
+    )
+    inputLeftView.persist(arcContext.storageLevel)
+    val inputRightView = rightView.select(
+      col("*"), trim(concat(stage.rightFields.map{ field => when(col(field).isNotNull, concat(col(field).cast(StringType), lit(" "))).otherwise("") }:_*)).alias(uuid)
+    )
+    inputRightView.persist(arcContext.storageLevel)
+
     val transformedDF = try {
-
-      val leftView = spark.table(stage.leftView)   
-      val rightView = spark.table(stage.rightView)   
-
-      // create a string space concatenated field
-      val inputLeftView = leftView.select(
-        col("*"), trim(concat(stage.leftFields.map{ field => when(col(field).isNotNull, concat(col(field).cast(StringType), lit(" "))).otherwise("") }:_*)).alias(uuid)
-      )
-      val inputRightView = rightView.select(
-        col("*"), trim(concat(stage.rightFields.map{ field => when(col(field).isNotNull, concat(col(field).cast(StringType), lit(" "))).otherwise("") }:_*)).alias(uuid)
-      )      
 
       val pipelineModel = pipeline.fit(inputLeftView)
 
-      val datasetA = pipelineModel.transform(inputLeftView)
-      val datasetB = pipelineModel.transform(inputRightView)
-
-      val leftOutputColumns = leftView.columns.map{columnName => col(s"datasetA.${columnName}")}
-      val rightOutputColumns = rightView.columns.map{columnName => col(s"datasetB.${columnName}")}
-
       pipelineModel.stages.collectFirst{ case minHashLSHModel: MinHashLSHModel => minHashLSHModel } match {
-        case Some(minHashLSHModel) => { 
+        case Some(minHashLSHModel) => {
+          // the lshmodel cannot process empty vectors
+          val notEmptyVector = udf({v: SparseVector => v.numNonzeros > 0}, DataTypes.BooleanType)
+
+          val datasetA = pipelineModel.transform(inputLeftView).filter(notEmptyVector(col(countVectorizer.getOutputCol)))
+          val datasetB = pipelineModel.transform(inputRightView).filter(notEmptyVector(col(countVectorizer.getOutputCol)))
+
+          val leftOutputColumns = leftView.columns.map{columnName => col(s"datasetA.${columnName}")}
+          val rightOutputColumns = rightView.columns.map{columnName => col(s"datasetB.${columnName}")}
+
           minHashLSHModel
             .approxSimilarityJoin(datasetA, datasetB, (1.0-stage.threshold))
             .select((leftOutputColumns ++ rightOutputColumns ++ Seq((lit(1.0)-col("distCol")).alias("similarity"))):_*)
@@ -209,6 +214,9 @@ object SimilarityJoinTransformStage {
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+
+        inputLeftView.unpersist
+        inputRightView.unpersist
       }
     }
 
