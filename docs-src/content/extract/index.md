@@ -313,6 +313,8 @@ The `JDBCExtract` reads directly from a JDBC Database and returns a `DataFrame`.
 
 The `JSONExtract` stage reads either one or more JSON files or an input `Dataset[String]` and returns a `DataFrame`. 
 
+If trying to run against an `inputView` in streaming mode this stage will not work. Instead try using the [from_json](https://spark.apache.org/docs/latest/api/sql/index.html#from_json) SQL Function with a [SQLTransform](../transform/#sqltransform).
+
 ### Parameters
 
 | Attribute | Type | Required | Description |
@@ -363,6 +365,8 @@ The returned `DataFrame` has the schema:
 |`value`|Binary|The record value as a byte array.|
 
 Can be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecute) to allow quasi-transactional behaviour (with `autoCommit` set to `false`) - in that the offset commit can be deferred until certain dependent stages are sucessfully executed.
+
+To convert the `key` or `value` from a Binary/byte array to a string it is possible to use the [decode](https://spark.apache.org/docs/latest/api/sql/index.html#decode) SQL Function with a [SQLTransform](../transform/#sqltransform).
 
 ### Parameters
 

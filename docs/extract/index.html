@@ -1821,6 +1821,8 @@
 
 <p>The <code>JSONExtract</code> stage reads either one or more JSON files or an input <code>Dataset[String]</code> and returns a <code>DataFrame</code>.</p>
 
+<p>If trying to run against an <code>inputView</code> in streaming mode this stage will not work. Instead try using the <a href="https://spark.apache.org/docs/latest/api/sql/index.html#from_json">from_json</a> SQL Function with a <a href="../transform/#sqltransform">SQLTransform</a>.</p>
+
 <h3 id="parameters-8">Parameters</h3>
 
 <table>
@@ -2058,6 +2060,8 @@
 </table>
 
 <p>Can be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour (with <code>autoCommit</code> set to <code>false</code>) - in that the offset commit can be deferred until certain dependent stages are sucessfully executed.</p>
+
+<p>To convert the <code>key</code> or <code>value</code> from a Binary/byte array to a string it is possible to use the <a href="https://spark.apache.org/docs/latest/api/sql/index.html#decode">decode</a> SQL Function with a <a href="../transform/#sqltransform">SQLTransform</a>.</p>
 
 <h3 id="parameters-9">Parameters</h3>
 

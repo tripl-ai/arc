@@ -143,44 +143,53 @@ object SimilarityJoinTransformStage {
       .setInputCol(countVectorizer.getOutputCol)
       .setNumHashTables(stage.numHashTables)
 
-    val pipeline = new Pipeline()
-      .setStages(Array(regexTokenizer, nGram, countVectorizer, minHashLSH))
+    // the lshmodel cannot process empty vectors
+    val notEmptyVector = udf({v: SparseVector => v.numNonzeros > 0}, DataTypes.BooleanType)
 
     val leftView = spark.table(stage.leftView)
     val rightView = spark.table(stage.rightView)
+    val leftOutputColumns = leftView.columns.map{columnName => col(s"datasetA.${columnName}")}
+    val rightOutputColumns = rightView.columns.map{columnName => col(s"datasetB.${columnName}")}
 
-    // create a string space concatenated field
-    val inputLeftView = leftView.select(
-      col("*"), trim(concat(stage.leftFields.map{ field => when(col(field).isNotNull, concat(col(field).cast(StringType), lit(" "))).otherwise("") }:_*)).alias(uuid)
+    // create a string concatenated field
+    // apply regex and ngram features preparation
+    // persist in memory to prevent these operations being be done multiple times
+    val leftViewFeatures = nGram.transform(
+      regexTokenizer.transform(
+        leftView.select(
+          col("*"), trim(concat(stage.leftFields.map{ field => when(col(field).isNotNull, concat(col(field).cast(StringType), lit(" "))).otherwise("") }:_*)).alias(uuid)
+        )
+      )
     )
+    leftViewFeatures.persist(arcContext.storageLevel)
+
+    // fit the vectorizer model then apply to both before recaching
+    val countVectorizerModel = countVectorizer.fit(leftViewFeatures)
+    val inputLeftView = countVectorizerModel.transform(leftViewFeatures).filter(notEmptyVector(col(countVectorizer.getOutputCol)))
     inputLeftView.persist(arcContext.storageLevel)
-    val inputRightView = rightView.select(
-      col("*"), trim(concat(stage.rightFields.map{ field => when(col(field).isNotNull, concat(col(field).cast(StringType), lit(" "))).otherwise("") }:_*)).alias(uuid)
-    )
+    leftViewFeatures.unpersist
+
+    val inputRightView = countVectorizerModel.transform(
+      nGram.transform(
+        regexTokenizer.transform(
+          rightView.select(
+            col("*"), trim(concat(stage.rightFields.map{ field => when(col(field).isNotNull, concat(col(field).cast(StringType), lit(" "))).otherwise("") }:_*)).alias(uuid)
+          )
+        )
+      )
+    ).filter(notEmptyVector(col(countVectorizer.getOutputCol)))
     inputRightView.persist(arcContext.storageLevel)
 
+    // build and apply
     val transformedDF = try {
+      val minHashLSHModel = minHashLSH.fit(inputLeftView)
+      
+      val datasetA = minHashLSHModel.transform(inputLeftView)
+      val datasetB = minHashLSHModel.transform(inputRightView)
 
-      val pipelineModel = pipeline.fit(inputLeftView)
-
-      pipelineModel.stages.collectFirst{ case minHashLSHModel: MinHashLSHModel => minHashLSHModel } match {
-        case Some(minHashLSHModel) => {
-          // the lshmodel cannot process empty vectors
-          val notEmptyVector = udf({v: SparseVector => v.numNonzeros > 0}, DataTypes.BooleanType)
-
-          val datasetA = pipelineModel.transform(inputLeftView).filter(notEmptyVector(col(countVectorizer.getOutputCol)))
-          val datasetB = pipelineModel.transform(inputRightView).filter(notEmptyVector(col(countVectorizer.getOutputCol)))
-
-          val leftOutputColumns = leftView.columns.map{columnName => col(s"datasetA.${columnName}")}
-          val rightOutputColumns = rightView.columns.map{columnName => col(s"datasetB.${columnName}")}
-
-          minHashLSHModel
-            .approxSimilarityJoin(datasetA, datasetB, (1.0-stage.threshold))
-            .select((leftOutputColumns ++ rightOutputColumns ++ Seq((lit(1.0)-col("distCol")).alias("similarity"))):_*)
-        }
-        case None => throw new Exception("could not find MinHashLSHModel in trained model")
-      }
-
+      minHashLSHModel
+        .approxSimilarityJoin(datasetA, datasetB, (1.0-stage.threshold))
+        .select((leftOutputColumns ++ rightOutputColumns ++ Seq((lit(1.0)-col("distCol")).alias("similarity"))):_*)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stage.stageDetail
@@ -214,11 +223,11 @@ object SimilarityJoinTransformStage {
       if (stage.persist) {
         repartitionedDF.persist(arcContext.storageLevel)
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
-
-        inputLeftView.unpersist
-        inputRightView.unpersist
       }
     }
+
+    inputLeftView.unpersist
+    inputRightView.unpersist
 
     Option(repartitionedDF)
   }

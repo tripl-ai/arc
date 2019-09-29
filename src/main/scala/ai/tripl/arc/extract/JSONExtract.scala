@@ -148,7 +148,17 @@ object JSONExtractStage {
               case None => throw new Exception("JSONExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
             }
           }
-          case Left(view) => throw new Exception("JSONExtract does not support the use of 'inputView' if Arc is running in streaming mode.")
+          case Left(view) => {
+            val inputView = spark.table(view)
+            if (inputView.isStreaming) {
+              throw new Exception("JSONExtract does not support the use of 'inputView' if Arc is running in streaming mode.")
+            } else {
+              stage.inputField match {
+                case Some(inputField) => spark.read.options(options).json(inputView.select(col(inputField).as("value")).as[String])
+                case None => spark.read.options(options).json(inputView.as[String])
+              }
+            }
+          }
         }
       } else {
         stage.input match {
