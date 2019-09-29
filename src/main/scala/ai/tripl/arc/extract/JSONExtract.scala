@@ -243,7 +243,7 @@ object JSONExtractStage {
     // add internal columns data _filename, _index
     val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, stage.contiguousIndex)
 
-    // // set column metadata if exists
+    // set column metadata if exists
     val enrichedDF = optionSchema match {
         case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
         case None => sourceEnrichedDF

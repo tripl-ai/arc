@@ -122,7 +122,7 @@ class SimilarityJoinTransformSuite extends FunSuite with BeforeAndAfter {
     leftDF.createOrReplaceTempView(leftView)
 
     val rightDF = Seq(
-      (0L,"a","a"),
+      (0L,"a","a")
     ).toDF("id", "street", "state_postcode_suburb")
     rightDF.createOrReplaceTempView(rightView)
 
