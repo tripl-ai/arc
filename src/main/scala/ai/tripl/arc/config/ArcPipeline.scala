@@ -76,6 +76,10 @@ object ArcPipeline {
 
           // use resolved config to parse other plugins
           val lifecyclePluginsOrErrors = resolveConfigPlugins(resolvedConfig, "plugins.lifecycle", arcContext.lifecyclePlugins)(spark, logger, arcContext)
+
+          if (!resolvedConfig.hasPath("stages")) {
+            throw new Exception(s"""Key 'stages' missing from job configuration. Have keys: [${resolvedConfig.entrySet().asScala.map(_.getKey).toList.mkString(",")}].""")
+          }
           val pipelinePluginsOrErrors = resolveConfigPlugins(resolvedConfig, "stages", arcContext.pipelineStagePlugins)(spark, logger, arcContext)
 
           (lifecyclePluginsOrErrors, pipelinePluginsOrErrors) match {

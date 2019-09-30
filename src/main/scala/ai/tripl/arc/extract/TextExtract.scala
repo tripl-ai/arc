@@ -23,7 +23,7 @@ class TextExtract extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "watermark" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _
@@ -35,11 +35,12 @@ class TextExtract extends PipelineStagePlugin {
     val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
     val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
     val basePath = getOptionalValue[String]("basePath")
+    val watermark = readWatermark("watermark")
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(basePath), Right(invalidKeys)) =>
+    (name, description, extractColumns, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys, watermark) match {
+      case (Right(name), Right(description), Right(extractColumns), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(basePath), Right(invalidKeys), Right(watermark)) =>
 
       val stage = TextExtractStage(
           plugin=this,
@@ -54,7 +55,8 @@ class TextExtract extends PipelineStagePlugin {
           contiguousIndex=contiguousIndex,
           multiLine=multiLine,
           basePath=basePath,
-          params=params
+          params=params,
+          watermark=watermark
         )
 
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
@@ -66,10 +68,16 @@ class TextExtract extends PipelineStagePlugin {
           stage.stageDetail.put("basePath", basePath)
         }
         stage.stageDetail.put("params", params.asJava)
+        for (watermark <- watermark) {
+          val watermarkMap = new java.util.HashMap[String, Object]()
+          watermarkMap.put("eventTime", watermark.eventTime)
+          watermarkMap.put("delayThreshold", watermark.delayThreshold)
+          stage.stageDetail.put("watermark", watermarkMap)
+        }        
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, extractColumns, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -91,7 +99,8 @@ case class TextExtractStage(
     numPartitions: Option[Int],
     contiguousIndex: Boolean,
     multiLine: Boolean,
-    basePath: Option[String]
+    basePath: Option[String],
+    watermark: Option[Watermark]
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
@@ -117,8 +126,13 @@ object TextExtractStage {
         CloudUtils.setHadoopConfiguration(stage.authentication)
 
         optionSchema match {
-          case Some(schema) => spark.readStream.schema(schema).text(stage.input)
-          case None => throw new Exception("JSONExtract requires 'schemaURI' to be set if Arc is running in streaming mode.")
+          case Some(schema) => {
+            stage.watermark match {
+              case Some(watermark) => spark.readStream.option("mergeSchema", "true").schema(schema).text(stage.input).withWatermark(watermark.eventTime, watermark.delayThreshold)
+              case None => spark.readStream.option("mergeSchema", "true").schema(schema).text(stage.input)
+            }
+          }
+          case None => throw new Exception("TextExtract requires 'schemaURI' to be set if Arc is running in streaming mode.")
         }
       } else {
         CloudUtils.setHadoopConfiguration(stage.authentication)

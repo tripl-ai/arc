@@ -26,7 +26,7 @@ class JSONExtract extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "inputField" :: "basePath" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "inputField" :: "basePath" :: "watermark" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
@@ -42,11 +42,12 @@ class JSONExtract extends PipelineStagePlugin {
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val inputField = getOptionalValue[String]("inputField")
     val basePath = getOptionalValue[String]("basePath")
+    val watermark = readWatermark("watermark")
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, inputField, basePath, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(inputField), Right(basePath), Right(invalidKeys)) =>
+    (name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, inputField, basePath, invalidKeys, watermark) match {
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(inputField), Right(basePath), Right(invalidKeys), Right(watermark)) =>
         val input = if(c.hasPath("inputView")) Left(inputView) else Right(parsedGlob)
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
@@ -65,7 +66,8 @@ class JSONExtract extends PipelineStagePlugin {
           partitionBy=partitionBy,
           contiguousIndex=contiguousIndex,
           basePath=basePath,
-          inputField=inputField
+          inputField=inputField,
+          watermark=watermark
         )
 
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
@@ -83,10 +85,16 @@ class JSONExtract extends PipelineStagePlugin {
           stage.stageDetail.put("inputField", inputField)
         }
         stage.stageDetail.put("params", params.asJava)
+        for (watermark <- watermark) {
+          val watermarkMap = new java.util.HashMap[String, Object]()
+          watermarkMap.put("eventTime", watermark.eventTime)
+          watermarkMap.put("delayThreshold", watermark.delayThreshold)
+          stage.stageDetail.put("watermark", watermarkMap)
+        }
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, invalidKeys, inputField, basePath).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, invalidKeys, inputField, basePath, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -110,7 +118,8 @@ case class JSONExtractStage(
     partitionBy: List[String],
     contiguousIndex: Boolean,
     inputField: Option[String],
-    basePath: Option[String]
+    basePath: Option[String],
+    watermark: Option[Watermark]
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
@@ -144,11 +153,26 @@ object JSONExtractStage {
             CloudUtils.setHadoopConfiguration(stage.authentication)
 
             optionSchema match {
-              case Some(schema) => spark.readStream.options(options).schema(schema).json(glob)
+              case Some(schema) => {
+                stage.watermark match {
+                  case Some(watermark) => spark.readStream.options(options).schema(schema).json(glob).withWatermark(watermark.eventTime, watermark.delayThreshold)
+                  case None => spark.readStream.options(options).schema(schema).json(glob)
+                }
+              }
               case None => throw new Exception("JSONExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
             }
           }
-          case Left(view) => throw new Exception("JSONExtract does not support the use of 'inputView' if Arc is running in streaming mode.")
+          case Left(view) => {
+            val inputView = spark.table(view)
+            if (inputView.isStreaming) {
+              throw new Exception("JSONExtract does not support the use of 'inputView' if Arc is running in streaming mode.")
+            } else {
+              stage.inputField match {
+                case Some(inputField) => spark.read.options(options).json(inputView.select(col(inputField).as("value")).as[String])
+                case None => spark.read.options(options).json(inputView.as[String])
+              }
+            }
+          }
         }
       } else {
         stage.input match {
@@ -233,7 +257,7 @@ object JSONExtractStage {
     // add internal columns data _filename, _index
     val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, stage.contiguousIndex)
 
-    // // set column metadata if exists
+    // set column metadata if exists
     val enrichedDF = optionSchema match {
         case Some(schema) => MetadataUtils.setMetadata(sourceEnrichedDF, schema)
         case None => sourceEnrichedDF

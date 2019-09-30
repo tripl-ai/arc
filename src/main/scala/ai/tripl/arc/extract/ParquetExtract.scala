@@ -24,7 +24,7 @@ class ParquetExtract extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "watermark" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
     val name = getValue[String]("name")
     val params = readMap("params", c)
@@ -39,9 +39,10 @@ class ParquetExtract extends PipelineStagePlugin {
     val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val basePath = getOptionalValue[String]("basePath")
+    val watermark = readWatermark("watermark")
 
-    (name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys, basePath) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(_), Right(basePath)) =>
+    (name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys, basePath, watermark) match {
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(invalidKeys), Right(basePath), Right(watermark)) =>
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
         val stage = ParquetExtractStage(
@@ -57,7 +58,8 @@ class ParquetExtract extends PipelineStagePlugin {
           numPartitions=numPartitions,
           partitionBy=partitionBy,
           basePath=basePath,
-          contiguousIndex=contiguousIndex
+          contiguousIndex=contiguousIndex,
+          watermark=watermark
         )
 
         stage.stageDetail.put("inputURI", parsedGlob)
@@ -68,10 +70,16 @@ class ParquetExtract extends PipelineStagePlugin {
           stage.stageDetail.put("basePath", basePath)
         }
         stage.stageDetail.put("params", params.asJava)
+        for (watermark <- watermark) {
+          val watermarkMap = new java.util.HashMap[String, Object]()
+          watermarkMap.put("eventTime", watermark.eventTime)
+          watermarkMap.put("delayThreshold", watermark.delayThreshold)
+          stage.stageDetail.put("watermark", watermarkMap)
+        }
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys, basePath).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys, basePath, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -92,7 +100,9 @@ case class ParquetExtractStage(
   numPartitions: Option[Int],
   partitionBy: List[String],
   contiguousIndex: Boolean,
-  basePath: Option[String]) extends PipelineStage {
+  basePath: Option[String],
+  watermark: Option[Watermark]
+) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     ParquetExtractStage.execute(this)
@@ -118,7 +128,12 @@ object ParquetExtractStage {
     val df = try {
       if (arcContext.isStreaming) {
         optionSchema match {
-          case Some(schema) => spark.readStream.option("mergeSchema", "true").schema(schema).parquet(stage.input)
+          case Some(schema) => {
+            stage.watermark match {
+              case Some(watermark) => spark.readStream.option("mergeSchema", "true").schema(schema).parquet(stage.input).withWatermark(watermark.eventTime, watermark.delayThreshold)
+              case None => spark.readStream.option("mergeSchema", "true").schema(schema).parquet(stage.input)
+            }
+          }
           case None => throw new Exception("ParquetExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
         }
       } else {

@@ -113,7 +113,8 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        watermark=None
       )
     ).get
 
@@ -152,7 +153,8 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        watermark=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -172,7 +174,8 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        watermark=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)
@@ -214,7 +217,8 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           partitionBy=Nil,
           basePath=None,
-          contiguousIndex=true
+          contiguousIndex=true,
+          watermark=None
         )
       )
     }
@@ -236,7 +240,8 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           partitionBy=Nil,
           basePath=None,
-          contiguousIndex=true
+          contiguousIndex=true,
+          watermark=None
         )
       )
     }
@@ -257,7 +262,8 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        watermark=None
       )
     ).get
 
@@ -292,7 +298,8 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        watermark=None
       )
     ).get
 

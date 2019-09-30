@@ -1,0 +1,1 @@
+A structured streaming [watermark](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#handling-late-data-and-watermarking) object.<br><br>Requires `eventTime` and `delayThreshold` attributes.

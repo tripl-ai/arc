@@ -62,7 +62,8 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        dropInvalid=true
+        dropInvalid=true,
+        watermark=None
       )
     ).get
 
@@ -93,7 +94,8 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        dropInvalid=true
+        dropInvalid=true,
+        watermark=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -112,7 +114,8 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        dropInvalid=true
+        dropInvalid=true,
+        watermark=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)
@@ -137,7 +140,8 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        dropInvalid=true
+        dropInvalid=true,
+        watermark=None
       )
     ).get
 
@@ -163,7 +167,8 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        dropInvalid=true
+        dropInvalid=true,
+        watermark=None
       )
     ).get
 

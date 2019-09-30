@@ -358,6 +358,30 @@ object ConfigUtils {
     }
   }
 
+  def readWatermark(path: String)(implicit c: Config): Either[Errors, Option[Watermark]] = {
+
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, Option[Watermark]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    try {
+      if (c.hasPath(path)) {
+        val watermark = readMap(path, c)
+        val eventTime = watermark.get("eventTime") match {
+          case Some(v) => v
+          case None => throw new Exception(s"Watermark requires 'eventTime' parameter.")
+        }
+        val delayThreshold = watermark.get("delayThreshold") match {
+          case Some(v) => v
+          case None => throw new Exception(s"Watermark requires 'delayThreshold' parameter.")
+        }
+        Right(Some(Watermark(eventTime, delayThreshold)))
+      } else {
+        Right(None)
+      }
+    } catch {
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), s"Unable to read config value: ${e.getMessage}")
+    }
+  }
+
   def parseURI(path: String)(uri: String)(implicit c: Config): Either[Errors, URI] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, URI] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 

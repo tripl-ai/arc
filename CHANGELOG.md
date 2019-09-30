@@ -1,5 +1,11 @@
 ## Change Log
 
+# 2.1.1
+
+- performance and usability improvments for `SimilarityJoinTransform`. Can now cope with null inputs and performs caching to prevent recalculation of input data.
+- add `watermark` to `DelimitedExtract`, `ImageExtract`, `JSONExtract`, `ORCExtract`, `ParquetExtract` and `TextExtract` for structured streaming.
+- fix issue where malformed job configuration files would not error and job would exit with success.
+
 # 2.1.0
 
 - add `SimilarityJoinTransform` a stage which performs a [fuzzy match](https://en.wikipedia.org/wiki/Approximate_string_matching) and can be used for dataset deduplication or approximate joins.
