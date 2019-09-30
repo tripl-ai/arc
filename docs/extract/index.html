@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.1.0</span></strong>
+          <span class="version">2.1.1</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -1073,6 +1073,13 @@
 <td>false</td>
 <td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
+
+<tr>
+<td>watermark</td>
+<td>Object</td>
+<td>false</td>
+<td>A structured streaming <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#handling-late-data-and-watermarking">watermark</a> object.<br><br>Requires <code>eventTime</code> and <code>delayThreshold</code> attributes.</td>
+</tr>
 </tbody>
 </table>
 
@@ -1117,7 +1124,11 @@
   <span class="nt">&#34;quote&#34;</span><span class="p">:</span> <span class="s2">&#34;DoubleQuote&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;watermark&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;eventTime&#34;</span><span class="p">:</span> <span class="s2">&#34;timestamp&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;delayThreshold&#34;</span><span class="p">:</span> <span class="s2">&#34;10 minutes&#34;</span>
+  <span class="p">}</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="elasticsearchextract">ElasticsearchExtract</h2>
@@ -1576,6 +1587,13 @@
 <td>false</td>
 <td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
+
+<tr>
+<td>watermark</td>
+<td>Object</td>
+<td>false</td>
+<td>A structured streaming <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#handling-late-data-and-watermarking">watermark</a> object.<br><br>Requires <code>eventTime</code> and <code>delayThreshold</code> attributes.</td>
+</tr>
 </tbody>
 </table>
 
@@ -1613,7 +1631,11 @@
     <span class="s2">&#34;image.width&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;watermark&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;eventTime&#34;</span><span class="p">:</span> <span class="s2">&#34;timestamp&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;delayThreshold&#34;</span><span class="p">:</span> <span class="s2">&#34;10 minutes&#34;</span>
+  <span class="p">}</span>  
 <span class="p">}</span></code></pre></div>
 
 <h2 id="jdbcextract">JDBCExtract</h2>
@@ -1954,6 +1976,13 @@
 <td>false</td>
 <td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
+
+<tr>
+<td>watermark</td>
+<td>Object</td>
+<td>false</td>
+<td>A structured streaming <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#handling-late-data-and-watermarking">watermark</a> object.<br><br>Requires <code>eventTime</code> and <code>delayThreshold</code> attributes.</td>
+</tr>
 </tbody>
 </table>
 
@@ -1995,7 +2024,11 @@
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;watermark&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;eventTime&#34;</span><span class="p">:</span> <span class="s2">&#34;timestamp&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;delayThreshold&#34;</span><span class="p">:</span> <span class="s2">&#34;10 minutes&#34;</span>
+  <span class="p">}</span>  
 <span class="p">}</span></code></pre></div>
 
 <h2 id="kafkaextract">KafkaExtract</h2>
@@ -2061,7 +2094,13 @@
 
 <p>Can be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour (with <code>autoCommit</code> set to <code>false</code>) - in that the offset commit can be deferred until certain dependent stages are sucessfully executed.</p>
 
-<p>To convert the <code>key</code> or <code>value</code> from a Binary/byte array to a string it is possible to use the <a href="https://spark.apache.org/docs/latest/api/sql/index.html#decode">decode</a> SQL Function with a <a href="../transform/#sqltransform">SQLTransform</a>.</p>
+<p>To convert the <code>key</code> or <code>value</code> from a Binary/byte array to a string it is possible to use the <a href="https://spark.apache.org/docs/latest/api/sql/index.html#decode">decode</a> SQL Function with a <a href="../transform/#sqltransform">SQLTransform</a> like:</p>
+
+<pre><code class="language-sql">SELECT 
+  DECODE(key, 'utf-8') AS stringKey,
+  DECODE(value, 'utf-8') AS stringValue,
+  ...
+</code></pre>
 
 <h3 id="parameters-9">Parameters</h3>
 
@@ -2481,6 +2520,13 @@
 <td>false</td>
 <td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
+
+<tr>
+<td>watermark</td>
+<td>Object</td>
+<td>false</td>
+<td>A structured streaming <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#handling-late-data-and-watermarking">watermark</a> object.<br><br>Requires <code>eventTime</code> and <code>delayThreshold</code> attributes.</td>
+</tr>
 </tbody>
 </table>
 
@@ -2520,7 +2566,11 @@
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;watermark&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;eventTime&#34;</span><span class="p">:</span> <span class="s2">&#34;timestamp&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;delayThreshold&#34;</span><span class="p">:</span> <span class="s2">&#34;10 minutes&#34;</span>
+  <span class="p">}</span>  
 <span class="p">}</span></code></pre></div>
 
 <h2 id="parquetextract">ParquetExtract</h2>
@@ -2639,6 +2689,13 @@
 <td>false</td>
 <td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
+
+<tr>
+<td>watermark</td>
+<td>Object</td>
+<td>false</td>
+<td>A structured streaming <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#handling-late-data-and-watermarking">watermark</a> object.<br><br>Requires <code>eventTime</code> and <code>delayThreshold</code> attributes.</td>
+</tr>
 </tbody>
 </table>
 
@@ -2678,7 +2735,11 @@
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;watermark&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;eventTime&#34;</span><span class="p">:</span> <span class="s2">&#34;timestamp&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;delayThreshold&#34;</span><span class="p">:</span> <span class="s2">&#34;10 minutes&#34;</span>
+  <span class="p">}</span>  
 <span class="p">}</span></code></pre></div>
 
 <h2 id="rateextract">RateExtract</h2>
@@ -2899,6 +2960,13 @@
 <td>false</td>
 <td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
+
+<tr>
+<td>watermark</td>
+<td>Object</td>
+<td>false</td>
+<td>A structured streaming <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#handling-late-data-and-watermarking">watermark</a> object.<br><br>Requires <code>eventTime</code> and <code>delayThreshold</code> attributes.</td>
+</tr>
 </tbody>
 </table>
 
@@ -2936,7 +3004,11 @@
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span>
+  <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;watermark&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;eventTime&#34;</span><span class="p">:</span> <span class="s2">&#34;timestamp&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;delayThreshold&#34;</span><span class="p">:</span> <span class="s2">&#34;10 minutes&#34;</span>
+  <span class="p">}</span>  
 <span class="p">}</span></code></pre></div>
 
 <h2 id="xmlextract">XMLExtract</h2>

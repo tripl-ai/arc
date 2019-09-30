@@ -130,7 +130,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -186,7 +187,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=Option("inputField")
+        inputField=Option("inputField"),
+        watermark=None
       )
     ).get
 
@@ -217,7 +219,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -239,7 +242,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)
@@ -283,7 +287,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
           partitionBy=Nil,
           contiguousIndex=true,
           basePath=None,
-          inputField=None
+          inputField=None,
+          watermark=None
         )
       )
     }
@@ -308,7 +313,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
           partitionBy=Nil,
           contiguousIndex=true,
           basePath=None,
-          inputField=None
+          inputField=None,
+          watermark=None
         )
       )
     }
@@ -332,7 +338,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -366,7 +373,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -386,7 +394,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -422,7 +431,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -455,7 +465,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -475,7 +486,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -535,7 +547,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -571,7 +584,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 

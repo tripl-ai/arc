@@ -484,4 +484,19 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
   }
 
+  test("Test throw error with corrupt") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val df = TestUtils.getKnownDataset
+    df.createOrReplaceTempView("start")
+
+    val thrown0 = intercept[Exception] {
+      val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/broken.conf")), arcContext)
+    }
+    assert(thrown0.getMessage === "Key 'stages' missing from job configuration. Have keys: [a.stages].")
+  }
+
+
 }

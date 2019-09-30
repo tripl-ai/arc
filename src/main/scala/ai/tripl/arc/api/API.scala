@@ -306,6 +306,8 @@ object API {
     case class GoogleCloudStorageKeyFile(projectID: String, keyFilePath: String) extends Authentication
   }
 
+  case class Watermark(eventTime: String, delayThreshold: String)
+
   case class ETLPipeline(stages: List[PipelineStage])
 
   case class TypingError(field: String, message: String)

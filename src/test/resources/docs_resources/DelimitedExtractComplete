@@ -22,5 +22,9 @@
   "quote": "DoubleQuote",
   "schemaURI": "hdfs://datalake/metadata/customer.json",
   "schemaView": "customer_schema",
-  "basePath": "hdfs://datalake/customer/"
+  "basePath": "hdfs://datalake/customer/",
+  "watermark": {
+    "eventTime": "timestamp",
+    "delayThreshold": "10 minutes"
+  }
 }

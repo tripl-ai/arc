@@ -167,7 +167,6 @@ object SimilarityJoinTransformStage {
     val countVectorizerModel = countVectorizer.fit(leftViewFeatures)
     val inputLeftView = countVectorizerModel.transform(leftViewFeatures).filter(notEmptyVector(col(countVectorizer.getOutputCol)))
     inputLeftView.persist(arcContext.storageLevel)
-    leftViewFeatures.unpersist
 
     val inputRightView = countVectorizerModel.transform(
       nGram.transform(
@@ -178,12 +177,11 @@ object SimilarityJoinTransformStage {
         )
       )
     ).filter(notEmptyVector(col(countVectorizer.getOutputCol)))
-    inputRightView.persist(arcContext.storageLevel)
 
     // build and apply
     val transformedDF = try {
       val minHashLSHModel = minHashLSH.fit(inputLeftView)
-      
+
       val datasetA = minHashLSHModel.transform(inputLeftView)
       val datasetB = minHashLSHModel.transform(inputRightView)
 
@@ -226,8 +224,8 @@ object SimilarityJoinTransformStage {
       }
     }
 
+    leftViewFeatures.unpersist
     inputLeftView.unpersist
-    inputRightView.unpersist
 
     Option(repartitionedDF)
   }

@@ -212,7 +212,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         method="GET",
-        body=None     
+        body=None
       )
     ).get
 

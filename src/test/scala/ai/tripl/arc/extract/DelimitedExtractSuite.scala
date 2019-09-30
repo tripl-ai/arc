@@ -86,7 +86,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -149,7 +150,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=Option("inputField")
+        inputField=Option("inputField"),
+        watermark=None
       )
     ).get
 
@@ -180,7 +182,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -202,7 +205,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)
@@ -246,7 +250,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
           partitionBy=Nil,
           contiguousIndex=true,
           basePath=None,
-          inputField=None
+          inputField=None,
+          watermark=None
         )
       )
     }
@@ -270,7 +275,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
           partitionBy=Nil,
           contiguousIndex=true,
           basePath=None,
-          inputField=None
+          inputField=None,
+          watermark=None
         )
       )
     }
@@ -293,7 +299,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -334,7 +341,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -368,7 +376,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -414,7 +423,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -447,7 +457,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 
@@ -483,7 +494,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         partitionBy=Nil,
         contiguousIndex=true,
         basePath=None,
-        inputField=None
+        inputField=None,
+        watermark=None
       )
     ).get
 

@@ -24,7 +24,7 @@ class ORCExtract extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "watermark" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _
@@ -37,11 +37,12 @@ class ORCExtract extends PipelineStagePlugin {
     val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val basePath = getOptionalValue[String]("basePath")
+    val watermark = readWatermark("watermark")
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, basePath, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(basePath), Right(invalidKeys)) =>
+    (name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, basePath, invalidKeys, watermark) match {
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(basePath), Right(invalidKeys), Right(watermark)) =>
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
         val stage = ORCExtractStage(
@@ -57,7 +58,8 @@ class ORCExtract extends PipelineStagePlugin {
           numPartitions=numPartitions,
           partitionBy=partitionBy,
           basePath=basePath,
-          contiguousIndex=contiguousIndex
+          contiguousIndex=contiguousIndex,
+          watermark=watermark
         )
 
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
@@ -68,10 +70,16 @@ class ORCExtract extends PipelineStagePlugin {
           stage.stageDetail.put("basePath", basePath)
         }
         stage.stageDetail.put("params", params.asJava)
+        for (watermark <- watermark) {
+          val watermarkMap = new java.util.HashMap[String, Object]()
+          watermarkMap.put("eventTime", watermark.eventTime)
+          watermarkMap.put("delayThreshold", watermark.delayThreshold)
+          stage.stageDetail.put("watermark", watermarkMap)
+        }
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, basePath, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, basePath, invalidKeys, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -94,7 +102,8 @@ case class ORCExtractStage(
     numPartitions: Option[Int],
     partitionBy: List[String],
     contiguousIndex: Boolean,
-    basePath: Option[String]
+    basePath: Option[String],
+    watermark: Option[Watermark]
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
@@ -121,7 +130,12 @@ object ORCExtractStage {
     val df = try {
       if (arcContext.isStreaming) {
         optionSchema match {
-          case Some(schema) => spark.readStream.option("mergeSchema", "true").schema(schema).orc(stage.input)
+          case Some(schema) => {
+            stage.watermark match {
+              case Some(watermark) => spark.readStream.option("mergeSchema", "true").schema(schema).orc(stage.input).withWatermark(watermark.eventTime, watermark.delayThreshold)
+              case None => spark.readStream.option("mergeSchema", "true").schema(schema).orc(stage.input)
+            }
+          }
           case None => throw new Exception("ORCExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
         }
       } else {

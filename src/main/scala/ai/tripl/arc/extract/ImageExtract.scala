@@ -22,7 +22,7 @@ class ImageExtract extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "dropInvalid" :: "numPartitions" :: "partitionBy" :: "persist" :: "params" :: "basePath" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "dropInvalid" :: "numPartitions" :: "partitionBy" :: "persist" :: "params" :: "basePath" :: "watermark" :: Nil
 
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
@@ -34,11 +34,12 @@ class ImageExtract extends PipelineStagePlugin {
     val authentication = readAuthentication("authentication")
     val dropInvalid = getValue[java.lang.Boolean]("dropInvalid", default = Some(true))
     val basePath = getOptionalValue[String]("basePath")
+    val watermark = readWatermark("watermark")
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, basePath, invalidKeys) match {
-      case (Right(name), Right(description), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(dropInvalid), Right(basePath), Right(invalidKeys)) =>
+    (name, description, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, basePath, invalidKeys, watermark) match {
+      case (Right(name), Right(description), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(dropInvalid), Right(basePath), Right(invalidKeys), Right(watermark)) =>
 
         val stage = ImageExtractStage(
           plugin=this,
@@ -52,7 +53,8 @@ class ImageExtract extends PipelineStagePlugin {
           numPartitions=numPartitions,
           partitionBy=partitionBy,
           basePath=basePath,
-          dropInvalid=dropInvalid
+          dropInvalid=dropInvalid,
+          watermark=watermark
         )
 
         for (basePath <- basePath) {
@@ -63,11 +65,17 @@ class ImageExtract extends PipelineStagePlugin {
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("params", params.asJava)
+        for (watermark <- watermark) {
+          val watermarkMap = new java.util.HashMap[String, Object]()
+          watermarkMap.put("eventTime", watermark.eventTime)
+          watermarkMap.put("delayThreshold", watermark.delayThreshold)
+          stage.stageDetail.put("watermark", watermarkMap)
+        }
 
         Right(stage)
 
       case _ =>
-        val allErrors: Errors = List(name, description, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, basePath, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedGlob, outputView, persist, numPartitions, authentication, dropInvalid, basePath, invalidKeys, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -88,7 +96,8 @@ case class ImageExtractStage(
     numPartitions: Option[Int],
     partitionBy: List[String],
     dropInvalid: Boolean,
-    basePath: Option[String]
+    basePath: Option[String],
+    watermark: Option[Watermark]
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
@@ -105,7 +114,10 @@ object ImageExtractStage {
     // if incoming dataset is empty create empty dataset with a known schema
     val df = try {
       if (arcContext.isStreaming) {
-        spark.readStream.format("image").option("dropInvalid", stage.dropInvalid).schema(ImageSchema.imageSchema).load(stage.input)
+        stage.watermark match {
+          case Some(watermark) => spark.readStream.format("image").option("dropInvalid", stage.dropInvalid).schema(ImageSchema.imageSchema).load(stage.input).withWatermark(watermark.eventTime, watermark.delayThreshold)
+          case None => spark.readStream.format("image").option("dropInvalid", stage.dropInvalid).schema(ImageSchema.imageSchema).load(stage.input)
+        }
       } else {
         stage.basePath match {
           case Some(basePath) => spark.read.format("image").option("dropInvalid", stage.dropInvalid).option("basePath", basePath).load(stage.input)

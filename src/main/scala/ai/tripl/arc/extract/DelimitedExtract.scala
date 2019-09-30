@@ -26,7 +26,7 @@ class DelimitedExtract extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: "inputField" :: "basePath" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: "inputField" :: "basePath" :: "watermark" :: Nil
     val invalidKeys = checkValidKeys(c)(expectedKeys)
     val name = getValue[String]("name")
     val params = readMap("params", c)
@@ -50,9 +50,10 @@ class DelimitedExtract extends PipelineStagePlugin {
     }
     val inputField = getOptionalValue[String]("inputField")
     val basePath = getOptionalValue[String]("basePath")
+    val watermark = readWatermark("watermark")
 
-    (name, description, inputView, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath) match {
-      case (Right(name), Right(description), Right(inputView), Right(parsedGlob), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(header), Right(authentication), Right(contiguousIndex), Right(delimiter), Right(quote), Right(_), Right(customDelimiter), Right(inputField), Right(basePath)) =>
+    (name, description, inputView, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath, watermark) match {
+      case (Right(name), Right(description), Right(inputView), Right(parsedGlob), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(header), Right(authentication), Right(contiguousIndex), Right(delimiter), Right(quote), Right(_), Right(customDelimiter), Right(inputField), Right(basePath), Right(watermark)) =>
         val input = if(c.hasPath("inputView")) {
           Left(inputView)
         } else {
@@ -74,7 +75,8 @@ class DelimitedExtract extends PipelineStagePlugin {
           partitionBy=partitionBy,
           contiguousIndex=contiguousIndex,
           basePath=basePath,
-          inputField=inputField
+          inputField=inputField,
+          watermark=watermark
         )
 
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
@@ -93,10 +95,16 @@ class DelimitedExtract extends PipelineStagePlugin {
           stage.stageDetail.put("inputField", inputField)
         }
         stage.stageDetail.put("params", params.asJava)
+        for (watermark <- watermark) {
+          val watermarkMap = new java.util.HashMap[String, Object]()
+          watermarkMap.put("eventTime", watermark.eventTime)
+          watermarkMap.put("delayThreshold", watermark.delayThreshold)
+          stage.stageDetail.put("watermark", watermarkMap)
+        }
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -120,7 +128,8 @@ case class DelimitedExtractStage(
     partitionBy: List[String],
     contiguousIndex: Boolean,
     inputField: Option[String],
-    basePath: Option[String]
+    basePath: Option[String],
+    watermark: Option[Watermark]
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
@@ -154,11 +163,26 @@ object DelimitedExtractStage {
             CloudUtils.setHadoopConfiguration(stage.authentication)
 
             optionSchema match {
-              case Some(schema) => spark.readStream.options(options).schema(schema).csv(glob)
+              case Some(schema) => {
+                stage.watermark match {
+                  case Some(watermark) => spark.readStream.options(options).schema(schema).csv(glob).withWatermark(watermark.eventTime, watermark.delayThreshold)
+                  case None => spark.readStream.options(options).schema(schema).csv(glob)
+                }
+              }
               case None => throw new Exception("CSVExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
             }
           }
-          case Left(view) => throw new Exception("CSVExtract does not support the use of 'inputView' if Arc is running in streaming mode.")
+          case Left(view) => {
+            val inputView = spark.table(view)
+            if (inputView.isStreaming) {
+              throw new Exception("CSVExtract does not support the use of 'inputView' if Arc is running in streaming mode.")
+            } else {
+              stage.inputField match {
+                case Some(inputField) => spark.read.options(options).json(inputView.select(col(inputField).as("value")).as[String])
+                case None => spark.read.options(options).json(inputView.as[String])
+              }
+            }            
+          }
         }
       } else {
         stage.input match {
