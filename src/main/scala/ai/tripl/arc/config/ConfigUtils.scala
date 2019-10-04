@@ -7,6 +7,8 @@ import java.sql.DriverManager
 import scala.collection.JavaConverters._
 import scala.util.Properties._
 
+import com.fasterxml.jackson.databind.ObjectMapper
+
 import org.apache.hadoop.fs.GlobPattern
 import org.apache.spark.unsafe.types.UTF8String
 
@@ -157,6 +159,41 @@ object ConfigUtils {
       case _ => {
         Left(ConfigError("file", None, "make sure url scheme is defined e.g. file://${pwd}") :: Nil)
       }
+    }
+  }
+
+  // read an ipython notebook and convert to arc standard job string
+  def readIPYNB(uri: String, notebook: String): String = {
+    val objectMapper = new ObjectMapper
+    val jsonTree = objectMapper.readTree(notebook)
+
+    val kernelspecName = jsonTree.get("metadata").get("kernelspec").get("name").asText
+    if (kernelspecName == "arc") {
+      jsonTree.get("cells").iterator.asScala.filter { cell =>
+        // only include 'code' cells
+        cell.get("cell_type").asText == "code"
+      }.map { cell =>
+        // convert the raw 'source' into a string
+        cell.get("source").iterator.asScala
+          .map { _.asText }
+          .mkString("")
+          .trim
+      }.filter { cell =>
+        // only cells that are explicitly '%arc' or not other magic !'%'
+        (!cell.startsWith("%") && cell.length > 0) || cell.startsWith("%arc")
+      }.map { cell =>
+        // if is explicitly %arc drop the first row
+        if (cell.startsWith("%arc")) {
+          cell.split("\n").drop(1).mkString("\n")
+        } else {
+          cell
+        }
+      }.map { cell =>
+        // replace any trailing commas
+        cell.replaceAll(",$", "")
+      }.mkString("{\"stages\": [\n", ",\n", "]}")
+    } else {
+      throw new Exception(s"""file ${uri} does not appear to be a valid arc notebook. Has kernelspec: '${kernelspecName}'.""")
     }
   }
 

@@ -1,9 +1,10 @@
 ## Change Log
 
-# 2.1.1
+# 2.2.0
 
-- performance and usability improvments for `SimilarityJoinTransform`. Can now cope with null inputs and performs caching to prevent recalculation of input data.
+- add ability to execute [arc-jupyter](https://github.com/tripl-ai/arc-jupyter) notebook files (.ipynb) directly without conversion to arc 'job'.
 - add `watermark` to `DelimitedExtract`, `ImageExtract`, `JSONExtract`, `ORCExtract`, `ParquetExtract` and `TextExtract` for structured streaming.
+- performance and usability improvements for `SimilarityJoinTransform`. Can now cope with null inputs and performs caching to prevent recalculation of input data.
 - fix issue where malformed job configuration files would not error and job would exit with success.
 
 # 2.1.0
