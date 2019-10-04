@@ -80,7 +80,8 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        watermark=None
       )
     ).get
 
@@ -119,7 +120,8 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        watermark=None
       )
     ).get
 
@@ -140,7 +142,8 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        watermark=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)
@@ -182,7 +185,8 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           partitionBy=Nil,
           basePath=None,
-          contiguousIndex=true
+          contiguousIndex=true,
+          watermark=None
         )
       )
     }
@@ -204,7 +208,8 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           partitionBy=Nil,
           basePath=None,
-          contiguousIndex=true
+          contiguousIndex=true,
+          watermark=None
         )
       )
     }
@@ -225,7 +230,8 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        watermark=None
       )
     ).get
 
@@ -260,7 +266,8 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         basePath=None,
-        contiguousIndex=true
+        contiguousIndex=true,
+        watermark=None
       )
     ).get
 

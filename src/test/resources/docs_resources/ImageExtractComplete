@@ -15,5 +15,9 @@
     "image.width"
   ],
   "persist": false,
-  "basePath": "hdfs://datalake/customer/"
+  "basePath": "hdfs://datalake/customer/",
+  "watermark": {
+    "eventTime": "timestamp",
+    "delayThreshold": "10 minutes"
+  }  
 }

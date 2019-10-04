@@ -1,436 +1,442 @@
 <!DOCTYPE html>
-  
-  
-  
-  
-   <html class="no-js"> 
-
-  <head lang="en-us">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Deploy - Arc</title>
-    <meta name="generator" content="Hugo 0.51" />
-
-    
-    <meta name="description" content="Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.">
-    
-    <link rel="canonical" href="https://arc.tripl.ai/deploy/">
-    
-    <meta name="author" content="ai.tripl.arc">
-    
-
-    <meta property="og:url" content="https://arc.tripl.ai/deploy/">
-    <meta property="og:title" content="Arc">
-    <meta property="og:image" content="https://arc.tripl.ai/images/logo.png">
-    <meta name="apple-mobile-web-app-title" content="Arc">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <link rel="shortcut icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
-    <link rel="icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
-
-    <style>
-      @font-face {
-        font-family: 'Icon';
-        src: url('https://arc.tripl.ai/fonts/icon.eot');
-        src: url('https://arc.tripl.ai/fonts/icon.eot')
-               format('embedded-opentype'),
-             url('https://arc.tripl.ai/fonts/icon.woff')
-               format('woff'),
-             url('https://arc.tripl.ai/fonts/icon.ttf')
-               format('truetype'),
-             url('https://arc.tripl.ai/fonts/icon.svg')
-               format('svg');
-        font-weight: normal;
-        font-style: normal;
-      }
-    </style>
-
-    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
-    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/temporary.css">
-    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/palettes.css">
-    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/highlight/highlight.css">
-
-    
-    
-    
-    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu&#43;Mono">
-    <style>
-      body, input {
-        font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
-      }
-      pre, code {
-        font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
-      }
-    </style>
-
-    
-    <script src="https://arc.tripl.ai/javascripts/modernizr.js"></script>
-
-    
-
-  </head>
-  <body class="palette-primary-red palette-accent-red">
 
 
 
-	
-	
+
+<html class="no-js">
+
+<head lang="en-us">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=10" />
+  <title>Deploy - Arc</title>
+  <meta name="generator" content="Hugo 0.51" />
 
 
-<div class="backdrop">
-	<div class="backdrop-paper"></div>
-</div>
+  <meta name="description"
+    content="Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.">
 
-<input class="toggle" type="checkbox" id="toggle-drawer">
-<input class="toggle" type="checkbox" id="toggle-search">
-<label class="toggle-button overlay" for="toggle-drawer"></label>
+  <link rel="canonical" href="https://arc.tripl.ai/deploy/">
 
-<header class="header">
-	<nav aria-label="Header">
-  <div class="bar default">
-    <div class="button button-menu" role="button" aria-label="Menu">
-      <label class="toggle-button icon icon-menu" for="toggle-drawer">
-        <span></span>
-      </label>
-    </div>
-    <div class="stretch">
-      <div class="title">
-        Deploy
-      </div>
-    </div>
+  <meta name="author" content="ai.tripl.arc">
 
-    
 
-    
-    <div class="button button-github" role="button" aria-label="GitHub">
-      <a href="https://github.com/tripl-ai/arc" title="@https://github.com/tripl-ai/arc on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
-    </div>
-    
-    
-        
+  <meta property="og:url" content="https://arc.tripl.ai/deploy/">
+  <meta property="og:title" content="Arc">
+  <meta property="og:image" content="https://arc.tripl.ai/images/logo.png">
+  <meta name="apple-mobile-web-app-title" content="Arc">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="shortcut icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
+  <link rel="icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
+
+  <style>
+    @font-face {
+      font-family: 'Icon';
+      src: url('https://arc.tripl.ai/fonts/icon.eot');
+      src: url('https://arc.tripl.ai/fonts/icon.eot') format('embedded-opentype'),
+        url('https://arc.tripl.ai/fonts/icon.woff') format('woff'),
+        url('https://arc.tripl.ai/fonts/icon.ttf') format('truetype'),
+        url('https://arc.tripl.ai/fonts/icon.svg') format('svg');
+      font-weight: normal;
+      font-style: normal;
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
+  <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/temporary.css">
+  <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/palettes.css">
+  <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/highlight/highlight.css">
+
+
+
+
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu&#43;Mono">
+  <style>
+    body,
+    input {
+      font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+    }
+
+    pre,
+    code {
+      font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
+    }
+  </style>
+
+
+  <script src="https://arc.tripl.ai/javascripts/modernizr.js"></script>
+
+
+
+</head>
+
+<body class="palette-primary-red palette-accent-red">
+
+
+
+
+
+
+
+  <div class="backdrop">
+    <div class="backdrop-paper"></div>
   </div>
-  <div class="bar search">
-    <div class="button button-close" role="button" aria-label="Close">
-      <label class="toggle-button icon icon-back" for="toggle-search"></label>
-    </div>
-    <div class="stretch">
-      <div class="field">
-        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+
+  <input class="toggle" type="checkbox" id="toggle-drawer">
+  <input class="toggle" type="checkbox" id="toggle-search">
+  <label class="toggle-button overlay" for="toggle-drawer"></label>
+
+  <header class="header">
+    <nav aria-label="Header">
+      <div class="bar default">
+        <div class="button button-menu" role="button" aria-label="Menu">
+          <label class="toggle-button icon icon-menu" for="toggle-drawer">
+            <span></span>
+          </label>
+        </div>
+        <div class="stretch">
+          <div class="title">
+            Deploy
+          </div>
+        </div>
+
+
+
+
+        <div class="button button-github" role="button" aria-label="GitHub">
+          <a href="https://github.com/tripl-ai/arc" title="@https://github.com/tripl-ai/arc on GitHub" target="_blank"
+            class="toggle-button icon icon-github"></a>
+        </div>
+
+
+
       </div>
-    </div>
-    <div class="button button-reset" role="button" aria-label="Search">
-      <button class="toggle-button icon icon-close" id="reset-search"></button>
-    </div>
-  </div>
-</nav>
-</header>
-
-<main class="main">
-	<div class="drawer">
-		<nav aria-label="Navigation">
-  <a href="https://arc.tripl.ai/" class="project">
-    <div class="banner">
-      
-      <div class="logo">
-        <img src="https://arc.tripl.ai/images/logo.png">
+      <div class="bar search">
+        <div class="button button-close" role="button" aria-label="Close">
+          <label class="toggle-button icon icon-back" for="toggle-search"></label>
+        </div>
+        <div class="stretch">
+          <div class="field">
+            <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off"
+              autocomplete="off" spellcheck>
+          </div>
+        </div>
+        <div class="button button-reset" role="button" aria-label="Search">
+          <button class="toggle-button icon icon-close" id="reset-search"></button>
+        </div>
       </div>
-      
-      <div class="name">
-        <strong>Arc 
-          <span class="version">2.1.0</span></strong>
-        
-        <br> tripl-ai/arc 
-      </div>
+    </nav>
+  </header>
+
+  <main class="main">
+    <div class="drawer">
+      <nav aria-label="Navigation">
+        <a href="https://arc.tripl.ai/" class="project">
+          <div class="banner">
+
+            <div class="logo">
+              <img src="https://arc.tripl.ai/images/logo.png">
+            </div>
+
+            <div class="name">
+              <strong>Arc
+                <span class="version">2.2.0</span></strong>
+
+              <br> tripl-ai/arc
+            </div>
+          </div>
+        </a>
+
+        <div class="scrollable">
+          <div class="wrapper">
+
+
+            <div class="toc">
+
+              <ul>
+
+
+
+
+
+                <li>
+
+
+
+
+
+                  <a title="Getting started" href="https://arc.tripl.ai/getting-started/">
+
+                    Getting started
+                  </a>
+
+
+
+
+                </li>
+
+
+
+                <li>
+
+
+
+
+
+                  <a title="Tutorial" href="https://arc.tripl.ai/tutorial/">
+
+                    Tutorial
+                  </a>
+
+
+
+
+                </li>
+
+
+
+                <li>
+
+
+
+
+
+                  <a title="Extract" href="https://arc.tripl.ai/extract/">
+
+                    Extract
+                  </a>
+
+
+
+
+                </li>
+
+
+
+                <li>
+
+
+
+
+
+                  <a title="Transform" href="https://arc.tripl.ai/transform/">
+
+                    Transform
+                  </a>
+
+
+
+
+                </li>
+
+
+
+                <li>
+
+
+
+
+
+                  <a title="Load" href="https://arc.tripl.ai/load/">
+
+                    Load
+                  </a>
+
+
+
+
+                </li>
+
+
+
+                <li>
+
+
+
+
+
+                  <a title="Execute" href="https://arc.tripl.ai/execute/">
+
+                    Execute
+                  </a>
+
+
+
+
+                </li>
+
+
+
+                <li>
+
+
+
+
+
+                  <a title="Validate" href="https://arc.tripl.ai/validate/">
+
+                    Validate
+                  </a>
+
+
+
+
+                </li>
+
+
+
+                <li>
+
+
+
+
+
+                  <a title="Metadata" href="https://arc.tripl.ai/metadata/">
+
+                    Metadata
+                  </a>
+
+
+
+
+                </li>
+
+
+
+                <li>
+
+
+
+
+
+                  <a class="current" title="Deploy" href="https://arc.tripl.ai/deploy/">
+
+                    Deploy
+                  </a>
+
+
+                  <ul id="scrollspy">
+                  </ul>
+
+
+
+                </li>
+
+
+
+                <li>
+
+
+
+
+
+                  <a title="Plugins" href="https://arc.tripl.ai/plugins/">
+
+                    Plugins
+                  </a>
+
+
+
+
+                </li>
+
+
+
+                <li>
+
+
+
+
+
+                  <a title="Partials" href="https://arc.tripl.ai/partials/">
+
+                    Partials
+                  </a>
+
+
+
+
+                </li>
+
+
+
+                <li>
+
+
+
+
+
+                  <a title="Patterns" href="https://arc.tripl.ai/patterns/">
+
+                    Patterns
+                  </a>
+
+
+
+
+                </li>
+
+
+
+                <li>
+
+
+
+
+
+                  <a title="License" href="https://arc.tripl.ai/license/">
+
+                    License
+                  </a>
+
+
+
+
+                </li>
+
+
+              </ul>
+
+              <hr>
+              <span class="section">The author</span>
+
+              <ul>
+
+                <li>
+                  <a href="https://github.com/tripl-ai" target="_blank" title="@tripl-ai on GitHub">
+                    @tripl-ai on GitHub
+                  </a>
+                </li>
+
+              </ul>
+
+            </div>
+          </div>
+        </div>
+      </nav>
     </div>
-  </a>
 
-  <div class="scrollable">
-    <div class="wrapper">
-      
+    <article class="article">
+      <div class="wrapper">
+        <h1>Deploy </h1>
 
-      <div class="toc">
-        
-        <ul>
-          
 
 
+        <p>Arc has been packaged as a <a href="https://hub.docker.com/u/triplai">Docker</a> image to simplify deployment
+          as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop
+          see the <a href="https://hub.docker.com/u/triplai">https://hub.docker.com/u/triplai</a> for the relevant
+          version.</p>
 
+        <h2 id="running-a-job">Running a Job</h2>
 
-<li>
-  
-    
+        <p>An example command to start a job is:</p>
 
-
-
-<a  title="Getting started" href="https://arc.tripl.ai/getting-started/">
-	
-	Getting started
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Tutorial" href="https://arc.tripl.ai/tutorial/">
-	
-	Tutorial
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Extract" href="https://arc.tripl.ai/extract/">
-	
-	Extract
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Transform" href="https://arc.tripl.ai/transform/">
-	
-	Transform
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Load" href="https://arc.tripl.ai/load/">
-	
-	Load
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Execute" href="https://arc.tripl.ai/execute/">
-	
-	Execute
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Validate" href="https://arc.tripl.ai/validate/">
-	
-	Validate
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Metadata" href="https://arc.tripl.ai/metadata/">
-	
-	Metadata
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a class="current" title="Deploy" href="https://arc.tripl.ai/deploy/">
-	
-	Deploy
-</a>
-
-
-<ul id="scrollspy">
-</ul>
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Plugins" href="https://arc.tripl.ai/plugins/">
-	
-	Plugins
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Partials" href="https://arc.tripl.ai/partials/">
-	
-	Partials
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Patterns" href="https://arc.tripl.ai/patterns/">
-	
-	Patterns
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="License" href="https://arc.tripl.ai/license/">
-	
-	License
-</a>
-
-
-
-  
-</li>
-
-
-        </ul>
-         
-        <hr>
-        <span class="section">The author</span>
-
-        <ul>
-           
-          <li>
-            <a href="https://github.com/tripl-ai" target="_blank" title="@tripl-ai on GitHub">
-              @tripl-ai on GitHub
-            </a>
-          </li>
-           
-        </ul>
-        
-      </div>
-    </div>
-  </div>
-</nav>
-	</div>
-
-	<article class="article">
-		<div class="wrapper">
-			<h1>Deploy </h1>
-
-			
-
-<p>Arc has been packaged as a <a href="https://hub.docker.com/u/triplai">Docker</a> image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the <a href="https://hub.docker.com/u/triplai">https://hub.docker.com/u/triplai</a> for the relevant version.</p>
-
-<h2 id="running-a-job">Running a Job</h2>
-
-<p>An example command to start a job is:</p>
-
-<pre><code class="language-json">docker run \
+        <pre><code class="language-json">docker run \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&quot; \
--it -p 4040:4040 triplai/arc:arc_2.1.0_spark_2.4.4_scala_2.11_hadoop_2.9.2_1.0.0 \
+-it -p 4040:4040 triplai/arc:arc_2.2.0_spark_2.4.4_scala_2.11_hadoop_2.9.2_1.0.0 \
 bin/spark-submit \
 --master local[*] \
 --class ai.tripl.arc.ARC \
@@ -438,9 +444,9 @@ bin/spark-submit \
 --etl.config.uri=file:///opt/tutorial/basic/job/0/basic.json
 </code></pre>
 
-<p>This job executes the following job file which is included in the docker image:</p>
+        <p>This job executes the following job file which is included in the docker image:</p>
 
-<pre><code class="language-json">{&quot;stages&quot;:
+        <pre><code class="language-json">{&quot;stages&quot;:
   [{
     &quot;type&quot;: &quot;SQLValidate&quot;,
     &quot;name&quot;: &quot;a simple stage which prints a message&quot;,
@@ -459,179 +465,220 @@ bin/spark-submit \
 }
 </code></pre>
 
-<p>This example is included to demonstrate:</p>
+        <p>This example is included to demonstrate:</p>
 
-<ul>
-<li><p><code>ETL_CONF_ENV</code> is a reserved environment variable which determines which stages to execute in the current mode. For each of the stages the job designer can specify an array of <code>stages</code> under which that stage will be executed (in the case above <code>production</code> and <code>test</code> are specified).<br><br>The purpose of this stage is so that it is possible to add or remove stages for execution modes like <code>test</code> or <code>integration</code> which are executed by a <a href="https://en.wikipedia.org/wiki/CI/CD">CI/CD</a> tool prior to deployment and that you do not want to run in <code>production</code> mode - so maybe a comparison against a known &lsquo;good&rsquo; test dataset could be executed in only <code>test</code> mode.</p></li>
+        <ul>
+          <li>
+            <p><code>ETL_CONF_ENV</code> is a reserved environment variable which determines which stages to execute in
+              the current mode. For each of the stages the job designer can specify an array of <code>stages</code>
+              under which that stage will be executed (in the case above <code>production</code> and <code>test</code>
+              are specified).<br><br>The purpose of this stage is so that it is possible to add or remove stages for
+              execution modes like <code>test</code> or <code>integration</code> which are executed by a <a
+                href="https://en.wikipedia.org/wiki/CI/CD">CI/CD</a> tool prior to deployment and that you do not want
+              to run in <code>production</code> mode - so maybe a comparison against a known &lsquo;good&rsquo; test
+              dataset could be executed in only <code>test</code> mode.</p>
+          </li>
 
-<li><p><code>ETL_CONF_JOB_PATH</code> is an environment variable that is parsed and included by string interpolation when the job file is executed. So when then job starts Arc will attempt to resolve all environment variables set in the <code>basic.json</code> job file. In this case <code>&quot;inputURI&quot;: ${ETL_CONF_JOB_PATH}&quot;/print_message.sql&quot;,</code> becomes <code>&quot;inputURI&quot;: &quot;/opt/tutorial/basic/job/0/print_message.sql&quot;,</code> after resolution. This is included so that potentially different paths would be set for running in <code>test</code> vs <code>production</code> mode.</p></li>
+          <li>
+            <p><code>ETL_CONF_JOB_PATH</code> is an environment variable that is parsed and included by string
+              interpolation when the job file is executed. So when then job starts Arc will attempt to resolve all
+              environment variables set in the <code>basic.json</code> job file. In this case
+              <code>&quot;inputURI&quot;: ${ETL_CONF_JOB_PATH}&quot;/print_message.sql&quot;,</code> becomes
+              <code>&quot;inputURI&quot;: &quot;/opt/tutorial/basic/job/0/print_message.sql&quot;,</code> after
+              resolution. This is included so that potentially different paths would be set for running in
+              <code>test</code> vs <code>production</code> mode.</p>
+          </li>
 
-<li><p>In this sample job the spark master is <code>local[*]</code> indicating that this is a single instance &lsquo;cluster&rsquo; where Arc relies on <a href="https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling">vertical</a> not <a href="https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling">horizonal</a> scaling. Depending on the constrains of the job (i.e. CPU vs disk IO) it is often better to execute with vertical scaling on cloud compute rather than pay the cost of network shuffling.</p></li>
+          <li>
+            <p>In this sample job the spark master is <code>local[*]</code> indicating that this is a single instance
+              &lsquo;cluster&rsquo; where Arc relies on <a
+                href="https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling">vertical</a> not <a
+                href="https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling">horizonal</a> scaling.
+              Depending on the constrains of the job (i.e. CPU vs disk IO) it is often better to execute with vertical
+              scaling on cloud compute rather than pay the cost of network shuffling.</p>
+          </li>
 
-<li><p><code>etl.config.uri</code> is a reserved JVM property which describes to Arc which job to execute. See below for all the properties that can be passed to Arc.</p></li>
-</ul>
+          <li>
+            <p><code>etl.config.uri</code> is a reserved JVM property which describes to Arc which job to execute. See
+              below for all the properties that can be passed to Arc.</p>
+          </li>
+        </ul>
 
-<h2 id="configuration-parameters">Configuration Parameters</h2>
+        <h2 id="configuration-parameters">Configuration Parameters</h2>
 
-<table>
-<thead>
-<tr>
-<th>Variable</th>
-<th>Property</th>
-<th>Description</th>
-</tr>
-</thead>
+        <table>
+          <thead>
+            <tr>
+              <th>Variable</th>
+              <th>Property</th>
+              <th>Description</th>
+            </tr>
+          </thead>
 
-<tbody>
-<tr>
-<td>ETL_CONF_JOB_ID</td>
-<td>etl.config.job.id</td>
-<td>A job identifier added to all the logging messages.</td>
-</tr>
+          <tbody>
+            <tr>
+              <td>ETL_CONF_JOB_ID</td>
+              <td>etl.config.job.id</td>
+              <td>A job identifier added to all the logging messages.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_JOB_NAME</td>
-<td>etl.config.job.name</td>
-<td>A job name added to all logging messages and Spark history server.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_JOB_NAME</td>
+              <td>etl.config.job.name</td>
+              <td>A job name added to all logging messages and Spark history server.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_TAGS</td>
-<td>etl.config.tags</td>
-<td>Custom key/value tags separated by space to add to all logging messages.<br><br>E.g. <code>ETL_CONF_TAGS=cost_center=123456 owner=jovyan</code>.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_TAGS</td>
+              <td>etl.config.tags</td>
+              <td>Custom key/value tags separated by space to add to all logging messages.<br><br>E.g.
+                <code>ETL_CONF_TAGS=cost_center=123456 owner=jovyan</code>.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_ENV</td>
-<td>etl.config.environment</td>
-<td>The <code>environment</code> to run under.<br><br>E.g. if <code>ETL_CONF_ENV</code> is set to <code>production</code> then a stage with <code>&quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;]</code> would be executed and one with <code>&quot;environments&quot;: [&quot;test&quot;]</code> would not be executed.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_ENV</td>
+              <td>etl.config.environment</td>
+              <td>The <code>environment</code> to run under.<br><br>E.g. if <code>ETL_CONF_ENV</code> is set to
+                <code>production</code> then a stage with
+                <code>&quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;]</code> would be executed and
+                one with <code>&quot;environments&quot;: [&quot;test&quot;]</code> would not be executed.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_ENV_ID</td>
-<td>etl.config.environment.id</td>
-<td>An environment identifier to be added to all logging messages. Could be something like a <a href="https://en.wikipedia.org/wiki/Universally_unique_identifier">UUID</a> which allows joining to logs produced by ephemeral compute started by something like <a href="https://www.terraform.io/">Terraform</a>.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_ENV_ID</td>
+              <td>etl.config.environment.id</td>
+              <td>An environment identifier to be added to all logging messages. Could be something like a <a
+                  href="https://en.wikipedia.org/wiki/Universally_unique_identifier">UUID</a> which allows joining to
+                logs produced by ephemeral compute started by something like <a
+                  href="https://www.terraform.io/">Terraform</a>.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_IGNORE_ENVIRONMENTS</td>
-<td>etl.config.ignoreEnvironments</td>
-<td>Allows skipping the <code>environments</code> tests and execute all stages/plugins.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_IGNORE_ENVIRONMENTS</td>
+              <td>etl.config.ignoreEnvironments</td>
+              <td>Allows skipping the <code>environments</code> tests and execute all stages/plugins.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_URI</td>
-<td>etl.config.uri</td>
-<td>The URI of the job file to execute.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_URI</td>
+              <td>etl.config.uri</td>
+              <td>The URI of the job file to execute.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_STREAMING</td>
-<td>etl.config.streaming</td>
-<td>Run in <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html">Structured Streaming</a> mode or not. Boolean default <code>false</code>.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_STREAMING</td>
+              <td>etl.config.streaming</td>
+              <td>Run in <a
+                  href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html">Structured
+                  Streaming</a> mode or not. Boolean default <code>false</code>.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_STORAGE_LEVEL</td>
-<td>etl.config.storageLevel</td>
-<td>The <a href="https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$">StorageLevel</a> used when persisting datasets. String default <code>MEMORY_AND_DISK_SER</code>.</td>
-</tr>
-</tbody>
-</table>
+            <tr>
+              <td>ETL_CONF_STORAGE_LEVEL</td>
+              <td>etl.config.storageLevel</td>
+              <td>The <a
+                  href="https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$">StorageLevel</a>
+                used when persisting datasets. String default <code>MEMORY_AND_DISK_SER</code>.</td>
+            </tr>
+          </tbody>
+        </table>
 
-<p>Additionally there are permissions arguments that can be used to retrieve the job file from cloud storage:</p>
+        <p>Additionally there are permissions arguments that can be used to retrieve the job file from cloud storage:
+        </p>
 
-<table>
-<thead>
-<tr>
-<th>Variable</th>
-<th>Property</th>
-<th>Description</th>
-</tr>
-</thead>
+        <table>
+          <thead>
+            <tr>
+              <th>Variable</th>
+              <th>Property</th>
+              <th>Description</th>
+            </tr>
+          </thead>
 
-<tbody>
-<tr>
-<td>ETL_CONF_S3A_ACCESS_KEY</td>
-<td>etl.config.fs.s3a.access.key</td>
-<td>The access key for connecting to Amazon S3.</td>
-</tr>
+          <tbody>
+            <tr>
+              <td>ETL_CONF_S3A_ACCESS_KEY</td>
+              <td>etl.config.fs.s3a.access.key</td>
+              <td>The access key for connecting to Amazon S3.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_S3A_SECRET_KEY</td>
-<td>etl.config.fs.s3a.secret.key</td>
-<td>The secret for connecting to Amazon S3.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_S3A_SECRET_KEY</td>
+              <td>etl.config.fs.s3a.secret.key</td>
+              <td>The secret for connecting to Amazon S3.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_S3A_ENDPOINT</td>
-<td>etl.config.fs.s3a.endpoint</td>
-<td>The endpoint for connecting to Amazon S3.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_S3A_ENDPOINT</td>
+              <td>etl.config.fs.s3a.endpoint</td>
+              <td>The endpoint for connecting to Amazon S3.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_S3A_CONNECTION_SSL_ENABLED</td>
-<td>etl.config.fs.s3a.connection.ssl.enabled</td>
-<td>Whether to enable SSL connection to Amazon S3.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_S3A_CONNECTION_SSL_ENABLED</td>
+              <td>etl.config.fs.s3a.connection.ssl.enabled</td>
+              <td>Whether to enable SSL connection to Amazon S3.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_AZURE_ACCOUNT_NAME</td>
-<td>etl.config.fs.azure.account.name</td>
-<td>The account name for connecting to Azure Blob Storage.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_AZURE_ACCOUNT_NAME</td>
+              <td>etl.config.fs.azure.account.name</td>
+              <td>The account name for connecting to Azure Blob Storage.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_AZURE_ACCOUNT_KEY</td>
-<td>etl.config.fs.azure.account.key</td>
-<td>The account key for connecting to Azure Blob Storage.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_AZURE_ACCOUNT_KEY</td>
+              <td>etl.config.fs.azure.account.key</td>
+              <td>The account key for connecting to Azure Blob Storage.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_ADL_OAUTH2_CLIENT_ID</td>
-<td>etl.config.fs.adl.oauth2.client.id</td>
-<td>The OAuth client identifier for connecting to Azure Data Lake.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_ADL_OAUTH2_CLIENT_ID</td>
+              <td>etl.config.fs.adl.oauth2.client.id</td>
+              <td>The OAuth client identifier for connecting to Azure Data Lake.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN</td>
-<td>etl.config.fs.adl.oauth2.refresh.token</td>
-<td>The OAuth refresh token for connecting to Azure Data Lake.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN</td>
+              <td>etl.config.fs.adl.oauth2.refresh.token</td>
+              <td>The OAuth refresh token for connecting to Azure Data Lake.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_GOOGLE_CLOUD_PROJECT_ID</td>
-<td>etl.config.fs.gs.project.id</td>
-<td>The project identifier for connecting to Google Cloud Storage.</td>
-</tr>
+            <tr>
+              <td>ETL_CONF_GOOGLE_CLOUD_PROJECT_ID</td>
+              <td>etl.config.fs.gs.project.id</td>
+              <td>The project identifier for connecting to Google Cloud Storage.</td>
+            </tr>
 
-<tr>
-<td>ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE</td>
-<td>etl.config.fs.google.cloud.auth.service.account.json.keyfile</td>
-<td>The service account json keyfile path for connecting to Google Cloud Storage.</td>
-</tr>
-</tbody>
-</table>
+            <tr>
+              <td>ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE</td>
+              <td>etl.config.fs.google.cloud.auth.service.account.json.keyfile</td>
+              <td>The service account json keyfile path for connecting to Google Cloud Storage.</td>
+            </tr>
+          </tbody>
+        </table>
 
-<h2 id="examples">Examples</h2>
+        <h2 id="examples">Examples</h2>
 
-<h3 id="streaming">Streaming</h3>
+        <h3 id="streaming">Streaming</h3>
 
-<p>This is an example of a streaming job <a href="https://github.com/tripl-ai/arc/blob/master/tutorial/streaming/job/0/streaming.json">source</a>. This job is intended to be executed after the integration test envornment has been started:</p>
+        <p>This is an example of a streaming job <a
+            href="https://github.com/tripl-ai/arc/blob/master/tutorial/streaming/job/0/streaming.json">source</a>. This
+          job is intended to be executed after the integration test envornment has been started:</p>
 
-<p>Start integration test environments:</p>
+        <p>Start integration test environments:</p>
 
-<pre><code>docker-compose -f src/it/resources/docker-compose.yml up --build -d
+        <pre><code>docker-compose -f src/it/resources/docker-compose.yml up --build -d
 </code></pre>
 
-<p>Start the streaming job:</p>
+        <p>Start the streaming job:</p>
 
-<pre><code class="language-bash">docker run \
+        <pre><code class="language-bash">docker run \
 --net &quot;arc-integration&quot; \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_STREAMING=true&quot; \
 -e &quot;ETL_CONF_ROWS_PER_SECOND=10&quot; \
--it -p 4040:4040 triplai/arc:arc_2.1.0_spark_2.4.4_scala_2.11_hadoop_2.9.2_1.0.0 \
+-it -p 4040:4040 triplai/arc:arc_2.2.0_spark_2.4.4_scala_2.11_hadoop_2.9.2_1.0.0 \
 bin/spark-submit \
 --master local[*] \
 --class ai.tripl.arc.ARC \
@@ -639,132 +686,134 @@ bin/spark-submit \
 --etl.config.uri=file:///opt/tutorial/streaming/job/0/streaming.json
 </code></pre>
 
-<h2 id="spark-and-ulimit">Spark and ulimit</h2>
+        <h2 id="spark-and-ulimit">Spark and ulimit</h2>
 
-<p>On larger instances with many cores per machine it is possible to exceed the default (<code>1024</code>) max open files (<code>ulimit</code>). This should be verified on your instances if you are receiving <code>too many open files</code> type errors.</p>
+        <p>On larger instances with many cores per machine it is possible to exceed the default (<code>1024</code>) max
+          open files (<code>ulimit</code>). This should be verified on your instances if you are receiving
+          <code>too many open files</code> type errors.</p>
 
 
-			<aside class="copyright" role="note">
-				
-				&copy; 2019 Released under the MIT license
-				
-			</aside>
+        <aside class="copyright" role="note">
 
-			<footer class="footer">
-				
+          &copy; 2019 Released under the MIT license
 
-<nav class="pagination" aria-label="Footer">
-  <div class="previous">
-    
-    <a href="https://arc.tripl.ai/metadata/" title="Metadata">
-      <span class="direction">
-        Previous
-      </span>
-      <div class="page">
-        <div class="button button-previous" role="button" aria-label="Previous">
-          <i class="icon icon-back"></i>
-        </div>
-        <div class="stretch">
-          <div class="title">
-            Metadata
-          </div>
+        </aside>
+
+        <footer class="footer">
+
+
+          <nav class="pagination" aria-label="Footer">
+            <div class="previous">
+
+              <a href="https://arc.tripl.ai/metadata/" title="Metadata">
+                <span class="direction">
+                  Previous
+                </span>
+                <div class="page">
+                  <div class="button button-previous" role="button" aria-label="Previous">
+                    <i class="icon icon-back"></i>
+                  </div>
+                  <div class="stretch">
+                    <div class="title">
+                      Metadata
+                    </div>
+                  </div>
+                </div>
+              </a>
+
+            </div>
+
+            <div class="next">
+
+              <a href="https://arc.tripl.ai/plugins/" title="Plugins">
+                <span class="direction">
+                  Next
+                </span>
+                <div class="page">
+                  <div class="stretch">
+                    <div class="title">
+                      Plugins
+                    </div>
+                  </div>
+                  <div class="button button-next" role="button" aria-label="Next">
+                    <i class="icon icon-forward"></i>
+                  </div>
+                </div>
+              </a>
+
+            </div>
+          </nav>
+
+
+
+
+        </footer>
+      </div>
+    </article>
+
+    <div class="results" role="status" aria-live="polite">
+      <div class="scrollable">
+        <div class="wrapper">
+          <div class="meta"></div>
+          <div class="list"></div>
         </div>
       </div>
-    </a>
-    
-  </div>
+    </div>
+  </main>
 
-  <div class="next">
-    
-    <a href="https://arc.tripl.ai/plugins/" title="Plugins">
-      <span class="direction">
-        Next
-      </span>
-      <div class="page">
-        <div class="stretch">
-          <div class="title">
-            Plugins
-          </div>
-        </div>
-        <div class="button button-next" role="button" aria-label="Next">
-          <i class="icon icon-forward"></i>
-        </div>
-      </div>
-    </a>
-    
-  </div>
-</nav>
+  <script>
+
+    var base_url = 'https:\/\/arc.tripl.ai\/';
+    var repo_id = 'tripl-ai\/arc';
+
+  </script>
+
+  <script src="https://arc.tripl.ai/javascripts/application.js"></script>
 
 
+  <script>
+    /* Add headers to scrollspy */
+    var headers = document.getElementsByTagName("h2");
+    var scrollspy = document.getElementById('scrollspy');
 
+    if (scrollspy) {
+      if (headers.length > 0) {
+        for (var i = 0; i < headers.length; i++) {
+          var li = document.createElement("li");
+          li.setAttribute("class", "anchor");
 
-			</footer>
-		</div>
-	</article>
+          var a = document.createElement("a");
+          a.setAttribute("href", "#" + headers[i].id);
+          a.setAttribute("title", headers[i].innerHTML);
+          a.innerHTML = headers[i].innerHTML;
 
-	<div class="results" role="status" aria-live="polite">
-		<div class="scrollable">
-			<div class="wrapper">
-				<div class="meta"></div>
-				<div class="list"></div>
-			</div>
-		</div>
-	</div>
-</main>
-
-    <script>
-    
-      var base_url = 'https:\/\/arc.tripl.ai\/';
-      var repo_id  = 'tripl-ai\/arc';
-    
-    </script>
-
-    <script src="https://arc.tripl.ai/javascripts/application.js"></script>
-    
-
-    <script>
-      /* Add headers to scrollspy */
-      var headers   = document.getElementsByTagName("h2");
-      var scrollspy = document.getElementById('scrollspy');
-
-      if(scrollspy) {
-        if(headers.length > 0) {
-          for(var i = 0; i < headers.length; i++) {
-            var li = document.createElement("li");
-            li.setAttribute("class", "anchor");
-
-            var a  = document.createElement("a");
-            a.setAttribute("href", "#" + headers[i].id);
-            a.setAttribute("title", headers[i].innerHTML);
-            a.innerHTML = headers[i].innerHTML;
-
-            li.appendChild(a)
-            scrollspy.appendChild(li);
-          }
-        } else {
-          scrollspy.parentElement.removeChild(scrollspy)
+          li.appendChild(a)
+          scrollspy.appendChild(li);
         }
-
-
-        /* Add permanent link next to the headers */
-        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
-
-        for(var i = 0; i < headers.length; i++) {
-            var a = document.createElement("a");
-            a.setAttribute("class", "headerlink");
-            a.setAttribute("href", "#" + headers[i].id);
-            a.setAttribute("title", "Permanent link")
-            a.innerHTML = "#";
-            headers[i].appendChild(a);
-        }
+      } else {
+        scrollspy.parentElement.removeChild(scrollspy)
       }
-    </script>
 
-    
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
-  </body>
+      /* Add permanent link next to the headers */
+      var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+      for (var i = 0; i < headers.length; i++) {
+        var a = document.createElement("a");
+        a.setAttribute("class", "headerlink");
+        a.setAttribute("href", "#" + headers[i].id);
+        a.setAttribute("title", "Permanent link")
+        a.innerHTML = "#";
+        headers[i].appendChild(a);
+      }
+    }
+  </script>
+
+
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+</body>
+
 </html>
-

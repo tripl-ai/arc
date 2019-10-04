@@ -67,7 +67,8 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
         contiguousIndex=true,
         multiLine=false,
         basePath=None,
-        params=Map.empty
+        params=Map.empty,
+        watermark=None
       )
     ).get
 
@@ -95,7 +96,8 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
         contiguousIndex=true,
         multiLine=true,
         basePath=None,
-        params=Map.empty
+        params=Map.empty,
+        watermark=None
       )
     ).get
 
@@ -125,7 +127,8 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
           contiguousIndex=true,
           multiLine=true,
           basePath=None,
-          params=Map.empty
+          params=Map.empty,
+          watermark=None
         )
       )
     }
@@ -183,7 +186,8 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
         contiguousIndex=true,
         multiLine=true,
         basePath=None,
-        params=Map.empty
+        params=Map.empty,
+        watermark=None
       )
     ).get
 

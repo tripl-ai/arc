@@ -321,7 +321,7 @@ Please be aware that in streaming mode not all join operations are available. Se
 {{< note title="CAST vs TypingTransform" >}}
 It is strongly recommended to use the `TypingTransform` for reproducible, repeatable results.
 
-Whilst SQL is capable of converting data types using the `CAST` function (e.g. `CAST(dateColumn AS DATE)`) be very careful. ANSI SQL specifies that any failure to convert then an exception condition is raised: `data exception-invalid character value for cast` whereas Spark SQL will return a null value and suppress any exceptions: `try s.toString.toInt catch { case _: NumberFormatException => null }`. If you used a cast in a financial scenario, for example bill aggregation, the silent `NULL`ing of values could result in errors being suppressed and bills incorrectly calculated.
+Whilst SQL is capable of converting data types using the `CAST` function (e.g. `CAST(dateColumn AS DATE)`) be very careful. ANSI SQL specifies that any failure to convert then an exception condition is raised: `data exception-invalid character value for cast` whereas Spark SQL will return a null value and suppress any exceptions: `try s.toString.toInt catch { case _: NumberFormatException => null }`. If you used a `CAST` in a financial scenario, for example bill calculation, the silent `NULL`ing of values could result in errors being suppressed and bills incorrectly calculated.
 {{</note>}}
 
 ### Parameters

@@ -182,6 +182,7 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 |quote|String|false|The type of quoting in the file. Supported values: `None`, `SingleQuote`, `DoubleQuote`.<br><br>Default: `DoubleQuote`.|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
 |schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|watermark|Object|false|{{< readfile file="/content/partials/fields/watermark.md" markdown="true" >}}|
 
 ### Examples
 
@@ -294,6 +295,7 @@ SELECT image.height FROM dataset
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|watermark|Object|false|{{< readfile file="/content/partials/fields/watermark.md" markdown="true" >}}|
 
 ### Examples
 
@@ -345,6 +347,8 @@ The `JDBCExtract` reads directly from a JDBC Database and returns a `DataFrame`.
 
 The `JSONExtract` stage reads either one or more JSON files or an input `Dataset[String]` and returns a `DataFrame`. 
 
+If trying to run against an `inputView` in streaming mode this stage will not work. Instead try using the [from_json](https://spark.apache.org/docs/latest/api/sql/index.html#from_json) SQL Function with a [SQLTransform](../transform/#sqltransform).
+
 ### Parameters
 
 | Attribute | Type | Required | Description |
@@ -365,6 +369,7 @@ The `JSONExtract` stage reads either one or more JSON files or an input `Dataset
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
 |schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|watermark|Object|false|{{< readfile file="/content/partials/fields/watermark.md" markdown="true" >}}|
 
 ### Examples
 
@@ -395,6 +400,15 @@ The returned `DataFrame` has the schema:
 |`value`|Binary|The record value as a byte array.|
 
 Can be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecute) to allow quasi-transactional behaviour (with `autoCommit` set to `false`) - in that the offset commit can be deferred until certain dependent stages are sucessfully executed.
+
+To convert the `key` or `value` from a Binary/byte array to a string it is possible to use the [decode](https://spark.apache.org/docs/latest/api/sql/index.html#decode) SQL Function with a [SQLTransform](../transform/#sqltransform) like:
+
+```sql
+SELECT 
+  DECODE(key, 'utf-8') AS stringKey,
+  DECODE(value, 'utf-8') AS stringValue,
+  ...
+```
 
 ### Parameters
 
@@ -478,6 +492,7 @@ The `ORCExtract` stage reads one or more [Apache ORC](https://orc.apache.org/) f
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
 |schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|watermark|Object|false|{{< readfile file="/content/partials/fields/watermark.md" markdown="true" >}}|
 
 ### Examples
 
@@ -510,6 +525,7 @@ The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.ap
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
 |schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|watermark|Object|false|{{< readfile file="/content/partials/fields/watermark.md" markdown="true" >}}|
 
 ### Examples
 
@@ -570,6 +586,7 @@ The `TextExtract` stage reads either one or more text files and returns a `DataF
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
 |schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|watermark|Object|false|{{< readfile file="/content/partials/fields/watermark.md" markdown="true" >}}|
 
 ### Examples
 

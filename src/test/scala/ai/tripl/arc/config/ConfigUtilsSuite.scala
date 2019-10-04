@@ -44,121 +44,6 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  // test("Read simple config") {
-  //   implicit val spark = session
-
-  //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-  //   val commandLineArguments = collection.mutable.HashMap[String, String]()
-
-  //   val pipelineEither = ConfigUtils.parsePipeline(Option("classpath://conf/simple.conf"), commandLineArguments, arcContext)
-
-  //   val stage = extract.DelimitedExtractStage(
-  //     plugin=new extract.DelimitedExtract,
-  //     name="file extract",
-  //     description=None,
-  //     schema=Right(Nil),
-  //     outputView="green_tripdata0_raw",
-  //     input=Right("/data/green_tripdata/0/*.csv"),
-  //     settings=new Delimited(header=true, sep=Delimiter.Comma, quote=QuoteCharacter.DoubleQuote, inferSchema=false),
-  //     authentication=None,
-  //     params=Map.empty,
-  //     persist=false,
-  //     numPartitions=None,
-  //     partitionBy=Nil,
-  //     contiguousIndex=true,
-  //     basePath=None,
-  //     inputField=None
-  //   )
-
-
-  //   val subDelimitedExtractStage = DelimitedExtract(
-  //     name = "extract data from green_tripdata/1",
-  //     description=None,
-  //     cols = Right(Nil),
-  //     outputView = "green_tripdata1_raw",
-  //     input = Right("/data/green_tripdata/1/*.csv"),
-  //     settings = Delimited(Delimiter.Comma, QuoteCharacter.DoubleQuote, true, false),
-  //     authentication = None,
-  //     params = Map.empty,
-  //     persist = false,
-  //     numPartitions = None,
-  //     partitionBy = Nil,
-  //     contiguousIndex = true,
-  //     basePath = None,
-  //     inputField = None
-  //   )
-
-  //   val schema =
-  //     IntegerColumn(
-  //       id = "f457e562-5c7a-4215-a754-ab749509f3fb",
-  //       name = "vendor_id",
-  //       description = Some("A code indicating the TPEP provider that provided the record."),
-  //       nullable = true,
-  //       nullReplacementValue = None,
-  //       trim = true,
-  //       nullableValues = "" :: "null" :: Nil,
-  //       metadata = None,
-  //       formatters = None) ::
-  //     TimestampColumn(
-  //       id = "d61934ed-e32e-406b-bd18-8d6b7296a8c0",
-  //       name = "lpep_pickup_datetime",
-  //       description = Some("The date and time when the meter was engaged."),
-  //       nullable = true,
-  //       nullReplacementValue = None,
-  //       trim = true,
-  //       nullableValues = "" :: "null" :: Nil,
-  //       timezoneId = "America/New_York",
-  //       formatters = "yyyy-MM-dd HH:mm:ss" :: Nil,
-  //       time = None,
-  //       metadata = None,
-  //       strict = false) :: Nil
-
-
-  //   val subTypingTransformStage = TypingTransform(
-  //     name = "apply green_tripdata/1 data types",
-  //     description=None,
-  //     cols = Right(schema),
-  //     inputView = "green_tripdata1_raw",
-  //     outputView = "green_tripdata1",
-  //     params = Map.empty,
-  //     persist=true,
-  //     failMode=FailModeTypePermissive,
-  //     numPartitions=None,
-  //     partitionBy=Nil
-  //   )
-
-  //   val subSQLValidateStage = SQLValidate(
-  //     name = "ensure no errors exist after data typing",
-  //     description=None,
-  //     inputURI = URI.create("classpath://conf/sql/sqlvalidate_errors.sql"),
-  //     sql =
-  //       """|SELECT
-  //          |  SUM(error) = 0
-  //          |  ,TO_JSON(NAMED_STRUCT('count', COUNT(error), 'errors', SUM(error)))
-  //          |FROM (
-  //          |  SELECT
-  //          |    CASE
-  //          |      WHEN SIZE(_errors) > 0 THEN ${test_integer}
-  //          |      ELSE 0
-  //          |    END AS error
-  //          |  FROM ${table_name}
-  //          |) input_table""".stripMargin,
-  //     sqlParams = Map("table_name" -> "green_tripdata1", "test_integer" -> "1"),
-  //     params = Map.empty
-  //   )
-
-  //   val expected = ETLPipeline(stage :: subDelimitedExtractStage :: subTypingTransformStage :: subSQLValidateStage :: Nil)
-
-  //   pipelineEither match {
-  //     case Left(errors) => assert(false)
-  //     case Right((pipeline, _)) => {
-  //       assert(pipeline === expected)
-  //     }
-  //   }
-  // }
-
   // This test loops through the /src/test/resources/docs_resources directory and tries to parse each file as a config
   // the same config files are used (embedded) on the documentation site so this ensures the examples will work.
   test("Read documentation config files") {
@@ -482,6 +367,127 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       }
     }
 
+  }
+
+  test("Test throw error with corrupt") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val df = TestUtils.getKnownDataset
+    df.createOrReplaceTempView("start")
+
+    val thrown0 = intercept[Exception] {
+      val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/broken.conf")), arcContext)
+    }
+    assert(thrown0.getMessage === "Key 'stages' missing from job configuration. Have keys: [a.stages].")
+  }
+
+  test("Test config watermark negative") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = """{
+      "stages": [
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract 1",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "/tmp/test.csv",
+          "outputView": "output",
+          "watermark": {
+          }
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(errors) => {
+        assert(errors.toString contains "Watermark requires 'eventTime' parameter")
+      }
+      case Right((_, _)) => {
+        assert(false)
+      }
+    }
+  }
+
+  test("Test config watermark positive") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = """{
+      "stages": [
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract 1",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "/tmp/test.csv",
+          "outputView": "output",
+          "watermark": {
+            "eventTime": "timecolumn",
+            "delayThreshold": "1 hour"
+          }
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(errors) => {
+        println(errors)
+        assert(false)
+      }
+      case Right((pipeline, _)) => {
+        val stage = pipeline.stages(0).asInstanceOf[extract.DelimitedExtractStage]
+        assert(stage.watermark.get.eventTime === "timecolumn")
+        assert(stage.watermark.get.delayThreshold === "1 hour")
+      }
+    }
+  }
+
+  // this test verifies ipynb to job conversion works
+  test("Test read .ipynb positive") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+
+    val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/job.ipynb")), arcContext)
+
+    pipelineEither match {
+      case Left(errors) => {
+        println(errors)
+        assert(false)
+      }
+      case Right((pipeline, _)) => {
+        assert(pipeline.stages.length == 2)
+        assert(pipeline.stages(0).asInstanceOf[extract.RateExtractStage].outputView == "stream")
+        assert(pipeline.stages(1).asInstanceOf[extract.RateExtractStage].outputView == "stream2")
+      }
+    }
+  }
+
+  // this test verifies ipynb to job conversion works
+  test("Test read .ipynb negative") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val thrown0 = intercept[Exception] {
+      val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/python3.ipynb")), arcContext)
+    }
+    assert(thrown0.getMessage.contains("does not appear to be a valid arc notebook. Has kernelspec: 'python3'."))
   }
 
 }

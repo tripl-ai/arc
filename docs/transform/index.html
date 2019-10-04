@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.1.0</span></strong>
+          <span class="version">2.2.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -1651,7 +1651,7 @@ WHERE metadata.pii = (
 <p class="admonition-title">CAST vs TypingTransform</p>
 <p><p>It is strongly recommended to use the <code>TypingTransform</code> for reproducible, repeatable results.</p>
 
-<p>Whilst SQL is capable of converting data types using the <code>CAST</code> function (e.g. <code>CAST(dateColumn AS DATE)</code>) be very careful. ANSI SQL specifies that any failure to convert then an exception condition is raised: <code>data exception-invalid character value for cast</code> whereas Spark SQL will return a null value and suppress any exceptions: <code>try s.toString.toInt catch { case _: NumberFormatException =&gt; null }</code>. If you used a cast in a financial scenario, for example bill aggregation, the silent <code>NULL</code>ing of values could result in errors being suppressed and bills incorrectly calculated.</p>
+<p>Whilst SQL is capable of converting data types using the <code>CAST</code> function (e.g. <code>CAST(dateColumn AS DATE)</code>) be very careful. ANSI SQL specifies that any failure to convert then an exception condition is raised: <code>data exception-invalid character value for cast</code> whereas Spark SQL will return a null value and suppress any exceptions: <code>try s.toString.toInt catch { case _: NumberFormatException =&gt; null }</code>. If you used a <code>CAST</code> in a financial scenario, for example bill calculation, the silent <code>NULL</code>ing of values could result in errors being suppressed and bills incorrectly calculated.</p>
 </p>
 </div>
 

@@ -40,13 +40,21 @@ object ArcPipeline {
       case Right(uri) => getConfigString(uri, arcContext)
     }
 
-    etlConfString.rightFlatMap { str =>
-      // calculate hash of raw string so that logs can be used to detect changes
-      val etlConfStringHash = DigestUtils.md5Hex(str.getBytes)
-      val uriString = uri match {
-        case Left(str) => ""
-        case Right(uri) => uri.toString
+    etlConfString.rightFlatMap { etlConfRaw =>
+      // convert from ipynb to config if required
+      val (uriString, configString) = uri match {
+        case Right(uri) => {
+          if (uri.toString.endsWith(".ipynb")) {
+            (uri.toString, readIPYNB(uri.toString, etlConfRaw))
+          } else {
+            (uri.toString, etlConfRaw)
+          }
+        }
+        case _ => ("", etlConfRaw)
       }
+
+      // calculate hash of raw string so that logs can be used to detect changes
+      val etlConfStringHash = DigestUtils.md5Hex(etlConfRaw.getBytes)
 
       logger.info()
         .field("event", "validateConfig")
@@ -54,7 +62,7 @@ object ArcPipeline {
         .field("content-md5", etlConfStringHash)
         .log()
 
-      val etlConf = ConfigFactory.parseString(str, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+      val etlConf = ConfigFactory.parseString(configString, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
 
       // convert to json string so that parameters can be correctly parsed
       val commandLineArgumentsJson = new ObjectMapper().writeValueAsString(arcContext.commandLineArguments.asJava).replace("\\", "")
@@ -76,6 +84,10 @@ object ArcPipeline {
 
           // use resolved config to parse other plugins
           val lifecyclePluginsOrErrors = resolveConfigPlugins(resolvedConfig, "plugins.lifecycle", arcContext.lifecyclePlugins)(spark, logger, arcContext)
+
+          if (!resolvedConfig.hasPath("stages")) {
+            throw new Exception(s"""Key 'stages' missing from job configuration. Have keys: [${resolvedConfig.entrySet().asScala.map(_.getKey).toList.mkString(",")}].""")
+          }
           val pipelinePluginsOrErrors = resolveConfigPlugins(resolvedConfig, "stages", arcContext.pipelineStagePlugins)(spark, logger, arcContext)
 
           (lifecyclePluginsOrErrors, pipelinePluginsOrErrors) match {

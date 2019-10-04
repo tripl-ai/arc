@@ -27,8 +27,8 @@ object ExtractUtils {
     }
   }
 
-  def addInternalColumns(input: DataFrame, contiguousIndex: Boolean): DataFrame = {
-    if (!input.isStreaming) {
+  def addInternalColumns(input: DataFrame, contiguousIndex: Boolean)(implicit arcContext: ARCContext): DataFrame = {
+    if (!input.isStreaming && !arcContext.isStreaming) {
       // add meta columns including sequential index
       // if schema already has metadata any columns ignore
       if (!input.columns.intersect(List("_filename", "_index", "_monotonically_increasing_id")).nonEmpty) {
