@@ -26,6 +26,9 @@ pygmentsUseClasses=true
 	spark_version = "2.4.4"
 	scala_version = "2.11"
 	hadoop_version = "2.9.2"
+	arc_image_version = "1.0.0"
+	arc_jupyter_image_version = "1.0.0"
+
 	logo = "images/logo.png"
 	favicon = ""
 
