@@ -404,10 +404,15 @@ object ARC {
   def run(pipeline: ETLPipeline)
   (implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    def before(currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Unit = {
-      for (p <- arcContext.activeLifecyclePlugins) {
-        logger.trace().message(s"Executing before() on LifecyclePlugin: ${p.getClass.getName}")
-        p.before(currentValue, index, stages)
+    def before(currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Boolean = {
+      // if any lifecyclePlugin returns false do not run remaining lifecyclePlugins and do not run the stage
+      arcContext.activeLifecyclePlugins.foldLeft(true) { (state, lifeCyclePlugin) =>
+        if (state) {
+          logger.trace().message(s"Executing before() on LifecyclePlugin: ${lifeCyclePlugin.getClass.getName}")
+          lifeCyclePlugin.before(currentValue, index, stages)
+        } else {
+          false
+        }
       }
     }
 
@@ -423,16 +428,23 @@ object ARC {
       stages match {
         case Nil => None // end
         case (stage, index) :: Nil =>
-          before(stage, index, pipeline.stages)
-          val result = processStage(stage)
-          after(result, stage, index, pipeline.stages)
-          result
-
+          val runStage = before(stage, index, pipeline.stages)
+          if (runStage) {
+            val result = processStage(stage)
+            after(result, stage, index, pipeline.stages)
+            result
+          } else {
+            None
+          }
         case (stage, index) :: tail =>
-          before(stage, index, pipeline.stages)
-          val result = processStage(stage)
-          after(result, stage, index, pipeline.stages)
-          runStages(tail)
+          val runStage = before(stage, index, pipeline.stages)
+          if (runStage) {
+            val result = processStage(stage)
+            after(result, stage, index, pipeline.stages)
+            runStages(tail)
+          } else {
+            None
+          }            
       }
     }
 

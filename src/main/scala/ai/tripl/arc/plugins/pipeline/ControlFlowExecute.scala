@@ -1,4 +1,4 @@
-package ai.tripl.arc.validate
+package ai.tripl.arc.execute
 
 import java.net.URI
 import scala.collection.JavaConverters._
@@ -16,7 +16,7 @@ import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.Utils
 
-class SQLValidate extends PipelineStagePlugin {
+class ControlFlowExecute extends PipelineStagePlugin {
 
   val version = Utils.getFrameworkVersion
 
@@ -25,8 +25,9 @@ class SQLValidate extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "authentication" :: "sqlParams" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "key" :: "description" :: "environments" :: "inputURI" :: "authentication" :: "sqlParams" :: "params" :: Nil
     val name = getValue[String]("name")
+    val key = getValue[String]("key")
     val description = getOptionalValue[String]("description")
     val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
     val authentication = readAuthentication("authentication")
@@ -36,12 +37,13 @@ class SQLValidate extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, parsedURI, inputSQL, validSQL, invalidKeys) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(invalidKeys)) =>
+    (name, key, description, parsedURI, inputSQL, validSQL, invalidKeys) match {
+      case (Right(name), Right(key), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(invalidKeys)) =>
 
-        val stage = SQLValidateStage(
+        val stage = ControlFlowExecuteStage(
           plugin=this,
           name=name,
+          key=key,
           description=description,
           inputURI=parsedURI,
           sql=inputSQL,
@@ -49,6 +51,7 @@ class SQLValidate extends PipelineStagePlugin {
           params=params
         )
 
+        stage.stageDetail.put("key", key)
         stage.stageDetail.put("inputURI", parsedURI.toString)
         stage.stageDetail.put("sql", inputSQL)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
@@ -56,7 +59,7 @@ class SQLValidate extends PipelineStagePlugin {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, key, description, parsedURI, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -64,9 +67,10 @@ class SQLValidate extends PipelineStagePlugin {
   }
 }
 
-case class SQLValidateStage(
-    plugin: SQLValidate,
+case class ControlFlowExecuteStage(
+    plugin: ControlFlowExecute,
     name: String,
+    key: String,
     description: Option[String],
     inputURI: URI,
     sql: String,
@@ -75,15 +79,15 @@ case class SQLValidateStage(
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    SQLValidateStage.execute(this)
+    ControlFlowExecuteStage.execute(this)
   }
 }
 
-object SQLValidateStage {
+object ControlFlowExecuteStage {
 
-  def execute(stage: SQLValidateStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+  def execute(stage: ControlFlowExecuteStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    val signature = "SQLValidate requires query to return 1 row with [outcome: boolean, message: string] signature."
+    val signature = "ControlFlowExecute requires query to return 1 row with [outcome: boolean, message: string] signature."
 
     val stmt = SQLUtils.injectParameters(stage.sql, stage.sqlParams, false)
     stage.stageDetail.put("sql", stmt)
@@ -130,12 +134,9 @@ object SQLValidateStage {
 
       val result = row.getBoolean(0)
 
-      // if result is false throw exception to exit job
-      if (result == false) {
-        throw new Exception(s"SQLValidate failed with message: '${message}'.") with DetailException {
-          override val detail = stage.stageDetail
-        }
-      }
+      arcContext.userData.put(stage.key, java.lang.Boolean.valueOf(result))
+      stage.stageDetail.put("result", java.lang.Boolean.valueOf(result))
+
     } catch {
       case e: ClassCastException =>
         throw new Exception(s"${signature} Query returned ${count} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {

@@ -15,7 +15,6 @@ import ai.tripl.arc.api.API._
 import ai.tripl.arc.config._
 import ai.tripl.arc.util._
 
-
 class SQLValidateSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _
@@ -39,7 +38,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
   }
 
   after {
-    session.stop()
+    session.stop
   }
 
   test("SQLValidate: end-to-end") {
