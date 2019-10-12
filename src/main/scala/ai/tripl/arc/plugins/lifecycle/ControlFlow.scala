@@ -2,6 +2,8 @@ package ai.tripl.arc.plugins.lifecycle
 
 import scala.collection.JavaConverters._
 
+import com.fasterxml.jackson.databind._
+
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import ai.tripl.arc.api.API._
@@ -51,13 +53,26 @@ case class ControlFlowInstance(
     arcContext.userData.get(key) match {
       case Some(value) => {
         try {
-          value.asInstanceOf[java.lang.Boolean].booleanValue match {
+          val controlFlowPayload = value.asInstanceOf[ai.tripl.arc.execute.ControlFlowPayload]
+           controlFlowPayload.outcome match {
             case false => {
-              logger.info()
+              val log = logger.info()
                 .field("event", "skip")
                 .field("reason", s"skipping stage due to control flow key: '${key}' = false.")
                 .map("stage", stage.stageDetail.asJava)
-                .log()
+
+              // try to parse to json
+              try {
+                val objectMapper = new ObjectMapper()
+                var messageMap = new java.util.HashMap[String, Object]()
+                messageMap = objectMapper.readValue(controlFlowPayload.message, classOf[java.util.HashMap[String, Object]])
+                log.map("message", messageMap)
+              } catch {
+                case e: Exception =>
+                  log.field("message", controlFlowPayload.message)
+              }
+
+              log.log()
 
               false
             }

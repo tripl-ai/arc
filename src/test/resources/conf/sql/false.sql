@@ -1,1 +1,1 @@
-SELECT FALSE, ''
+SELECT FALSE, '{"result": false}'

@@ -1,1 +1,1 @@
-SELECT TRUE, ''
+SELECT TRUE, 'log this message'
