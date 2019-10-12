@@ -94,7 +94,7 @@ The `GraphTransform` stage takes either a list of views of graph nodes and views
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputURI|URI|true*|URI/Glob of the input Cypher query.|
 |nodes|Array[Object]|true*|List of node labels and node views to construct the graph from. See example below.|
-|relationships|Array[Object]|true*|List of relionship types and relionship views to construct the graph from. See example below.|
+|relationships|Array[Object]|true*|List of relationship types and relationship views to construct the graph from. See example below.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |cypherParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/cypherParams.md" markdown="true" >}}|
 |outputGraph|String|true|{{< readfile file="/content/partials/fields/outputGraph.md" markdown="true" >}}|
@@ -112,6 +112,9 @@ The `GraphTransform` stage takes either a list of views of graph nodes and views
 ##### Since: 1.0.9 - Supports Streaming: True
 
 The `HTTPTransform` stage transforms the incoming dataset by `POST`ing the value in the incoming dataset with column name `value` (must be of type `string` or `bytes`) and appending the response body from an external API as `body`.
+
+A good use case of the `HTTPTransform` stage is to call an external [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) machine learning model service. To see an example of how to host a simple model as a service see:<br>
+https://github.com/tripl-ai/arc/tree/master/src/it/resources/flask_serving
 
 ### Parameters
 
@@ -369,6 +372,9 @@ This means this API is likely to change.
 {{</note>}}
 
 The `TensorFlowServingTransform` stage transforms the incoming dataset by calling a [TensorFlow Serving](https://www.tensorflow.org/serving/) service. Because each call is atomic the TensorFlow Serving instances could be behind a load balancer to increase throughput.
+
+To see how to host a simple model in [TensorFlow Serving](https://www.tensorflow.org/serving/) see:<br>
+https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving
 
 ### Parameters
 

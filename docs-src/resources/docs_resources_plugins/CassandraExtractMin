@@ -1,0 +1,11 @@
+{
+  "type": "CassandraExtract",
+  "name": "read",
+  "environments": [
+    "production",
+    "test"
+  ],  
+  "keyspace": "default",
+  "table": "customer",
+  "outputView": "customer"      
+}

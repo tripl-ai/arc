@@ -10,7 +10,7 @@ Arc is an **opinionated** framework for defining **predictable**, **repeatable**
 
 - **predictable** in that data is used to define transformations - not code.
 - **repeatable** in that if a job is executed multiple times it will produce the same result.
-- **manageable** in that execution considerations and logging has been baked in from the start.
+- **manageable** in that execution considerations and logging have been baked in from the start.
 
 ## Getting Started
 
@@ -78,6 +78,12 @@ This is an example of a fairly standard pipeline:
 If you have suggestions of additional components or find issues that you believe need fixing then please raise an issue. An issue with a test case is even more appreciated.
 
 When you contribute code, you affirm that the contribution is your original work and that you license the work to the project under the project’s open source license. Whether or not you state this explicitly, by submitting any copyrighted material via pull request, email, or other means you agree to license the material under the project’s open source license and warrant that you have the legal authority to do so.
+
+## Support
+
+For questions around use (which are not clear from the documentation) post a new 'issue' in the [questions](https://github.com/tripl-ai/questions/issues) repository. This repository acts as a forum where questions can be posted, discussed and searched. 
+
+For commercial support requests please [contact us](mailto:contact@tripl.ai) via email.
 
 ## Attribution 
 

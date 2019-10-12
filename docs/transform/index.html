@@ -71,7 +71,7 @@
     
 
   </head>
-  <body class="palette-primary-red palette-accent-teal">
+  <body class="palette-primary-red palette-accent-red">
 
 
 
@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.1.1</span></strong>
+          <span class="version">2.2.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -745,7 +745,7 @@
 <td>relationships</td>
 <td>Array[Object]</td>
 <td>true*</td>
-<td>List of relionship types and relionship views to construct the graph from. See example below.</td>
+<td>List of relationship types and relationship views to construct the graph from. See example below.</td>
 </tr>
 
 <tr>
@@ -826,6 +826,9 @@
 <h5 id="since-1-0-9-supports-streaming-true">Since: 1.0.9 - Supports Streaming: True</h5>
 
 <p>The <code>HTTPTransform</code> stage transforms the incoming dataset by <code>POST</code>ing the value in the incoming dataset with column name <code>value</code> (must be of type <code>string</code> or <code>bytes</code>) and appending the response body from an external API as <code>body</code>.</p>
+
+<p>A good use case of the <code>HTTPTransform</code> stage is to call an external <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">RESTful</a> machine learning model service. To see an example of how to host a simple model as a service see:<br>
+<a href="https://github.com/tripl-ai/arc/tree/master/src/it/resources/flask_serving">https://github.com/tripl-ai/arc/tree/master/src/it/resources/flask_serving</a></p>
 
 <h3 id="parameters-3">Parameters</h3>
 
@@ -1803,6 +1806,9 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </div>
 
 <p>The <code>TensorFlowServingTransform</code> stage transforms the incoming dataset by calling a <a href="https://www.tensorflow.org/serving/">TensorFlow Serving</a> service. Because each call is atomic the TensorFlow Serving instances could be behind a load balancer to increase throughput.</p>
+
+<p>To see how to host a simple model in <a href="https://www.tensorflow.org/serving/">TensorFlow Serving</a> see:<br>
+<a href="https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving">https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving</a></p>
 
 <h3 id="parameters-9">Parameters</h3>
 

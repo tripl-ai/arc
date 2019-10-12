@@ -1,0 +1,21 @@
+{
+  "type": "CassandraLoad",
+  "name": "write",
+  "environments": [
+    "production",
+    "test"
+  ],  
+  "inputView": "customer",
+  "keyspace": "default",
+  "table": "customer"
+  "saveMode": "Overwrite",
+  "params": {
+    "confirm.truncate": "true",
+    "spark.cassandra.connection.host": "cassandra"
+  },
+  "numPartitions": 10,
+  "partitionBy": [
+    "country"
+  ],
+  "saveMode": "Overwrite"
+}

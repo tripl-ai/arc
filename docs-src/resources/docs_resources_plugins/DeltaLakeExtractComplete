@@ -1,5 +1,5 @@
 {
-  "type": "DatabricksDeltaExtract",
+  "type": "DeltaLakeExtract",
   "name": "load customers",
   "description": "load customers",
   "environments": [

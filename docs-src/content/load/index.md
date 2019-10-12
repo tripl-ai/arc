@@ -39,6 +39,38 @@ The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avr
 {{< readfile file="/resources/docs_resources/AvroLoadComplete" highlight="json" >}} 
 
 
+## CassandraLoad
+##### Since: 2.0.0 - Supports Streaming: False
+{{< note title="Plugin" >}}
+The `CassandraLoad` is provided by the https://github.com/tripl-ai/arc-cassandra-pipeline-plugin package.
+{{</note>}}
+
+The `CassandraLoad` writes an input `DataFrame` to a target [Cassandra](https://cassandra.apache.org/) cluster. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|keyspace|String|true|The name of the Cassandra keyspace to write to.|
+|table|String|true|The name of the Cassandra table to write to.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
+|params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Any parameters provided will be added to the Cassandra connection object.|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/CassandraLoadMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/CassandraLoadComplete" highlight="json" >}} 
+
+
 ## ConsoleLoad
 ##### Since: 1.2.0 - Supports Streaming: True
 

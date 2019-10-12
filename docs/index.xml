@@ -76,8 +76,10 @@ Parameters    Attribute Type Required Description     name String true Name of t
       
       <guid>https://arc.tripl.ai/execute/</guid>
       <description>*Execute stages are used to execute arbitrary commands against external systems such as Databases and APIs.
-HTTPExecute Since: 1.0.0 - Supports Streaming: False The HTTPExecute takes an input Map[String, String] from the configuration and executes a POST request against a remote HTTP service. This could be used to initialise another process that depends on the output of data pipeline.
-Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
+CassandraExecute Since: 2.0.0 - Supports Streaming: False Plugin
+The CassandraExecute is provided by the https://github.com/tripl-ai/arc-cassandra-pipeline-plugin package.
+ The CassandraExecute executes a CQL statement against an external Cassandra cluster.
+Parameters    Attribute Type Required Description     name String true Name of the stage for logging.   environments Array[String] true A list of environments under which this stage will be executed.</description>
     </item>
     
     <item>
@@ -111,7 +113,7 @@ It is designed to:
       <guid>https://arc.tripl.ai/deploy/</guid>
       <description>Arc has been packaged as a Docker image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the https://hub.docker.com/u/triplai for the relevant version.
 Running a Job An example command to start a job is:
-docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&amp;quot; \ -it -p 4040:4040 triplai/arc:arc_2.1.1_spark_2.4.4_scala_2.11_hadoop_2.9.2 \ bin/spark-submit \ --master local[*] \ --class ai.tripl.arc.ARC \ /opt/spark/jars/arc.</description>
+docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&amp;quot; \ -it -p 4040:4040 triplai/arc:arc_2.2.0_spark_2.4.4_scala_2.11_hadoop_2.9.2_1.0.0 \ bin/spark-submit \ --master local[*] \ --class ai.tripl.arc.ARC \ /opt/spark/jars/arc.</description>
     </item>
     
     <item>

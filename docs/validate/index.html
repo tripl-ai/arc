@@ -71,7 +71,7 @@
     
 
   </head>
-  <body class="palette-primary-red palette-accent-teal">
+  <body class="palette-primary-red palette-accent-red">
 
 
 
@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.1.1</span></strong>
+          <span class="version">2.2.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -653,6 +653,11 @@ FROM (
         CASE WHEN SIZE(_errors) &gt; 0 THEN 1 ELSE 0 END AS errors
     FROM detail
 ) valid
+</code></pre>
+
+<p>The <code>FILTER</code> function can be used to select errors only from a certain field:</p>
+
+<pre><code class="language-sql">SIZE(FILTER(_errors, _error -&gt; _error.field == 'fieldname'))
 </code></pre>
 
 <p>With a text message:</p>
