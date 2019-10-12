@@ -28,7 +28,7 @@ class ControlFlow extends LifecyclePlugin {
       case (Right(key), Right(invalidKeys)) =>
         Right(ControlFlowInstance(
           plugin=this,
-          key=key,
+          key=key
         ))
       case _ =>
         val allErrors: Errors = List(key, invalidKeys).collect{ case Left(errs) => errs }.flatten
@@ -40,7 +40,7 @@ class ControlFlow extends LifecyclePlugin {
 
 case class ControlFlowInstance(
     plugin: ControlFlow,
-    key: String,
+    key: String
   ) extends LifecyclePluginInstance {
 
   override def before(stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
