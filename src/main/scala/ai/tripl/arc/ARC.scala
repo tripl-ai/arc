@@ -404,16 +404,23 @@ object ARC {
   def run(pipeline: ETLPipeline)
   (implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    def before(currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Boolean = {
+    def runStage(currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Boolean = {
       // if any lifecyclePlugin returns false do not run remaining lifecyclePlugins and do not run the stage
       arcContext.activeLifecyclePlugins.foldLeft(true) { (state, lifeCyclePlugin) =>
         if (state) {
-          logger.trace().message(s"Executing before() on LifecyclePlugin: ${lifeCyclePlugin.getClass.getName}")
-          lifeCyclePlugin.before(currentValue, index, stages)
+          logger.trace().message(s"Executing runStage() on LifecyclePlugin: ${lifeCyclePlugin.getClass.getName}")
+          lifeCyclePlugin.runStage(currentValue, index, stages)
         } else {
           false
         }
       }
+    }
+
+    def before(currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Unit = {
+      for (p <- arcContext.activeLifecyclePlugins) {
+        logger.trace().message(s"Executing after on LifecyclePlugin: ${stages(index).getClass.getName}")
+        p.before(currentValue, index, stages)
+      }      
     }
 
     def after(result: Option[DataFrame], currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Unit = {
@@ -428,8 +435,8 @@ object ARC {
       stages match {
         case Nil => None // end
         case (stage, index) :: Nil =>
-          val runStage = before(stage, index, pipeline.stages)
-          if (runStage) {
+          if (runStage(stage, index, pipeline.stages)) {
+            before(stage, index, pipeline.stages)
             val result = processStage(stage)
             after(result, stage, index, pipeline.stages)
             result
@@ -437,8 +444,8 @@ object ARC {
             None
           }
         case (stage, index) :: tail =>
-          val runStage = before(stage, index, pipeline.stages)
-          if (runStage) {
+          if (runStage(stage, index, pipeline.stages)) {
+            before(stage, index, pipeline.stages)
             val result = processStage(stage)
             after(result, stage, index, pipeline.stages)
             runStages(tail)
