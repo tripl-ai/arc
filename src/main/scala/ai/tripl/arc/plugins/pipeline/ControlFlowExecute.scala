@@ -27,7 +27,7 @@ class ControlFlowExecute extends PipelineStagePlugin {
 
     val expectedKeys = "type" :: "name" :: "key" :: "description" :: "environments" :: "inputURI" :: "authentication" :: "sqlParams" :: "params" :: Nil
     val name = getValue[String]("name")
-    val key = getValue[String]("key")
+    val key = getValue[String]("key", default = Some("controlFlowPluginOutcome"))
     val description = getOptionalValue[String]("description")
     val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
     val authentication = readAuthentication("authentication")

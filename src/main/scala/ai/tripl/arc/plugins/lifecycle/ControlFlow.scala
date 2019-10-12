@@ -21,7 +21,7 @@ class ControlFlow extends LifecyclePlugin {
     implicit val c = config
 
     val expectedKeys = "type" :: "environments" :: "key" :: Nil
-    val key = getValue[String]("key")
+    val key = getValue[String]("key", default = Some("controlFlowPluginOutcome"))
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
     (key, invalidKeys) match {

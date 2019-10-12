@@ -54,8 +54,7 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
             "environments": [
               "production",
               "test"
-            ],
-            "key": "entryCriteriaMet"
+            ]
           }
         ],
       },
@@ -63,7 +62,6 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
         {
           "type": "ControlFlowExecute",
           "name": "test",
-          "key": "entryCriteriaMet",
           "description": "test",
           "environments": [
             "production",
@@ -114,8 +112,7 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
             "environments": [
               "production",
               "test"
-            ],
-            "key": "entryCriteriaMet"
+            ]
           }
         ],
       },
@@ -123,7 +120,6 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
         {
           "type": "ControlFlowExecute",
           "name": "test",
-          "key": "entryCriteriaMet",
           "description": "test",
           "environments": [
             "production",
