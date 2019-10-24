@@ -490,10 +490,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     assert(thrown0.getMessage.contains("does not appear to be a valid arc notebook. Has kernelspec: 'python3'."))
   }
 
-  test("Test read authentication AmazonIAM") {
-    //implicit val spark = session
-    //implicit val logger = TestUtils.getLogger()
-    //implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  test("Test read authentication AmazonIAM with KMS") {
 
     val authConf = """{
       "authentication": {
