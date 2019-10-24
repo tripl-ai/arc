@@ -85,7 +85,8 @@ case class ControlFlowExecuteStage(
 
 case class ControlFlowPayload(
   outcome: Boolean,
-  message: String
+  message: Option[String],
+  messageMap: Option[java.util.HashMap[String, Object]]
 )
 
 object ControlFlowExecuteStage {
@@ -124,6 +125,7 @@ object ControlFlowExecuteStage {
         }
       }
 
+      val result = row.getBoolean(0)
       val message = row.getString(1)
 
       // try to parse to json
@@ -132,14 +134,13 @@ object ControlFlowExecuteStage {
         var messageMap = new java.util.HashMap[String, Object]()
         messageMap = objectMapper.readValue(message, classOf[java.util.HashMap[String, Object]])
         stage.stageDetail.put("message", messageMap)
+        arcContext.userData.put(stage.key, ControlFlowPayload(result, None, Option(messageMap)))
       } catch {
         case e: Exception =>
           stage.stageDetail.put("message", message)
+          arcContext.userData.put(stage.key, ControlFlowPayload(result, Option(message), None))
       }
 
-      val result = row.getBoolean(0)
-
-      arcContext.userData.put(stage.key, ControlFlowPayload(result, message))
       stage.stageDetail.put("result", java.lang.Boolean.valueOf(result))
 
     } catch {

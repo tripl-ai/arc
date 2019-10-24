@@ -67,7 +67,7 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
             "production",
             "test"
           ],
-          "inputURI": "${getClass.getResource("/conf/sql/").toString}/false.sql"
+          "inputURI": "${getClass.getResource("/conf/sql/").toString}false.sql"
         },
         {
           "type": "DelimitedExtract",
@@ -125,7 +125,7 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
             "production",
             "test"
           ],
-          "inputURI": "${getClass.getResource("/conf/sql/").toString}/true.sql"
+          "inputURI": "${getClass.getResource("/conf/sql/").toString}true.sql"
         },
         {
           "type": "DelimitedExtract",

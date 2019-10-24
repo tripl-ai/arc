@@ -51,9 +51,8 @@ case class ControlFlowInstance(
 
   override def runStage(stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Boolean = {
     arcContext.userData.get(key) match {
-      case Some(value) => {
+      case Some(controlFlowPayload: ai.tripl.arc.execute.ControlFlowPayload) => {
         try {
-          val controlFlowPayload = value.asInstanceOf[ai.tripl.arc.execute.ControlFlowPayload]
            controlFlowPayload.outcome match {
             case false => {
               val log = logger.info()
@@ -61,15 +60,11 @@ case class ControlFlowInstance(
                 .field("reason", s"skipping stage due to control flow key: '${key}' = false.")
                 .map("stage", stage.stageDetail.asJava)
 
-              // try to parse to json
-              try {
-                val objectMapper = new ObjectMapper()
-                var messageMap = new java.util.HashMap[String, Object]()
-                messageMap = objectMapper.readValue(controlFlowPayload.message, classOf[java.util.HashMap[String, Object]])
-                log.map("message", messageMap)
-              } catch {
-                case e: Exception =>
-                  log.field("message", controlFlowPayload.message)
+              // add reason message to skip message too
+              (controlFlowPayload.message, controlFlowPayload.messageMap) match {
+                case (Some(message), None) => log.field("message", message)
+                case (None, Some(messageMap)) => log.map("message", messageMap)
+                case _ =>
               }
 
               log.log()
@@ -90,7 +85,7 @@ case class ControlFlowInstance(
           }
         }
       }
-      case None => true
+      case _ => true
     }  
   }
 
