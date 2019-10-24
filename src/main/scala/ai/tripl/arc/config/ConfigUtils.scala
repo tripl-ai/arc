@@ -373,6 +373,9 @@ object ConfigUtils {
               }
               Right(Some(Authentication.AmazonAccessKey(accessKeyID, secretAccessKey, endpoint, sslEnabled)))
             }
+            case Some("AmazonAnonymous") => {
+              Right(Some(Authentication.AmazonAnonymous))
+            }            
             case Some("GoogleCloudStorageKeyFile") => {
               val projectID = authentication.get("projectID") match {
                 case Some(v) => v

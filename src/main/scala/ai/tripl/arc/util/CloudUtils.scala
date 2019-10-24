@@ -18,6 +18,7 @@ object CloudUtils {
 
     authentication match {
       case Some(API.Authentication.AmazonAccessKey(accessKeyID, secretAccessKey, endpoint, ssl)) => {
+        hc.unset(s"fs.s3a.aws.credentials.provider")
         hc.set("fs.s3a.access.key", accessKeyID)
         hc.set("fs.s3a.secret.key", secretAccessKey)
 
@@ -36,6 +37,9 @@ object CloudUtils {
           .field("fs.s3a.access.key", accessKeyID)
           .field("fs.s3a.secret.key", secretAccessKey)
           .log()
+      }
+      case Some(API.Authentication.AmazonAnonymous) => {
+        hc.set(s"fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider")
       }
       case Some(API.Authentication.AzureSharedKey(accountName, signature)) => {
         hc.set(s"fs.azure.account.key.${accountName}.blob.core.windows.net", signature)
