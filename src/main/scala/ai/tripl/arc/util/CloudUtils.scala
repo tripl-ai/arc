@@ -37,6 +37,49 @@ object CloudUtils {
           .field("fs.s3a.secret.key", secretAccessKey)
           .log()
       }
+      case Some(API.Authentication.AmazonIAM(encType, kmsId, customKey)) => {
+
+        var algorithm = "None"
+        var key = "None"
+
+        encType match {
+          case Some(API.AmazonS3EncryptionType.SSE_S3) =>
+            hc.set("fs.s3a.server-side-encryption-algorithm", "SSE-S3")
+            hc.unset("fs.s3a.server-side-encryption.key")
+            algorithm = "SSE-S3"
+          case Some(API.AmazonS3EncryptionType.SSE_KMS) =>
+            kmsId match {
+              case Some(arn) =>
+                hc.set("fs.s3a.server-side-encryption-algorithm", "SSE-KMS")
+                hc.set("fs.s3a.server-side-encryption.key", arn)
+                algorithm = "SSE-KMS"
+                key = arn
+              case None =>
+                hc.unset("fs.s3a.server-side-encryption-algorithm")
+                hc.unset("fs.s3a.server-side-encryption.key")
+            }
+          case Some(API.AmazonS3EncryptionType.SSE_C) =>
+            customKey match {
+              case Some(ckey) =>
+                hc.set("fs.s3a.server-side-encryption-algorithm", "SSE-C")
+                hc.set("fs.s3a.server-side-encryption.key", ckey)
+                algorithm = "SSE-C"
+                key = "*****"
+              case None =>
+                hc.unset("fs.s3a.server-side-encryption-algorithm")
+                hc.unset("fs.s3a.server-side-encryption.key")
+            }
+          case None =>
+                hc.unset("fs.s3a.server-side-encryption-algorithm")
+                hc.unset("fs.s3a.server-side-encryption.key")
+        }
+
+        logger.debug()
+          .message("hadoopConfiguration.set()")
+          .field("fs.s3a.server-side-encryption-algorithm", algorithm)
+          .field("fs.s3a.server-side-encryption.key", key)
+          .log()
+      }
       case Some(API.Authentication.AzureSharedKey(accountName, signature)) => {
         hc.set(s"fs.azure.account.key.${accountName}.blob.core.windows.net", signature)
         logger.debug()

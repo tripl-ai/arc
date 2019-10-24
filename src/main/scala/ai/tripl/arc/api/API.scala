@@ -298,6 +298,7 @@ object API {
   sealed trait Authentication
   object Authentication {
     case class AmazonAccessKey(accessKeyID: String, secretAccessKey: String, endpoint: Option[String], ssl: Option[Boolean]) extends Authentication
+    case class AmazonIAM(encryptionType: Option[AmazonS3EncryptionType], keyArn: Option[String], customKey: Option[String]) extends Authentication
     case class AzureSharedKey(accountName: String, signature: String) extends Authentication
     case class AzureSharedAccessSignature(accountName: String, container: String, token: String) extends Authentication
     case class AzureDataLakeStorageToken(clientID: String, refreshToken: String) extends Authentication
@@ -305,6 +306,23 @@ object API {
     case class AzureDataLakeStorageGen2OAuth(clientID: String, secret: String, directoryId: String) extends Authentication
     case class GoogleCloudStorageKeyFile(projectID: String, keyFilePath: String) extends Authentication
   }
+
+  sealed trait AmazonS3EncryptionType
+  object AmazonS3EncryptionType {
+    case object SSE_S3 extends AmazonS3EncryptionType // AES256
+    case object SSE_KMS extends AmazonS3EncryptionType
+    case object SSE_C extends AmazonS3EncryptionType // custom
+
+    def fromString(encType: String): Option[AmazonS3EncryptionType] = {
+      Option(encType).map(_.trim.toUpperCase) match {
+        case Some("SSE-S3") => Some(SSE_S3)
+        case Some("SSE-KMS") => Some(SSE_KMS)
+        case Some("SSE-C") => Some(SSE_C)
+        case _ => None
+      }
+    }
+  }
+
 
   case class Watermark(eventTime: String, delayThreshold: String)
 

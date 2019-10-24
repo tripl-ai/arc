@@ -4,12 +4,15 @@ import java.net.URI
 
 import scala.io.Source
 import scala.collection.JavaConverters._
+
 import com.fasterxml.jackson.databind.ObjectMapper
+
+import com.typesafe.config._
+
+import org.apache.spark.sql._
 
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
-
-import org.apache.spark.sql._
 
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.api.{Delimited, Delimiter, QuoteCharacter}
@@ -18,9 +21,6 @@ import ai.tripl.arc.config.Error
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.util.log.LoggerFactory
 import ai.tripl.arc.util.TestUtils
-
-import com.typesafe.config._
-
 
 class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
@@ -488,6 +488,33 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/python3.ipynb")), arcContext)
     }
     assert(thrown0.getMessage.contains("does not appear to be a valid arc notebook. Has kernelspec: 'python3'."))
+  }
+
+  test("Test read authentication AmazonIAM") {
+    //implicit val spark = session
+    //implicit val logger = TestUtils.getLogger()
+    //implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val authConf = """{
+      "authentication": {
+        "method": "AmazonIAM",
+        "encryptionAlgorithm": "SSE-KMS",
+        "kmsArn": "586E7EA1-845F-41D5-A2F6-9B72A4A76243"
+      }
+    }"""
+
+    implicit val etlConf = ConfigFactory.parseString(authConf, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+
+    val auth = ConfigUtils.readAuthentication("authentication")
+
+    auth match {
+      case Right(Some(Authentication.AmazonIAM(encType, arn, customKey))) => {
+        assert(encType == Some(AmazonS3EncryptionType.SSE_KMS))
+        assert(arn == Some("586E7EA1-845F-41D5-A2F6-9B72A4A76243"))
+        assert(customKey == None)
+      }
+      case _ => fail("unable to read AmazonIAM auth config")
+    }
   }
 
 }
