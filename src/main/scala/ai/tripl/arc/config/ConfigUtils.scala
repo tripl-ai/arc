@@ -391,6 +391,9 @@ object ConfigUtils {
                   throw new Exception(s"Invalid authentication options for AmazonIAM method. See docs for allowed settings.")
               }
             }
+            case Some("AmazonAnonymous") => {
+              Right(Some(Authentication.AmazonAnonymous))
+            } 
             case Some("GoogleCloudStorageKeyFile") => {
               val projectID = authentication.get("projectID") match {
                 case Some(v) => v
