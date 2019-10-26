@@ -13,7 +13,7 @@ The `Authentication` map defines the authentication parameters for connecting to
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
-|method|String|true|A value of `AzureSharedKey`, `AzureSharedAccessSignature`, `AzureDataLakeStorageToken`, `AzureDataLakeStorageGen2AccountKey`, `AzureDataLakeStorageGen2OAuth`, `AmazonAccessKey`, `GoogleCloudStorageKeyFile` which defines which method should be used to authenticate with the remote service.|
+|method|String|true|A value of `AzureSharedKey`, `AzureSharedAccessSignature`, `AzureDataLakeStorageToken`, `AzureDataLakeStorageGen2AccountKey`, `AzureDataLakeStorageGen2OAuth`, `AmazonAccessKey`, `AmazonAnonymous`, `AmazonIAM`, `GoogleCloudStorageKeyFile` which defines which method should be used to authenticate with the remote service.|
 |accountName|String|false*|Required for `AzureSharedKey` and `AzureSharedAccessSignature`.|
 |signature|String|false*|Required for `AzureSharedKey`.|
 |container|String|false*|Required for `AzureSharedAccessSignature`.|
@@ -27,6 +27,11 @@ The `Authentication` map defines the authentication parameters for connecting to
 |directoryID|String|false*|Required for `AzureDataLakeStorageGen2OAuth`.|
 |accessKeyID|String|false*|Required for `AmazonAccessKey`.|
 |secretAccessKey|String|false*|Required for `AmazonAccessKey`.|
+|accessKeyID|String|false*|Required for `AmazonIAM`.|
+|secretAccessKey|String|false*|Required for `AmazonAccessKey`.|
+|encryptionAlgorithm|String|false*|The bucket encrpytion algorithm: `SSE-S3`, `SSE-KMS`, `SSE-C`. Optional for `AmazonIAM`.|
+|kmsArn|String|false*|The Key Management Service Amazon Resource Name when using `SSE-KMS` encryptionAlgorithm e.g. `arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab`. Optional for `AmazonIAM`.|
+|customKey|String|false*|The key to use when using Customer-Provided Encryption Keys (`SSE-C`). Optional for `AmazonIAM`.|
 |endpoint|String|false|Used for setting S3 endpoint for services like `Ceph Object Store` or `Minio`. Optional for `AmazonAccessKey`.|
 |sslEnabled|Boolean|false|Used to set whether to use SSL. Optional for `AmazonAccessKey`.|
 |projectID|String|false*|Required for `GoogleCloudStorageKeyFile`.|

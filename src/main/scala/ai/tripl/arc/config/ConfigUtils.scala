@@ -373,6 +373,27 @@ object ConfigUtils {
               }
               Right(Some(Authentication.AmazonAccessKey(accessKeyID, secretAccessKey, endpoint, sslEnabled)))
             }
+            case Some("AmazonIAM") => {
+              val encType = authentication.get("encryptionAlgorithm").flatMap( AmazonS3EncryptionType.fromString(_) )
+              val kmsId = authentication.get("kmsArn")
+              val customKey = authentication.get("customKey")
+
+              (encType, kmsId, customKey) match {
+                case (None, None, None) =>
+                  Right(Some(Authentication.AmazonIAM(None, None, None)))
+                case (Some(AmazonS3EncryptionType.SSE_S3), None, None) =>
+                  Right(Some(Authentication.AmazonIAM(encType, kmsId, None)))
+                case (Some(AmazonS3EncryptionType.SSE_KMS), Some(arn), None) =>
+                  Right(Some(Authentication.AmazonIAM(encType, kmsId, None)))
+                case (Some(AmazonS3EncryptionType.SSE_C), None, Some(k)) =>
+                  Right(Some(Authentication.AmazonIAM(encType, None, customKey)))
+                case _ =>
+                  throw new Exception(s"Invalid authentication options for AmazonIAM method. See docs for allowed settings.")
+              }
+            }
+            case Some("AmazonAnonymous") => {
+              Right(Some(Authentication.AmazonAnonymous))
+            } 
             case Some("GoogleCloudStorageKeyFile") => {
               val projectID = authentication.get("projectID") match {
                 case Some(v) => v
