@@ -430,6 +430,8 @@ object ARC {
       }
     }
 
+    // runStage will not execute the stage nor before/after if ANY of the LifecyclePlugins.runStage methods return false
+    // this is to simplify the job of workflow designers trying to ensure plugins are ordered correctly
     @tailrec
     def runStages(stages: List[(PipelineStage, Int)]): Option[DataFrame] = {
       stages match {
