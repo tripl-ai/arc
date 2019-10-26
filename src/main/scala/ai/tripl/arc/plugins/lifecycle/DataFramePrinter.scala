@@ -37,7 +37,7 @@ class DataFramePrinter extends LifecyclePlugin {
 }
 
 case class DataFramePrinterInstance(
-    plugin: LifecyclePlugin,
+    plugin: DataFramePrinter,
     numRows: Int,
     truncate: Boolean
   ) extends LifecyclePluginInstance {
