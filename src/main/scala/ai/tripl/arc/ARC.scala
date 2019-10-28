@@ -404,11 +404,23 @@ object ARC {
   def run(pipeline: ETLPipeline)
   (implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
+    def runStage(currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Boolean = {
+      // if any lifecyclePlugin returns false do not run remaining lifecyclePlugins and do not run the stage
+      arcContext.activeLifecyclePlugins.foldLeft(true) { (state, lifeCyclePlugin) =>
+        if (state) {
+          logger.trace().message(s"Executing runStage() on LifecyclePlugin: ${lifeCyclePlugin.getClass.getName}")
+          lifeCyclePlugin.runStage(currentValue, index, stages)
+        } else {
+          false
+        }
+      }
+    }
+
     def before(currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Unit = {
       for (p <- arcContext.activeLifecyclePlugins) {
-        logger.trace().message(s"Executing before() on LifecyclePlugin: ${p.getClass.getName}")
+        logger.trace().message(s"Executing after on LifecyclePlugin: ${stages(index).getClass.getName}")
         p.before(currentValue, index, stages)
-      }
+      }      
     }
 
     def after(result: Option[DataFrame], currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Unit = {
@@ -418,21 +430,30 @@ object ARC {
       }
     }
 
+    // runStage will not execute the stage nor before/after if ANY of the LifecyclePlugins.runStage methods return false
+    // this is to simplify the job of workflow designers trying to ensure plugins are ordered correctly
     @tailrec
     def runStages(stages: List[(PipelineStage, Int)]): Option[DataFrame] = {
       stages match {
         case Nil => None // end
         case (stage, index) :: Nil =>
-          before(stage, index, pipeline.stages)
-          val result = processStage(stage)
-          after(result, stage, index, pipeline.stages)
-          result
-
+          if (runStage(stage, index, pipeline.stages)) {
+            before(stage, index, pipeline.stages)
+            val result = processStage(stage)
+            after(result, stage, index, pipeline.stages)
+            result
+          } else {
+            None
+          }
         case (stage, index) :: tail =>
-          before(stage, index, pipeline.stages)
-          val result = processStage(stage)
-          after(result, stage, index, pipeline.stages)
-          runStages(tail)
+          if (runStage(stage, index, pipeline.stages)) {
+            before(stage, index, pipeline.stages)
+            val result = processStage(stage)
+            after(result, stage, index, pipeline.stages)
+            runStages(tail)
+          } else {
+            None
+          }            
       }
     }
 

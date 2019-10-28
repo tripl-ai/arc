@@ -16,6 +16,13 @@ object CloudUtils {
   def setHadoopConfiguration(authentication: Option[API.Authentication])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger) = {
     import spark.sparkContext.{hadoopConfiguration => hc}
 
+    // clear s3a settings
+    hc.unset("fs.s3a.access.key")
+    hc.unset("fs.s3a.secret.key")
+    hc.unset("fs.s3a.aws.credentials.provider")
+    hc.unset("fs.s3a.server-side-encryption-algorithm")
+    hc.unset("fs.s3a.server-side-encryption.key")
+
     authentication match {
       case Some(API.Authentication.AmazonAccessKey(accessKeyID, secretAccessKey, endpoint, ssl)) => {
         hc.set("fs.s3a.access.key", accessKeyID)
@@ -35,6 +42,45 @@ object CloudUtils {
           .message("hadoopConfiguration.set()")
           .field("fs.s3a.access.key", accessKeyID)
           .field("fs.s3a.secret.key", secretAccessKey)
+          .log()
+      }
+      case Some(API.Authentication.AmazonAnonymous) => {
+          hc.set("fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider")
+      }
+      case Some(API.Authentication.AmazonIAM(encType, kmsId, customKey)) => {
+
+        var algorithm = "None"
+        var key = "None"
+
+        encType match {
+          case Some(API.AmazonS3EncryptionType.SSE_S3) =>
+            hc.set("fs.s3a.server-side-encryption-algorithm", "SSE-S3")
+            algorithm = "SSE-S3"
+          case Some(API.AmazonS3EncryptionType.SSE_KMS) =>
+            kmsId match {
+              case Some(arn) =>
+                hc.set("fs.s3a.server-side-encryption-algorithm", "SSE-KMS")
+                hc.set("fs.s3a.server-side-encryption.key", arn)
+                algorithm = "SSE-KMS"
+                key = arn
+              case None => // already unset option above
+            }
+          case Some(API.AmazonS3EncryptionType.SSE_C) =>
+            customKey match {
+              case Some(ckey) =>
+                hc.set("fs.s3a.server-side-encryption-algorithm", "SSE-C")
+                hc.set("fs.s3a.server-side-encryption.key", ckey)
+                algorithm = "SSE-C"
+                key = "*****"
+              case None => // already unset option above
+            }
+          case None => // already unset option above
+        }
+
+        logger.debug()
+          .message("hadoopConfiguration.set()")
+          .field("fs.s3a.server-side-encryption-algorithm", algorithm)
+          .field("fs.s3a.server-side-encryption.key", key)
           .log()
       }
       case Some(API.Authentication.AzureSharedKey(accountName, signature)) => {

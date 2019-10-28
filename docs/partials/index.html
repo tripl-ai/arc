@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.2.0</span></strong>
+          <span class="version">2.3.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -442,7 +442,7 @@
 <td>method</td>
 <td>String</td>
 <td>true</td>
-<td>A value of <code>AzureSharedKey</code>, <code>AzureSharedAccessSignature</code>, <code>AzureDataLakeStorageToken</code>, <code>AzureDataLakeStorageGen2AccountKey</code>, <code>AzureDataLakeStorageGen2OAuth</code>, <code>AmazonAccessKey</code>, <code>GoogleCloudStorageKeyFile</code> which defines which method should be used to authenticate with the remote service.</td>
+<td>A value of <code>AzureSharedKey</code>, <code>AzureSharedAccessSignature</code>, <code>AzureDataLakeStorageToken</code>, <code>AzureDataLakeStorageGen2AccountKey</code>, <code>AzureDataLakeStorageGen2OAuth</code>, <code>AmazonAccessKey</code>, <code>AmazonAnonymous</code>, <code>AmazonIAM</code>, <code>GoogleCloudStorageKeyFile</code> which defines which method should be used to authenticate with the remote service.</td>
 </tr>
 
 <tr>
@@ -534,6 +534,41 @@
 <td>String</td>
 <td>false*</td>
 <td>Required for <code>AmazonAccessKey</code>.</td>
+</tr>
+
+<tr>
+<td>accessKeyID</td>
+<td>String</td>
+<td>false*</td>
+<td>Required for <code>AmazonIAM</code>.</td>
+</tr>
+
+<tr>
+<td>secretAccessKey</td>
+<td>String</td>
+<td>false*</td>
+<td>Required for <code>AmazonAccessKey</code>.</td>
+</tr>
+
+<tr>
+<td>encryptionAlgorithm</td>
+<td>String</td>
+<td>false*</td>
+<td>The bucket encrpytion algorithm: <code>SSE-S3</code>, <code>SSE-KMS</code>, <code>SSE-C</code>. Optional for <code>AmazonIAM</code>.</td>
+</tr>
+
+<tr>
+<td>kmsArn</td>
+<td>String</td>
+<td>false*</td>
+<td>The Key Management Service Amazon Resource Name when using <code>SSE-KMS</code> encryptionAlgorithm e.g. <code>arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab</code>. Optional for <code>AmazonIAM</code>.</td>
+</tr>
+
+<tr>
+<td>customKey</td>
+<td>String</td>
+<td>false*</td>
+<td>The key to use when using Customer-Provided Encryption Keys (<code>SSE-C</code>). Optional for <code>AmazonIAM</code>.</td>
 </tr>
 
 <tr>

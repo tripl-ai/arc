@@ -1,5 +1,10 @@
 ## Change Log
 
+# 2.3.0
+
+- added `AmazonAnonymous` (for public buckets) and `AmazonIAM` (allowing users to specify encryption method) [Authentication](https://arc.tripl.ai/partials/#authentication) methods.
+- added initial support for `runStage` to [Lifecycle Plugins](https://arc.tripl.ai/plugins/#lifecycle-plugins) to support early job exit with success when certain criteria are met.
+
 # 2.2.0
 
 - add ability to execute [arc-jupyter](https://github.com/tripl-ai/arc-jupyter) notebook files (.ipynb) directly without conversion to arc 'job'.

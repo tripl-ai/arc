@@ -11,10 +11,10 @@ object Dependencies {
   // testing
   val scalaTest = "org.scalatest" %% "scalatest" % "3.0.7" % "test,it"
   val jetty = "org.mortbay.jetty" % "jetty" % "6.1.26" % "test,it"
-  val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.5" % "test,it" 
+  val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.8" % "test,it" 
   val hadoopCommon =  "org.apache.hadoop" % "hadoop-common" % hadoopVersion % "it"
   val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % hadoopVersion % "it"
-  val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "7.2.1.jre8" % "it" 
+  val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "7.4.1.jre8" % "it" 
 
   // spark
   val sparkCore = "org.apache.spark" %% "spark-core" % sparkVersion % "provided"
