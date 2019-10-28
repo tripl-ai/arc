@@ -514,4 +514,36 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("Test config s3 deprecation") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = """{
+      "stages": [
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract 1",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "s3://tmp/test.csv",
+          "outputView": "output"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(errors) => {
+        assert(errors.toString contains "s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
+      }
+      case Right((_, _)) => {
+        assert(false)
+      }
+    }
+  }
+
 }
