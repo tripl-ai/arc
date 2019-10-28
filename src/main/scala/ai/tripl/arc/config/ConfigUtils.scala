@@ -253,6 +253,9 @@ object ConfigUtils {
     try {
       // try to compile glob which will fail with bad characters
       GlobPattern.compile(glob)
+      if (glob.trim.startsWith("s3://") | glob.trim.startsWith("s3n://")) {
+        throw new Exception("s3:// and s3n:// are no longer supported as they have unpredictable behaviour. Please use s3a:// instead.")
+      }
       Right(glob)
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
@@ -445,7 +448,11 @@ object ConfigUtils {
 
     try {
       // try to parse uri
-      Right(new URI(uri))
+      val u = new URI(uri)
+      if (uri.trim.startsWith("s3://") | uri.trim.startsWith("s3n://")) {
+        throw new Exception("s3:// and s3n:// are no longer supported as they have unpredictable behaviour. Please use s3a:// instead.")
+      }
+      Right(u)
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
