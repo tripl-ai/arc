@@ -179,8 +179,60 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     }
 
     assert(thrown0.getMessage.contains("TypingTransform with failMode equal to 'failfast' cannot continue due to row with error(s): [[booleanDatum,Unable to convert 'bad' to boolean using provided true values: ['true'] or false values: ['false']], [timestampDatum,Unable to convert '2017-12-20 21:46:54' to timestamp using formatters ['uuuu-MM-dd'T'HH:mm:ss.SSSXXX'] and timezone 'UTC']]."))
-
   }
+
+  test("TypingTransform: failfast due to invalid conversion") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val inputDataFrame = Seq(
+      ("textDatum")
+    ).toDF("textDatum") 
+    inputDataFrame.createOrReplaceTempView(inputView)
+
+    val meta = """
+    [
+      {
+        "id": "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
+        "name": "integerDatum",
+        "description": "integerDatum",
+        "type": "integer",
+        "trim": false,
+        "nullable": false,
+        "nullableValues": [
+            "",
+            "null"
+        ]
+      }
+    ]
+    """
+
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+
+    val thrown0 = intercept[Exception with DetailException] {
+      val dataset = transform.TypingTransformStage.execute(
+        transform.TypingTransformStage(
+          plugin=new transform.TypingTransform,
+          name="dataset",
+          description=None,
+          schema=Right(schema.right.getOrElse(Nil)),
+          inputView=inputView,
+          outputView=outputView,
+          params=Map.empty,
+          persist=false,
+          failMode=FailModeTypePermissive,
+          numPartitions=None,
+          partitionBy=Nil
+        )
+      ).get
+      dataset.count
+    }
+
+    assert(thrown0.getMessage.contains("TypingTransform with non-nullable column 'integerDatum' cannot continue due to error: Unable to convert 'textDatum' to integer using formatters ['#,##0;-#,##0']."))
+
+  }  
 
   test("TypingTransform: metadata bad array") {
     implicit val spark = session
