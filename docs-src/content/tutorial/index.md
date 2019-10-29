@@ -46,21 +46,9 @@ This has been scripted and can be called by executing:
 ./.develop.sh
 ```
 
-## Starting an Arc notebook
+## Extracting Data
 
 From the Juptyter main screen select `New` then `Arc` under `notebook`. We will be building the job in this notebook.
-
-Before we start adding job stages we need to define a variable which allows us to easily change the input file location when we deploy the job across different environments. So, for example, it could be use to switch data paths for local (`ETL_CONF_JOB_URL=/home/jovyan/tutorial`) vs remote `ETL_CONF_JOB_URL=https://raw.githubusercontent.com/tripl-ai/arc-starter/master/tutorial` when moving from development to production.
-
-Paste this into the first cell and execute to set the environment variable.
-
-```scala
-%env 
-ETL_CONF_JOB_URL=/home/jovyan/tutorial
-ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data
-```
-
-## Extracting Data
 
 The first stage we are going to add is a `DelimitedExtract` stage because the source data is in Comma-Seperated Values format delimited by '`,`'. This stage will instruct Arc to extract the data in all `.csv` files from the `inputURI` path and register as the internal view `green_tripdata0_raw` so the data can be accessed in subsequent job stages. 
 
@@ -73,7 +61,7 @@ Because this data is hosted on the public [Registry of Open Data on AWS](https:/
   "type": "DelimitedExtract",
   "name": "extract data from green_tripdata/0",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_{2013-{08,09}}.csv",
+  "inputURI": "s3a://nyc-tlc/trip*data/green_tripdata_2013-08.csv",
   "outputView": "green_tripdata0_raw",            
   "delimiter": "Comma",
   "quote" : "DoubleQuote",
@@ -107,7 +95,7 @@ Add a new stage to apply a `TypingTransformation` to the data extracted in the f
   "type": "TypingTransform",
   "name": "apply green_tripdata/0 data types",
   "environments": ["production", "test"],
-  "schemaURI": ${ETL_CONF_JOB_URL}"/meta/green_tripdata/0/green_tripdata.json",
+  "schemaURI": "/home/jovyan/tutorial/meta/green_tripdata/0/green_tripdata.json",
   "inputView": "green_tripdata0_raw",            
   "outputView": "green_tripdata0"       
 }   
@@ -235,7 +223,7 @@ If the job has been configured like above with all fields `"nullable": true` the
   "type": "SQLValidate",
   "name": "ensure no errors exist after data typing",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_JOB_URL}"/job/0/sqlvalidate_errors.sql",            
+  "inputURI": "/home/jovyan/tutorial/job/0/sqlvalidate_errors.sql",            
   "sqlParams": {
       "table_name": "green_tripdata0"
   }
@@ -294,7 +282,6 @@ docker run \
 --rm \
 -v $(pwd)/tutorial:/home/jovyan/tutorial:Z \
 -e "ETL_CONF_ENV=production" \
--e "ETL_CONF_BASE_URL=/home/jovyan/tutorial" \
 -p 4040:4040 \
 {{% docker_image %}} \
 bin/spark-submit \
@@ -315,6 +302,36 @@ As the job runs you will see `json` formatted logs generated and printed to scre
 
 A snapshot of what we have done so far should be in the repository under `tutorial/job/0/nyctaxi.ipynb`.
 
+## Environment Variables
+
+For testing and automated deployment it is useful to be able to dynamically change input file locations when we deploy the job across different environments. So, for example, it could be use to switch data paths for local (`/home/jovyan/tutorial`) vs remote (`https://raw.githubusercontent.com/tripl-ai/arc-starter/master/tutorial`) when moving from development to production.
+
+To do this [Environment Variables](https://en.wikipedia.org/wiki/Environment_variable) can be used or the `%env` magic can be used in Jupyter notebooks:
+
+```scala
+%env 
+ETL_CONF_JOB_URL=/home/jovyan/tutorial
+ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data
+```
+
+The variables can then be used like:
+
+```json
+{
+  "type": "DelimitedExtract",
+  "name": "extract data from green_tripdata/0",
+  "environments": ["production", "test"],
+  "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_2013-08.csv",
+  "outputView": "green_tripdata0_raw",            
+  "delimiter": "Comma",
+  "quote" : "DoubleQuote",
+  "header": true,
+  "authentication": {
+    "method": "AmazonAnonymous"
+  }
+}
+```
+
 {{< note title="JSON vs HOCON" >}}
 The config file, whilst looking very similar to a `json` file is actually a [Human-Optimized Config Object Notation](https://en.wikipedia.org/wiki/HOCON) (HOCON) file. This file format is a superset of `json` allowing some very useful extensions like [Environment Variable](https://en.wikipedia.org/wiki/Environment_variable) substitution and string interpolation. We primarily use it for Environment Variable injection but all its capabilities described [here](https://github.com/lightbend/config) can be utilised.
 {{</note>}}
@@ -329,7 +346,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
     "type": "DelimitedExtract",
     "name": "extract data from green_tripdata/0",
     "environments": ["production", "test"],
-    "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_{2013-{08,09}}.csv",
+    "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_2013-08.csv",
     "outputView": "green_tripdata0_raw",            
     "delimiter": "Comma",
     "quote": "DoubleQuote",
@@ -360,7 +377,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
     "type": "DelimitedExtract",
     "name": "extract data from green_tripdata/1",
     "environments": ["production", "test"],
-    "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_{2015-{01}}.csv",
+    "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_2015-01.csv",
     "outputView": "green_tripdata1_raw",            
     "delimiter": "Comma",
     "quote": "DoubleQuote",
@@ -391,7 +408,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
     "type": "DelimitedExtract",
     "name": "extract data from green_tripdata/2",
     "environments": ["production", "test"],
-    "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_{2016-{07}}.csv",
+    "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_2016-07.csv",
     "outputView": "green_tripdata2_raw",            
     "delimiter": "Comma",
     "quote": "DoubleQuote",
@@ -422,17 +439,18 @@ Now we have three typed and validated datasets in memory. How are they merged?
 
 ## Merging Data
 
-The real complexity with schema evolution comes defining clear rules with how to deal with fields which are added and removed. In the case of `green_tripdata` the main change over time is the change from giving specific pickup and dropoff co-ordinates (`pickup_longitude`, `pickup_latitude`, `dropoff_longitude`, `dropoff_latitude`) in the early datasets to only providing more generalised (and much more anonymous) `pickup_location_id` and `dropoff_location_id` geographic regions. The easiest way to deal with this is to use a `SQLTransform` and manually define the rules for each dataset before `UNION ALL` the data together. See `tutorial/job/1/trips.sql`:
+The real complexity with schema evolution comes defining clear rules with how to deal with fields which are added and removed. In the case of `green_tripdata` the main change over time is the change from giving specific pickup and dropoff co-ordinates (`pickup_longitude`, `pickup_latitude`, `dropoff_longitude`, `dropoff_latitude`) in the early datasets to only providing more generalised (and much more anonymous) `pickup_location_id` and `dropoff_location_id` geographic regions. The easiest way to deal with this is to use a `SQLTransform` and manually define the rules for each dataset before `UNION ALL` the data together.
 
 {{< note title="Executing SQL" >}}
 The `arc-starter` Jupyter notebook allows direct execution of SQL for development by executing a Jupyter 'magic' called `%sql`. To execute a statement you can put:
 
 ```sql
 %sql
-SELECT * 
-FROM green_tripdata0
+SELECT * FROM green_tripdata0
 ```
 {{</note>}}
+
+See `tutorial/job/1/trips.sql`:
 
 ```sql
 -- first schema 2013-08 to 2014-12
@@ -536,19 +554,13 @@ Then we can define a `SQLTransform` stage to execute the query:
 
 A snapshot of what we have done so far is `tutorial/job/1/nyctaxi.ipynb`.
 
-## Add the rest of the tables
+## Glob Pattern Matching
 
-Go ahead and:
+Arc allows for pattern matching of file names including the standard wildcard (`green_tripdata_*.csv`) or more advanced [Glob](https://en.wikipedia.org/wiki/Glob_%28programming%29) matching. Glob can be used to select subsets of data in a directory but generally we recommend using directories and wildcards such as `green_tripdata/0/*.csv` to easily separate data schema versions.
 
-- add the file loading for the `yellow_tripdata`. There should be 3 stages for each schema load (`DelimitedExtract`, `TypingTransform`, `SQLValidate`) and a total of 7 schemas so 21 stages plus a single `SQLTransform` as the final stage to merge the data.
-- modify the `SQLTransform` to include the new datasets.
-- run the new version of the job. You may need to increase the RAM you have allocated to Spark.
+#### Small Dataset
 
-The patterns for matching the source data to use for `DelimitedExtract` are:
-
-### Small Dataset
-
-| dataset | schema | file matching pattern |
+| dataset | schema | glob pattern |
 |---------|--------|-----------------------|
 |green_tripdata|0|`green_tripdata_{2013-{08,09}}.csv`|
 |green_tripdata|1|`green_tripdata_{2015-{01}}.csv`|
@@ -556,19 +568,25 @@ The patterns for matching the source data to use for `DelimitedExtract` are:
 |yellow_tripdata|0|`yellow_tripdata_{2009-{01}}.csv`|
 |yellow_tripdata|1|`yellow_tripdata_{2009-{01}}.csv`|
 |yellow_tripdata|2|`yellow_tripdata_{2016-{07}}.csv`|
-|yellow_tripdata|3|`yellow_tripdata_{2017-{01}}.csv`|
 
-### Full Dataset
+#### Full Dataset
 
-| dataset | schema | file matching pattern |
+| dataset | schema | glob pattern |
 |---------|--------|-----------------------|
 |green_tripdata|0|`green_tripdata_{2013-*,2014-*}.csv`|
-|green_tripdata|1|`green_tripdata_{2015-*,2016-0[1-6]}}.csv`|
+|green_tripdata|1|`green_tripdata_{2015-*,2016-{01,02,03,04,05,06}}.csv`|
 |green_tripdata|2|`green_tripdata_{2016-{07,08,09,10,11,12},2017-*}.csv`|
 |yellow_tripdata|0|`yellow_tripdata_{2009-*,2010-*,2011-*,2012-*,2013-*,2014-*}.csv`|
-|yellow_tripdata|1|`yellow_tripdata_{2015-*,2016-0[1-6]}.csv`|
+|yellow_tripdata|1|`yellow_tripdata_{2015-*,2016-{01,02,03,04,05,06}}.csv`|
 |yellow_tripdata|2|`yellow_tripdata_{2016-{07,08,09,10,11,12}}.csv`|
-|yellow_tripdata|3|`yellow_tripdata_{2017-*}.csv`|
+
+## Add the rest of the tables
+
+Go ahead and:
+
+- add the file loading for the `yellow_tripdata`. There should be 3 stages for each schema load (`DelimitedExtract`, `TypingTransform`, `SQLValidate`) and a total of 7 schema versions so 21 stages just to read and safely type the data.
+- modify the `SQLTransform` to include the new datasets.
+- run the new version of the job. You may need to increase the RAM you have allocated to Arc.
 
 A snapshot of what has been built so far is `tutorial/job/2/nyctaxi.ipynb`.
 
@@ -599,7 +617,12 @@ Also because we are testing that file for data quality using `SQLValidate` we ne
 ```sql
 SELECT
   COALESCE(SUM(error) = 0, TRUE) AS valid
-  ,TO_JSON(NAMED_STRUCT('count', COUNT(error), 'errors', SUM(error))) AS message
+  ,TO_JSON(
+    NAMED_STRUCT(
+      'count', COUNT(error),
+      'errors', SUM(error)
+    )
+  ) AS message
 FROM (
   SELECT 
     CASE 
