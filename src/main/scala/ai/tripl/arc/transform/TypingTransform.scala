@@ -232,7 +232,15 @@ object Typing {
               Typing.typeValue(row.getString(fieldIdx), col) match {
                 case (Some(v), Some(err)) => (v :: valuesAccum, err :: errorsAccum)
                 case (Some(v), None) => (v :: valuesAccum, errorsAccum)
-                case (None, Some(err)) => (null :: valuesAccum, err :: errorsAccum)
+                case (None, Some(err)) => {
+                  if (col.nullable || failMode == FailModeTypeFailFast) {
+                    (null :: valuesAccum, err :: errorsAccum)
+                  } else {
+                    // this exception is to override the default spark non-nullable error which is not intuitive: 
+                    // The 0th field '<column name>' of input row cannot be null.
+                    throw new Exception(s"""TypingTransform with non-nullable column '${err.field}' cannot continue due to error: ${err.message}.""")
+                  }
+                }
                 case (None, None) => (null :: valuesAccum, errorsAccum)
               }
             }
