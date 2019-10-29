@@ -1,5 +1,10 @@
 ## Change Log
 
+# 2.3.1
+
+- will now throw exceptions if trying to use the Amazon `s3://` or `s3n://` protocols instead of `s3a://` as they have been deprecated by the Hadoop project, are no longer suppored in Hadoop 3.0+ and do not behave predictably with the Arc Amazon [Authentication](https://arc.tripl.ai/partials/#authentication) methods.
+- will now throw clearer message when typing conversion fails on a non-nullable field (which means the job cannot logically proceed).
+
 # 2.3.0
 
 - added `AmazonAnonymous` (for public buckets) and `AmazonIAM` (allowing users to specify encryption method) [Authentication](https://arc.tripl.ai/partials/#authentication) methods.
