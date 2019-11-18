@@ -18,7 +18,6 @@ class TestDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-
     val expectedKeys = "type" :: "environments" :: "key" :: Nil
     val key = getValue[String]("key")
     val invalidKeys = checkValidKeys(c)(expectedKeys)
