@@ -56,7 +56,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
-  test("MetadataTransform: inputURI") {
+  test("MetadataTransform: schemaURI") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -102,7 +102,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("MetadataTransform: inputView failfast success") {
+  test("MetadataTransform: schemaView failfast success") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -151,7 +151,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("MetadataTransform: inputView failfast failure") {
+  test("MetadataTransform: schemaView failfast failure") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -168,7 +168,6 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     val filteredDF = spark.sql(s"""SELECT * FROM schemaDF WHERE name != 'booleanDatum' ORDER BY name""")
     filteredDF.createOrReplaceTempView(schemaView)
 
-    // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
       transform.MetadataTransformStage.execute(
         transform.MetadataTransformStage(
@@ -188,6 +187,62 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
       ).get
     }
     assert(thrown0.getMessage === "MetadataTransform with failMode = 'failfast' ensures that the schemaView 'schemaView' has the same columns as inputView 'inputView' but schemaView 'schemaView' has columns: ['longDatum', 'dateDatum', 'timestampDatum', 'decimalDatum', 'integerDatum', 'stringDatum', 'timeDatum', 'doubleDatum'] and 'inputView' contains columns: ['longDatum', 'dateDatum', 'timestampDatum', 'booleanDatum', 'decimalDatum', 'integerDatum', 'stringDatum', 'timeDatum', 'doubleDatum'].")
+  }
+
+  test("MetadataTransform: schemaView permissive") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    import spark.implicits._
+
+    // load csv
+    val df = spark.read.option("header", true).csv(targetFile)
+    df.createOrReplaceTempView(inputView)
+
+    // create schemaView
+    val meta = spark.createDataset[String](List(TestUtils.getKnownDatasetMetadataJson))
+    val schemaDF = spark.read.option("multiLine", true).json(meta)
+    schemaDF.createOrReplaceTempView("schemaDF")
+    val filteredDF = spark.sql(s"""SELECT * FROM schemaDF WHERE name = 'booleanDatum' ORDER BY name""")
+    filteredDF.createOrReplaceTempView(schemaView)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "MetadataTransform",
+          "name": "attach metadata",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${inputView}",
+          "outputView": "${outputView}",
+          "schemaView": "${schemaView}",
+          "failMode": "permissive"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(_) => assert(false)
+      case Right((pipeline, _)) => {
+        ARC.run(pipeline)(spark, logger, arcContext) match {
+          case Some(df) => {
+            // test metadata
+            // all metadata fields have securityLevel
+            val booleanDatumMetadata = df.schema.fields(df.schema.fieldIndex("booleanDatum")).metadata
+            assert(booleanDatumMetadata.contains("securityLevel"))
+
+            // should not have metadata set due to permissive
+            val timestampDatumMetadata = df.schema.fields(df.schema.fieldIndex("timestampDatum")).metadata
+            assert(!timestampDatumMetadata.contains("securityLevel"))
+          }
+          case None => assert(false)
+        }
+      }
+    }
   }
 
 }
