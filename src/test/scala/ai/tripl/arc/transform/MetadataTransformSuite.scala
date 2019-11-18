@@ -15,15 +15,17 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
-import ai.tripl.arc.api.API.Extract
+import ai.tripl.arc.api.API._
 import ai.tripl.arc.config._
 import ai.tripl.arc.util._
 
 class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _
+  val targetFile = FileUtils.getTempDirectoryPath() + "MetadataTransformSuite.csv"
   val inputView = "inputView"
   val outputView = "outputView"
+  val schemaView = "schemaView"
 
   before {
     implicit val spark = SparkSession
@@ -40,32 +42,42 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
 
     session = spark
     import spark.implicits._
+
+    // recreate test dataset
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
+    // Delimited does not support writing NullType
+    TestUtils.getKnownDataset.drop($"nullDatum").write.option("header", true).csv(targetFile)
   }
 
   after {
     session.stop()
+
+    // clean up test dataset
+    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
-  test("MetadataTransform: end-to-end") {
+  test("MetadataTransform: inputURI") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-    import spark.implicits._
 
-    val df = TestUtils.getKnownDataset
+    // load csv
+    val df = spark.read.option("header", true).csv(targetFile)
     df.createOrReplaceTempView(inputView)
 
     val conf = s"""{
       "stages": [
         {
           "type": "MetadataTransform",
-          "name": "extract metadata for persistence",
+          "name": "attach metadata",
           "environments": [
             "production",
             "test"
           ],
           "inputView": "${inputView}",
-          "outputView": "${outputView}"
+          "outputView": "${outputView}",
+          "schemaURI": "${getClass.getResource("/conf/metadata").toString}/knownDataset.json",
+          "failMode": "failfast"
         }
       ]
     }"""
@@ -75,13 +87,14 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     pipelineEither match {
       case Left(err) => {
         println(err)
-        assert(false)
+        fail
       }
       case Right((pipeline, _)) => {
         ARC.run(pipeline)(spark, logger, arcContext) match {
           case Some(df) => {
-            assert(df.columns.deep == Array("name", "nullable", "type", "metadata").deep)
-            assert(df.count == 10)
+            // test metadata
+            val timestampDatumMetadata = df.schema.fields(df.schema.fieldIndex("timestampDatum")).metadata
+            assert(timestampDatumMetadata.getLong("securityLevel") == 7)
           }
           case None => assert(false)
         }
@@ -89,27 +102,34 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("MetadataTransform: end-to-end with metadata") {
+  test("MetadataTransform: inputView failfast success") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
     import spark.implicits._
 
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
-    val df = MetadataUtils.setMetadata(TestUtils.getKnownDataset, Extract.toStructType(schema.right.get))
+    // load csv
+    val df = spark.read.option("header", true).csv(targetFile)
     df.createOrReplaceTempView(inputView)
+
+    // create schemaView
+    val meta = spark.createDataset[String](List(TestUtils.getKnownDatasetMetadataJson))
+    val schemaDF = spark.read.option("multiLine", true).json(meta)
+    schemaDF.createOrReplaceTempView(schemaView)
 
     val conf = s"""{
       "stages": [
         {
           "type": "MetadataTransform",
-          "name": "extract metadata for persistence",
+          "name": "attach metadata",
           "environments": [
             "production",
             "test"
           ],
           "inputView": "${inputView}",
-          "outputView": "${outputView}"
+          "outputView": "${outputView}",
+          "schemaView": "${schemaView}",
+          "failMode": "failfast"
         }
       ]
     }"""
@@ -117,19 +137,57 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(err) => {
-        println(err)
-        assert(false)
-      }
+      case Left(_) => assert(false)
       case Right((pipeline, _)) => {
         ARC.run(pipeline)(spark, logger, arcContext) match {
           case Some(df) => {
-            assert(df.where("name = 'timestampDatum'").select(col("metadata")("securityLevel")).first.getLong(0) == 7)
+            // test metadata
+            val timestampDatumMetadata = df.schema.fields(df.schema.fieldIndex("timestampDatum")).metadata
+            assert(timestampDatumMetadata.getLong("securityLevel") == 7)
           }
           case None => assert(false)
         }
       }
     }
+  }
+
+  test("MetadataTransform: inputView failfast failure") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    import spark.implicits._
+
+    // load csv
+    val df = spark.read.option("header", true).csv(targetFile)
+    df.createOrReplaceTempView(inputView)
+
+    // create schemaView
+    val meta = spark.createDataset[String](List(TestUtils.getKnownDatasetMetadataJson))
+    val schemaDF = spark.read.option("multiLine", true).json(meta)
+    schemaDF.createOrReplaceTempView("schemaDF")
+    val filteredDF = spark.sql(s"""SELECT * FROM schemaDF WHERE name != 'booleanDatum' ORDER BY name""")
+    filteredDF.createOrReplaceTempView(schemaView)
+
+    // try with wildcard
+    val thrown0 = intercept[Exception with DetailException] {
+      transform.MetadataTransformStage.execute(
+        transform.MetadataTransformStage(
+          plugin=new transform.MetadataTransform,
+          name="MetadataTransform",
+          description=None,
+          inputView=inputView,
+          outputView=outputView,
+          schema=Left(schemaView),
+          schemaURI=None,
+          failMode=FailModeTypeFailFast,
+          persist=false,
+          params=Map.empty,
+          numPartitions=None,
+          partitionBy=Nil
+        )
+      ).get
+    }
+    assert(thrown0.getMessage === "MetadataTransform with failMode = 'failfast' ensures that the schemaView 'schemaView' has the same columns as inputView 'inputView' but schemaView 'schemaView' has columns: ['longDatum', 'dateDatum', 'timestampDatum', 'decimalDatum', 'integerDatum', 'stringDatum', 'timeDatum', 'doubleDatum'] and 'inputView' contains columns: ['longDatum', 'dateDatum', 'timestampDatum', 'booleanDatum', 'decimalDatum', 'integerDatum', 'stringDatum', 'timeDatum', 'doubleDatum'].")
   }
 
 }
