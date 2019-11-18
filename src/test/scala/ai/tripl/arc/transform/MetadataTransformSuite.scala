@@ -22,7 +22,6 @@ import ai.tripl.arc.util._
 class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _
-  val targetFile = FileUtils.getTempDirectoryPath() + "MetadataTransformSuite.csv"
   val inputView = "inputView"
   val outputView = "outputView"
   val schemaView = "schemaView"
@@ -42,18 +41,10 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
 
     session = spark
     import spark.implicits._
-
-    // recreate test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))
-    // Delimited does not support writing NullType
-    TestUtils.getKnownDataset.drop($"nullDatum").write.option("header", true).csv(targetFile)
   }
 
   after {
     session.stop()
-
-    // clean up test dataset
-    FileUtils.deleteQuietly(new java.io.File(targetFile))
   }
 
   test("MetadataTransform: schemaURI") {
@@ -61,8 +52,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    // load csv
-    val df = spark.read.option("header", true).csv(targetFile)
+    val df = TestUtils.getKnownDataset.drop("nullDatum")
     df.createOrReplaceTempView(inputView)
 
     val conf = s"""{
@@ -85,10 +75,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(err) => {
-        println(err)
-        fail
-      }
+      case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => {
         ARC.run(pipeline)(spark, logger, arcContext) match {
           case Some(df) => {
@@ -108,8 +95,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
     import spark.implicits._
 
-    // load csv
-    val df = spark.read.option("header", true).csv(targetFile)
+    val df = TestUtils.getKnownDataset.drop("nullDatum")
     df.createOrReplaceTempView(inputView)
 
     // create schemaView
@@ -157,8 +143,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
     import spark.implicits._
 
-    // load csv
-    val df = spark.read.option("header", true).csv(targetFile)
+    val df = TestUtils.getKnownDataset.drop("nullDatum")
     df.createOrReplaceTempView(inputView)
 
     // create schemaView
@@ -195,8 +180,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
     import spark.implicits._
 
-    // load csv
-    val df = spark.read.option("header", true).csv(targetFile)
+    val df = TestUtils.getKnownDataset.drop("nullDatum")
     df.createOrReplaceTempView(inputView)
 
     // create schemaView
