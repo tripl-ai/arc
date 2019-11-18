@@ -178,10 +178,10 @@ object DelimitedExtractStage {
               throw new Exception("CSVExtract does not support the use of 'inputView' if Arc is running in streaming mode.")
             } else {
               stage.inputField match {
-                case Some(inputField) => spark.read.options(options).json(inputView.select(col(inputField).as("value")).as[String])
-                case None => spark.read.options(options).json(inputView.as[String])
+                case Some(inputField) => spark.read.options(options).csv(inputView.select(col(inputField).as("value")).as[String])
+                case None => spark.read.options(options).csv(inputView.as[String])
               }
-            }            
+            }
           }
         }
       } else {
