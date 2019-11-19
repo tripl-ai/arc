@@ -76,7 +76,7 @@ Because this data is hosted on the public [Registry of Open Data on AWS](https:/
 By executing this stage you should be able to see a result set. If you scroll to the very right of the result set you should be able to see two additional columns which is added by Arc to help trace data lineage to assist debugging.
 
 - `_filename`: which records the input file source for all file based imports.
-- `_index`: which records the input file row number for all file based imports.
+- `_index`: which records the input file row number for all file based imports. As Spark is a distributed system calculating a true row level `_index` is somewhat computationally expensive. To reduce the load the import option `"contiguousIndex": false` option can be provided to produce a monotonically increasing identifier from which `_index` can be derived later if required.
 
 The other thing to note is the use of `"persist": true` which instructs Arc to store the the dataset read from the external Amazon s3 bucket into memory. This means that any subsequent stage that references `green_tripdata0_raw` does not need to re-download the file.
 
@@ -191,7 +191,7 @@ Picking one of the more interesting fields, `lpep_pickup_datetime`, a [timestamp
       "",
       "null"
     ]
-  },
+  }
 ```
 
 {{< note title="Decimal vs Float" >}}
@@ -270,13 +270,39 @@ Before the SQL statement is executed the framework will allow you to do paramete
 
 In this case before the SQL statement is executed the named parameter `${table_name}` will be replaced with `green_tripdata0` so it will validate the `green_tripdata0` dataset. The benefit of this is that the same SQL statement can be used for any dataset after the `TypingTransformation` stage to ensure there are no data typing errors and all we have to do is specify a different `table_name` substitution value.
 
-{{< note title="Data Persistence" >}}
+{{< note title="Data Caching" >}}
 A `TypingTransformation` is a big and computationally expensive operation so if you are going to do multiple operations against that dataset (as we are) set the `"persist": true` option so that Spark will cache the dataset after applying the types.
 {{</note>}}
 
+## Saving Data
+
+The final step is to do something with the data. This could be any of the [Load](/load/) stages but for our use case we will do a [DeltaLakeLoad](/load/#deltalakeload). [DeltaLake](https://delta.io) is a great because:
+
+- it 'versions' data allowing users to 'time travel' back and forward through different datasets efficiently.
+- it perfoms atomic commits meaning that when used with storage like Amazon S3 it will not leave partial/corrupt datasets if Spark shuts down unexpectedly.
+- it uses [Apache Parquet](https://parquet.apache.org/) which is a compressed columnar data format meaning that when it is read by subsequent Spark jobs you can only read the columns that are required vastly reducing the amount of data moved across a network and that has to be processed.
+- it retains full data types and metadata so that you don't have to keep converting text to correctly typed data before use.
+- it supports data partitioning and pushdown which can further reduce the amount of data required to be processed.
+
+Here is the stage we will add which writes the `green_tripdata0` dataset to a `DeltaLake` dataset on disk. It will also be partitioned by `vendor_id` so that if you were doing analysis on only one of the vendors then Spark could easily read only that data and ignore the other vendors.
+
+```json
+{
+  "type": "DeltaLakeLoad",
+  "name": "write out green_tripdata0 dataset",
+  "environments": ["production", "test"],
+  "inputView": "green_tripdata0",
+  "outputURI": "/home/jovyan/examples/tutorial/0/output/green_tripdata0.parquet",
+  "saveMode": "Overwrite",
+  "partitionBy": [
+    "vendor_id"
+  ]
+}
+```
+
 ## Execute It
 
-At this stage we have a job which will extract data, apply data types to one `.csv` file and execute a `SQLValidate` stage to ensure that the data could be converted successfully. The Arc framework is packaged with [Docker](https://www.docker.com/) so that you can run the same job on your local machine or a massive compute cluster without having to think about how to package dependencies. The Docker image contains the dependencies files for connecting to most `JDBC`, `XML`, `Avro` and cloud services.
+At this stage we have a job which will extract data, apply data types to one `.csv` file and execute a `SQLValidate` stage to ensure that the data could be converted successfully then write the data out for future use. The Arc framework is packaged as a [Docker](https://www.docker.com/) container so that you can run the same job on your local machine or a massive compute cluster without having to think about how to deploy dependencies. The default Docker image contains the dependencies files for connecting to most `JDBC` databases and cloud services.
 
 To run the job that is included with the `arc-starter` repository:
 
@@ -299,15 +325,14 @@ bin/spark-submit \
 As the job runs you will see `json` formatted logs generated and printed to screen. These can easily be sent to a [log management](https://en.wikipedia.org/wiki/Log_management) solution for log aggregation/analysis/alerts. The important thing is that our job ran and we can see our message `{"count":7623,"errors":0}` formatted as numbers so that it can be easily addressed (`event.message.count`) and summed/compared day-by-day for monitoring.
 
 ```json
-{"event":"exit","duration":1724,"stage":{"sqlParams":{"table_name":"green_tripdata0"},"name":"ensure no errors exist after data typing","type":"SQLValidate","message":{"count":7623,"errors":0}},"level":"INFO","thread_name":"main","class":"etl.validate.SQLValidate$","logger_name":"local-1524100083660","timestamp":"2018-04-19 01:08:14.351+0000","environment":"test"}
-{"event":"exit","status":"success","duration":10424,"level":"INFO","thread_name":"main","class":"etl.ETL$","logger_name":"local-1524100083660","timestamp":"2018-04-19 01:08:14.351+0000","environment":"test"}
+{"event":"exit","status":"success","success":true,"duration":56107,"level":"INFO","thread_name":"main","class":"ai.tripl.arc.ARC$","logger_name":"local-1574152663175","timestamp":"2019-11-19 08:38:37.533+0000","environment":"production","streaming":"false","applicationId":"local-1574152663175","ignoreEnvironments":"false"}
 ```
 
 A runnable snapshot of what has been built so far should be in the repository under `examples/tutorial/0/nyctaxi.ipynb`.
 
 ## Environment Variables
 
-For testing and automated deployment it is useful to be able to dynamically change input file locations when we deploy the job across different environments. So, for example, it could be use to switch data paths for local (`/home/jovyan/tutorial`) vs remote (`https://raw.githubusercontent.com/tripl-ai/arc-starter/master/tutorial`) when moving from development to production.
+For testing and automated deployment it is useful to be able to dynamically change input file locations when we deploy the job across different environments. So, for example, a local `/home/jovyan/tutorial` path could be used for `test` vs a remote `https://raw.githubusercontent.com/tripl-ai/arc-starter/master/tutorial` path when running in `production` mode.
 
 To do this [Environment Variables](https://en.wikipedia.org/wiki/Environment_variable) can be used or the `%env` magic can be used in Jupyter notebooks:
 
@@ -336,7 +361,7 @@ The variables can then be used like:
 }
 ```
 
-When executing the job these variables can be passed in like:
+When executing the job these environment variables can be set like:
 
 
 ```bash
@@ -423,11 +448,13 @@ To continue with the `green_tripdata` dataset example we can now add the other t
 }
 ```
 
-Now we have three typed and validated datasets in memory (`green_tripdata0`, `green_tripdata1` and `green_tripdata2`). How are they merged?
+Now we have created three typed and validated datasets in memory (`green_tripdata0`, `green_tripdata1` and `green_tripdata2`). How are they merged?
 
 ## Merging Data
 
-The real complexity with schema evolution comes defining clear rules with how to deal with fields which are added and removed over time. In the case of `green_tripdata` the main change over time is the change from giving specific pickup and dropoff co-ordinates (`pickup_longitude`, `pickup_latitude`, `dropoff_longitude`, `dropoff_latitude`) in the early datasets (`green_tripdata0` and `green_tripdata1`) to only providing more generalised (and much more anonymous) `pickup_location_id` and `dropoff_location_id` geographic regions in `green_tripdata2`. The easiest way to deal with this is to use a `SQLTransform` and manually define the rules for each dataset before unioning the data together via `UNION ALL`.
+The real complexity with schema evolution comes defining clear rules with how to deal with fields which are added and removed over time. In the case of `green_tripdata` the main change over time is the change from giving specific pickup and dropoff co-ordinates (`pickup_longitude`, `pickup_latitude`, `dropoff_longitude`, `dropoff_latitude`) in the early datasets (`green_tripdata0` and `green_tripdata1`) to only providing more generalised (and much more private) `pickup_location_id` and `dropoff_location_id` geographic regions in `green_tripdata2`. 
+
+The easiest way to deal with this is to use a `SQLTransform` and manually define the rules for each dataset before unioning the data together via `UNION ALL`.
 
 {{< note title="Executing SQL" >}}
 The `arc-starter` Jupyter notebook allows direct execution of SQL for development by executing a Jupyter 'magic' called `%sql`. To execute a statement you can put:
@@ -438,7 +465,7 @@ SELECT * FROM green_tripdata0
 ```
 {{</note>}}
 
-See `examples/tutorial/1/trips.sql`:
+Here is the merging SQL statement found in `examples/tutorial/1/trips.sql`. It explicitly deals with the lack of `pickup_longitude` data in `green_tripdata2` by setting a `NULL` value but retaining the column so the `UNION` still works. The alternative, depending on use of this data, would be to remove the `pickup_longitude` column from the earlier datasets.
 
 ```sql
 -- first schema 2013-08 to 2014-12
@@ -546,31 +573,33 @@ A runnable snapshot of what has been built so far should be in the repository un
 
 Arc allows for pattern matching of file names including the standard wildcard (`green_tripdata_*.csv`) or more advanced [Glob](https://en.wikipedia.org/wiki/Glob_%28programming%29) matching. Glob can be used to select subsets of data in a directory but generally we recommend using directories and wildcards such as `green_tripdata/0/*.csv` to simplify the separation of dataset schema versions.
 
+Warning: consider the size of the data before setting these options as they can be very large.
+
 #### Small Dataset
 
-| dataset | schema | glob pattern |
-|---------|--------|-----------------------|
-|green_tripdata|0|`green_tripdata_{2013-{08}}.csv`|
-|green_tripdata|1|`green_tripdata_{2015-{01}}.csv`|
-|green_tripdata|2|`green_tripdata_{2016-{07}}.csv`|
-|yellow_tripdata|0|`yellow_tripdata_{2009-{01}}.csv`|
-|yellow_tripdata|1|`yellow_tripdata_{2015-{01}}.csv`|
-|yellow_tripdata|2|`yellow_tripdata_{2016-{07}}.csv`|
+| dataset | schema | glob pattern | size |
+|---------|--------|-----------------------|------|
+|green_tripdata|0|`green_tripdata_2013-08.csv`|1.1MB|
+|green_tripdata|1|`green_tripdata_2015-01.csv`|232.0MB|
+|green_tripdata|2|`green_tripdata_2016-07.csv`|116.6MB|
+|yellow_tripdata|0|`yellow_tripdata_2009-01.csv`|2.4GB|
+|yellow_tripdata|1|`yellow_tripdata_2015-01.csv`|1.8GB|
+|yellow_tripdata|2|`yellow_tripdata_2016-07.csv`|884.7MB|
 
 #### Full Dataset
 
-| dataset | schema | glob pattern |
-|---------|--------|-----------------------|
-|green_tripdata|0|`green_tripdata_{2013-*,2014-*}.csv`|
-|green_tripdata|1|`green_tripdata_{2015-*,2016-{01,02,03,04,05,06}}.csv`|
-|green_tripdata|2|`green_tripdata_{2016-{07,08,09,10,11,12},2017-*}.csv`|
-|yellow_tripdata|0|`yellow_tripdata_{2009-*,2010-*,2011-*,2012-*,2013-*,2014-*}.csv`|
-|yellow_tripdata|1|`yellow_tripdata_{2015-*,2016-{01,02,03,04,05,06}}.csv`|
-|yellow_tripdata|2|`yellow_tripdata_{2016-{07,08,09,10,11,12}}.csv`|
+| dataset | schema | glob pattern | size |
+|---------|--------|-----------------------|------|
+|green_tripdata|0|`green_tripdata_{2013-*,2014-*}.csv`|2.5GB|
+|green_tripdata|1|`green_tripdata_{2015-*,2016-{01,02,03,04,05,06}}.csv`|4.2GB|
+|green_tripdata|2|`green_tripdata_{2016-{07,08,09,10,11,12},2017-*}.csv`|1.6GB|
+|yellow_tripdata|0|`yellow_tripdata_{2009-*,2010-*,2011-*,2012-*,2013-*,2014-*}.csv`|172.5GB|
+|yellow_tripdata|1|`yellow_tripdata_{2015-*,2016-{01,02,03,04,05,06}}.csv`|31.4GB|
+|yellow_tripdata|2|`yellow_tripdata_{2016-{07,08,09,10,11,12}}.csv`|5.2GB|
 
 ## Add the rest of the tables
 
-Use the glob patterns above to add the `yellow_tripdata` datasets to the Arc job.
+Use the patterns above to add the `yellow_tripdata` datasets to the Arc job.
 
 - add the file loading for the `yellow_tripdata`. There should be 3 stages for each schema load (`DelimitedExtract`, `TypingTransform`, `SQLValidate`) and a total of 6 schema versions (3 green_tripdata and 3 yellow_tripdata) for a total of 18 stages just to read and safely type the data.
 - modify the `SQLTransform` to include the new datasets.
@@ -580,23 +609,27 @@ A runnable snapshot of what has been built so far should be in the repository un
 
 ## Dealing with Empty Datasets
 
-So if you executed the same job as the one that is `tutorial/job/2/` the previous job should have failed with `"messages":["DelimitedExtract has produced 0 columns and no schema has been provided to create an empty dataframe."]` as the second Uber directory (`data/uber_tripdata/1`) is empty (that was deliberately created to demonstrate this functionality). This is the other part of Schema Evolution we are trying to address: a pre-emptive schema. 
+Sometimes you want to deploy a change to production before the files arrive so that the job will automatically include that new data once it starts arriving. Arc supports this by allowing you to specify a schema for an empty dataset so that if no data arrives in a target directory `inputURI` an empty dataset with the correct columns and column types is created so that all subsequent stages that depend on that dataset execute without failure.
 
-Sometimes you want to deploy a change to production before the files arrive and either the job fails or does not include that new data once it starts arriving. Arc supports this by allowing you to specify a schema for an empty dataset so that if no data arrives in a target `inputURI` directory an empty dataset with the correct columns and column types is emited so that all subsequent stages that depend on that dataset execute without failure.
+For example, imagine an example where we know a new a new `yellow_tripdata` schema (version `3`) starts in the year `2030` where it has been decided that providing the `tpep_pickup_datetime` and `tpep_dropoff_datetime` fields is no longer acceptable so they have been removed:
 
-To fix this issue add a `schemaURI` key which points to the same metadata file used by the subsequent `TypingTransform` stage:
+Add a `schemaURI` key which points to the same metadata file used by the subsequent `TypingTransform` stage (`yellow_tripdata3.json` has been modified to remove the two fields). When this is executed, because there is no input data, an empty (0 rows) dataset with the columns and types specified in `yellow_tripdata3.json` will be created:
 
 ```json
 {
   "type": "DelimitedExtract",
-  "name": "extract data from uber_tripdata/1",
+  "name": "extract data from green_tripdata schema 3",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_BASE_URL}"/data/uber_tripdata/1/*",
-  "schemaURI": ${ETL_CONF_BASE_URL}"/meta/uber_tripdata/1/uber_tripdata.json",
-  "outputView": "uber_tripdata1_raw",            
+  "inputURI": ${ETL_CONF_DATA_URL}"yellow_tripdata_2030*.csv",
+  "schemaURI": ${ETL_CONF_JOB_URL}"yellow_tripdata3.json",
+  "outputView": "yellow_tripdata3_raw",            
   "delimiter": "Comma",
   "quote": "DoubleQuote",
-  "header": true
+  "header": true,
+  "persist": true,
+  "authentication": {
+    "method": "AmazonAnonymous"
+  }  
 }
 ``` 
 
@@ -606,51 +639,47 @@ Also because we are testing that file for data quality using `SQLValidate` we ne
 SELECT
   COALESCE(SUM(error) = 0, TRUE) AS valid
   ,TO_JSON(
-    NAMED_STRUCT(
-      'count', COUNT(error),
-      'errors', SUM(error)
-    )
+      NAMED_STRUCT(
+        'count', COUNT(error),
+        'errors', SUM(error)
+      )
   ) AS message
 FROM (
-  SELECT 
-    CASE 
-      WHEN SIZE(_errors) > 0 THEN 1 
-      ELSE 0 
-    END AS error 
+  SELECT
+    CASE
+      WHEN SIZE(_errors) > 0 THEN 1
+      ELSE 0
+    END AS error
   FROM ${table_name}
 ) input_table
 ```
 
-Run this job and once it completes you should see in the logs: `"records":40540347`.
+The `trips.sql` has been modified to `UNION ALL` the new `yellow_tripdata3` dataset which is going to have 0 rows for another ~10 years. This means that this job can now be safely deployed to production and will contain the new data assuming that when the data starts arriving in `2030` it complies with our deployed `yellow_tripdata3.json` schema. 
 
-A snapshot of what we have done so far is `tutorial/job/3/nyctaxi.ipynb`.
+A runnable snapshot of what has been built so far should be in the repository under `examples/tutorial/3/nyctaxi.ipynb`.
 
 ## Reference Data
 
-As the business problem is better understood it is common to see [normalization of data](https://en.wikipedia.org/wiki/Database_normalization). For example, in the `yellow_tripdata0` in the early datasets `payment_type` was a `string` field which led to values which were variations on the same intent like `cash` and `CASH`. In the later datasets the `payment_type` has been normailized into a dataset which maps the `'cash'` type to the value `2`. To normalise this data we first need to load a lookup table which is going to define the rules on how to map `payment_type` to `payment_type_id`. 
+As the business problem is better understood it is common to see [normalization of data](https://en.wikipedia.org/wiki/Database_normalization). For example, in the `yellow_tripdata0` in the early datasets `payment_type` was a `string` field which led to values which were variations of the same intent like `cash` and `CASH`. In the later datasets the `payment_type` has been normailized into a dataset which maps the `'cash'` type to the value `2`. To normalise this data we first need to load a lookup table which is going to define the rules on how to map `payment_type` (`cash`) to `payment_type_id` (`2`). 
 
-So add these tables to be extracted from the included `data/reference` directory. They are small but we will be using them potentially a lot of times so set `"persist": true`.
-
-```json
-{
-  "type": "JSONExtract",
-  "name": "load payment_type_id reference table",
-  "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_BASE_URL}"/data/reference/payment_type_id.json",
-  "outputView": "payment_type_id",            
-  "persist": true,
-  "multiLine": false
-}
-```
 ```json
 {
   "type": "JSONExtract",
   "name": "load cab_type_id reference table",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_BASE_URL}"/data/reference/cab_type_id.json",
+  "inputURI": ${ETL_CONF_JOB_URL}"cab_type_id.json",
   "outputView": "cab_type_id",            
-  "persist": true,
-  "multiLine": false
+  "persist": true
+}
+```
+```json
+{
+  "type": "JSONExtract",
+  "name": "load payment_type_id reference table",
+  "environments": ["production", "test"],
+  "inputURI": ${ETL_CONF_JOB_URL}"payment_type_id.json",
+  "outputView": "payment_type_id",            
+  "persist": true
 }
 ```
 ```json
@@ -658,28 +687,22 @@ So add these tables to be extracted from the included `data/reference` directory
   "type": "JSONExtract",
   "name": "load vendor_id reference table",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_BASE_URL}"/data/reference/vendor_id.json",
-  "outputView": "vendor_id",            
-  "persist": true,
-  "multiLine": false
-} 
+  "inputURI": ${ETL_CONF_JOB_URL}"vendor_id.json",
+  "outputView": "vendor_id",
+  "persist": true
+}
 ```
 
-
-{{< note title="JSON multiLine" >}}
-In early versions of Spark the only option for `json` datasets was to use a `json` format called [jsonlines](http://jsonlines.org/) which requires each `json` object to be on a single line and multiple `json` objects could appear by having multiple lines of `json` data. This mode can still be enabled by setting `"multiLine": false` but the default in Spark ETL is a single `json` object per file. For reference data, like the data loaded above, we have used a `jsonlines` file to load multiple records in a single json file.
-{{</note>}}
-
-The main culprit of non-normalized data is the `yellow_tripdata0` dataset so let's add a `SQLTransform` stage which will do a `LEFT JOIN` to the new reference data then a `SQLValidate` stage to check that all of our refrence table lookups were successful (think foreign key integrity). The use of a `LEFT JOIN` over an `INNER JOIN` is that we don't want to filter out data from `yellow_tripdata0` that doesn't have a lookup value.
+The main culprit of non-normalized data is the `yellow_tripdata0` dataset so add a `SQLTransform` stage which will do a `LEFT JOIN` to the new reference data then a `SQLValidate` stage to check that all of our refrence table lookups were successful (foreign key integrity). The use of a `LEFT JOIN` over an `INNER JOIN` is that we don't want to filter out data from `yellow_tripdata0` that doesn't have a lookup value.
 
 ```json
 {
   "type": "SQLTransform",
   "name": "perform lookups for yellow_tripdata0 reference tables",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_BASE_URL}"/job/4/yellow_tripdata0_enrich.sql",
+  "inputURI": ${ETL_CONF_JOB_URL}"yellow_tripdata0_enrich.sql",
   "outputView": "yellow_tripdata0_enriched",            
-  "persist": true
+  "persist": false
 }
 ```
 ```json
@@ -687,11 +710,11 @@ The main culprit of non-normalized data is the `yellow_tripdata0` dataset so let
   "type": "SQLValidate",
   "name": "ensure that yellow_tripdata0 reference table lookups were successful",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_BASE_URL}"/job/4/yellow_tripdata0_enrich_validate.sql"
+  "inputURI": ${ETL_CONF_JOB_URL}"yellow_tripdata0_enrich_validate.sql"         
 }
 ```
 
-Where `job/4/yellow_tripdata0_enrich.sql` does the `LEFT JOIN`s:
+Where `yellow_tripdata0_enrich.sql` does the `LEFT JOIN`s to the `vendor_id` and `payment_type_id` reference datasets:
 
 ```sql
 SELECT 
@@ -717,7 +740,7 @@ SELECT
   ,total_amount
   ,LOWER(yellow_tripdata0.payment_type) AS payment_type
   ,payment_type_id.payment_type_id
-  ,NULL AS trip_type
+  ,NULL AS trip_type_id
   ,NULL AS pickup_nyct2010_gid
   ,NULL AS dropoff_nyct2010_gid
   ,NULL AS pickup_location_id
@@ -756,36 +779,9 @@ FROM (
 
 Which will succeed with `"message":{"null_payment_type":[],"null_payment_type_id":0,"null_vendor_id":0,"null_vendor_name":[]}`. 
 
-So now we have a job which will merge all the `*tripdata` datasets into a single master `trips` dataset.
+Finally the `trips.sql` needs to be modified to join to `yellow_tripdata0_enriched` instead of `yellow_tripdata0`. See the `trips.sql` file to see an additional hardcoded join to the `cab_type_id` reference table.
 
-A snapshot of what we have done so far is `tutorial/job/4/nyctaxi.ipynb`.
-
-
-## Saving Data
-
-The final step is to do something with the merged data. This could be any of the [Load](/load/) stages but for our use case we will do a [ParquetLoad](/load/#parquetload). [Apache Parquet](https://parquet.apache.org/) is a great because:
-
-- it is a columnar data format which means that when it is read by subsequent Spark jobs you can only read the columns that are required vastly reducing the amount of data moved across a network and that has to be processed.
-- it retains full data types and metadata so that you don't have to keep converting text to correctly typed data
-- it supports data partitioning and pushdown which also reduces the amount of data required to be processed
-
-Here is the stage we will add which writes the trips dataset to a `parquet` file on disk. It will also be partitioned by `vendor_id` so that if you were doing analysis on only one of the vendors then Spark could easily read only that data and ignore the other vendors.
-
-```json
-{
-    "type": "ParquetLoad",
-    "name": "write trips back to filesystem",
-    "environments": ["production", "test"],
-    "inputView": "trips",
-    "outputURI": ${ETL_CONF_BASE_URL}"/data/output/trips.parquet",
-    "numPartitions": 100,
-    "partitionBy": [
-        "vendor_id"
-    ]
-}
-```
-
-A snapshot of what we have done so far is `tutorial/job/5/nyctaxi.ipynb`.
+A runnable snapshot of what has been built so far should be in the repository under `examples/tutorial/4/nyctaxi.ipynb`.
 
 ## Applying Machine Learning
 
