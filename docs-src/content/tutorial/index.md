@@ -284,7 +284,7 @@ The final step is to do something with the data. This could be any of the [Load]
 - it retains full data types and metadata so that you don't have to keep converting text to correctly typed data before use.
 - it supports data partitioning and pushdown which can further reduce the amount of data required to be processed.
 
-Here is the stage we will add which writes the `green_tripdata0` dataset to a `DeltaLake` dataset on disk. It will also be partitioned by `vendor_id` so that if you were doing analysis on only one of the vendors then Spark could easily read only that data and ignore the other vendors.
+Here is the stage we will add which writes the `green_tripdata0` dataset to a `DeltaLake` dataset on disk. It will also be partitioned by `vendor_id` so that if you were doing analysis on only one of the vendors then Spark could easily read only that data and ignore the other vendors. Here we are explicitly naming the output `.delta` to help future users understand its format.
 
 ```json
 {
@@ -292,7 +292,7 @@ Here is the stage we will add which writes the `green_tripdata0` dataset to a `D
   "name": "write out green_tripdata0 dataset",
   "environments": ["production", "test"],
   "inputView": "green_tripdata0",
-  "outputURI": "/home/jovyan/examples/tutorial/0/output/green_tripdata0.parquet",
+  "outputURI": "/home/jovyan/examples/tutorial/0/output/green_tripdata0.delta",
   "saveMode": "Overwrite",
   "partitionBy": [
     "vendor_id"
@@ -325,10 +325,24 @@ bin/spark-submit \
 As the job runs you will see `json` formatted logs generated and printed to screen. These can easily be sent to a [log management](https://en.wikipedia.org/wiki/Log_management) solution for log aggregation/analysis/alerts. The important thing is that our job ran and we can see our message `{"count":7623,"errors":0}` formatted as numbers so that it can be easily addressed (`event.message.count`) and summed/compared day-by-day for monitoring.
 
 ```json
-{"event":"exit","status":"success","success":true,"duration":56107,"level":"INFO","thread_name":"main","class":"ai.tripl.arc.ARC$","logger_name":"local-1574152663175","timestamp":"2019-11-19 08:38:37.533+0000","environment":"production","streaming":"false","applicationId":"local-1574152663175","ignoreEnvironments":"false"}
+{
+  "event": "exit",
+  "status": "success",
+  "success": true,
+  "duration": 56107,
+  "level": "INFO",
+  "thread_name": "main",
+  "class": "ai.tripl.arc.ARC$",
+  "logger_name": "local-1574152663175",
+  "timestamp": "2019-11-19 08:38:37.533+0000",
+  "environment": "production",
+  "streaming": "false",
+  "applicationId": "local-1574152663175",
+  "ignoreEnvironments": "false"
+}
 ```
 
-A runnable snapshot of what has been built so far should be in the repository under `examples/tutorial/0/nyctaxi.ipynb`.
+A runnable snapshot of this job is available:  `examples/tutorial/0/nyctaxi.ipynb`.
 
 ## Environment Variables
 
@@ -338,8 +352,8 @@ To do this [Environment Variables](https://en.wikipedia.org/wiki/Environment_var
 
 ```scala
 %env 
-ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data/
-ETL_CONF_JOB_URL=/home/jovyan/examples/tutorial/1/
+ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data
+ETL_CONF_JOB_URL=/home/jovyan/examples/tutorial/1
 ```
 
 The variables can then be used like:
@@ -349,7 +363,7 @@ The variables can then be used like:
   "type": "DelimitedExtract",
   "name": "extract data from green_tripdata schema 0",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_DATA_URL}"green_tripdata_2013-08.csv",
+  "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_2013-08.csv",
   "outputView": "green_tripdata0_raw",            
   "delimiter": "Comma",
   "quote": "DoubleQuote",
@@ -369,7 +383,7 @@ docker run \
 --rm \
 -v $(pwd)/examples:/home/jovyan/examples:Z \
 -e "ETL_CONF_ENV=production" \
--e "ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data/" \
+-e "ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data" \
 ...
 ```
 
@@ -386,7 +400,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
   "type": "DelimitedExtract",
   "name": "extract data from green_tripdata schema 1",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_DATA_URL}"green_tripdata_2015-01.csv",
+  "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_2015-01.csv",
   "outputView": "green_tripdata1_raw",            
   "delimiter": "Comma",
   "quote": "DoubleQuote",
@@ -400,7 +414,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
   "type": "TypingTransform",
   "name": "apply green_tripdata schema 1 data types",
   "environments": ["production", "test"],
-  "schemaURI": ${ETL_CONF_JOB_URL}"green_tripdata1.json",
+  "schemaURI": ${ETL_CONF_JOB_URL}"/green_tripdata1.json",
   "inputView": "green_tripdata1_raw",            
   "outputView": "green_tripdata1",  
   "persist": true  
@@ -409,7 +423,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
   "type": "SQLValidate",
   "name": "ensure no errors exist after data typing",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_JOB_URL}"sqlvalidate_errors.sql",            
+  "inputURI": ${ETL_CONF_JOB_URL}"/sqlvalidate_errors.sql",            
   "sqlParams": {
     "table_name": "green_tripdata1"
   }
@@ -418,7 +432,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
   "type": "DelimitedExtract",
   "name": "extract data from green_tripdata schema 2",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_DATA_URL}"green_tripdata_2016-07.csv",
+  "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_2016-07.csv",
   "outputView": "green_tripdata2_raw",            
   "delimiter": "Comma",
   "quote": "DoubleQuote",
@@ -432,7 +446,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
   "type": "TypingTransform",
   "name": "apply green_tripdata schema 2 data types",
   "environments": ["production", "test"],
-  "schemaURI": ${ETL_CONF_JOB_URL}"green_tripdata2.json",
+  "schemaURI": ${ETL_CONF_JOB_URL}"/green_tripdata2.json",
   "inputView": "green_tripdata2_raw",            
   "outputView": "green_tripdata2",
   "persist": true
@@ -441,7 +455,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
   "type": "SQLValidate",
   "name": "ensure no errors exist after data typing",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_JOB_URL}"sqlvalidate_errors.sql",            
+  "inputURI": ${ETL_CONF_JOB_URL}"/sqlvalidate_errors.sql",            
   "sqlParams": {
     "table_name": "green_tripdata2"
   }
@@ -561,13 +575,13 @@ Then we can define a `SQLTransform` stage to execute the query:
   "type": "SQLTransform",
   "name": "merge green_tripdata_* to create a full trips",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_JOB_URL}"trips.sql",
+  "inputURI": ${ETL_CONF_JOB_URL}"/trips.sql",
   "outputView": "trips",            
   "persist": false
 }
 ```
 
-A runnable snapshot of what has been built so far should be in the repository under `examples/tutorial/1/nyctaxi.ipynb`.
+A runnable snapshot of this job is available:  `examples/tutorial/1/nyctaxi.ipynb`.
 
 ## Glob Pattern Matching
 
@@ -605,7 +619,59 @@ Use the patterns above to add the `yellow_tripdata` datasets to the Arc job.
 - modify the `SQLTransform` to include the new datasets.
 - run the new version of the job.
 
-A runnable snapshot of what has been built so far should be in the repository under `examples/tutorial/2/nyctaxi.ipynb`.
+## Data Quality
+
+Another use for the `SQLValidate` stage is find data which does not comply with your user-defined data quality rules.
+
+For example, when thinking about how taxis operate we intuitively know that:
+
+- a taxi that has moved a distance should have charged greater than $0.
+- a taxi that has charged greater than $0 should have moved a distance.
+- a taxi that has charged will have at least 1 passenger.
+
+That means we can code rules to find these scenarios for reporting by setting the first value to `TRUE` (so that the job will always continue past this stage):
+
+```sql
+SELECT
+  TRUE AS valid
+  ,TO_JSON(
+      NAMED_STRUCT(
+        'count', COUNT(*),
+        'distance_without_charge', SUM(distance_without_charge),
+        'charge_without_distance', SUM(charge_without_distance),
+        'distance_without_passenger', SUM(distance_without_passenger)
+      )
+  ) AS message
+FROM (
+  SELECT
+    CASE
+      WHEN trip_distance > 0 AND fare_amount = 0 THEN 1
+      ELSE 0
+    END AS distance_without_charge,
+    CASE
+      WHEN trip_distance = 0 AND fare_amount > 0 THEN 1
+      ELSE 0
+    END AS charge_without_distance    
+    ,CASE
+      WHEN trip_distance > 0 AND passenger_count = 0 THEN 1
+      ELSE 0
+    END AS distance_without_passenger   
+  FROM ${input_table}
+) input_table
+```
+
+When run against the `green_tripdata0` dataset this produces a series of numbers which can easily be used to track errors over time via a dashboard in your log aggregation tool:
+
+```json
+{
+  "count": 7623,
+  "distance_without_charge": 2,
+  "charge_without_distance": 1439,
+  "distance_without_passenger": 1
+}
+```
+
+A runnable snapshot of this job is available:  `examples/tutorial/2/nyctaxi.ipynb`.
 
 ## Dealing with Empty Datasets
 
@@ -620,8 +686,8 @@ Add a `schemaURI` key which points to the same metadata file used by the subsequ
   "type": "DelimitedExtract",
   "name": "extract data from green_tripdata schema 3",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_DATA_URL}"yellow_tripdata_2030*.csv",
-  "schemaURI": ${ETL_CONF_JOB_URL}"yellow_tripdata3.json",
+  "inputURI": ${ETL_CONF_DATA_URL}"/yellow_tripdata_2030*.csv",
+  "schemaURI": ${ETL_CONF_JOB_URL}"/yellow_tripdata3.json",
   "outputView": "yellow_tripdata3_raw",            
   "delimiter": "Comma",
   "quote": "DoubleQuote",
@@ -656,7 +722,7 @@ FROM (
 
 The `trips.sql` has been modified to `UNION ALL` the new `yellow_tripdata3` dataset which is going to have 0 rows for another ~10 years. This means that this job can now be safely deployed to production and will contain the new data assuming that when the data starts arriving in `2030` it complies with our deployed `yellow_tripdata3.json` schema. 
 
-A runnable snapshot of what has been built so far should be in the repository under `examples/tutorial/3/nyctaxi.ipynb`.
+A runnable snapshot of this job is available:  `examples/tutorial/3/nyctaxi.ipynb`.
 
 ## Reference Data
 
@@ -667,7 +733,7 @@ As the business problem is better understood it is common to see [normalization 
   "type": "JSONExtract",
   "name": "load cab_type_id reference table",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_JOB_URL}"cab_type_id.json",
+  "inputURI": ${ETL_CONF_JOB_URL}"/cab_type_id.json",
   "outputView": "cab_type_id",            
   "persist": true
 }
@@ -677,7 +743,7 @@ As the business problem is better understood it is common to see [normalization 
   "type": "JSONExtract",
   "name": "load payment_type_id reference table",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_JOB_URL}"payment_type_id.json",
+  "inputURI": ${ETL_CONF_JOB_URL}"/payment_type_id.json",
   "outputView": "payment_type_id",            
   "persist": true
 }
@@ -687,7 +753,7 @@ As the business problem is better understood it is common to see [normalization 
   "type": "JSONExtract",
   "name": "load vendor_id reference table",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_JOB_URL}"vendor_id.json",
+  "inputURI": ${ETL_CONF_JOB_URL}"/vendor_id.json",
   "outputView": "vendor_id",
   "persist": true
 }
@@ -700,7 +766,7 @@ The main culprit of non-normalized data is the `yellow_tripdata0` dataset so add
   "type": "SQLTransform",
   "name": "perform lookups for yellow_tripdata0 reference tables",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_JOB_URL}"yellow_tripdata0_enrich.sql",
+  "inputURI": ${ETL_CONF_JOB_URL}"/yellow_tripdata0_enrich.sql",
   "outputView": "yellow_tripdata0_enriched",            
   "persist": false
 }
@@ -710,7 +776,7 @@ The main culprit of non-normalized data is the `yellow_tripdata0` dataset so add
   "type": "SQLValidate",
   "name": "ensure that yellow_tripdata0 reference table lookups were successful",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_JOB_URL}"yellow_tripdata0_enrich_validate.sql"         
+  "inputURI": ${ETL_CONF_JOB_URL}"/yellow_tripdata0_enrich_validate.sql"         
 }
 ```
 
@@ -757,14 +823,10 @@ SELECT
   SUM(null_vendor_id) = 0 AND SUM(null_payment_type_id) = 0 AS valid
   ,TO_JSON(
     NAMED_STRUCT(
-      'null_vendor_id'
-      ,SUM(null_vendor_id)
-      ,'null_vendor_name'
-      ,COLLECT_LIST(DISTINCT null_vendor_name)
-      ,'null_payment_type_id'
-      ,SUM(null_payment_type_id)
-      ,'null_payment_type'
-      ,COLLECT_LIST(DISTINCT null_payment_type)
+      'null_vendor_id', COALESCE(SUM(null_vendor_id), 0)
+      ,'null_vendor_name', COLLECT_LIST(DISTINCT null_vendor_name)
+      ,'null_payment_type_id', COALESCE(SUM(null_payment_type_id), 0)
+      ,'null_payment_type', COLLECT_LIST(DISTINCT null_payment_type)
     )
   ) AS message
 FROM (
@@ -781,17 +843,17 @@ Which will succeed with `"message":{"null_payment_type":[],"null_payment_type_id
 
 Finally the `trips.sql` needs to be modified to join to `yellow_tripdata0_enriched` instead of `yellow_tripdata0`. See the `trips.sql` file to see an additional hardcoded join to the `cab_type_id` reference table.
 
-A runnable snapshot of what has been built so far should be in the repository under `examples/tutorial/4/nyctaxi.ipynb`.
+A runnable snapshot of this job is available:  `examples/tutorial/4/nyctaxi.ipynb`.
 
 ## Applying Machine Learning
 
 There are multiple ways to execute Machine Learning using Arc:
 
 - [HTTPTransform](/transform/#httptransform) allows calling an externally hosted model via HTTP.
-- [TensorFlowServingTransform](/transform/#tensorflowservingtransform) allows calling a model hosted in a TensorFlow Serving container.
 - [MLTransform](/transform/#mltransform) allows executing pretrained Spark ML model.
+- [TensorFlowServingTransform](/transform/#tensorflowservingtransform) allows calling a model hosted in a TensorFlow Serving container.
 
-Assuming you have executed the job up to stage 5 we will use the `trips.parquet` file to train a new Spark ML model to attempt to predict the fare based on other input values. It is suggested to use a SQL statement to perform feature creation as even though SQL is clumsy compared with the brevity of Python Pandas it is automatically parallelizable by Spark and so can easily perform on `1` or `n` CPU cores without modification. It is also very easy to find people who can understand the logic:
+Assuming you have executed the job up to stage 4 we will use the `trips.delta` file to train a new Spark ML model to attempt to predict the fare based on other input values. It is suggested to use a SQL statement to perform feature creation as even though SQL is clumsy compared with the brevity of Python Pandas it is automatically parallelizable by Spark and so can easily perform on `1` or `n` CPU cores without modification. It is also very easy to find people who can understand the logic:
 
 ```sql
 -- enrich the data by:
@@ -856,32 +918,29 @@ AND dropoff_longitude IS NOT NULL
 AND dropoff_latitude IS NOT NULL
 ```
 
-To execute the training load the `/job/6/New York City Taxi Fare Prediction SparkML.ipynb` notebook. It is commented and will describe the process to execute the SQL above to prepare the training dataset and train a model.
+To execute the training load the `examples/tutorial/5/New York City Taxi Fare Prediction SparkML.ipynb` notebook. It is commented and will describe the process to execute the SQL above to prepare the training dataset and train a model.
 
-Once done the model can be executed in the notebook:
-
+Once done the model can be executed in the notebook by first executing the feature generation `SQLTransform` then executing the model via `MLTransform`:
 ```json
 {
   "type": "SQLTransform",
-  "name": "merge green_tripdata_* to create a full trips",
+  "name": "merge enrich the trips dataset to add the machine learning feature columns",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_BASE_URL}"/job/6/trips_enriched.sql",
-  "outputView": "trips_enriched",            
-  "persist": false
-},
+  "inputURI": ${ETL_CONF_JOB_URL}"/trips_enriched.sql",
+  "outputView": "trips_enriched"
+}
+```
+```json
 {
   "type": "MLTransform",
   "name": "apply machine learning prediction model",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": ${ETL_CONF_BASE_URL}"/job/6/trips_enriched.model",
+  "environments": ["production", "test"],
+  "inputURI": ${ETL_CONF_JOB_URL}"/trips_enriched.model",
   "inputView": "trips_enriched",
   "outputView": "trips_scored"
 }
 ```
 
-You can now [Load](/load) the output dataset into a target like `parquet` or `JDBCLoad` into a caching database for serving.
+You can now [Load](/load) the output dataset into a target like `DeltaLakeLoad` or `JDBCLoad` into a caching database for serving.
 
-A snapshot of what we have done so far is `tutorial/job/6/nyctaxi.ipynb`.
+A runnable snapshot of this job is available:  `examples/tutorial/5/nyctaxi.ipynb`.
