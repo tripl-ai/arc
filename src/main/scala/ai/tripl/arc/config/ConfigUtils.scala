@@ -169,7 +169,7 @@ object ConfigUtils {
 
     val kernelspecName = jsonTree.get("metadata").get("kernelspec").get("name").asText
     if (kernelspecName == "arc") {
-      jsonTree.get("cells").iterator.asScala.filter { cell =>
+      val sources = jsonTree.get("cells").iterator.asScala.filter { cell =>
         // only include 'code' cells
         cell.get("cell_type").asText == "code"
       }.map { cell =>
@@ -178,7 +178,27 @@ object ConfigUtils {
           .map { _.asText }
           .mkString("")
           .trim
-      }.filter { cell =>
+      }.map { cell =>
+        // replace any trailing commas
+        cell.replaceAll(",$", "")
+      }.toList
+
+      // calculate the dynamic config plugins
+      val configs = sources.filter { cell =>
+        cell.startsWith("%configplugin")
+      }.map { cell =>
+        cell.split("\n").drop(1).mkString("\n")
+      }
+      
+      // calculate the lifecycle plugins
+      val lifecycles = sources.filter { cell =>
+        cell.startsWith("%lifecycleplugin")
+      }.map { cell =>
+        cell.split("\n").drop(1).mkString("\n")
+      }
+            
+      // calculate the arc stages
+      val stages = sources.filter { cell =>
         // only cells that are explicitly '%arc' or not other magic !'%'
         (!cell.startsWith("%") && cell.length > 0) || cell.startsWith("%arc")
       }.map { cell =>
@@ -188,10 +208,16 @@ object ConfigUtils {
         } else {
           cell
         }
-      }.map { cell =>
-        // replace any trailing commas
-        cell.replaceAll(",$", "")
-      }.mkString("{\"stages\": [\n", ",\n", "]}")
+      }
+
+      s"""
+      |{
+      |"plugins": {
+      |"config": [${configs.mkString("\n", ",\n", "\n")}],
+      |"lifecycle": [${lifecycles.mkString("\n", ",\n", "\n")}]
+      |},
+      |"stages": [${stages.mkString("\n",",\n","\n")}]
+      |}""".stripMargin
     } else {
       throw new Exception(s"""file ${uri} does not appear to be a valid arc notebook. Has kernelspec: '${kernelspecName}'.""")
     }

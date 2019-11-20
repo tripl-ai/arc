@@ -1,5 +1,16 @@
 ## Change Log
 
+# 2.4.0
+
+- fixed defect in `DelimitedExtract` when running in streaming mode.
+- added `MetadataExtract` stage which creates an Arc `metadata` dataframe from an input view.
+- added `MetadataTransform` stage which attaches/overrides the metadata attached to an input view.
+- added `MetadataValidate` stage which allows runtime rules to be aplied against an input view's metadata.
+- added ability to include `%configplugins` when defined [arc-jupyter](https://github.com/tripl-ai/arc-jupyter) notebook files (.ipynb).
+- rewrote tutorial to point to public datasets rather than requiring user to download data first.
+
+**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
+
 # 2.3.1
 
 - will now throw exceptions if trying to use the Amazon `s3://` or `s3n://` protocols instead of `s3a://` as they have been deprecated by the Hadoop project, are no longer suppored in Hadoop 3.0+ and do not behave predictably with the Arc Amazon [Authentication](https://arc.tripl.ai/partials/#authentication) methods.

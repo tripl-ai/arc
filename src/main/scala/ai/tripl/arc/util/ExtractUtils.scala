@@ -31,7 +31,7 @@ object ExtractUtils {
     if (!input.isStreaming && !arcContext.isStreaming) {
       // add meta columns including sequential index
       // if schema already has metadata any columns ignore
-      if (!input.columns.intersect(List("_filename", "_index", "_monotonically_increasing_id")).nonEmpty) {
+      if (input.columns.intersect(List("_filename", "_index", "_monotonically_increasing_id")).isEmpty) {
         if (contiguousIndex) {
           // the window function will break partition pushdown
           val window = Window.partitionBy("_filename").orderBy("_monotonically_increasing_id")

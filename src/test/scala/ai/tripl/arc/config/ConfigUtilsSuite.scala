@@ -462,7 +462,6 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-
     val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/job.ipynb")), arcContext)
 
     pipelineEither match {
@@ -470,7 +469,9 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         println(errors)
         assert(false)
       }
-      case Right((pipeline, _)) => {
+      case Right((pipeline, arcCtx)) => {
+        assert(arcCtx.activeLifecyclePlugins.length == 1)
+        assert(arcCtx.dynamicConfigurationPlugins.length == 1)
         assert(pipeline.stages.length == 2)
         assert(pipeline.stages(0).asInstanceOf[extract.RateExtractStage].outputView == "stream")
         assert(pipeline.stages(1).asInstanceOf[extract.RateExtractStage].outputView == "stream2")

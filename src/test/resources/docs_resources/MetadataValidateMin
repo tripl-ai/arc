@@ -1,0 +1,10 @@
+{
+  "type": "MetadataValidate",
+  "name": "apply data integrity rules against metadata",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "inputURI": "hdfs://datalake/sql/assert_no_pii_columns.sql"
+}

@@ -1,0 +1,15 @@
+{
+  "type": "MetadataValidate",
+  "name": "apply integrity rules against metadata",
+  "description": "ensure no pii fields are in dataset",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "inputURI": "hdfs://datalake/sql/assert_no_pii_columns_dynamic.sql"
+  "authentication": {},
+  "sqlParams": {
+    "pii_metadata_field_name": "pii"
+  }
+}
