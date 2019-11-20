@@ -587,7 +587,7 @@ A runnable snapshot of this job is available:  `examples/tutorial/1/nyctaxi.ipyn
 
 Arc allows for pattern matching of file names including the standard wildcard (`green_tripdata_*.csv`) or more advanced [Glob](https://en.wikipedia.org/wiki/Glob_%28programming%29) matching. Glob can be used to select subsets of data in a directory but generally we recommend using directories and wildcards such as `green_tripdata/0/*.csv` to simplify the separation of dataset schema versions.
 
-Warning: consider the size of the data before setting these options as they can be very large.
+**Warning**: consider the size of the data before setting these options as they can be very large.
 
 #### Small Dataset
 
@@ -615,9 +615,8 @@ Warning: consider the size of the data before setting these options as they can 
 
 Use the patterns above to add the `yellow_tripdata` datasets to the Arc job.
 
-- add the file loading for the `yellow_tripdata`. There should be 3 stages for each schema load (`DelimitedExtract`, `TypingTransform`, `SQLValidate`) and a total of 6 schema versions (3 green_tripdata and 3 yellow_tripdata) for a total of 18 stages just to read and safely type the data.
-- modify the `SQLTransform` to include the new datasets.
-- run the new version of the job.
+- add the file loading for the `yellow_tripdata`. There should be 3 stages for each schema load (`DelimitedExtract`, `TypingTransform`, `SQLValidate`) and a total of 6 schema versions (3 `green_tripdata` and 3 `yellow_tripdata`) for a total of 18 stages just to read and safely type the data.
+- modify the `trips` `SQLTransform` to include the new datasets (and handle the merge rules).
 
 ## Data Quality
 
@@ -627,7 +626,7 @@ For example, when thinking about how taxis operate we intuitively know that:
 
 - a taxi that has moved a distance should have charged greater than $0.
 - a taxi that has charged greater than $0 should have moved a distance.
-- a taxi that has charged will have at least 1 passenger.
+- a taxi that has moved a distance should have at least 1 passenger.
 
 That means we can code rules to find these scenarios for reporting by setting the first value to `TRUE` (so that the job will always continue past this stage):
 
@@ -660,7 +659,7 @@ FROM (
 ) input_table
 ```
 
-When run against the `green_tripdata0` dataset this produces a series of numbers which can easily be used to track errors over time via a dashboard in your log aggregation tool:
+When run against the `green_tripdata0` dataset this produces a series of numbers which can easily be used to produce graphs of errors over time via a dashboard in your log aggregation tool:
 
 ```json
 {
@@ -707,7 +706,7 @@ SELECT
   ,TO_JSON(
       NAMED_STRUCT(
         'count', COUNT(error),
-        'errors', SUM(error)
+        'errors', COALESCE(SUM(error),0)
       )
   ) AS message
 FROM (
@@ -726,7 +725,7 @@ A runnable snapshot of this job is available:  `examples/tutorial/3/nyctaxi.ipyn
 
 ## Reference Data
 
-As the business problem is better understood it is common to see [normalization of data](https://en.wikipedia.org/wiki/Database_normalization). For example, in the `yellow_tripdata0` in the early datasets `payment_type` was a `string` field which led to values which were variations of the same intent like `cash` and `CASH`. In the later datasets the `payment_type` has been normailized into a dataset which maps the `'cash'` type to the value `2`. To normalise this data we first need to load a lookup table which is going to define the rules on how to map `payment_type` (`cash`) to `payment_type_id` (`2`). 
+As the business problem is better understood it is common to see [normalization of data](https://en.wikipedia.org/wiki/Database_normalization). For example, in the `yellow_tripdata0` in the early datasets `payment_type` was a `string` field which led to values which were variations of the same intent like `cash` and `CASH`. In the later datasets the `payment_type` has been normailized into a dataset which maps the `'cash'` type to the value `2`. To normalise this data we first need to load a lookup table which is going to define the rules on how to map `payment_type` (`cash`) to `payment_type_id` (`2`). One of the benefits of using a `json` formatted file for this type of reference data is it can easily be used with `git` to track changes over time.
 
 ```json
 {
