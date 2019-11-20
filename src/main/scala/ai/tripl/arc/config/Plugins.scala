@@ -37,10 +37,10 @@ object Plugins {
           logger.info()
             .field("event", "validateConfig")
             .field("type", pluginType.right.getOrElse("unknown"))
-            .field("stageIndex", index)
+            .field("pluginIndex", index)
             .field("environment", arcContext.environment.get)
             .list("environments", environments.asJava)
-            .field("message", "skipping stage due to environment configuration")
+            .field("message", "skipping plugin due to environment configuration")
             .field("skipPlugin", true)
             .log()
 
@@ -48,7 +48,7 @@ object Plugins {
         } else {
           val instanceOrError: Either[List[StageError], T] = pluginType match {
             case Left(errors) => Left(StageError(index, path, plugin.origin.lineNumber, errors) :: Nil)
-            case Right(pluginType) => resolvePlugin(index, pluginType, config, plugins)
+            case Right(pluginType) => resolvePlugin(path.contains("plugins."), index, pluginType, config, plugins)
           }
 
           instanceOrError match {
@@ -69,7 +69,7 @@ object Plugins {
 
   // resolvePlugin searches a provided list of plugins for a name/version combination
   // it then validates only a single plugin exists and if so calls the instantiate method
-  def resolvePlugin[T](index: Int, name: String, config: Config, plugins: List[ConfigPlugin[T]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], T] = {
+  def resolvePlugin[T](log: Boolean, index: Int, name: String, config: Config, plugins: List[ConfigPlugin[T]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], T] = {
     // match on either full class name or just the simple name AND version or not
     val splitPlugin = name.split(":", 2)
     val hasPackage = splitPlugin(0) contains "."
@@ -86,6 +86,7 @@ object Plugins {
       nameFilteredPlugins
     }
 
+    // logging messages
     val availablePluginsMessage = s"""Available plugins: ${plugins.map(c => s"${c.getClass.getName}:${c.version}").mkString("[",",","]")}."""
     val versionMessage = if (hasVersion) s"name:version" else "name"
 
@@ -95,6 +96,14 @@ object Plugins {
     } else if (filteredPlugins.length > 1) {
       Left(StageError(index, name, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"Multiple plugins found with name ${splitPlugin(0)}. ${availablePluginsMessage}") :: Nil) :: Nil)
     } else {
+
+      if (log) {
+        logger.info()
+          .field("event", "instantiatePlugin")
+          .field("plugin", name)
+          .log()
+      }
+
       filteredPlugins.head.instantiate(index, config)
     }
   }
