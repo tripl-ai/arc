@@ -7,6 +7,5 @@
   ],
   "inputView": "customer",
   "outputView": "customer",
-  "schemaURI": "hdfs://datalake/metadata/customer.json",
-  "failMode": "failfast"
+  "schemaURI": "hdfs://datalake/metadata/customer.json"
 }

@@ -437,6 +437,33 @@ SELECT
 {{< readfile file="/resources/docs_resources_plugins/KafkaExtractComplete" highlight="json" >}} 
 
 
+## MetadataExtract
+##### Since: 2.4.0 - Supports Streaming: True
+
+The `MetadataExtract` stage extracts the metadata attached to an input `Dataframe` and returns a `DataFrame`. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/MetadataExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/MetadataExtractComplete" highlight="json" >}} 
+
+
 ## MongoDBExtract
 ##### Since: 2.0.0 - Supports Streaming: False
 {{< note title="Plugin" >}}
