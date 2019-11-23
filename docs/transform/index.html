@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.3.1</span></strong>
+          <span class="version">2.4.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -1311,13 +1311,148 @@ WHERE metadata.pii = (
   <span class="p">}</span>
 <span class="p">}</span></code></pre></div>
 
+<h2 id="metadatatransform">MetadataTransform</h2>
+
+<h5 id="since-2-4-0-supports-streaming-true">Since: 2.4.0 - Supports Streaming: True</h5>
+
+<p>The <code>MetadataTransform</code> stage attaches metadata input <code>Dataframe</code> and returns a new <code>DataFrame</code>.</p>
+
+<h3 id="parameters-6">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>schemaURI</td>
+<td>URI</td>
+<td>true*</td>
+<td>URI of the input JSON file containing the schema. Required if <code>schemaView</code> not provided.</td>
+</tr>
+
+<tr>
+<td>schemaView</td>
+<td>String</td>
+<td>true*</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>.  It takes precedence over <code>schemaURI</code> if provided.</td>
+</tr>
+
+<tr>
+<td>failMode</td>
+<td>String</td>
+<td>false</td>
+<td>Either <code>permissive</code> or <code>failfast</code>:<br><br><code>permissive</code> will attach metadata to any column of the input <code>DataFrame</code> which has the same name as in the incoming schema.<br><br><code>failfast</code> will fail the Arc job if any of the columns in the input schema are not found in the input <code>DataFrame</code>.<br><br>Default: <code>permissive</code>.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-6">Examples</h3>
+
+<h4 id="minimal-6">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;set metadata for customer view&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-6">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;set metadata for customer view&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;set metadata for customer view&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;failMode&#34;</span><span class="p">:</span> <span class="s2">&#34;failfast&#34;</span>
+  <span class="s2">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;type&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span> 
+<span class="p">}</span></code></pre></div>
+
 <h2 id="mltransform">MLTransform</h2>
 
 <h5 id="since-1-0-0-supports-streaming-true-1">Since: 1.0.0 - Supports Streaming: True</h5>
 
 <p>The <code>MLTransform</code> stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a <code>PipelineModel</code> or <code>CrossValidatorModel</code> produced using Spark&rsquo;s Scala, Java, PySpark or SparkR API.</p>
 
-<h3 id="parameters-6">Parameters</h3>
+<h3 id="parameters-7">Parameters</h3>
 
 <table>
 <thead>
@@ -1402,9 +1537,9 @@ WHERE metadata.pii = (
 </tbody>
 </table>
 
-<h3 id="examples-6">Examples</h3>
+<h3 id="examples-7">Examples</h3>
 
-<h4 id="minimal-6">Minimal</h4>
+<h4 id="minimal-7">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MLTransform&#34;</span><span class="p">,</span>
@@ -1418,7 +1553,7 @@ WHERE metadata.pii = (
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_scored&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-6">Complete</h4>
+<h4 id="complete-7">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MLTransform&#34;</span><span class="p">,</span>
@@ -1445,7 +1580,7 @@ WHERE metadata.pii = (
 
 <p>The <code>SimilarityJoinTransform</code> stage uses <a href="https://en.wikipedia.org/wiki/Approximate_string_matching">Approximate String Matching</a> (a.k.a. Fuzzy Matching) to find similar records between two datasets. It is possible to pass the same datasets into both the <code>leftView</code> and <code>rightView</code> to find duplicates (in which case the <code>threshold</code> value should be high to avoid a potentially very large cross-product resultset).</p>
 
-<h3 id="parameters-7">Parameters</h3>
+<h3 id="parameters-8">Parameters</h3>
 
 <table>
 <thead>
@@ -1572,9 +1707,9 @@ WHERE metadata.pii = (
 </tbody>
 </table>
 
-<h3 id="examples-7">Examples</h3>
+<h3 id="examples-8">Examples</h3>
 
-<h4 id="minimal-7">Minimal</h4>
+<h4 id="minimal-8">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SimilarityJoinTransform&#34;</span><span class="p">,</span>
@@ -1601,7 +1736,7 @@ WHERE metadata.pii = (
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;official_address_compare&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-7">Complete</h4>
+<h4 id="complete-8">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SimilarityJoinTransform&#34;</span><span class="p">,</span>
@@ -1655,7 +1790,7 @@ WHERE metadata.pii = (
 </p>
 </div>
 
-<h3 id="parameters-8">Parameters</h3>
+<h3 id="parameters-9">Parameters</h3>
 
 <table>
 <thead>
@@ -1752,9 +1887,9 @@ FROM customer
 LEFT JOIN account ON account.customer_id = customer.customer_id
 </code></pre>
 
-<h3 id="examples-8">Examples</h3>
+<h3 id="examples-9">Examples</h3>
 
-<h4 id="minimal-8">Minimal</h4>
+<h4 id="minimal-9">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
@@ -1767,7 +1902,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-8">Complete</h4>
+<h4 id="complete-9">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
@@ -1810,7 +1945,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 <p>To see how to host a simple model in <a href="https://www.tensorflow.org/serving/">TensorFlow Serving</a> see:<br>
 <a href="https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving">https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving</a></p>
 
-<h3 id="parameters-9">Parameters</h3>
+<h3 id="parameters-10">Parameters</h3>
 
 <table>
 <thead>
@@ -1923,9 +2058,9 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tbody>
 </table>
 
-<h3 id="examples-9">Examples</h3>
+<h3 id="examples-10">Examples</h3>
 
-<h4 id="minimal-9">Minimal</h4>
+<h4 id="minimal-10">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TensorFlowServingTransform&#34;</span><span class="p">,</span>
@@ -1939,7 +2074,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
   <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-9">Complete</h4>
+<h4 id="complete-10">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TensorFlowServingTransform&#34;</span><span class="p">,</span>
@@ -1970,7 +2105,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 
 <p>The logical process that is applied to perform the typing on a field-by-field basis is shown below.</p>
 
-<h3 id="parameters-10">Parameters</h3>
+<h3 id="parameters-11">Parameters</h3>
 
 <table>
 <thead>
@@ -2069,9 +2204,9 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
 </tbody>
 </table>
 
-<h3 id="examples-10">Examples</h3>
+<h3 id="examples-11">Examples</h3>
 
-<h4 id="minimal-10">Minimal</h4>
+<h4 id="minimal-11">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>
@@ -2085,7 +2220,7 @@ LEFT JOIN account ON account.customer_id = customer.customer_id
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-10">Complete</h4>
+<h4 id="complete-11">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>
