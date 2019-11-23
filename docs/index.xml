@@ -28,7 +28,7 @@ git clone https://github.com/tripl-ai/arc-starter.git cd arc-starter ./.develop.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/tutorial/</guid>
-      <description>This tutorial works through a real-world example using the New York City Taxi dataset which has been used heavliy around the web (see: Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance and A Billion Taxi Rides in Redshift) due to its 1 billion+ record count and scripted process available on github.
+      <description>This tutorial works through a real-world example using the New York City Taxi dataset which has been used heavliy around the web (see: Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance and A Billion Taxi Rides in Redshift) due to its 1 billion+ record count and public data available via the Registry of Open Data on AWS.
 It is a great dataset as it has a lot of the attributes of real-world data that need to be considered:</description>
     </item>
     
@@ -113,7 +113,7 @@ It is designed to:
       <guid>https://arc.tripl.ai/deploy/</guid>
       <description>Arc has been packaged as a Docker image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the https://hub.docker.com/u/triplai for the relevant version.
 Running a Job An example command to start a job is:
-docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&amp;quot; \ -it -p 4040:4040 triplai/arc:arc_2.3.1_spark_2.4.4_scala_2.12_hadoop_2.9.2_1.0.0 \ bin/spark-submit \ --master local[*] \ --class ai.tripl.arc.ARC \ /opt/spark/jars/arc.</description>
+docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&amp;quot; \ -it -p 4040:4040 triplai/arc:arc_2.4.0_spark_2.4.4_scala_2.12_hadoop_2.9.2_1.0.0 \ bin/spark-submit \ --master local[*] \ --class ai.tripl.arc.ARC \ /opt/spark/jars/arc.</description>
     </item>
     
     <item>
