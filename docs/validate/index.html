@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.3.1</span></strong>
+          <span class="version">2.4.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -503,6 +503,155 @@
   <span class="nt">&#34;rightView&#34;</span><span class="p">:</span> <span class="s2">&#34;customers_known_correct&#34;</span>
 <span class="p">}</span></code></pre></div>
 
+<h2 id="metadatavalidate">MetadataValidate</h2>
+
+<h5 id="since-2-4-0-supports-streaming-true">Since: 2.4.0 - Supports Streaming: True</h5>
+
+<p>Similar to <code>SQLValidate</code>, the <code>MetadataValidate</code> stage takes an input SQL statement which is executed against the metadata attached to the input <code>DataFrame</code> which must return [Boolean, Option[String]] and will succeed if the first return value is true or fail if not.</p>
+
+<p>Arc will register a table called <code>metadata</code> which contains the metadata of the <code>inputView</code>. This allows complex SQL statements to be executed which returns which columns to retain from the <code>inputView</code> in the <code>outputView</code>. The available columns in the <code>metadata</code> table are:</p>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>The field name.</td>
+</tr>
+
+<tr>
+<td>type</td>
+<td>The field type.</td>
+</tr>
+
+<tr>
+<td>metadata</td>
+<td>The field metadata.</td>
+</tr>
+</tbody>
+</table>
+
+<p>This can be used like:</p>
+
+<pre><code class="language-sql">-- ensure that no pii columns are present in the inputView
+SELECT 
+    SUM(pii_column) = 0
+    ,TO_JSON(
+        NAMED_STRUCT(
+            'columns', COUNT(*), 
+            'pii_columns', SUM(pii_column)
+        )
+    ) 
+FROM (
+    SELECT 
+        CASE WHEN metadata.pii THEN 1 ELSE 0 END AS pii_column
+    FROM detail
+) valid
+</code></pre>
+
+<h3 id="parameters-1">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the input file containing the SQL statement.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>sqlParams</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-1">Examples</h3>
+
+<h4 id="minimal-1">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataValidate&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply data integrity rules against metadata&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/assert_no_pii_columns.sql&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataValidate&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply integrity rules against metadata&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;ensure no pii fields are in dataset&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/assert_no_pii_columns_dynamic.sql&#34;</span>
+  <span class="s2">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;pii_metadata_field_name&#34;</span><span class="p">:</span> <span class="s2">&#34;pii&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
 <h2 id="sqlvalidate">SQLValidate</h2>
 
 <h5 id="since-1-0-0-supports-streaming-false-1">Since: 1.0.0 - Supports Streaming: False</h5>
@@ -515,7 +664,7 @@
 
 <p>See <a href="../patterns/">patterns</a> for more examples.</p>
 
-<h3 id="parameters-1">Parameters</h3>
+<h3 id="parameters-2">Parameters</h3>
 
 <table>
 <thead>
@@ -572,9 +721,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-1">Examples</h3>
+<h3 id="examples-2">Examples</h3>
 
-<h4 id="minimal-1">Minimal</h4>
+<h4 id="minimal-2">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLValidate&#34;</span><span class="p">,</span>
@@ -586,7 +735,7 @@
   <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/customer_error_threshold.sql&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete">Complete</h4>
+<h4 id="complete-1">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLValidate&#34;</span><span class="p">,</span>

@@ -34,6 +34,59 @@ This stage will validate:
 {{< readfile file="/resources/docs_resources/EqualityValidateMin" highlight="json" >}} 
 
 
+## MetadataValidate
+##### Since: 2.4.0 - Supports Streaming: True
+
+Similar to `SQLValidate`, the `MetadataValidate` stage takes an input SQL statement which is executed against the metadata attached to the input `DataFrame` which must return [Boolean, Option[String]] and will succeed if the first return value is true or fail if not.
+
+Arc will register a table called `metadata` which contains the metadata of the `inputView`. This allows complex SQL statements to be executed which returns which columns to retain from the `inputView` in the `outputView`. The available columns in the `metadata` table are:
+
+| Field | Description |
+|-------|-------------|
+|name|The field name.|
+|type|The field type.|
+|metadata|The field metadata.|
+
+This can be used like:
+
+```sql
+-- ensure that no pii columns are present in the inputView
+SELECT 
+    SUM(pii_column) = 0
+    ,TO_JSON(
+        NAMED_STRUCT(
+            'columns', COUNT(*), 
+            'pii_columns', SUM(pii_column)
+        )
+    ) 
+FROM (
+    SELECT 
+        CASE WHEN metadata.pii THEN 1 ELSE 0 END AS pii_column
+    FROM detail
+) valid
+```
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/MetadataValidateMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/MetadataValidateComplete" highlight="json" >}} 
+
+
 ## SQLValidate
 ##### Since: 1.0.0 - Supports Streaming: False
 

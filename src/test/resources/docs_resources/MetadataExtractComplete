@@ -1,0 +1,16 @@
+{
+  "type": "MetadataExtract",
+  "name": "extract metadata from customer view",
+  "description": "extract metadata from customer view",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputView": "customer_metadata",
+  "numPartitions": 1,
+  "partitionBy": [
+    "type"
+  ],
+  "persist": false 
+}

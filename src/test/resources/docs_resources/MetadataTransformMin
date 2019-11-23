@@ -1,10 +1,11 @@
 {
   "type": "MetadataTransform",
-  "name": "extract metadata from customer view",
+  "name": "set metadata for customer view",
   "environments": [
     "production",
     "test"
   ],
   "inputView": "customer",
-  "outputView": "customer_metadata"
+  "outputView": "customer",
+  "schemaURI": "hdfs://datalake/metadata/customer.json"
 }

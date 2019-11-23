@@ -246,6 +246,36 @@ The `inputView` and `outputView` can be set to the same name so that downstream 
 {{< readfile file="/resources/docs_resources/MetadataFilterTransformComplete" highlight="json" >}} 
 
 
+## MetadataTransform
+##### Since: 2.4.0 - Supports Streaming: True
+
+The `MetadataTransform` stage attaches metadata input `Dataframe` and returns a new `DataFrame`. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|schemaURI|URI|true*|URI of the input JSON file containing the schema. Required if `schemaView` not provided.|
+|schemaView|String|true*|Similar to `schemaURI` but allows the schema to be passed in as another `DataFrame`.  It takes precedence over `schemaURI` if provided.|
+|failMode|String|false|Either `permissive` or `failfast`:<br><br>`permissive` will attach metadata to any column of the input `DataFrame` which has the same name as in the incoming schema.<br><br>`failfast` will fail the Arc job if any of the columns in the input schema are not found in the input `DataFrame`.<br><br>Default: `permissive`.|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/MetadataTransformMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources/MetadataTransformComplete" highlight="json" >}} 
+
+
 ## MLTransform
 ##### Since: 1.0.0 - Supports Streaming: True
 
