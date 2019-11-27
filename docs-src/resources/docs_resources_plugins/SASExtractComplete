@@ -1,0 +1,23 @@
+{
+  "type": "SASExtract",
+  "name": "load customers",
+  "description": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/customer/*.sas7bdat",
+  "outputView": "customer",
+  "authentication": {},
+  "contiguousIndex": true,
+  "numPartitions": 10,
+  "partitionBy": [
+    "country"
+  ],
+  "persist": false,
+  "schemaURI": "hdfs://datalake/metadata/customer.json",
+  "schemaView": "customer_schema",
+  "options": {
+    "maxSplitSize": 100000000
+  }
+}

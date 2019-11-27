@@ -43,7 +43,7 @@ start-notebook.sh \
 This has been scripted and can be called by executing:
 
 ```bash
-./.develop.sh
+./develop.sh
 ```
 
 ## Extracting Data
@@ -228,7 +228,7 @@ If the job has been configured like above with all fields `"nullable": true` the
   "environments": ["production", "test"],
   "inputURI": "/home/jovyan/examples/tutorial/0/sqlvalidate_errors.sql",            
   "sqlParams": {
-    "table_name": "green_tripdata0"
+    "inputView": "green_tripdata0"
   }
 }
 ```
@@ -250,7 +250,7 @@ FROM (
       WHEN SIZE(_errors) > 0 THEN 1 
       ELSE 0 
     END AS error 
-  FROM ${table_name}
+  FROM ${inputView}
 ) input_table
 ```
 
@@ -264,11 +264,11 @@ Before the SQL statement is executed the framework will allow you to do paramete
 
 ```json
 "sqlParams": {
-    "table_name": "green_tripdata0"
+    "inputView": "green_tripdata0"
 }
 ```
 
-In this case before the SQL statement is executed the named parameter `${table_name}` will be replaced with `green_tripdata0` so it will validate the `green_tripdata0` dataset. The benefit of this is that the same SQL statement can be used for any dataset after the `TypingTransformation` stage to ensure there are no data typing errors and all we have to do is specify a different `table_name` substitution value.
+In this case before the SQL statement is executed the named parameter `${inputView}` will be replaced with `green_tripdata0` so it will validate the `green_tripdata0` dataset. The benefit of this is that the same SQL statement can be used for any dataset after the `TypingTransformation` stage to ensure there are no data typing errors and all we have to do is specify a different `inputView` substitution value.
 
 {{< note title="Data Caching" >}}
 A `TypingTransformation` is a big and computationally expensive operation so if you are going to do multiple operations against that dataset (as we are) set the `"persist": true` option so that Spark will cache the dataset after applying the types.
@@ -304,7 +304,7 @@ Here is the stage we will add which writes the `green_tripdata0` dataset to a `D
 
 At this stage we have a job which will extract data, apply data types to one `.csv` file and execute a `SQLValidate` stage to ensure that the data could be converted successfully then write the data out for future use. The Arc framework is packaged as a [Docker](https://www.docker.com/) container so that you can run the same job on your local machine or a massive compute cluster without having to think about how to deploy dependencies. The default Docker image contains the dependencies files for connecting to most `JDBC` databases and cloud services.
 
-To run the job that is included with the `arc-starter` repository:
+To run the job that is included with the `arc-starter` repository (this file is also saved as `run.sh`):
 
 ```bash
 docker run \
@@ -356,6 +356,7 @@ ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data
 ETL_CONF_JOB_URL=/home/jovyan/examples/tutorial/1
 ```
 
+
 The variables can then be used like:
 
 ```json
@@ -363,7 +364,7 @@ The variables can then be used like:
   "type": "DelimitedExtract",
   "name": "extract data from green_tripdata schema 0",
   "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_2013-08.csv",
+  "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_2013-08.csv*",
   "outputView": "green_tripdata0_raw",            
   "delimiter": "Comma",
   "quote": "DoubleQuote",
@@ -386,6 +387,47 @@ docker run \
 -e "ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data" \
 ...
 ```
+
+
+To speed up the rest of the tutorial the top 50000 rows of each dataset have been embedded in this repository:
+
+```scala
+%env 
+ETL_CONF_DATA_URL=/home/jovyan/examples/tutorial/data/nyc-tlc/trip*data
+ETL_CONF_JOB_URL=/home/jovyan/examples/tutorial/1
+```
+
+Spark is also able to automatically detect and decompress files based on their extension. Note the `*` after `green_tripdata_2013-08.csv*` which will allow either `.csv` which is on the remote `s3a://nyc-tlc/trip*data/green_tripdata_2013-08.csv` or `/home/jovyan/examples/tutorial/data/nyc-tlc/trip*data/green_tripdata_2013-08.csv.gz` which is local.
+
+```json
+{
+  "type": "DelimitedExtract",
+  "name": "extract data from green_tripdata schema 0",
+  "environments": ["production", "test"],
+  "inputURI": ${ETL_CONF_DATA_URL}"/green_tripdata_2013-08.csv*",
+  "outputView": "green_tripdata0_raw",            
+  "delimiter": "Comma",
+  "quote": "DoubleQuote",
+  "header": true,
+  "persist": true,
+  "authentication": {
+    "method": "AmazonAnonymous"
+  }
+}
+```
+
+To execute:
+
+```bash
+docker run \
+--rm \
+-v $(pwd)/examples:/home/jovyan/examples:Z \
+-e "ETL_CONF_ENV=production" \
+-e "ETL_CONF_DATA_URL=/home/jovyan/examples/tutorial/data/nyc-tlc/trip*data" \
+...
+```
+
+This method allows use of smaller dataset while developing then easily changing out data sources when trying to run in production.
 
 {{< note title="JSON vs HOCON" >}}
 The config file, whilst looking very similar to a `json` file is actually a [Human-Optimized Config Object Notation](https://en.wikipedia.org/wiki/HOCON) (HOCON) file. This file format is a superset of `json` allowing some very useful extensions like [Environment Variable](https://en.wikipedia.org/wiki/Environment_variable) substitution and string interpolation. We primarily use it for Environment Variable injection but all its capabilities described [here](https://github.com/lightbend/config) can be utilised.
@@ -425,7 +467,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
   "environments": ["production", "test"],
   "inputURI": ${ETL_CONF_JOB_URL}"/sqlvalidate_errors.sql",            
   "sqlParams": {
-    "table_name": "green_tripdata1"
+    "inputView": "green_tripdata1"
   }
 },
 {
@@ -457,7 +499,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
   "environments": ["production", "test"],
   "inputURI": ${ETL_CONF_JOB_URL}"/sqlvalidate_errors.sql",            
   "sqlParams": {
-    "table_name": "green_tripdata2"
+    "inputView": "green_tripdata2"
   }
 }
 ```
@@ -715,7 +757,7 @@ FROM (
       WHEN SIZE(_errors) > 0 THEN 1
       ELSE 0
     END AS error
-  FROM ${table_name}
+  FROM ${inputView}
 ) input_table
 ```
 
