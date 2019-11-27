@@ -459,7 +459,7 @@ start-notebook.sh \
 
 <p>This has been scripted and can be called by executing:</p>
 
-<pre><code class="language-bash">./.develop.sh
+<pre><code class="language-bash">./develop.sh
 </code></pre>
 
 <h2 id="extracting-data">Extracting Data</h2>
@@ -721,7 +721,7 @@ start-notebook.sh \
   &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
   &quot;inputURI&quot;: &quot;/home/jovyan/examples/tutorial/0/sqlvalidate_errors.sql&quot;,            
   &quot;sqlParams&quot;: {
-    &quot;table_name&quot;: &quot;green_tripdata0&quot;
+    &quot;inputView&quot;: &quot;green_tripdata0&quot;
   }
 }
 </code></pre>
@@ -742,7 +742,7 @@ FROM (
       WHEN SIZE(_errors) &gt; 0 THEN 1 
       ELSE 0 
     END AS error 
-  FROM ${table_name}
+  FROM ${inputView}
 ) input_table
 </code></pre>
 
@@ -757,11 +757,11 @@ FROM (
 <p>Before the SQL statement is executed the framework will allow you to do parameter replacement. So in the definition for the <code>SQLValidate</code> stage there is an key called <code>sqlParams</code> which allows you to specify named parameters:</p>
 
 <pre><code class="language-json">&quot;sqlParams&quot;: {
-    &quot;table_name&quot;: &quot;green_tripdata0&quot;
+    &quot;inputView&quot;: &quot;green_tripdata0&quot;
 }
 </code></pre>
 
-<p>In this case before the SQL statement is executed the named parameter <code>${table_name}</code> will be replaced with <code>green_tripdata0</code> so it will validate the <code>green_tripdata0</code> dataset. The benefit of this is that the same SQL statement can be used for any dataset after the <code>TypingTransformation</code> stage to ensure there are no data typing errors and all we have to do is specify a different <code>table_name</code> substitution value.</p>
+<p>In this case before the SQL statement is executed the named parameter <code>${inputView}</code> will be replaced with <code>green_tripdata0</code> so it will validate the <code>green_tripdata0</code> dataset. The benefit of this is that the same SQL statement can be used for any dataset after the <code>TypingTransformation</code> stage to ensure there are no data typing errors and all we have to do is specify a different <code>inputView</code> substitution value.</p>
 
 <div class="admonition note">
 <p class="admonition-title">Data Caching</p>
@@ -799,7 +799,7 @@ FROM (
 
 <p>At this stage we have a job which will extract data, apply data types to one <code>.csv</code> file and execute a <code>SQLValidate</code> stage to ensure that the data could be converted successfully then write the data out for future use. The Arc framework is packaged as a <a href="https://www.docker.com/">Docker</a> container so that you can run the same job on your local machine or a massive compute cluster without having to think about how to deploy dependencies. The default Docker image contains the dependencies files for connecting to most <code>JDBC</code> databases and cloud services.</p>
 
-<p>To run the job that is included with the <code>arc-starter</code> repository:</p>
+<p>To run the job that is included with the <code>arc-starter</code> repository (this file is also saved as <code>run.sh</code>):</p>
 
 <pre><code class="language-bash">docker run \
 --rm \
@@ -854,7 +854,7 @@ ETL_CONF_JOB_URL=/home/jovyan/examples/tutorial/1
   &quot;type&quot;: &quot;DelimitedExtract&quot;,
   &quot;name&quot;: &quot;extract data from green_tripdata schema 0&quot;,
   &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-  &quot;inputURI&quot;: ${ETL_CONF_DATA_URL}&quot;/green_tripdata_2013-08.csv&quot;,
+  &quot;inputURI&quot;: ${ETL_CONF_DATA_URL}&quot;/green_tripdata_2013-08.csv*&quot;,
   &quot;outputView&quot;: &quot;green_tripdata0_raw&quot;,            
   &quot;delimiter&quot;: &quot;Comma&quot;,
   &quot;quote&quot;: &quot;DoubleQuote&quot;,
@@ -875,6 +875,43 @@ ETL_CONF_JOB_URL=/home/jovyan/examples/tutorial/1
 -e &quot;ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data&quot; \
 ...
 </code></pre>
+
+<p>To speed up the rest of the tutorial the top 50000 rows of each dataset have been embedded in this repository:</p>
+
+<pre><code class="language-scala">%env 
+ETL_CONF_DATA_URL=/home/jovyan/examples/tutorial/data/nyc-tlc/trip*data
+ETL_CONF_JOB_URL=/home/jovyan/examples/tutorial/1
+</code></pre>
+
+<p>Spark is also able to automatically detect and decompress files based on their extension. Note the <code>*</code> after <code>green_tripdata_2013-08.csv*</code> which will allow either <code>.csv</code> which is on the remote <code>s3a://nyc-tlc/trip*data/green_tripdata_2013-08.csv</code> or <code>/home/jovyan/examples/tutorial/data/nyc-tlc/trip*data/green_tripdata_2013-08.csv.gz</code> which is local.</p>
+
+<pre><code class="language-json">{
+  &quot;type&quot;: &quot;DelimitedExtract&quot;,
+  &quot;name&quot;: &quot;extract data from green_tripdata schema 0&quot;,
+  &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
+  &quot;inputURI&quot;: ${ETL_CONF_DATA_URL}&quot;/green_tripdata_2013-08.csv*&quot;,
+  &quot;outputView&quot;: &quot;green_tripdata0_raw&quot;,            
+  &quot;delimiter&quot;: &quot;Comma&quot;,
+  &quot;quote&quot;: &quot;DoubleQuote&quot;,
+  &quot;header&quot;: true,
+  &quot;persist&quot;: true,
+  &quot;authentication&quot;: {
+    &quot;method&quot;: &quot;AmazonAnonymous&quot;
+  }
+}
+</code></pre>
+
+<p>To execute:</p>
+
+<pre><code class="language-bash">docker run \
+--rm \
+-v $(pwd)/examples:/home/jovyan/examples:Z \
+-e &quot;ETL_CONF_ENV=production&quot; \
+-e &quot;ETL_CONF_DATA_URL=/home/jovyan/examples/tutorial/data/nyc-tlc/trip*data&quot; \
+...
+</code></pre>
+
+<p>This method allows use of smaller dataset while developing then easily changing out data sources when trying to run in production.</p>
 
 <div class="admonition note">
 <p class="admonition-title">JSON vs HOCON</p>
@@ -914,7 +951,7 @@ ETL_CONF_JOB_URL=/home/jovyan/examples/tutorial/1
   &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
   &quot;inputURI&quot;: ${ETL_CONF_JOB_URL}&quot;/sqlvalidate_errors.sql&quot;,            
   &quot;sqlParams&quot;: {
-    &quot;table_name&quot;: &quot;green_tripdata1&quot;
+    &quot;inputView&quot;: &quot;green_tripdata1&quot;
   }
 },
 {
@@ -946,7 +983,7 @@ ETL_CONF_JOB_URL=/home/jovyan/examples/tutorial/1
   &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
   &quot;inputURI&quot;: ${ETL_CONF_JOB_URL}&quot;/sqlvalidate_errors.sql&quot;,            
   &quot;sqlParams&quot;: {
-    &quot;table_name&quot;: &quot;green_tripdata2&quot;
+    &quot;inputView&quot;: &quot;green_tripdata2&quot;
   }
 }
 </code></pre>
@@ -1295,7 +1332,7 @@ FROM (
       WHEN SIZE(_errors) &gt; 0 THEN 1
       ELSE 0
     END AS error
-  FROM ${table_name}
+  FROM ${inputView}
 ) input_table
 </code></pre>
 

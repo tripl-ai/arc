@@ -1000,6 +1000,13 @@
 </tr>
 
 <tr>
+<td>options</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Time travel options to allow loading previous versions of the data. These values are limited to:<br><br><code>versionAsOf</code> allows travelling to a specific version.<br><br><code>timestampAsOf</code> allows travelling to the state before a specified timestamp.<br><br><code>relativeVersion</code> allows travelling relative to the current version where the current version is <code>0</code> and <code>-1</code> is the previous version.</td>
+</tr>
+
+<tr>
 <td>partitionBy</td>
 <td>Array[String]</td>
 <td>false</td>
@@ -3089,13 +3096,171 @@
   <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span>
 <span class="p">}</span></code></pre></div>
 
+<h2 id="sasextract">SASExtract</h2>
+
+<h5 id="since-2-4-0-supports-streaming-true-1">Since: 2.4.0 - Supports Streaming: True</h5>
+
+<div class="admonition note">
+<p class="admonition-title">Plugin</p>
+<p>The <code>SASExtract</code> is provided by the <a href="https://github.com/tripl-ai/arc-sas-pipeline-plugin">https://github.com/tripl-ai/arc-sas-pipeline-plugin</a> package.</p>
+</div>
+
+<p>The <code>SASExtract</code> stage reads a collection from SAS <code>sas7bdat</code> binary file and returns a <code>DataFrame</code>.</p>
+
+<h3 id="parameters-16">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI/Glob of the input <code>sas7bdat</code> files.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>options</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Options for reading the <code>sas7bdat</code> file. These values are limited to:<br><br><code>inferDecimal</code>: infer numeric columns with format width  &gt; 0 and format precision &gt; 0, as <code>Decimal(Width, Precision)</code>.<br><br><code>inferDecimalScale</code>: scale of inferred decimals.<br><br><code>inferFloat</code>: infer numeric columns with &lt;= 4 bytes, as <code>Float</code>.<br><br><code>inferInt</code>: infer numeric columns with &lt;= 4 bytes, format width &gt; 0 and format precision =0, as <code>Int</code>.<br><br><code>inferLong</code>: infer numeric columns with &lt;= 8 bytes, format width &gt; 0 and format precision = 0, as <code>Long</code>.<br><br><code>inferShort</code>: infer numeric columns with &lt;= 2 bytes, format width &gt; 0 and format precision = 0, as <code>Short</code>.<br><br><code>maxSplitSize</code>: maximum byte length of input splits which can be decreased to force higher parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
+</tr>
+
+<tr>
+<td>schemaURI</td>
+<td>URI</td>
+<td>false</td>
+<td><p>Used for multiple purposes:</p>
+
+<ul>
+<li><p>Can be used to set metadata on a the extracted <code>DataFrame</code>. Note this will overwrite the existing metadata if it exists.</p></li>
+
+<li><p>Can be used to specify a schema in case of no input files. This stage will create an empty <code>DataFrame</code> with this schema so any downstream logic that depends on the columns in this dataset, e.g. <code>SQLTransform</code>, is still able to run. This feature can be used to allow deployment of business logic that depends on a dataset which has not been enabled by an upstream sending system.</p></li>
+</ul>
+</td>
+</tr>
+
+<tr>
+<td>schemaView</td>
+<td>String</td>
+<td>false</td>
+<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-16">Examples</h3>
+
+<h4 id="minimal-16">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SASExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/*.sas7bdat&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-16">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SASExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;load customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/*.sas7bdat&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;country&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;options&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;maxSplitSize&#34;</span><span class="p">:</span> <span class="mi">100000000</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
 <h2 id="textextract">TextExtract</h2>
 
 <h5 id="since-1-2-0-supports-streaming-true-1">Since: 1.2.0 - Supports Streaming: True</h5>
 
 <p>The <code>TextExtract</code> stage reads either one or more text files and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-16">Parameters</h3>
+<h3 id="parameters-17">Parameters</h3>
 
 <table>
 <thead>
@@ -3215,9 +3380,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-16">Examples</h3>
+<h3 id="examples-17">Examples</h3>
 
-<h4 id="minimal-16">Minimal</h4>
+<h4 id="minimal-17">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TextExtract&#34;</span><span class="p">,</span>
@@ -3230,7 +3395,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-16">Complete</h4>
+<h4 id="complete-17">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TextExtract&#34;</span><span class="p">,</span>
@@ -3270,7 +3435,7 @@ FROM books_xml
 
 <p>The backtick character (`) can be used to address fields with non-alphanumeric names.</p>
 
-<h3 id="parameters-17">Parameters</h3>
+<h3 id="parameters-18">Parameters</h3>
 
 <table>
 <thead>
@@ -3383,9 +3548,9 @@ FROM books_xml
 </tbody>
 </table>
 
-<h3 id="examples-17">Examples</h3>
+<h3 id="examples-18">Examples</h3>
 
-<h4 id="minimal-17">Minimal</h4>
+<h4 id="minimal-18">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLExtract&#34;</span><span class="p">,</span>
@@ -3398,7 +3563,7 @@ FROM books_xml
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-17">Complete</h4>
+<h4 id="complete-18">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLExtract&#34;</span><span class="p">,</span>
