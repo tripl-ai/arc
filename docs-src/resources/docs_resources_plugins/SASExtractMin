@@ -1,0 +1,10 @@
+{
+  "type": "SASExtract",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/customer/*.sas7bdat",
+  "outputView": "customer"
+}

@@ -142,8 +142,10 @@ The `DeltaLakeExtract` stage reads one or more [DeltaLake](https://delta.io/) fi
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|options|Map[String, String]|false|Time travel options to allow loading previous versions of the data. These values are limited to:<br><br>`versionAsOf` allows travelling to a specific version.<br><br>`timestampAsOf` allows travelling to the state before a specified timestamp.<br><br>`relativeVersion` allows travelling relative to the current version where the current version is `0` and `-1` is the previous version.|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+
 
 ### Examples
 
@@ -589,6 +591,41 @@ This stage has been included for testing Structured Streaming jobs as it can be 
 
 #### Complete
 {{< readfile file="/resources/docs_resources/RateExtractComplete" highlight="json" >}} 
+
+
+## SASExtract
+##### Since: 2.4.0 - Supports Streaming: True
+
+{{< note title="Plugin" >}}
+The `SASExtract` is provided by the https://github.com/tripl-ai/arc-sas-pipeline-plugin package.
+{{</note>}}
+
+The `SASExtract` stage reads a collection from SAS `sas7bdat` binary file and returns a `DataFrame`. 
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|true|URI/Glob of the input `sas7bdat` files.|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|options|Map[String, String]|false|Options for reading the `sas7bdat` file. These values are limited to:<br><br>`inferDecimal`: infer numeric columns with format width  > 0 and format precision > 0, as `Decimal(Width, Precision)`.<br><br>`inferDecimalScale`: scale of inferred decimals.<br><br>`inferFloat`: infer numeric columns with <= 4 bytes, as `Float`.<br><br>`inferInt`: infer numeric columns with <= 4 bytes, format width > 0 and format precision =0, as `Int`.<br><br>`inferLong`: infer numeric columns with <= 8 bytes, format width > 0 and format precision = 0, as `Long`.<br><br>`inferShort`: infer numeric columns with <= 2 bytes, format width > 0 and format precision = 0, as `Short`.<br><br>`maxSplitSize`: maximum byte length of input splits which can be decreased to force higher parallelism.|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/SASExtractMin" highlight="json" >}} 
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/SASExtractComplete" highlight="json" >}} 
 
 
 ## TextExtract
