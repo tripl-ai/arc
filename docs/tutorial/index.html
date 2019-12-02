@@ -421,7 +421,7 @@
 
 			
 
-<p>This tutorial works through a real-world example using the <a href="http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml">New York City Taxi dataset</a> which has been used heavliy around the web (see: <a href="http://toddwschneider.com/posts/analyzing-1-1-billion-nyc-taxi-and-uber-trips-with-a-vengeance/">Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance</a> and <a href="http://tech.marksblogg.com/billion-nyc-taxi-rides-redshift.html">A Billion Taxi Rides in Redshift</a>) due to its 1 billion+ record count and public data available via the <a href="https://registry.opendata.aws/nyc-tlc-trip-records-pds/">Registry of Open Data on AWS</a>.</p>
+<p>This tutorial works through a real-world example using the <a href="http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml">New York City Taxi dataset</a> which has been used many times (see: <a href="http://toddwschneider.com/posts/analyzing-1-1-billion-nyc-taxi-and-uber-trips-with-a-vengeance/">Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance</a> and <a href="http://tech.marksblogg.com/billion-nyc-taxi-rides-redshift.html">A Billion Taxi Rides in Redshift</a>) due to its 1 billion+ record count and public data available via the <a href="https://registry.opendata.aws/nyc-tlc-trip-records-pds/">Registry of Open Data on AWS</a>.</p>
 
 <p>It is a great dataset as it has a lot of the attributes of real-world data that need to be considered:</p>
 
@@ -442,7 +442,7 @@
 cd arc-starter
 </code></pre>
 
-<p>To start <code>arc-juptyer</code> run the following command. The only option that needs to be configured is the <code>-Xmx4096m</code> to set the memory availble to Spark. This value needs to be less than or equal to the amount of memory allocated to Docker.</p>
+<p>To start <code>arc-juptyer</code> run the following command. The only option that needs to be configured is the <code>-Xmx4096m</code> to set the memory available to Spark. This value needs to be less than or equal to the amount of memory allocated to Docker.</p>
 
 <pre><code class="language-bash">docker run \
 --name arc-jupyter \
@@ -464,13 +464,13 @@ start-notebook.sh \
 
 <h2 id="extracting-data">Extracting Data</h2>
 
-<p>From the Juptyter main screen select <code>New</code> then <code>Arc</code> under <code>notebook</code>. We will be building the job in this notebook.</p>
+<p>From the Jupyter main screen select <code>New</code> then <code>Arc</code> under <code>notebook</code>. We will be building the job in this notebook.</p>
 
-<p>The first stage we are going to add is a <code>DelimitedExtract</code> stage because the source data is in Comma-Seperated Values format delimited by &lsquo;<code>,</code>&rsquo;. This stage will instruct Arc to extract the data in all <code>.csv</code> files from the <code>inputURI</code> path and register as the internal view <code>green_tripdata0_raw</code> so the data can be accessed in subsequent job stages.</p>
+<p>The first stage we are going to add is a <code>DelimitedExtract</code> stage because the source data is in Comma-Separated Values format delimited by &lsquo;<code>,</code>&rsquo;. This stage will instruct Arc to extract the data in all <code>.csv</code> files from the <code>inputURI</code> path and register as the internal view <code>green_tripdata0_raw</code> so the data can be accessed in subsequent job stages.</p>
 
 <div class="admonition note">
 <p class="admonition-title">Authentication</p>
-<p>Because this data is hosted on the public <a href="https://registry.opendata.aws/nyc-tlc-trip-records-pds/">Registry of Open Data on AWS</a> we need to explicity add an <a href="../partials/#authentication">Authentication</a> mechanism however if you are deploying into your own environment you will likely have role based access control (like IAM) and do not require this.</p>
+<p>Because this data is hosted on the public <a href="https://registry.opendata.aws/nyc-tlc-trip-records-pds/">Registry of Open Data on AWS</a> we need to explicitly add an <a href="../partials/#authentication">Authentication</a> mechanism however if you are deploying into your own environment you will likely have role based access control (like IAM) and do not require this.</p>
 </div>
 
 <pre><code class="language-json">{
@@ -585,7 +585,7 @@ start-notebook.sh \
 
 <p>To make this data more useful for querying (for example doing aggregation by time period) we need to <strong>safely</strong> apply data typing.</p>
 
-<p>Add a new stage to apply a <code>TypingTransformation</code> to the data extracted in the first stage named <code>green_tripdata0_raw</code> which will parse the data and produce an output dataset called <code>green_tripdata0</code> with correctly typed data. To do this we have to tell Arc how to parse the <code>string</code> data back into their original data types (like <code>timestamp</code> or <code>integer</code>). To do this transformation we need some way to pass in the description of how to parse the data and that is descriped in the <code>metadata</code> file passed in using the <code>schemaURI</code> key and described in the next step.</p>
+<p>Add a new stage to apply a <code>TypingTransformation</code> to the data extracted in the first stage named <code>green_tripdata0_raw</code> which will parse the data and produce an output dataset called <code>green_tripdata0</code> with correctly typed data. To do this we have to tell Arc how to parse the <code>string</code> data back into their original data types (like <code>timestamp</code> or <code>integer</code>). To do this transformation we need some way to pass in the description of how to parse the data and that is described in the <code>metadata</code> file passed in using the <code>schemaURI</code> key and described in the next step.</p>
 
 <pre><code class="language-json">{
   &quot;type&quot;: &quot;TypingTransform&quot;,
@@ -1298,7 +1298,7 @@ FROM (
       WHEN trip_distance &gt; 0 AND passenger_count = 0 THEN 1
       ELSE 0
     END AS distance_without_passenger   
-  FROM ${input_table}
+  FROM ${inputView}
 ) input_table
 </code></pre>
 

@@ -19,7 +19,7 @@
       <guid>https://arc.tripl.ai/getting-started/</guid>
       <description>Notebook Arc provides an interactive development experience via a custom Jupyter Notebooks extension. This has been bundled and is available as a Docker image: https://hub.docker.com/r/triplai/arc-jupyter
 Get Started To quickly get started with a real-world example with real data you can clone the Arc Starter project which has included job definitions and includes a limited set of data for you to quickly try Arc:
-git clone https://github.com/tripl-ai/arc-starter.git cd arc-starter ./.develop.sh  To work through a complete example try completing the tutorial.</description>
+git clone https://github.com/tripl-ai/arc-starter.git cd arc-starter ./develop.sh  To work through a complete example try completing the tutorial.</description>
     </item>
     
     <item>
@@ -28,7 +28,7 @@ git clone https://github.com/tripl-ai/arc-starter.git cd arc-starter ./.develop.
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/tutorial/</guid>
-      <description>This tutorial works through a real-world example using the New York City Taxi dataset which has been used heavliy around the web (see: Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance and A Billion Taxi Rides in Redshift) due to its 1 billion+ record count and public data available via the Registry of Open Data on AWS.
+      <description>This tutorial works through a real-world example using the New York City Taxi dataset which has been used many times (see: Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance and A Billion Taxi Rides in Redshift) due to its 1 billion+ record count and public data available via the Registry of Open Data on AWS.
 It is a great dataset as it has a lot of the attributes of real-world data that need to be considered:</description>
     </item>
     
