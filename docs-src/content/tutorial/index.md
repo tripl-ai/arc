@@ -274,6 +274,28 @@ In this case before the SQL statement is executed the named parameter `${inputVi
 A `TypingTransformation` is a big and computationally expensive operation so if you are going to do multiple operations against that dataset (as we are) set the `"persist": true` option so that Spark will cache the dataset after applying the types.
 {{</note>}}
 
+## Viewing the Metadata
+
+Arc allows users to define and store metadata (that is data which describes columns) attached the dataset. This data can be simple things like the `description` field shown below or [more complex metadata](/metadata). By storing the metadata with the actual dataset you can safely write out the data using enriched formats like [ParquetLoad](/load/#parquetload) or [DeltaLakeLoad](/load/#deltalakeload) and when those files are read in the future they will have that metadata still attached and in sync.
+
+Numerous stages have been added to explicitly operate against the metadata: 
+
+- [MetadataExtract](/extract/#metadataextract) which creates an Arc `metadata` dataframe from a view.
+- [MetadataTransform](/transform/#metadatatransform) which allows you to attach/override the metadata attached to a view.
+- [MetadataFilterTransform](/transform/#metadatafiltertransform) which allows columns from an input view to be automatically filtered based on their metadata.
+- [MetadataValidate](/validate/#metadatavalidate) which allows runtime rules to be aplied against a view's metadata.
+
+Running:
+
+```bash
+%metadata
+green_tripdata0
+```
+
+Will produce an output like:
+
+![arc-starter](/img/metadata.png)
+
 ## Saving Data
 
 The final step is to do something with the data. This could be any of the [Load](/load/) stages but for our use case we will do a [DeltaLakeLoad](/load/#deltalakeload). [DeltaLake](https://delta.io) is a great because:

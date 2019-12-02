@@ -127,13 +127,13 @@ object MetadataFilterTransformStage {
     // get fields that meet condition from query result
     val inputFields = df.columns.toSet
     val includeColumns = filterDF.collect.map(field => { field.getString(field.fieldIndex("name")) }).toSet
-    val excldueColumns = inputFields.diff(includeColumns)
+    val excludeColumns = inputFields.diff(includeColumns)
 
     stage.stageDetail.put("includedColumns", includeColumns.asJava)
-    stage.stageDetail.put("excludedColumns", excldueColumns.asJava)
+    stage.stageDetail.put("excludedColumns", excludeColumns.asJava)
 
     // drop fields in the excluded set
-    val transformedDF = df.drop(excldueColumns.toList:_*)
+    val transformedDF = df.drop(excludeColumns.toList:_*)
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
