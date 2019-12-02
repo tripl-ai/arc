@@ -1,7 +1,6 @@
 package ai.tripl.arc.extract
 
 import java.io._
-import java.lang._
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._

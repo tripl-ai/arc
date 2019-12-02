@@ -451,7 +451,7 @@ cd arc-starter
 -e JAVA_OPTS=&quot;-Xmx4096m&quot; \
 -p 4040:4040 \
 -p 8888:8888 \
-triplai/arc-jupyter:arc-jupyter_1.8.0_scala_2.12_1.0.0 \
+triplai/arc-jupyter:arc-jupyter_1.9.1_scala_2.12_1.0.0 \
 start-notebook.sh \
 --NotebookApp.password='' \
 --NotebookApp.token=''
@@ -767,6 +767,29 @@ FROM (
 <p class="admonition-title">Data Caching</p>
 <p>A <code>TypingTransformation</code> is a big and computationally expensive operation so if you are going to do multiple operations against that dataset (as we are) set the <code>&quot;persist&quot;: true</code> option so that Spark will cache the dataset after applying the types.</p>
 </div>
+
+<h2 id="viewing-the-metadata">Viewing the Metadata</h2>
+
+<p>Arc allows users to define and store metadata (that is data which describes columns) attached the dataset. This data can be simple things like the <code>description</code> field shown below or <a href="https://arc.tripl.ai/metadata">more complex metadata</a>. By storing the metadata with the actual dataset you can safely write out the data using enriched formats like <a href="https://arc.tripl.ai/load/#parquetload">ParquetLoad</a> or <a href="https://arc.tripl.ai/load/#deltalakeload">DeltaLakeLoad</a> and when those files are read in the future they will have that metadata still attached and in sync.</p>
+
+<p>Numerous stages have been added to explicitly operate against the metadata:</p>
+
+<ul>
+<li><a href="https://arc.tripl.ai/extract/#metadataextract">MetadataExtract</a> which creates an Arc <code>metadata</code> dataframe from a view.</li>
+<li><a href="https://arc.tripl.ai/transform/#metadatatransform">MetadataTransform</a> which allows you to attach/override the metadata attached to a view.</li>
+<li><a href="https://arc.tripl.ai/transform/#metadatafiltertransform">MetadataFilterTransform</a> which allows columns from an input view to be automatically filtered based on their metadata.</li>
+<li><a href="https://arc.tripl.ai/validate/#metadatavalidate">MetadataValidate</a> which allows runtime rules to be aplied against a view&rsquo;s metadata.</li>
+</ul>
+
+<p>Running:</p>
+
+<pre><code class="language-bash">%metadata
+green_tripdata0
+</code></pre>
+
+<p>Will produce an output like:</p>
+
+<p><img src="https://arc.tripl.ai/img/metadata.png" alt="arc-starter" /></p>
 
 <h2 id="saving-data">Saving Data</h2>
 
