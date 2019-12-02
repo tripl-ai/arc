@@ -4,7 +4,7 @@ weight: 15
 type: blog
 ---
 
-This tutorial works through a real-world example using the [New York City Taxi dataset](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml) which has been used heavliy around the web (see: [Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance](http://toddwschneider.com/posts/analyzing-1-1-billion-nyc-taxi-and-uber-trips-with-a-vengeance/) and [A Billion Taxi Rides in Redshift](http://tech.marksblogg.com/billion-nyc-taxi-rides-redshift.html)) due to its 1 billion+ record count and public data available via the [Registry of Open Data on AWS](https://registry.opendata.aws/nyc-tlc-trip-records-pds/).
+This tutorial works through a real-world example using the [New York City Taxi dataset](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml) which has been used many times (see: [Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance](http://toddwschneider.com/posts/analyzing-1-1-billion-nyc-taxi-and-uber-trips-with-a-vengeance/) and [A Billion Taxi Rides in Redshift](http://tech.marksblogg.com/billion-nyc-taxi-rides-redshift.html)) due to its 1 billion+ record count and public data available via the [Registry of Open Data on AWS](https://registry.opendata.aws/nyc-tlc-trip-records-pds/).
 
 It is a great dataset as it has a lot of the attributes of real-world data that need to be considered:
 
@@ -24,7 +24,7 @@ git clone https://github.com/tripl-ai/arc-starter.git
 cd arc-starter
 ```
 
-To start `arc-juptyer` run the following command. The only option that needs to be configured is the `-Xmx4096m` to set the memory availble to Spark. This value needs to be less than or equal to the amount of memory allocated to Docker.
+To start `arc-juptyer` run the following command. The only option that needs to be configured is the `-Xmx4096m` to set the memory available to Spark. This value needs to be less than or equal to the amount of memory allocated to Docker.
 
 ```bash
 docker run \
@@ -48,12 +48,12 @@ This has been scripted and can be called by executing:
 
 ## Extracting Data
 
-From the Juptyter main screen select `New` then `Arc` under `notebook`. We will be building the job in this notebook.
+From the Jupyter main screen select `New` then `Arc` under `notebook`. We will be building the job in this notebook.
 
-The first stage we are going to add is a `DelimitedExtract` stage because the source data is in Comma-Seperated Values format delimited by '`,`'. This stage will instruct Arc to extract the data in all `.csv` files from the `inputURI` path and register as the internal view `green_tripdata0_raw` so the data can be accessed in subsequent job stages. 
+The first stage we are going to add is a `DelimitedExtract` stage because the source data is in Comma-Separated Values format delimited by '`,`'. This stage will instruct Arc to extract the data in all `.csv` files from the `inputURI` path and register as the internal view `green_tripdata0_raw` so the data can be accessed in subsequent job stages. 
 
 {{< note title="Authentication" >}}
-Because this data is hosted on the public [Registry of Open Data on AWS](https://registry.opendata.aws/nyc-tlc-trip-records-pds/) we need to explicity add an [Authentication](../partials/#authentication) mechanism however if you are deploying into your own environment you will likely have role based access control (like IAM) and do not require this.
+Because this data is hosted on the public [Registry of Open Data on AWS](https://registry.opendata.aws/nyc-tlc-trip-records-pds/) we need to explicitly add an [Authentication](../partials/#authentication) mechanism however if you are deploying into your own environment you will likely have role based access control (like IAM) and do not require this.
 {{</note>}}
 
 ```json
@@ -91,7 +91,7 @@ At this stage we have a stage which will tell Spark where to read one or more `.
 
 To make this data more useful for querying (for example doing aggregation by time period) we need to **safely** apply data typing. 
 
-Add a new stage to apply a `TypingTransformation` to the data extracted in the first stage named `green_tripdata0_raw` which will parse the data and produce an output dataset called `green_tripdata0` with correctly typed data. To do this we have to tell Arc how to parse the `string` data back into their original data types (like `timestamp` or `integer`). To do this transformation we need some way to pass in the description of how to parse the data and that is descriped in the `metadata` file passed in using the `schemaURI` key and described in the next step.
+Add a new stage to apply a `TypingTransformation` to the data extracted in the first stage named `green_tripdata0_raw` which will parse the data and produce an output dataset called `green_tripdata0` with correctly typed data. To do this we have to tell Arc how to parse the `string` data back into their original data types (like `timestamp` or `integer`). To do this transformation we need some way to pass in the description of how to parse the data and that is described in the `metadata` file passed in using the `schemaURI` key and described in the next step.
 
 ```json
 {
@@ -719,7 +719,7 @@ FROM (
       WHEN trip_distance > 0 AND passenger_count = 0 THEN 1
       ELSE 0
     END AS distance_without_passenger   
-  FROM ${input_table}
+  FROM ${inputView}
 ) input_table
 ```
 

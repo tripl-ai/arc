@@ -17,7 +17,7 @@ To quickly get started with a real-world example with real data you can clone th
 ```bash
 git clone https://github.com/tripl-ai/arc-starter.git
 cd arc-starter
-./.develop.sh
+./develop.sh
 ```
 
 To work through a complete example try completing the [tutorial](/tutorial).
