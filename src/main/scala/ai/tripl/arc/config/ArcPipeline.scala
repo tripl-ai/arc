@@ -96,14 +96,24 @@ object ArcPipeline {
             case (Left(lifecycleErrors), Right(_)) => Left(lifecycleErrors.reverse)
             case (Right(lifecycleInstances), Right(pipelineInstances)) => {
 
-              // flatten any PipelineExecuteStage stages
-              val flatPipelineInstances: List[PipelineStage] = pipelineInstances.flatMap {
-                instance => {
-                  instance match {
-                    case ai.tripl.arc.execute.PipelineExecuteStage(_, _, _, _, pipeline) => pipeline.stages
-                    case stage: PipelineStage => List(stage)
+              // flatten any PipelineExecuteStage stages and their LifecylePlugins
+              val stages: List[(List[PipelineStage], List[LifecyclePluginInstance])] = pipelineInstances.map {
+                pipelineStage => {
+                  pipelineStage match {
+                    case ai.tripl.arc.execute.PipelineExecuteStage(_, _, _, _, pipeline, pipelineLifecycleInstances) => (pipeline.stages, pipelineLifecycleInstances)
+                    case pipelineStage: PipelineStage => (List(pipelineStage), List.empty)
                   }
                 }
+              }
+
+              // flatPipelineInstances is a merge of all the pipeline plugins
+              val flatPipelineInstances = stages.flatMap{
+                case (pipelineStage, _) => pipelineStage
+              }
+
+              // activeLifecyclePluginInstances is a merge of all the lifecycle plugins
+              val activeLifecyclePluginInstances = stages.foldLeft(lifecycleInstances) { 
+                case (lifecycleInstances, (_, pipelineLifecycleInstances)) => lifecycleInstances ::: pipelineLifecycleInstances
               }
 
               // used the resolved config to add registered lifecyclePlugins to context
@@ -120,7 +130,7 @@ object ArcPipeline {
                 commandLineArguments=arcContext.commandLineArguments,
                 dynamicConfigurationPlugins=arcContext.dynamicConfigurationPlugins,
                 lifecyclePlugins=arcContext.lifecyclePlugins,
-                activeLifecyclePlugins=lifecycleInstances,
+                activeLifecyclePlugins=activeLifecyclePluginInstances,
                 pipelineStagePlugins=arcContext.pipelineStagePlugins,
                 udfPlugins=arcContext.udfPlugins,
                 userData=arcContext.userData
