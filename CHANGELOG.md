@@ -1,5 +1,9 @@
 ## Change Log
 
+# 2.5.0
+
+- enhanced `PipelineExecute` to allow execution of nested [Lifecycle Plugins](https://arc.tripl.ai/plugins/#lifecycle-plugins).
+
 # 2.4.0
 
 - fixed defect in `DelimitedExtract` when running in streaming mode.
