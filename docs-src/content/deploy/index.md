@@ -58,30 +58,31 @@ This example is included to demonstrate:
 
 | Variable | Property | Description |
 |----------|----------|-------------|
+|ETL_CONF_ENABLE_STACKTRACE|etl.config.enableStackTrace|Whether to enable stacktraces in the event of exception which can be useful for debugging but is not very intuitive for many users. Boolean. Default `false`.|
+|ETL_CONF_ENV_ID|etl.config.environment.id|An environment identifier to be added to all logging messages. Could be something like a [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) which allows joining to logs produced by ephemeral compute started by something like [Terraform](https://www.terraform.io/).|
+|ETL_CONF_ENV|etl.config.environment|The `environment` to run under.<br><br>E.g. if `ETL_CONF_ENV` is set to `production` then a stage with `"environments": ["production", "test"]` would be executed and one with `"environments": ["test"]` would not be executed.|
+|ETL_CONF_IGNORE_ENVIRONMENTS|etl.config.ignoreEnvironments|Allows skipping the `environments` tests and execute all stages/plugins.|
 |ETL_CONF_JOB_ID|etl.config.job.id|A job identifier added to all the logging messages.|
 |ETL_CONF_JOB_NAME|etl.config.job.name|A job name added to all logging messages and Spark history server.|
+|ETL_CONF_STORAGE_LEVEL|etl.config.storageLevel|The [StorageLevel](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$) used when persisting datasets. String. Default `MEMORY_AND_DISK_SER`.|
+|ETL_CONF_STREAMING|etl.config.streaming|Run in [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html) mode or not. Boolean. Default `false`.|
 |ETL_CONF_TAGS|etl.config.tags|Custom key/value tags separated by space to add to all logging messages.<br><br>E.g. `ETL_CONF_TAGS=cost_center=123456 owner=jovyan`.|
-|ETL_CONF_ENV|etl.config.environment|The `environment` to run under.<br><br>E.g. if `ETL_CONF_ENV` is set to `production` then a stage with `"environments": ["production", "test"]` would be executed and one with `"environments": ["test"]` would not be executed.|
-|ETL_CONF_ENV_ID|etl.config.environment.id|An environment identifier to be added to all logging messages. Could be something like a [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) which allows joining to logs produced by ephemeral compute started by something like [Terraform](https://www.terraform.io/).|
-|ETL_CONF_IGNORE_ENVIRONMENTS|etl.config.ignoreEnvironments|Allows skipping the `environments` tests and execute all stages/plugins.|
 |ETL_CONF_URI|etl.config.uri|The URI of the job file to execute.|
-|ETL_CONF_STREAMING|etl.config.streaming|Run in [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html) mode or not. Boolean default `false`.|
-|ETL_CONF_STORAGE_LEVEL|etl.config.storageLevel|The [StorageLevel](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$) used when persisting datasets. String default `MEMORY_AND_DISK_SER`.|
 
 Additionally there are permissions arguments that can be used to retrieve the job file from cloud storage:
 
 | Variable | Property | Description |
 |----------|----------|-------------|
-|ETL_CONF_S3A_ACCESS_KEY|etl.config.fs.s3a.access.key|The access key for connecting to Amazon S3.|
-|ETL_CONF_S3A_SECRET_KEY|etl.config.fs.s3a.secret.key|The secret for connecting to Amazon S3.|
-|ETL_CONF_S3A_ENDPOINT|etl.config.fs.s3a.endpoint|The endpoint for connecting to Amazon S3.|
-|ETL_CONF_S3A_CONNECTION_SSL_ENABLED|etl.config.fs.s3a.connection.ssl.enabled|Whether to enable SSL connection to Amazon S3.|
-|ETL_CONF_AZURE_ACCOUNT_NAME|etl.config.fs.azure.account.name|The account name for connecting to Azure Blob Storage.|
-|ETL_CONF_AZURE_ACCOUNT_KEY|etl.config.fs.azure.account.key|The account key for connecting to Azure Blob Storage.|
 |ETL_CONF_ADL_OAUTH2_CLIENT_ID|etl.config.fs.adl.oauth2.client.id|The OAuth client identifier for connecting to Azure Data Lake.|
 |ETL_CONF_ADL_OAUTH2_REFRESH_TOKEN|etl.config.fs.adl.oauth2.refresh.token|The OAuth refresh token for connecting to Azure Data Lake.|
-|ETL_CONF_GOOGLE_CLOUD_PROJECT_ID|etl.config.fs.gs.project.id|The project identifier for connecting to Google Cloud Storage.|
+|ETL_CONF_AZURE_ACCOUNT_KEY|etl.config.fs.azure.account.key|The account key for connecting to Azure Blob Storage.|
+|ETL_CONF_AZURE_ACCOUNT_NAME|etl.config.fs.azure.account.name|The account name for connecting to Azure Blob Storage.|
 |ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE|etl.config.fs.google.cloud.auth.service.account.json.keyfile|The service account json keyfile path for connecting to Google Cloud Storage.|
+|ETL_CONF_GOOGLE_CLOUD_PROJECT_ID|etl.config.fs.gs.project.id|The project identifier for connecting to Google Cloud Storage.|
+|ETL_CONF_S3A_ACCESS_KEY|etl.config.fs.s3a.access.key|The access key for connecting to Amazon S3.|
+|ETL_CONF_S3A_CONNECTION_SSL_ENABLED|etl.config.fs.s3a.connection.ssl.enabled|Whether to enable SSL connection to Amazon S3.|
+|ETL_CONF_S3A_ENDPOINT|etl.config.fs.s3a.endpoint|The endpoint for connecting to Amazon S3.|
+|ETL_CONF_S3A_SECRET_KEY|etl.config.fs.s3a.secret.key|The secret for connecting to Amazon S3.|
 
 ## Examples
 
