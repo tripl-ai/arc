@@ -64,6 +64,13 @@ object ARC {
     }
     MDC.put("ignoreEnvironments", ignoreEnvironments.toString)
 
+    val enableStackTrace = commandLineArguments.get("etl.config.enableStackTrace").orElse(envOrNone("ETL_CONF_ENABLE_STACKTRACE")) match {
+      case Some(v) if v.trim.toLowerCase == "true" => true
+      case Some(v) if v.trim.toLowerCase == "false" => false
+      case _ => false
+    }
+    MDC.put("enableStackTrace", enableStackTrace.toString)    
+
     val configUri: Option[String] = commandLineArguments.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))
 
     val frameworkVersion = Utils.getFrameworkVersion
@@ -79,12 +86,14 @@ object ARC {
       case e: Exception =>
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
         val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
-        val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
         val detail = new java.util.HashMap[String, Object]()
         detail.put("event", "exception")
         detail.put("messages", exceptionThrowablesMessages)
-        detail.put("stackTrace", exceptionThrowablesStackTraces)
+
+        if (enableStackTrace) {
+          detail.put("stackTrace", exceptionThrowables.map(e => e.getStackTrace).asJava)
+        }
 
         val logger = LoggerFactory.getLogger(jobId.getOrElse(s"arc:${frameworkVersion}-${UUID.randomUUID.toString}"))
         logger.error()
@@ -208,12 +217,14 @@ object ARC {
       case e: Exception =>
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
         val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
-        val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
         val detail = new java.util.HashMap[String, Object]()
         detail.put("event", "exception")
         detail.put("messages", exceptionThrowablesMessages)
-        detail.put("stackTrace", exceptionThrowablesStackTraces)
+
+        if (enableStackTrace) {
+          detail.put("stackTrace", exceptionThrowables.map(e => e.getStackTrace).asJava)
+        }
 
         logger.error()
           .field("event", "exit")
@@ -252,12 +263,14 @@ object ARC {
       case e: Exception =>
         val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
         val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
-        val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
         val detail = new java.util.HashMap[String, Object]()
         detail.put("event", "exception")
         detail.put("messages", exceptionThrowablesMessages)
-        detail.put("stackTrace", exceptionThrowablesStackTraces)
+
+        if (enableStackTrace) {
+          detail.put("stackTrace", exceptionThrowables.map(e => e.getStackTrace).asJava)
+        }
 
         logger.error()
           .field("event", "exit")
@@ -288,11 +301,13 @@ object ARC {
           case e: Exception with DetailException =>
             val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
             val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
-            val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
             e.detail.put("event", "exception")
             e.detail.put("messages", exceptionThrowablesMessages)
-            e.detail.put("stackTrace", exceptionThrowablesStackTraces)
+
+            if (enableStackTrace) {
+              e.detail.put("stackTrace", exceptionThrowables.map(e => e.getStackTrace).asJava)
+            }
 
             logger.error()
               .field("event", "exit")
@@ -307,12 +322,14 @@ object ARC {
           case e: Exception =>
             val exceptionThrowables = ExceptionUtils.getThrowableList(e).asScala
             val exceptionThrowablesMessages = exceptionThrowables.map(e => e.getMessage).asJava
-            val exceptionThrowablesStackTraces = exceptionThrowables.map(e => e.getStackTrace).asJava
 
             val detail = new java.util.HashMap[String, Object]()
             detail.put("event", "exception")
             detail.put("messages", exceptionThrowablesMessages)
-            detail.put("stackTrace", exceptionThrowablesStackTraces)
+
+            if (enableStackTrace) {
+              detail.put("stackTrace", exceptionThrowables.map(e => e.getStackTrace).asJava)
+            }
 
             logger.error()
               .field("event", "exit")
