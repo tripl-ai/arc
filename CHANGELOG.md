@@ -1,5 +1,9 @@
 ## Change Log
 
+# 2.5.0
+
+- changed Stack Trace logging to be opt-in when errors occur (default `false`) via parameters `ETL_CONF_ENABLE_STACKTRACE` and `etl.config.enableStackTrace`.
+
 # 2.4.0
 
 - fixed defect in `DelimitedExtract` when running in streaming mode.
