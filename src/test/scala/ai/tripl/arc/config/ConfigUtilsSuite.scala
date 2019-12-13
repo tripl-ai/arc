@@ -263,7 +263,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(errors) => assert(false)
+      case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => {
         pipeline.stages(0) match {
           case s: extract.DelimitedExtractStage => assert(s.settings.customDelimiter == "%")
@@ -303,7 +303,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(errors) => assert(false)
+      case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => {
         assert(pipeline.stages(0).name == "foo")
       }
@@ -357,10 +357,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/pipeline.conf")), arcContext)
 
     pipelineEither match {
-      case Left(errors) => {
-        println(errors)
-        assert(false)
-      }
+      case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => {
         ARC.run(pipeline)
         assert(spark.sql("SELECT * FROM stage4").count == 2)
@@ -444,10 +441,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(errors) => {
-        println(errors)
-        assert(false)
-      }
+      case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => {
         val stage = pipeline.stages(0).asInstanceOf[extract.DelimitedExtractStage]
         assert(stage.watermark.get.eventTime === "timecolumn")
@@ -465,10 +459,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/job.ipynb")), arcContext)
 
     pipelineEither match {
-      case Left(errors) => {
-        println(errors)
-        assert(false)
-      }
+      case Left(err) => fail(err.toString)
       case Right((pipeline, arcCtx)) => {
         assert(arcCtx.activeLifecyclePlugins.length == 1)
         assert(arcCtx.dynamicConfigurationPlugins.length == 1)

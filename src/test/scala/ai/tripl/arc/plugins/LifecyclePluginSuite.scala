@@ -38,6 +38,7 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
     import spark.implicits._
 
+    // create single row dataset
     val df = Seq((s"testKey,testValue")).toDF("value")
     df.createOrReplaceTempView("inputView")
 

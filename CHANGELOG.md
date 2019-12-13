@@ -2,6 +2,7 @@
 
 # 2.5.0
 
+- enhanced `PipelineExecute` to allow execution of nested [Lifecycle Plugins](https://arc.tripl.ai/plugins/#lifecycle-plugins).
 - changed Stack Trace logging to be opt-in when errors occur (default `false`) via parameters `ETL_CONF_ENABLE_STACKTRACE` and `etl.config.enableStackTrace`.
 
 # 2.4.0
