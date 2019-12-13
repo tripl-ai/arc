@@ -1,5 +1,12 @@
 ## Change Log
 
+# 2.5.0
+
+- enhanced `PipelineExecute` to allow execution of nested [Lifecycle Plugins](https://arc.tripl.ai/plugins/#lifecycle-plugins).
+- changed Stack Trace logging to be opt-in when errors occur (default `false`) via parameters `ETL_CONF_ENABLE_STACKTRACE` and `etl.config.enableStackTrace`.
+
+**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
+
 # 2.4.0
 
 - fixed defect in `DelimitedExtract` when running in streaming mode.

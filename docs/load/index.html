@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.4.0</span></strong>
+          <span class="version">2.5.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -850,6 +850,13 @@
 <td>false</td>
 <td>The mode for writing the output file to describe how errors are handled. Available options are: <code>Append</code>, <code>ErrorIfExists</code>, <code>Ignore</code>, <code>Overwrite</code>. Default is <code>Overwrite</code> if not specified.</td>
 </tr>
+
+<tr>
+<td>generateSymlinkManifest</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Create a manifest file so that the DeltaLakeLoad output can be read by a Presto database.<br><br>Default: <code>true</code></td>
+</tr>
 </tbody>
 </table>
 
@@ -884,7 +891,8 @@
   <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;country&#34;</span>
   <span class="p">],</span>
-  <span class="nt">&#34;saveMode&#34;</span><span class="p">:</span> <span class="s2">&#34;Overwrite&#34;</span>
+  <span class="nt">&#34;saveMode&#34;</span><span class="p">:</span> <span class="s2">&#34;Overwrite&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;generateSymlinkManifest&#34;</span><span class="p">:</span> <span class="kc">true</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="delimitedload">DelimitedLoad</h2>

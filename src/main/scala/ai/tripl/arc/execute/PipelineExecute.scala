@@ -42,7 +42,8 @@ class PipelineExecute extends PipelineStagePlugin {
               name=name,
               description=description,
               uri=uri,
-              pipeline=pipeline
+              pipeline=pipeline,
+              activeLifecyclePlugins=ctx.activeLifecyclePlugins
             )
 
             Right(stage)
@@ -66,7 +67,8 @@ case class PipelineExecuteStage(
     name: String,
     description: Option[String],
     uri: URI,
-    pipeline: ETLPipeline
+    pipeline: ETLPipeline,
+    activeLifecyclePlugins: List[LifecyclePluginInstance]
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
