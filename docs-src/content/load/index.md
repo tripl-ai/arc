@@ -117,6 +117,7 @@ The `DeltaLakeLoad` writes an input `DataFrame` to a target [DeltaLake](https://
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
+|generateSymlinkManifest|Boolean|false|Create a manifest file so that the DeltaLakeLoad output can be read by a Presto database.<br><br>Default: `true`|
 
 ### Examples
 

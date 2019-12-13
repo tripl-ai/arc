@@ -12,5 +12,6 @@
   "partitionBy": [
     "country"
   ],
-  "saveMode": "Overwrite"
+  "saveMode": "Overwrite",
+  "generateSymlinkManifest": true
 }

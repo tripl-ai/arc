@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.4.0</span></strong>
+          <span class="version">2.5.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -430,7 +430,7 @@
 <pre><code class="language-json">docker run \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&quot; \
--it -p 4040:4040 triplai/arc:arc_2.4.0_spark_2.4.4_scala_2.12_hadoop_2.9.2_1.0.0 \
+-it -p 4040:4040 triplai/arc:arc_2.5.0_spark_2.4.4_scala_2.12_hadoop_2.9.2_1.0.0 \
 bin/spark-submit \
 --master local[*] \
 --class ai.tripl.arc.ARC \
@@ -484,6 +484,30 @@ bin/spark-submit \
 
 <tbody>
 <tr>
+<td>ETL_CONF_ENABLE_STACKTRACE</td>
+<td>etl.config.enableStackTrace</td>
+<td>Whether to enable stacktraces in the event of exception which can be useful for debugging but is not very intuitive for many users. Boolean. Default <code>false</code>.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_ENV_ID</td>
+<td>etl.config.environment.id</td>
+<td>An environment identifier to be added to all logging messages. Could be something like a <a href="https://en.wikipedia.org/wiki/Universally_unique_identifier">UUID</a> which allows joining to logs produced by ephemeral compute started by something like <a href="https://www.terraform.io/">Terraform</a>.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_ENV</td>
+<td>etl.config.environment</td>
+<td>The <code>environment</code> to run under.<br><br>E.g. if <code>ETL_CONF_ENV</code> is set to <code>production</code> then a stage with <code>&quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;]</code> would be executed and one with <code>&quot;environments&quot;: [&quot;test&quot;]</code> would not be executed.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_IGNORE_ENVIRONMENTS</td>
+<td>etl.config.ignoreEnvironments</td>
+<td>Allows skipping the <code>environments</code> tests and execute all stages/plugins.</td>
+</tr>
+
+<tr>
 <td>ETL_CONF_JOB_ID</td>
 <td>etl.config.job.id</td>
 <td>A job identifier added to all the logging messages.</td>
@@ -496,45 +520,27 @@ bin/spark-submit \
 </tr>
 
 <tr>
+<td>ETL_CONF_STORAGE_LEVEL</td>
+<td>etl.config.storageLevel</td>
+<td>The <a href="https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$">StorageLevel</a> used when persisting datasets. String. Default <code>MEMORY_AND_DISK_SER</code>.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_STREAMING</td>
+<td>etl.config.streaming</td>
+<td>Run in <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html">Structured Streaming</a> mode or not. Boolean. Default <code>false</code>.</td>
+</tr>
+
+<tr>
 <td>ETL_CONF_TAGS</td>
 <td>etl.config.tags</td>
 <td>Custom key/value tags separated by space to add to all logging messages.<br><br>E.g. <code>ETL_CONF_TAGS=cost_center=123456 owner=jovyan</code>.</td>
 </tr>
 
 <tr>
-<td>ETL_CONF_ENV</td>
-<td>etl.config.environment</td>
-<td>The <code>environment</code> to run under.<br><br>E.g. if <code>ETL_CONF_ENV</code> is set to <code>production</code> then a stage with <code>&quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;]</code> would be executed and one with <code>&quot;environments&quot;: [&quot;test&quot;]</code> would not be executed.</td>
-</tr>
-
-<tr>
-<td>ETL_CONF_ENV_ID</td>
-<td>etl.config.environment.id</td>
-<td>An environment identifier to be added to all logging messages. Could be something like a <a href="https://en.wikipedia.org/wiki/Universally_unique_identifier">UUID</a> which allows joining to logs produced by ephemeral compute started by something like <a href="https://www.terraform.io/">Terraform</a>.</td>
-</tr>
-
-<tr>
-<td>ETL_CONF_IGNORE_ENVIRONMENTS</td>
-<td>etl.config.ignoreEnvironments</td>
-<td>Allows skipping the <code>environments</code> tests and execute all stages/plugins.</td>
-</tr>
-
-<tr>
 <td>ETL_CONF_URI</td>
 <td>etl.config.uri</td>
 <td>The URI of the job file to execute.</td>
-</tr>
-
-<tr>
-<td>ETL_CONF_STREAMING</td>
-<td>etl.config.streaming</td>
-<td>Run in <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html">Structured Streaming</a> mode or not. Boolean default <code>false</code>.</td>
-</tr>
-
-<tr>
-<td>ETL_CONF_STORAGE_LEVEL</td>
-<td>etl.config.storageLevel</td>
-<td>The <a href="https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$">StorageLevel</a> used when persisting datasets. String default <code>MEMORY_AND_DISK_SER</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -552,42 +558,6 @@ bin/spark-submit \
 
 <tbody>
 <tr>
-<td>ETL_CONF_S3A_ACCESS_KEY</td>
-<td>etl.config.fs.s3a.access.key</td>
-<td>The access key for connecting to Amazon S3.</td>
-</tr>
-
-<tr>
-<td>ETL_CONF_S3A_SECRET_KEY</td>
-<td>etl.config.fs.s3a.secret.key</td>
-<td>The secret for connecting to Amazon S3.</td>
-</tr>
-
-<tr>
-<td>ETL_CONF_S3A_ENDPOINT</td>
-<td>etl.config.fs.s3a.endpoint</td>
-<td>The endpoint for connecting to Amazon S3.</td>
-</tr>
-
-<tr>
-<td>ETL_CONF_S3A_CONNECTION_SSL_ENABLED</td>
-<td>etl.config.fs.s3a.connection.ssl.enabled</td>
-<td>Whether to enable SSL connection to Amazon S3.</td>
-</tr>
-
-<tr>
-<td>ETL_CONF_AZURE_ACCOUNT_NAME</td>
-<td>etl.config.fs.azure.account.name</td>
-<td>The account name for connecting to Azure Blob Storage.</td>
-</tr>
-
-<tr>
-<td>ETL_CONF_AZURE_ACCOUNT_KEY</td>
-<td>etl.config.fs.azure.account.key</td>
-<td>The account key for connecting to Azure Blob Storage.</td>
-</tr>
-
-<tr>
 <td>ETL_CONF_ADL_OAUTH2_CLIENT_ID</td>
 <td>etl.config.fs.adl.oauth2.client.id</td>
 <td>The OAuth client identifier for connecting to Azure Data Lake.</td>
@@ -600,15 +570,51 @@ bin/spark-submit \
 </tr>
 
 <tr>
-<td>ETL_CONF_GOOGLE_CLOUD_PROJECT_ID</td>
-<td>etl.config.fs.gs.project.id</td>
-<td>The project identifier for connecting to Google Cloud Storage.</td>
+<td>ETL_CONF_AZURE_ACCOUNT_KEY</td>
+<td>etl.config.fs.azure.account.key</td>
+<td>The account key for connecting to Azure Blob Storage.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_AZURE_ACCOUNT_NAME</td>
+<td>etl.config.fs.azure.account.name</td>
+<td>The account name for connecting to Azure Blob Storage.</td>
 </tr>
 
 <tr>
 <td>ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE</td>
 <td>etl.config.fs.google.cloud.auth.service.account.json.keyfile</td>
 <td>The service account json keyfile path for connecting to Google Cloud Storage.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_GOOGLE_CLOUD_PROJECT_ID</td>
+<td>etl.config.fs.gs.project.id</td>
+<td>The project identifier for connecting to Google Cloud Storage.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_S3A_ACCESS_KEY</td>
+<td>etl.config.fs.s3a.access.key</td>
+<td>The access key for connecting to Amazon S3.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_S3A_CONNECTION_SSL_ENABLED</td>
+<td>etl.config.fs.s3a.connection.ssl.enabled</td>
+<td>Whether to enable SSL connection to Amazon S3.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_S3A_ENDPOINT</td>
+<td>etl.config.fs.s3a.endpoint</td>
+<td>The endpoint for connecting to Amazon S3.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_S3A_SECRET_KEY</td>
+<td>etl.config.fs.s3a.secret.key</td>
+<td>The secret for connecting to Amazon S3.</td>
 </tr>
 </tbody>
 </table>
@@ -631,7 +637,7 @@ bin/spark-submit \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_STREAMING=true&quot; \
 -e &quot;ETL_CONF_ROWS_PER_SECOND=10&quot; \
--it -p 4040:4040 triplai/arc:arc_2.4.0_spark_2.4.4_scala_2.12_hadoop_2.9.2_1.0.0 \
+-it -p 4040:4040 triplai/arc:arc_2.5.0_spark_2.4.4_scala_2.12_hadoop_2.9.2_1.0.0 \
 bin/spark-submit \
 --master local[*] \
 --class ai.tripl.arc.ARC \

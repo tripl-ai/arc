@@ -113,7 +113,7 @@ It is designed to:
       <guid>https://arc.tripl.ai/deploy/</guid>
       <description>Arc has been packaged as a Docker image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the https://hub.docker.com/u/triplai for the relevant version.
 Running a Job An example command to start a job is:
-docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&amp;quot; \ -it -p 4040:4040 triplai/arc:arc_2.4.0_spark_2.4.4_scala_2.12_hadoop_2.9.2_1.0.0 \ bin/spark-submit \ --master local[*] \ --class ai.tripl.arc.ARC \ /opt/spark/jars/arc.</description>
+docker run \ -e &amp;quot;ETL_CONF_ENV=production&amp;quot; \ -e &amp;quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&amp;quot; \ -it -p 4040:4040 triplai/arc:arc_2.5.0_spark_2.4.4_scala_2.12_hadoop_2.9.2_1.0.0 \ bin/spark-submit \ --master local[*] \ --class ai.tripl.arc.ARC \ /opt/spark/jars/arc.</description>
     </item>
     
     <item>
