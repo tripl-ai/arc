@@ -55,32 +55,58 @@ object ConfigUtils {
         Right(etlConfString)
       }
       // amazon s3
+      case "s3" | "s3n" =>
+        throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
       case "s3a" => {
         val s3aAccessKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY"))
         val s3aSecretKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY"))
         val s3aEndpoint: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
         val s3aConnectionSSLEnabled: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.connection.ssl.enabled").orElse(envOrNone("ETL_CONF_S3A_CONNECTION_SSL_ENABLED"))
 
-        val accessKey = s3aAccessKey match {
-          case Some(value) => value
-          case None => throw new IllegalArgumentException(s"AWS Access Key not provided for: ${uri}. Set etl.config.fs.s3a.access.key property or ETL_CONF_S3A_ACCESS_KEY environment variable.")
-        }
-        val secretKey = s3aSecretKey match {
-          case Some(value) => value
-          case None => throw new IllegalArgumentException(s"AWS Secret Key not provided for: ${uri}. Set etl.config.fs.s3a.secret.key property or ETL_CONF_S3A_SECRET_KEY environment variable.")
-        }
-        val connectionSSLEnabled = s3aConnectionSSLEnabled match {
-          case Some(value) => {
+        val s3aAnonymous: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.anonymous").orElse(envOrNone("ETL_CONF_S3A_ANONYMOUS"))
+
+        val s3aEncType: Option[AmazonS3EncryptionType] = arcContext.commandLineArguments.get("etl.config.fs.s3a.encryption.algorithm").orElse(envOrNone("ETL_CONF_S3A_ENCRYPTION_ALGORITHM")).flatMap(AmazonS3EncryptionType.fromString(_))
+        val s3aKmsId: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.kms.arn").orElse(envOrNone("ETL_CONF_S3A_KMS_ARN"))
+        val s3aCustomKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.custom.key").orElse(envOrNone("ETL_CONF_S3A_CUSTOM_KEY"))
+
+        // try access key then anonmymous then default to iam
+        (s3aAccessKey, s3aSecretKey, s3aEndpoint, s3aConnectionSSLEnabled, s3aAnonymous, s3aEncType, s3aKmsId, s3aCustomKey) match {
+          case (Some(accessKey), _, _, _, _, _, _, _) => {
+            val secretKey = s3aSecretKey match {
+              case Some(value) => value
+              case None => throw new IllegalArgumentException(s"AWS Secret Key not provided for: ${uri}. Set etl.config.fs.s3a.secret.key property or ETL_CONF_S3A_SECRET_KEY environment variable.")
+            }
+            val connectionSSLEnabled = s3aConnectionSSLEnabled match {
+              case Some(value) => {
+                try {
+                  Option(value.toBoolean)
+                } catch {
+                  case e: Exception => throw new IllegalArgumentException(s"AWS SSL configuration incorrect for: ${uri}. Ensure etl.config.fs.s3a.connection.ssl.enabled or ETL_CONF_S3A_CONNECTION_SSL_ENABLED environment variables are boolean.")
+                }
+              }
+              case None => None
+            }
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(accessKey, secretKey, s3aEndpoint, connectionSSLEnabled)))
+          }
+          case (None, _, _, _, Some(value), _, _, _) => {
             try {
-              Option(value.toBoolean)
+             if (value.toBoolean) {
+              CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAnonymous))
+             }
             } catch {
-              case e: Exception => throw new IllegalArgumentException(s"AWS SSL configuration incorrect for: ${uri}. Ensure etl.config.fs.s3a.connection.ssl.enabled or ETL_CONF_S3A_CONNECTION_SSL_ENABLED environment variables are boolean.")
+              case e: Exception => throw new IllegalArgumentException(s"AWS Anonymous configuration incorrect for: ${uri}. Ensure etl.config.fs.s3a.anonymous or ETL_CONF_S3A_ANONYMOUS environment variables are boolean.")
             }
           }
-          case None => None
+          case (None, _, _, _, _, Some(AmazonS3EncryptionType.SSE_S3), None, None) =>
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aEncType, s3aKmsId, None)))
+          case (None, _, _, _, _, Some(AmazonS3EncryptionType.SSE_KMS), None, None) =>
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aEncType, s3aKmsId, None)))
+          case (None, _, _, _, _, Some(AmazonS3EncryptionType.SSE_C), None, None) =>
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aEncType, None, s3aCustomKey)))   
+          case _ =>
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(None, None, None)))
         }
 
-        CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(accessKey, secretKey, s3aEndpoint, connectionSSLEnabled)))
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
