@@ -83,6 +83,10 @@ Additionally there are permissions arguments that can be used to retrieve the jo
 |ETL_CONF_S3A_CONNECTION_SSL_ENABLED|etl.config.fs.s3a.connection.ssl.enabled|Whether to enable SSL connection to Amazon S3.|
 |ETL_CONF_S3A_ENDPOINT|etl.config.fs.s3a.endpoint|The endpoint for connecting to Amazon S3.|
 |ETL_CONF_S3A_SECRET_KEY|etl.config.fs.s3a.secret.key|The secret for connecting to Amazon S3.|
+|ETL_CONF_S3A_ANONYMOUS|etl.config.fs.s3a.anonymous|Whether to connect to Amazon S3 in anonymous mode. e.g. `ETL_CONF_S3A_ANONYMOUS=true`.|
+|ETL_CONF_S3A_ENCRYPTION_ALGORITHM|etl.config.fs.s3a.encryption.algorithm|The bucket encrpytion algorithm: `SSE-S3`, `SSE-KMS`, `SSE-C`.|
+|ETL_CONF_S3A_KMS_ARN|The Key Management Service Amazon Resource Name when using `SSE-KMS` encryptionAlgorithm e.g. `arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab`.|
+|ETL_CONF_S3A_CUSTOM_KEY|etl.config.fs.s3a.custom.key|The key to use when using Customer-Provided Encryption Keys (`SSE-C`).|
 
 ## Examples
 
