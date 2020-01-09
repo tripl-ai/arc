@@ -1,5 +1,11 @@
 ## Change Log
 
+# 2.6.0
+
+- provided ability for job configuration files to be retrieved via `AmazonIAM` (by default) in addition to the existing `AccessKey` and `AmazonAnonymous` methods.
+
+**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
+
 # 2.5.0
 
 - enhanced `PipelineExecute` to allow execution of nested [Lifecycle Plugins](https://arc.tripl.ai/plugins/#lifecycle-plugins).
