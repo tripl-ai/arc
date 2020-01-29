@@ -2,6 +2,7 @@ package ai.tripl.arc
 
 import ai.tripl.arc.udf.UDF
 import ai.tripl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin, UDFPlugin}
+import ai.tripl.arc.util.CloudUtils
 
 object ARC {
 
@@ -115,6 +116,8 @@ object ARC {
         sys.exit(1)
     }
 
+    // override default aws credential providers
+    spark.sparkContext.hadoopConfiguration.set("fs.s3a.aws.credentials.provider", CloudUtils.defaultAWSProvidersOverride)
 
     // add spark config to log
     val sparkConf = new java.util.HashMap[String, String]()

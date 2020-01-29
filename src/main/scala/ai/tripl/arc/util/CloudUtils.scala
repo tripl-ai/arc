@@ -13,15 +13,20 @@ import ai.tripl.arc.api._
 
 object CloudUtils {
 
+  // this is the default list of providers with additional providers appended:
+  // com.amazonaws.auth.ContainerCredentialsProvider to support Arc inside ECS services with taskRoleArn defined
+  // org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider to support anonymous credentials
+  val defaultAWSProvidersOverride = "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider,com.amazonaws.auth.EnvironmentVariableCredentialsProvider,com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider,org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider"
+
   def setHadoopConfiguration(authentication: Option[API.Authentication])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger) = {
     import spark.sparkContext.{hadoopConfiguration => hc}
 
     // clear s3a settings
     hc.unset("fs.s3a.access.key")
     hc.unset("fs.s3a.secret.key")
-    hc.unset("fs.s3a.aws.credentials.provider")
     hc.unset("fs.s3a.server-side-encryption-algorithm")
     hc.unset("fs.s3a.server-side-encryption.key")
+    hc.set("fs.s3a.aws.credentials.provider", defaultAWSProvidersOverride)
 
     authentication match {
       case Some(API.Authentication.AmazonAccessKey(accessKeyID, secretAccessKey, endpoint, ssl)) => {
@@ -43,9 +48,6 @@ object CloudUtils {
           .field("fs.s3a.access.key", accessKeyID)
           .field("fs.s3a.secret.key", secretAccessKey)
           .log()
-      }
-      case Some(API.Authentication.AmazonAnonymous) => {
-          hc.set("fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider")
       }
       case Some(API.Authentication.AmazonIAM(encType, kmsId, customKey)) => {
 
