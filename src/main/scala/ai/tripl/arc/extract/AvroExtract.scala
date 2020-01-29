@@ -155,8 +155,8 @@ object AvroExtractStage {
       stage.input match {
         case Right(glob) => {
           stage.basePath match {
-            case Some(basePath) => spark.read.format("avro").option("basePath", basePath).load(glob)
-            case None => spark.read.format("avro").load(glob)
+            case Some(basePath) => Right(spark.read.format("avro").option("basePath", basePath).load(glob))
+            case None => Right(spark.read.format("avro").load(glob))
           }
         }
         case Left(view) => {
@@ -164,8 +164,8 @@ object AvroExtractStage {
           stage.avroSchema match {
             case Some(avroSchema) => {
               stage.inputField match {
-                case Some(inputField) => inputView.withColumn(inputField, from_avro(col(inputField), avroSchema.toString))
-                case None => inputView.withColumn("value", from_avro(col("value"), avroSchema.toString))
+                case Some(inputField) => Right(inputView.withColumn(inputField, from_avro(col(inputField), avroSchema.toString)))
+                case None => Right(inputView.withColumn("value", from_avro(col("value"), avroSchema.toString)))
               }
             }
             case None => throw new Exception(s"AvroExtract requires the 'avroSchema' to be provided when reading from an 'inputView'.")
@@ -174,24 +174,40 @@ object AvroExtractStage {
       }
     } catch {
         case e: FileNotFoundException =>
-          spark.emptyDataFrame
+          stage.input match {
+            case Right(glob) => Left(FileNotFoundExtractError(Option(glob)))
+            case Left(_) => Left(FileNotFoundExtractError(None))
+          }
         case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
-          spark.emptyDataFrame
+          stage.input match {
+            case Right(glob) => Left(PathNotExistsExtractError(Option(glob)))
+            case Left(_) => Left(PathNotExistsExtractError(None))
+          }        
         case e: Exception => throw new Exception(e) with DetailException {
           override val detail = stage.stageDetail
         }
     }
 
-    // if incoming dataset has 0 columns then create empty dataset with correct schema
+    // if incoming dataset has 0 columns then try to create empty dataset with correct schema
+    // or throw enriched error message
     val emptyDataframeHandlerDF = try {
-      if (df.schema.length == 0) {
-        stage.stageDetail.put("records", java.lang.Integer.valueOf(0))
-        optionSchema match {
-          case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
-          case None => throw new Exception(s"AvroExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+      df match {
+        case Right(df) => 
+          if (df.schema.length == 0) {
+            optionSchema match {
+              case Some(structType) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], structType)
+              case None => throw new Exception(EmptySchemaExtractError.getMessage)
+            }            
+          } else {
+            df
+          }
+        case Left(error) => {
+          stage.stageDetail.put("records", java.lang.Integer.valueOf(0))
+          optionSchema match {
+            case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
+            case None => throw new Exception(error.getMessage)
+          }
         }
-      } else {
-        df
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
@@ -218,7 +234,7 @@ object AvroExtractStage {
       }
       case partitionBy => {
         // create a column array for repartitioning
-        val partitionCols = partitionBy.map(col => df(col))
+        val partitionCols = partitionBy.map(col => enrichedDF(col))
         stage.numPartitions match {
           case Some(numPartitions) => enrichedDF.repartition(numPartitions, partitionCols:_*)
           case None => enrichedDF.repartition(partitionCols:_*)
