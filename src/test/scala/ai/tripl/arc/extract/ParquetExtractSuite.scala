@@ -222,7 +222,8 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown0.getMessage === "ParquetExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown0.getMessage.contains("Path '"))
+    assert(thrown0.getMessage.contains("*.parquet.gz' does not exist and no schema has been provided to create an empty dataframe."))
 
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
@@ -245,7 +246,8 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown1.getMessage === "ParquetExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown1.getMessage.contains("No files matched '"))
+    assert(thrown1.getMessage.contains("empty.parquet' and no schema has been provided to create an empty dataframe."))
 
     // try with column
     val dataset = extract.ParquetExtractStage.execute(

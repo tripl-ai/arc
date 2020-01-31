@@ -205,10 +205,10 @@ object JDBCExtractStage {
       }
       case partitionBy => {
         // create a column array for repartitioning
-        val partitionCols = partitionBy.map(col => df(col))
+        val partitionCols = partitionBy.map(col => enrichedDF(col))
         stage.numPartitions match {
-          case Some(numPartitions) => df.repartition(numPartitions, partitionCols:_*)
-          case None => df.repartition(partitionCols:_*)
+          case Some(numPartitions) => enrichedDF.repartition(numPartitions, partitionCols:_*)
+          case None => enrichedDF.repartition(partitionCols:_*)
         }
       }
     }

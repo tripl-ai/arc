@@ -182,7 +182,7 @@ object AvroExtractStage {
           stage.input match {
             case Right(glob) => Left(PathNotExistsExtractError(Option(glob)))
             case Left(_) => Left(PathNotExistsExtractError(None))
-          }        
+          }
         case e: Exception => throw new Exception(e) with DetailException {
           override val detail = stage.stageDetail
         }
@@ -192,12 +192,16 @@ object AvroExtractStage {
     // or throw enriched error message
     val emptyDataframeHandlerDF = try {
       df match {
-        case Right(df) => 
+        case Right(df) =>
           if (df.schema.length == 0) {
             optionSchema match {
               case Some(structType) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], structType)
-              case None => throw new Exception(EmptySchemaExtractError.getMessage)
-            }            
+              case None =>
+                stage.input match {
+                  case Right(glob) => throw new Exception(EmptySchemaExtractError(Some(glob)).getMessage)
+                  case Left(_) => throw new Exception(EmptySchemaExtractError(None).getMessage)
+                }
+            }
           } else {
             df
           }

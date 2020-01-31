@@ -335,21 +335,24 @@ object API {
   sealed trait ExtractError {
     def getMessage(): String
   }
-  case class FileNotFoundExtractError(path: Option[String]) extends ExtractError { 
+  case class FileNotFoundExtractError(path: Option[String]) extends ExtractError {
     val getMessage = path match {
-      case Some(path) => s"No files matched for input pattern '${path}' and no schema has been provided to create an empty dataframe."
+      case Some(path) => s"No files matched '${path}' and no schema has been provided to create an empty dataframe."
       case None => "No files matched and no schema has been provided to create an empty dataframe."
     }
   }
-  case class PathNotExistsExtractError(path: Option[String]) extends ExtractError { 
+  case class PathNotExistsExtractError(path: Option[String]) extends ExtractError {
     val getMessage = path match {
-      case Some(path) => s"No files matched for input pattern '${path}' and no schema has been provided to create an empty dataframe."
-      case None => "No files matched and no schema has been provided to create an empty dataframe."
+      case Some(path) => s"Path '${path}' does not exist and no schema has been provided to create an empty dataframe."
+      case None => "Path does not exist and no schema has been provided to create an empty dataframe."
     }
-  } 
-  case object EmptySchemaExtractError extends ExtractError { 
-    val getMessage = "Input does not contain any fields and no schema has been provided to create an empty dataframe."
-  }   
+  }
+  case class EmptySchemaExtractError(path: Option[String]) extends ExtractError {
+    val getMessage = path match {
+      case Some(path) => s"Input '${path}' does not contain any fields and no schema has been provided to create an empty dataframe."
+      case None => "Input does not contain any fields and no schema has been provided to create an empty dataframe."
+    }
+  }
 
   case class Watermark(eventTime: String, delayThreshold: String)
 

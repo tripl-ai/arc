@@ -7,6 +7,7 @@ import org.scalatest.BeforeAndAfter
 
 import org.apache.avro.Schema
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.filefilter.FileFilterUtils
 import org.apache.commons.io.IOUtils
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
@@ -22,7 +23,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   val targetFile = FileUtils.getTempDirectoryPath() + "extract.avro"
   val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.avro"
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.avro"
-  val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.avro.gz"
+  val emptyWildcardDirectory = s"${emptyDirectory}/*.avro.gz"
   val outputView = "dataset"
 
   val targetBinarySchemaFile = getClass.getResource("/avro/users.avro").toString
@@ -105,7 +106,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     assert(timestampDatumMetadata.getLong("securityLevel") == 7)
   }
 
-  test("AvroExtract Caching") {
+  test("AvroExtract: Caching") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
@@ -156,7 +157,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     assert(spark.catalog.isCached(outputView) === true)
   }
 
-  test("AvroExtract Empty Dataset") {
+  test("AvroExtract: Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
@@ -177,6 +178,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       ) :: Nil
 
     // try with wildcard
+    // wildcard throws path not found
     val thrown0 = intercept[Exception with DetailException] {
       extract.AvroExtractStage.execute(
         extract.AvroExtractStage(
@@ -198,8 +200,8 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown0.getMessage.contains("No files matched for input pattern '"))
-    assert(thrown0.getMessage.contains("*.avro.gz' and no schema has been provided to create an empty dataframe."))
+    assert(thrown0.getMessage.contains("Path '"))
+    assert(thrown0.getMessage.contains("*.avro.gz' does not exist and no schema has been provided to create an empty dataframe."))
 
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
@@ -223,7 +225,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown1.getMessage.contains("No files matched for input pattern '"))
+    assert(thrown1.getMessage.contains("No files matched '"))
     assert(thrown1.getMessage.contains("empty.avro' and no schema has been provided to create an empty dataframe."))
 
     // try with column

@@ -143,32 +143,48 @@ object XMLExtractStage {
             spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)
           }
 
-          xml
+          Right(xml)
         }
         case Left(view) => {
           val xmlReader = new XmlReader
-          xmlReader.xmlRdd(spark, spark.table(view).as[String].rdd)
+          Right(xmlReader.xmlRdd(spark, spark.table(view).as[String].rdd))
         }
       }
     } catch {
-      case e: org.apache.hadoop.mapred.InvalidInputException if (e.getMessage.contains("matches 0 files")) => {
-        spark.emptyDataFrame
-      }
+      case e: org.apache.hadoop.mapred.InvalidInputException if (e.getMessage.contains("matches 0 files")) =>
+        stage.input match {
+          case Right(glob) => Left(FileNotFoundExtractError(Option(glob)))
+          case Left(_) => Left(FileNotFoundExtractError(None))
+        }
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stage.stageDetail
       }
     }
 
-    // if incoming dataset has 0 columns then create empty dataset with correct schema
+    // if incoming dataset has 0 columns then try to create empty dataset with correct schema
+    // or throw enriched error message
     val emptyDataframeHandlerDF = try {
-      if (df.schema.length == 0) {
-        stage.stageDetail.put("records", java.lang.Integer.valueOf(0))
-        optionSchema match {
-          case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
-          case None => throw new Exception(s"XMLExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+      df match {
+        case Right(df) =>
+          if (df.schema.length == 0) {
+            optionSchema match {
+              case Some(structType) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], structType)
+              case None =>
+                stage.input match {
+                  case Right(glob) => throw new Exception(EmptySchemaExtractError(Some(glob)).getMessage)
+                  case Left(_) => throw new Exception(EmptySchemaExtractError(None).getMessage)
+                }
+            }
+          } else {
+            df
+          }
+        case Left(error) => {
+          stage.stageDetail.put("records", java.lang.Integer.valueOf(0))
+          optionSchema match {
+            case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
+            case None => throw new Exception(error.getMessage)
+          }
         }
-      } else {
-        df
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
@@ -206,7 +222,7 @@ object XMLExtractStage {
       }
       case partitionBy => {
         // create a column array for repartitioning
-        val partitionCols = partitionBy.map(col => df(col))
+        val partitionCols = partitionBy.map(col => enrichedDF(col))
         stage.numPartitions match {
           case Some(numPartitions) => enrichedDF.repartition(numPartitions, partitionCols:_*)
           case None => enrichedDF.repartition(partitionCols:_*)

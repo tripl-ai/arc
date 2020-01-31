@@ -197,7 +197,7 @@ object TestUtils {
                 "null"
             ],
             "formatters": [
-                "uuuu-MM-dd"
+                "yyyy-MM-dd"
             ],
             "metadata": {
                 "private": true,

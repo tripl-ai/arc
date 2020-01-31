@@ -189,7 +189,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown0.getMessage === "XMLExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown0.getMessage.contains("No files matched '"))
+    assert(thrown0.getMessage.contains("*.xml.gz' and no schema has been provided to create an empty dataframe."))
 
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
@@ -210,7 +211,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown1.getMessage === "XMLExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown1.getMessage.contains("Input '"))
+    assert(thrown1.getMessage.contains("empty.xml' does not contain any fields and no schema has been provided to create an empty dataframe."))
 
     // try with column
     val dataset = extract.XMLExtractStage.execute(
