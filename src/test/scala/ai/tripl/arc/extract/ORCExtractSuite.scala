@@ -100,7 +100,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     assert(timestampDatumMetadata.getLong("securityLevel") == 7)
   }
 
-  test("ORCExtract Caching") {
+  test("ORCExtract: Caching") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -149,7 +149,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     assert(spark.catalog.isCached(outputView) === true)
   }
 
-  test("ORCExtract Empty Dataset") {
+  test("ORCExtract: Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
@@ -190,7 +190,8 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown0.getMessage === "ORCExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown0.getMessage.contains("Path '"))
+    assert(thrown0.getMessage.contains("*.orc.gz' does not exist and no schema has been provided to create an empty dataframe."))
 
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
@@ -213,7 +214,8 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown1.getMessage === "ORCExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown1.getMessage.contains("No files matched '"))
+    assert(thrown1.getMessage.contains("empty.orc' and no schema has been provided to create an empty dataframe."))
 
     // try with column
     val dataset = extract.ORCExtractStage.execute(

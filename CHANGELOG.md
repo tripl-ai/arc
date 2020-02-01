@@ -1,17 +1,21 @@
 ## Change Log
 
+# 2.7.0
+
+- added `ContainerCredentials` provider to resolver list allowing IAM roles to be accessed by Arc jobs running inside an Amazon ECS container (specified via `taskRoleArn` in ECS).
+- added `AmazonAnonymous` mode to default provider list meaning users do not have to specify it manually.
+- enhanced file based `*Extract` to throw richer error messages when files are not found.
+
+**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
+
 # 2.6.0
 
 - provided ability for job configuration files to be retrieved via `AmazonIAM` (by default) in addition to the existing `AccessKey` and `AmazonAnonymous` methods.
-
-**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
 
 # 2.5.0
 
 - enhanced `PipelineExecute` to allow execution of nested [Lifecycle Plugins](https://arc.tripl.ai/plugins/#lifecycle-plugins).
 - changed Stack Trace logging to be opt-in when errors occur (default `false`) via parameters `ETL_CONF_ENABLE_STACKTRACE` and `etl.config.enableStackTrace`.
-
-**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
 
 # 2.4.0
 
@@ -21,8 +25,6 @@
 - added `MetadataValidate` stage which allows runtime rules to be aplied against an input view's metadata.
 - added ability to include `%configplugins` when defined [arc-jupyter](https://github.com/tripl-ai/arc-jupyter) notebook files (.ipynb).
 - rewrote tutorial to point to public datasets rather than requiring user to download data first.
-
-**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
 
 # 2.3.1
 

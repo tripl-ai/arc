@@ -132,8 +132,8 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-
-    assert(thrown0.getMessage === "TextExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown0.getMessage.contains("Path '"))
+    assert(thrown0.getMessage.contains("empty.text' does not exist and no schema has been provided to create an empty dataframe."))
   }
 
   test("TextExtract: Structured Streaming") {

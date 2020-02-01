@@ -132,36 +132,52 @@ object ORCExtractStage {
         optionSchema match {
           case Some(schema) => {
             stage.watermark match {
-              case Some(watermark) => spark.readStream.option("mergeSchema", "true").schema(schema).orc(stage.input).withWatermark(watermark.eventTime, watermark.delayThreshold)
-              case None => spark.readStream.option("mergeSchema", "true").schema(schema).orc(stage.input)
+              case Some(watermark) => Right(spark.readStream.option("mergeSchema", "true").schema(schema).orc(stage.input).withWatermark(watermark.eventTime, watermark.delayThreshold))
+              case None => Right(spark.readStream.option("mergeSchema", "true").schema(schema).orc(stage.input))
             }
           }
           case None => throw new Exception("ORCExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
         }
       } else {
         stage.basePath match {
-          case Some(basePath) => spark.read.option("mergeSchema", "true").option("basePath", basePath).orc(stage.input)
-          case None => spark.read.option("mergeSchema", "true").orc(stage.input)
+          case Some(basePath) => Right(spark.read.option("mergeSchema", "true").option("basePath", basePath).orc(stage.input))
+          case None => Right(spark.read.option("mergeSchema", "true").orc(stage.input))
         }
       }
     } catch {
-        case e: AnalysisException if (e.getMessage == "Unable to infer schema for ORC. It must be specified manually.;") || (e.getMessage.contains("Path does not exist")) =>
-          spark.emptyDataFrame
-        case e: Exception => throw new Exception(e) with DetailException {
-          override val detail = stage.stageDetail
-        }
+      case e: AnalysisException if (e.getMessage == "Unable to infer schema for ORC. It must be specified manually.;") =>
+        Left(FileNotFoundExtractError(Option(stage.input)))
+      case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
+        Left(PathNotExistsExtractError(Option(stage.input)))
+
+      case e: AnalysisException  =>
+        println(e.getMessage())
+        throw new Exception(e)
+      case e: Exception => throw new Exception(e) with DetailException {
+        override val detail = stage.stageDetail
+      }
     }
 
-    // if incoming dataset has 0 columns then create empty dataset with correct schema
+    // if incoming dataset has 0 columns then try to create empty dataset with correct schema
+    // or throw enriched error message
     val emptyDataframeHandlerDF = try {
-      if (df.schema.length == 0) {
-        stage.stageDetail.put("records", java.lang.Integer.valueOf(0))
-        optionSchema match {
-          case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
-          case None => throw new Exception(s"ORCExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+      df match {
+        case Right(df) =>
+          if (df.schema.length == 0) {
+            optionSchema match {
+              case Some(structType) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], structType)
+              case None => throw new Exception(EmptySchemaExtractError(Some(stage.input)).getMessage)
+            }
+          } else {
+            df
+          }
+        case Left(error) => {
+          stage.stageDetail.put("records", java.lang.Integer.valueOf(0))
+          optionSchema match {
+            case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
+            case None => throw new Exception(error.getMessage)
+          }
         }
-      } else {
-        df
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
@@ -187,7 +203,7 @@ object ORCExtractStage {
       }
       case partitionBy => {
         // create a column array for repartitioning
-        val partitionCols = partitionBy.map(col => df(col))
+        val partitionCols = partitionBy.map(col => enrichedDF(col))
         stage.numPartitions match {
           case Some(numPartitions) => enrichedDF.repartition(numPartitions, partitionCols:_*)
           case None => enrichedDF.repartition(partitionCols:_*)

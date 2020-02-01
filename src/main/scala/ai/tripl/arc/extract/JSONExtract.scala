@@ -155,8 +155,8 @@ object JSONExtractStage {
             optionSchema match {
               case Some(schema) => {
                 stage.watermark match {
-                  case Some(watermark) => spark.readStream.options(options).schema(schema).json(glob).withWatermark(watermark.eventTime, watermark.delayThreshold)
-                  case None => spark.readStream.options(options).schema(schema).json(glob)
+                  case Some(watermark) => Right(spark.readStream.options(options).schema(schema).json(glob).withWatermark(watermark.eventTime, watermark.delayThreshold))
+                  case None => Right(spark.readStream.options(options).schema(schema).json(glob))
                 }
               }
               case None => throw new Exception("JSONExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
@@ -168,8 +168,8 @@ object JSONExtractStage {
               throw new Exception("JSONExtract does not support the use of 'inputView' if Arc is running in streaming mode.")
             } else {
               stage.inputField match {
-                case Some(inputField) => spark.read.options(options).json(inputView.select(col(inputField).as("value")).as[String])
-                case None => spark.read.options(options).json(inputView.as[String])
+                case Some(inputField) => Right(spark.read.options(options).json(inputView.select(col(inputField).as("value")).as[String]))
+                case None => Right(spark.read.options(options).json(inputView.as[String]))
               }
             }
           }
@@ -182,7 +182,7 @@ object JSONExtractStage {
             // by reading first as text time drops by ~75%
             // this will not throw an error for empty directory (but will for missing directory)
             try {
-              if (stage.settings.multiLine ) {
+              if (stage.settings.multiLine) {
 
                 // if multiLine then remove the crlf delimiter so it is read as a full object per file
                 val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
@@ -194,8 +194,8 @@ object JSONExtractStage {
                 val textFile = spark.sparkContext.textFile(glob)
 
                 val json = optionSchema match {
-                  case Some(schema) => spark.read.options(options).schema(schema).json(textFile.toDS)
-                  case None => spark.read.options(options).json(textFile.toDS)
+                  case Some(schema) => Right(spark.read.options(options).schema(schema).json(textFile.toDS))
+                  case None => Right(spark.read.options(options).json(textFile.toDS))
                 }
 
                 // reset delimiter
@@ -211,22 +211,21 @@ object JSONExtractStage {
                 val textFile = spark.sparkContext.textFile(glob)
 
                 val json = optionSchema match {
-                  case Some(schema) => spark.read.options(options).schema(schema).json(textFile.toDS)
-                  case None => spark.read.options(options).json(textFile.toDS)
+                  case Some(schema) => Right(spark.read.options(options).schema(schema).json(textFile.toDS))
+                  case None => Right(spark.read.options(options).json(textFile.toDS))
                 }
 
                 json
               }
             } catch {
-              case e: org.apache.hadoop.mapred.InvalidInputException => {
-                spark.emptyDataFrame
-              }
+              case e: org.apache.hadoop.mapred.InvalidInputException if (e.getMessage.contains("matches 0 files")) =>
+                Left(FileNotFoundExtractError(Option(glob)))
               case e: Exception => throw e
             }
           case Left(view) => {
             stage.inputField match {
-              case Some(inputField) => spark.read.options(options).json(spark.table(view).select(col(inputField).as("value")).as[String])
-              case None => spark.read.options(options).json(spark.table(view).as[String])
+              case Some(inputField) => Right(spark.read.options(options).json(spark.table(view).select(col(inputField).as("value")).as[String]))
+              case None => Right(spark.read.options(options).json(spark.table(view).as[String]))
             }
           }
         }
@@ -237,16 +236,31 @@ object JSONExtractStage {
       }
     }
 
-    // if incoming dataset has 0 columns then create empty dataset with correct schema
+
+    // if incoming dataset has 0 columns then try to create empty dataset with correct schema
+    // or throw enriched error message
     val emptyDataframeHandlerDF = try {
-      if (df.schema.length == 0) {
-        stage.stageDetail.put("records", java.lang.Integer.valueOf(0))
-        optionSchema match {
-          case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
-          case None => throw new Exception(s"JSONExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+      df match {
+        case Right(df) =>
+          if (df.schema.length == 0) {
+            optionSchema match {
+              case Some(structType) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], structType)
+              case None =>
+                stage.input match {
+                  case Right(glob) => throw new Exception(EmptySchemaExtractError(Some(glob)).getMessage)
+                  case Left(_) => throw new Exception(EmptySchemaExtractError(None).getMessage)
+                }
+            }
+          } else {
+            df
+          }
+        case Left(error) => {
+          stage.stageDetail.put("records", java.lang.Integer.valueOf(0))
+          optionSchema match {
+            case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
+            case None => throw new Exception(error.getMessage)
+          }
         }
-      } else {
-        df
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
@@ -273,7 +287,7 @@ object JSONExtractStage {
       }
       case partitionBy => {
         // create a column array for repartitioning
-        val partitionCols = partitionBy.map(col => df(col))
+        val partitionCols = partitionBy.map(col => enrichedDF(col))
         stage.numPartitions match {
           case Some(numPartitions) => enrichedDF.repartition(numPartitions, partitionCols:_*)
           case None => enrichedDF.repartition(partitionCols:_*)

@@ -73,7 +73,7 @@ class TextExtract extends PipelineStagePlugin {
           watermarkMap.put("eventTime", watermark.eventTime)
           watermarkMap.put("delayThreshold", watermark.delayThreshold)
           stage.stageDetail.put("watermark", watermarkMap)
-        }        
+        }
 
         Right(stage)
       case _ =>
@@ -128,8 +128,8 @@ object TextExtractStage {
         optionSchema match {
           case Some(schema) => {
             stage.watermark match {
-              case Some(watermark) => spark.readStream.option("mergeSchema", "true").schema(schema).text(stage.input).withWatermark(watermark.eventTime, watermark.delayThreshold)
-              case None => spark.readStream.option("mergeSchema", "true").schema(schema).text(stage.input)
+              case Some(watermark) => Right(spark.readStream.option("mergeSchema", "true").schema(schema).text(stage.input).withWatermark(watermark.eventTime, watermark.delayThreshold))
+              case None => Right(spark.readStream.option("mergeSchema", "true").schema(schema).text(stage.input))
             }
           }
           case None => throw new Exception("TextExtract requires 'schemaURI' to be set if Arc is running in streaming mode.")
@@ -142,16 +142,15 @@ object TextExtractStage {
         try {
           if (stage.multiLine) {
             stage.basePath match {
-              case Some(basePath) => spark.read.option("mergeSchema", "true").option("basePath", basePath).parquet(stage.input)
-              case None => spark.read.option("wholetext", "true").textFile(stage.input).toDF
+              case Some(basePath) => Right(spark.read.option("mergeSchema", "true").option("basePath", basePath).parquet(stage.input))
+              case None => Right(spark.read.option("wholetext", "true").textFile(stage.input).toDF)
             }
           } else {
-            spark.read.option("wholetext", "false").textFile(stage.input).toDF
+            Right(spark.read.option("wholetext", "false").textFile(stage.input).toDF)
           }
         } catch {
-          case e: org.apache.spark.sql.AnalysisException if (e.getMessage.contains("Path does not exist")) => {
-            spark.emptyDataFrame
-          }
+          case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
+            Left(PathNotExistsExtractError(Option(stage.input)))
           case e: Exception => throw e
         }
       }
@@ -161,16 +160,26 @@ object TextExtractStage {
       }
     }
 
-    // if incoming dataset has 0 columns then create empty dataset with correct schema
+    // if incoming dataset has 0 columns then try to create empty dataset with correct schema
+    // or throw enriched error message
     val emptyDataframeHandlerDF = try {
-      if (df.schema.length == 0) {
-        stage.stageDetail.put("records", Integer.valueOf(0))
-        optionSchema match {
-          case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
-          case None => throw new Exception(s"TextExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+      df match {
+        case Right(df) =>
+          if (df.schema.length == 0) {
+            optionSchema match {
+              case Some(structType) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], structType)
+              case None => throw new Exception(EmptySchemaExtractError(Some(stage.input)).getMessage)
+            }
+          } else {
+            df
+          }
+        case Left(error) => {
+          stage.stageDetail.put("records", java.lang.Integer.valueOf(0))
+          optionSchema match {
+            case Some(s) => spark.createDataFrame(spark.sparkContext.emptyRDD[Row], s)
+            case None => throw new Exception(error.getMessage)
+          }
         }
-      } else {
-        df
       }
     } catch {
       case e: Exception => throw new Exception(e.getMessage) with DetailException {
