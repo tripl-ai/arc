@@ -307,7 +307,6 @@ object API {
      */
     case class AmazonAccessKey(accessKeyID: String, secretAccessKey: String, endpoint: Option[String], ssl: Option[Boolean]) extends Authentication
     case class AmazonIAM(encryptionType: Option[AmazonS3EncryptionType], keyArn: Option[String], customKey: Option[String]) extends Authentication
-    case object AmazonAnonymous extends Authentication
     case class AzureSharedKey(accountName: String, signature: String) extends Authentication
     case class AzureSharedAccessSignature(accountName: String, container: String, token: String) extends Authentication
     case class AzureDataLakeStorageToken(clientID: String, refreshToken: String) extends Authentication
@@ -332,6 +331,28 @@ object API {
     }
   }
 
+  // these can be added to and have custom messages as required
+  sealed trait ExtractError {
+    def getMessage(): String
+  }
+  case class FileNotFoundExtractError(path: Option[String]) extends ExtractError {
+    val getMessage = path match {
+      case Some(path) => s"No files matched '${path}' and no schema has been provided to create an empty dataframe."
+      case None => "No files matched and no schema has been provided to create an empty dataframe."
+    }
+  }
+  case class PathNotExistsExtractError(path: Option[String]) extends ExtractError {
+    val getMessage = path match {
+      case Some(path) => s"Path '${path}' does not exist and no schema has been provided to create an empty dataframe."
+      case None => "Path does not exist and no schema has been provided to create an empty dataframe."
+    }
+  }
+  case class EmptySchemaExtractError(path: Option[String]) extends ExtractError {
+    val getMessage = path match {
+      case Some(path) => s"Input '${path}' does not contain any fields and no schema has been provided to create an empty dataframe."
+      case None => "Input does not contain any fields and no schema has been provided to create an empty dataframe."
+    }
+  }
 
   case class Watermark(eventTime: String, delayThreshold: String)
 

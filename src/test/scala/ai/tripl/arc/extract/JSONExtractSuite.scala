@@ -292,8 +292,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-
-    assert(thrown0.getMessage === "JSONExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown0.getMessage.contains("No files matched '"))
+    assert(thrown0.getMessage.contains("*.json.gz' and no schema has been provided to create an empty dataframe."))
 
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
@@ -318,8 +318,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-
-    assert(thrown1.getMessage === "JSONExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown1.getMessage.contains("Input '"))
+    assert(thrown1.getMessage.contains("empty.json' does not contain any fields and no schema has been provided to create an empty dataframe."))
 
     // try with column
     val dataset = extract.JSONExtractStage.execute(

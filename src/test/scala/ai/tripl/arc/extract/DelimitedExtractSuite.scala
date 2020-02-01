@@ -117,7 +117,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     assert(timestampDatumMetadata.getLong("securityLevel") == 7)
   }
 
-  test("DelimitedExtract inputView") {
+  test("DelimitedExtract: inputView") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
@@ -159,7 +159,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     assert(dataset.columns.length === 4)
   }
 
-  test("DelimitedExtract Caching") {
+  test("DelimitedExtract: Caching") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
@@ -212,7 +212,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     assert(spark.catalog.isCached(outputView) === true)
   }
 
-  test("DelimitedExtract Empty Dataset") {
+  test("DelimitedExtract: Empty Dataset") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
@@ -255,7 +255,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown0.getMessage === "DelimitedExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown0.getMessage.contains("Path '"))
+    assert(thrown0.getMessage.contains("*.csv.gz' does not exist and no schema has been provided to create an empty dataframe."))
 
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
@@ -280,7 +281,8 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown1.getMessage === "DelimitedExtract has produced 0 columns and no schema has been provided to create an empty dataframe.")
+    assert(thrown1.getMessage.contains("No files matched '"))
+    assert(thrown1.getMessage.contains("empty.csv' and no schema has been provided to create an empty dataframe."))
 
     // try with column
     val dataset = extract.DelimitedExtractStage.execute(
