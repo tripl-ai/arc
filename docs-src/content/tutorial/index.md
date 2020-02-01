@@ -52,10 +52,6 @@ From the Jupyter main screen select `New` then `Arc` under `notebook`. We will b
 
 The first stage we are going to add is a `DelimitedExtract` stage because the source data is in Comma-Separated Values format delimited by '`,`'. This stage will instruct Arc to extract the data in all `.csv` files from the `inputURI` path and register as the internal view `green_tripdata0_raw` so the data can be accessed in subsequent job stages. 
 
-{{< note title="Authentication" >}}
-Because this data is hosted on the public [Registry of Open Data on AWS](https://registry.opendata.aws/nyc-tlc-trip-records-pds/) we need to explicitly add an [Authentication](../partials/#authentication) mechanism however if you are deploying into your own environment you will likely have role based access control (like IAM) and do not require this.
-{{</note>}}
-
 ```json
 {
   "type": "DelimitedExtract",
@@ -66,10 +62,7 @@ Because this data is hosted on the public [Registry of Open Data on AWS](https:/
   "delimiter": "Comma",
   "quote" : "DoubleQuote",
   "header": true,
-  "persist": true,
-  "authentication": {
-    "method": "AmazonAnonymous"
-  }
+  "persist": true
 }
 ```
 
@@ -391,10 +384,7 @@ The variables can then be used like:
   "delimiter": "Comma",
   "quote": "DoubleQuote",
   "header": true,
-  "persist": true,
-  "authentication": {
-    "method": "AmazonAnonymous"
-  }
+  "persist": true
 }
 ```
 
@@ -431,10 +421,7 @@ Spark is also able to automatically detect and decompress files based on their e
   "delimiter": "Comma",
   "quote": "DoubleQuote",
   "header": true,
-  "persist": true,
-  "authentication": {
-    "method": "AmazonAnonymous"
-  }
+  "persist": true
 }
 ```
 
@@ -469,10 +456,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
   "delimiter": "Comma",
   "quote": "DoubleQuote",
   "header": true,
-  "persist": true,
-  "authentication": {
-    "method": "AmazonAnonymous"
-  }  
+  "persist": true
 },
 {
   "type": "TypingTransform",
@@ -501,10 +485,7 @@ To continue with the `green_tripdata` dataset example we can now add the other t
   "delimiter": "Comma",
   "quote": "DoubleQuote",
   "header": true,
-  "persist": true,
-  "authentication": {
-    "method": "AmazonAnonymous"
-  }  
+  "persist": true 
 },
 {
   "type": "TypingTransform",
@@ -755,10 +736,7 @@ Add a `schemaURI` key which points to the same metadata file used by the subsequ
   "delimiter": "Comma",
   "quote": "DoubleQuote",
   "header": true,
-  "persist": true,
-  "authentication": {
-    "method": "AmazonAnonymous"
-  }  
+  "persist": true 
 }
 ``` 
 
