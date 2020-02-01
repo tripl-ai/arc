@@ -30,7 +30,7 @@ To start `arc-juptyer` run the following command. The only option that needs to 
 docker run \
 --name arc-jupyter \
 --rm \
--v $(pwd)/tutorial:/home/jovyan/tutorial \
+-v $(pwd)/examples:/home/jovyan/examples:Z \
 -e JAVA_OPTS="-Xmx4096m" \
 -p 4040:4040 \
 -p 8888:8888 \
