@@ -1,12 +1,16 @@
 ## Change Log
 
+# 2.8.0
+
+- bump to Spark [2.4.5](https://spark.apache.org/releases/spark-release-2-4-5.html).
+
+**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
+
 # 2.7.0
 
 - added `ContainerCredentials` provider to resolver list allowing IAM roles to be accessed by Arc jobs running inside an Amazon ECS container (specified via `taskRoleArn` in ECS).
 - added `AmazonAnonymous` mode to default provider list meaning users do not have to specify it manually.
 - enhanced file based `*Extract` to throw richer error messages when files are not found.
-
-**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
 
 # 2.6.0
 
