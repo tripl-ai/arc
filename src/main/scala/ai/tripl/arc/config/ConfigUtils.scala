@@ -32,6 +32,9 @@ import Error._
 object ConfigUtils {
 
   def getConfigString(uri: URI, arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], String] = {
+
+    val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
+
     uri.getScheme match {
       case "local" => {
         val filePath = new URI(SparkFiles.get(uri.getPath))
@@ -55,9 +58,10 @@ object ConfigUtils {
         Right(etlConfString)
       }
       // amazon s3
-      case "s3" | "s3n" =>
+      // for local master throw error as some providers (Amazon EMR) redirect s3:// to use the s3a:// driver transparently
+      case "s3" | "s3n" if isLocalMaster =>
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
-      case "s3a" => {
+      case "s3" | "s3n" | "s3a" => {
         val s3aAccessKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY"))
         val s3aSecretKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY"))
         val s3aEndpoint: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))

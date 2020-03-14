@@ -383,12 +383,11 @@ object ARC {
         sys.exit(1)
       } else {
 
-        // if running on a databricks cluster do not try to shutdown so that status does not always equal failure
-        // databricks adds custom keys to SparkConf so if any key contains databricks then assume running on their cluster
-        // if there is a better way to detect when running on databricks then please submit PR
-        // https://docs.databricks.com/user-guide/jobs.html#jar-job-tips
-        if (spark.sparkContext.getConf.getAll.filter { case (k,v) => k.contains("databricks") }.length == 0) {
 
+        // if running on local master (not databricks cluster or yarn) try to shutdown so that status is returned to the console correctly
+        // databricks will fail if spark.stop is called: see https://docs.databricks.com/user-guide/jobs.html#jar-job-tips
+        val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
+        if (isLocalMaster) {        
           // silently try to shut down log so that all messages are sent before stopping the spark session
           try {
             org.apache.log4j.LogManager.shutdown

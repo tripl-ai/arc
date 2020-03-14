@@ -3,6 +3,8 @@
 # 2.8.0
 
 - bump to Spark [2.4.5](https://spark.apache.org/releases/spark-release-2-4-5.html).
+- fix defect which reported job failure when running in YARN mode.
+- fix defect relating to Amazon S3 protocol to use when running on [Amazon EMR](https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-plan-file-systems.html)
 
 **NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
 
