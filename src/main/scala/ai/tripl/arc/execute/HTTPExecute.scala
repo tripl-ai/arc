@@ -113,7 +113,7 @@ object HTTPExecuteStage {
     response.close
 
     val responseMap = new java.util.HashMap[String, Object]()
-    responseMap.put("statusCode", new java.lang.Integer(response.getStatusLine.getStatusCode))
+    responseMap.put("statusCode", java.lang.Integer.valueOf(response.getStatusLine.getStatusCode))
     responseMap.put("reasonPhrase", response.getStatusLine.getReasonPhrase)
     stage.stageDetail.put("response", responseMap)
 
