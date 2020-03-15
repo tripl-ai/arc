@@ -272,7 +272,7 @@ public class StandardJsonLogger implements JsonLogger {
       jsonObject.add("timestamp", gson.toJsonTree(formatException(e)));
     }
 
-    Map mdc = MDC.getCopyOfContextMap();
+    Map<String, String> mdc = MDC.getCopyOfContextMap();
     if (mdc != null && !mdc.isEmpty()) {
       try {
         mdc.forEach((k, v) -> jsonObject.add(k.toString(), gson.toJsonTree(v)));

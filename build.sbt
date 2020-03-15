@@ -44,6 +44,8 @@ scalacOptions := Seq(
   //"-Ywarn-unused:imports"
 )
 
+javacOptions += "-Xlint:unchecked"
+
 test in assembly := {}
 
 // META-INF discarding
