@@ -184,48 +184,84 @@ object ConfigUtils {
 
     val kernelspecName = jsonTree.get("metadata").get("kernelspec").get("name").asText
     if (kernelspecName == "arc") {
-      val sources = jsonTree.get("cells").iterator.asScala.filter { cell =>
+
+      val sources = jsonTree.get("cells").iterator.asScala
+      .zipWithIndex
+      .filter { case (cell, _) =>
         // only include 'code' cells
         cell.get("cell_type").asText == "code"
-      }.map { cell =>
+      }.map { case (cell, index) =>
         // convert the raw 'source' into a string
-        cell.get("source").iterator.asScala
+        (cell.get("source").iterator.asScala
           .map { _.asText }
           .mkString("")
           .trim
-      }.map { cell =>
+          .replaceAll(",$", "")
+          , index)
+      }.map { case (cell, index) =>
         // replace any trailing commas
-        cell.replaceAll(",$", "")
+        (cell.replaceAll(",$", ""), index)
       }.toList
 
       // calculate the dynamic config plugins
-      val configs = sources.filter { cell =>
+      val configs = sources
+      .filter { case (cell, _) =>
         cell.startsWith("%configplugin")
-      }.map { cell =>
+      }.map { case (cell, _) =>
         cell.split("\n").drop(1).mkString("\n")
       }
       
       // calculate the lifecycle plugins
-      val lifecycles = sources.filter { cell =>
+      val lifecycles = sources
+      .filter { case (cell, _) =>
         cell.startsWith("%lifecycleplugin")
-      }.map { cell =>
+      }.map { case (cell, _) =>
         cell.split("\n").drop(1).mkString("\n")
       }
             
       // calculate the arc stages
-      val stages = sources.filter { cell =>
-        // only cells that are explicitly '%arc' or not other magic !'%'
-        (!cell.startsWith("%") && cell.length > 0) || cell.startsWith("%arc")
-      }.map { cell =>
+      val stages = sources
+      .filter { case (cell, _) =>
+        // only cells that are explicitly '%arc' or '%inlinesql' and not other magic !'%'
+        (!cell.startsWith("%") && cell.length > 0) || cell.startsWith("%arc") || cell.startsWith("%inlinesql")
+      }
+      .map { case (cell, index) =>
         // if is explicitly %arc drop the first row
         if (cell.startsWith("%arc")) {
           cell.split("\n").drop(1).mkString("\n")
+        } else if (cell.startsWith("%inlinesql")) {
+          val lines = cell.split("\n")
+          val args = parseArgs(lines(0))
+          val sqlParams = args.get("sqlParams") match {
+            case Some(sqlParams) => {
+              parseArgs(sqlParams.replace(",", " ")).map{ 
+                case (k, v) => {
+                  if (v.trim().startsWith("${")) {
+                    s""""${k}": ${v}""" 
+                  } else {
+                    s""""${k}": "${v}""""
+                  }
+                }
+              }.mkString(",")
+            }
+            case None => ""
+          }
+
+          s"""{
+          |  "type": "SQLTransform",
+          |  "name": "notebook cell ${index}",
+          |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
+          |  "sql": "${lines.drop(1).mkString(" ")}",
+          |  "outputView": "${args.getOrElse("outputView", "")}",
+          |  "persist": ${args.getOrElse("persist", "false")},
+          |  "sqlParams": {${sqlParams}}
+          |}""".stripMargin
         } else {
           cell
         }
       }
 
-      s"""
+      val config = s"""
       |{
       |"plugins": {
       |"config": [${configs.mkString("\n", ",\n", "\n")}],
@@ -233,10 +269,29 @@ object ConfigUtils {
       |},
       |"stages": [${stages.mkString("\n",",\n","\n")}]
       |}""".stripMargin
+
+      config
     } else {
       throw new Exception(s"""file ${uri} does not appear to be a valid arc notebook. Has kernelspec: '${kernelspecName}'.""")
     }
   }
+
+  // defines rules for parsing arguments from the jupyter notebook
+  def parseArgs(input: String): collection.mutable.Map[String, String] = {
+    val args = collection.mutable.Map[String, String]()
+    val (vals, opts) = input.split(" ").partition {
+      _.startsWith("%")
+    }
+    opts.map { x =>
+      // regex split on only single = signs not at start or end of line
+      val pair = x.split("=(?!=)(?!$)", 2)
+      if (pair.length == 2) {
+        args += (pair(0) -> pair(1))
+      }
+    }
+
+    args
+  }  
 
   def readMap(path: String, c: Config): Map[String, String] = {
     if (c.hasPath(path)) {

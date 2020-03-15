@@ -482,6 +482,30 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     assert(thrown0.getMessage.contains("does not appear to be a valid arc notebook. Has kernelspec: 'python3'."))
   }
 
+  // this test verifies ipynb for inline sql
+  test("Test read .ipynb inlinesql") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false,commandLineArguments=Map[String,String]("INPUTVIEW_ARGUMENT" -> "stream0"))
+
+    val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/inlinesql.ipynb")), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, arcCtx)) => {
+        assert(arcCtx.activeLifecyclePlugins.length == 1)
+        assert(arcCtx.dynamicConfigurationPlugins.length == 1)
+        assert(pipeline.stages.length == 3)
+        assert(pipeline.stages(0).asInstanceOf[extract.RateExtractStage].outputView == "stream0")
+        val sqlTransformStage0 = pipeline.stages(1).asInstanceOf[transform.SQLTransformStage]
+        assert(sqlTransformStage0.outputView == "stream1")
+        assert(sqlTransformStage0.sql == "SELECT * FROM ${inputView}")
+        assert(sqlTransformStage0.sqlParams == Map[String, String]("inputView" -> "stream0"))
+        assert(pipeline.stages(2).asInstanceOf[extract.RateExtractStage].outputView == "stream2")
+      }
+    }
+  }  
+
   test("Test read authentication AmazonIAM with KMS") {
 
     val authConf = """{
