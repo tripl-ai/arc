@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   // versions
-  lazy val sparkVersion = "2.4.4"
+  lazy val sparkVersion = "2.4.5"
   lazy val hadoopVersion = "2.9.2"
 
   // arc

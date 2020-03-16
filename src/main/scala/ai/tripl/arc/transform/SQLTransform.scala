@@ -31,12 +31,14 @@ class SQLTransform extends PipelineStagePlugin {
 
     // requires 'inputURI' or 'sql'
     val isInputURI = c.hasPath("inputURI")
+    val source = if (isInputURI) "inputURI" else "sql"
+
     val parsedURI = if (isInputURI) getValue[String]("inputURI") |> parseURI("inputURI") _ else Right(new URI(""))
     val inputSQL = if (isInputURI) parsedURI |> textContentForURI("inputURI", authentication) _ else Right("")
-    val inlineSQL = if (!isInputURI) getValue[String]("sql") else Right("")
+    val inlineSQL = if (!isInputURI) getValue[String]("sql") |> verifyInlineSQLPolicy("sql") _ else Right("")
     val sqlParams = readMap("sqlParams", c)
     val sql = if (isInputURI) inputSQL else inlineSQL
-    val validSQL = sql |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
+    val validSQL = sql |> injectSQLParams(source, sqlParams, false) _ |> validateSQL(source) _
     val outputView = getValue[String]("outputView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")

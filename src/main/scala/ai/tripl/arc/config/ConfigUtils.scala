@@ -186,80 +186,99 @@ object ConfigUtils {
     if (kernelspecName == "arc") {
 
       val sources = jsonTree.get("cells").iterator.asScala
-      .zipWithIndex
-      .filter { case (cell, _) =>
-        // only include 'code' cells
-        cell.get("cell_type").asText == "code"
-      }.map { case (cell, index) =>
-        // convert the raw 'source' into a string
-        (cell.get("source").iterator.asScala
-          .map { _.asText }
-          .mkString("")
-          .trim
-          .replaceAll(",$", "")
-          , index)
-      }.map { case (cell, index) =>
-        // replace any trailing commas
-        (cell.replaceAll(",$", ""), index)
-      }.toList
+        .zipWithIndex
+        .filter { case (cell, _) =>
+          // only include 'code' cells
+          cell.get("cell_type").asText == "code"
+        }.map { case (cell, index) =>
+          // convert the raw 'source' into a string
+          (cell.get("source").iterator.asScala
+            .map { _.asText }
+            .mkString("")
+            .trim
+            .replaceAll(",$", "")
+            , index)
+        }.map { case (cell, index) =>
+          // replace any trailing commas
+          (cell.replaceAll(",$", ""), index)
+        }.toList
 
       // calculate the dynamic config plugins
       val configs = sources
-      .filter { case (cell, _) =>
-        cell.startsWith("%configplugin")
-      }.map { case (cell, _) =>
-        cell.split("\n").drop(1).mkString("\n")
-      }
+        .filter { case (cell, _) =>
+          cell.startsWith("%configplugin")
+        }.map { case (cell, _) =>
+          cell.split("\n").drop(1).mkString("\n")
+        }
       
       // calculate the lifecycle plugins
       val lifecycles = sources
-      .filter { case (cell, _) =>
-        cell.startsWith("%lifecycleplugin")
-      }.map { case (cell, _) =>
-        cell.split("\n").drop(1).mkString("\n")
-      }
-            
-      // calculate the arc stages
-      val stages = sources
-      .filter { case (cell, _) =>
-        // only cells that are explicitly '%arc' or '%inlinesql' and not other magic !'%'
-        (!cell.startsWith("%") && cell.length > 0) || cell.startsWith("%arc") || cell.startsWith("%inlinesql")
-      }
-      .map { case (cell, index) =>
-        // if is explicitly %arc drop the first row
-        if (cell.startsWith("%arc")) {
+        .filter { case (cell, _) =>
+          cell.startsWith("%lifecycleplugin")
+        }.map { case (cell, _) =>
           cell.split("\n").drop(1).mkString("\n")
-        } else if (cell.startsWith("%inlinesql")) {
-          val lines = cell.split("\n")
-          val args = parseArgs(lines(0))
-          val sqlParams = args.get("sqlParams") match {
-            case Some(sqlParams) => {
-              parseArgs(sqlParams.replace(",", " ")).map{ 
-                case (k, v) => {
-                  if (v.trim().startsWith("${")) {
-                    s""""${k}": ${v}""" 
-                  } else {
-                    s""""${k}": "${v}""""
-                  }
-                }
-              }.mkString(",")
-            }
-            case None => ""
-          }
-
-          s"""{
-          |  "type": "SQLTransform",
-          |  "name": "notebook cell ${index}",
-          |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
-          |  "sql": "${lines.drop(1).mkString(" ")}",
-          |  "outputView": "${args.getOrElse("outputView", "")}",
-          |  "persist": ${args.getOrElse("persist", "false")},
-          |  "sqlParams": {${sqlParams}}
-          |}""".stripMargin
-        } else {
-          cell
         }
-      }
+              
+        // calculate the arc stages
+        val stages = sources
+        .filter { case (cell, _) =>
+          val lines = cell.split("\n")
+          val behavior = lines(0).trim.toLowerCase
+
+          // only cells that are explicitly '%arc' or '%sql' or '%sqlvalidate' and not other magic !'%'
+          (!behavior.startsWith("%") && cell.length > 0) || behavior.startsWith("%arc") || behavior.startsWith("%sql") || behavior.startsWith("%sqlvalidate")
+        }
+        .map { case (cell, index) =>
+          val lines = cell.split("\n")
+          val behavior = lines(0).trim
+          val command = lines.drop(1).mkString("\n")
+
+          behavior match {
+            case b: String if (b.toLowerCase.startsWith("%arc")) => {
+              command
+            }
+            case b: String if (b.toLowerCase.startsWith("%sql")) => {
+              val args = parseArgs(behavior)
+              val sqlParams = args.get("sqlParams") match {
+                case Some(sqlParams) => {
+                  parseArgs(sqlParams.replace(",", " ")).map{ 
+                    case (k, v) => {
+                      if (v.trim().startsWith("${")) {
+                        s""""${k}": ${v}""" 
+                      } else {
+                        s""""${k}": "${v}""""
+                      }
+                    }
+                  }.mkString(",")
+                }
+                case None => ""
+              }    
+
+              if (behavior.toLowerCase.startsWith("%sqlvalidate")) {
+                s"""{
+                |  "type": "SQLValidate",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "sqlParams": {${sqlParams}}
+                |}""".stripMargin  
+              } else {
+                s"""{
+                |  "type": "SQLTransform",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "outputView": "${args.getOrElse("outputView", "")}",
+                |  "persist": ${args.getOrElse("persist", "false")},
+                |  "sqlParams": {${sqlParams}}
+                |}""".stripMargin 
+              }
+            }
+            case _ => cell                
+          }
+        }
 
       val config = s"""
       |{
@@ -279,7 +298,7 @@ object ConfigUtils {
   // defines rules for parsing arguments from the jupyter notebook
   def parseArgs(input: String): collection.mutable.Map[String, String] = {
     val args = collection.mutable.Map[String, String]()
-    val (vals, opts) = input.split(" ").partition {
+    val (vals, opts) = input.split("\\s(?=([^\"']*\"[^\"]*\")*[^\"']*$)").partition {
       _.startsWith("%")
     }
     opts.map { x =>
@@ -683,6 +702,14 @@ object ConfigUtils {
       Right(sql)
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
+    }
+  }
+
+  def verifyInlineSQLPolicy(path: String)(sql: String)(implicit c: Config, arcContext: ARCContext): Either[Errors, String] = {
+    if (!arcContext.inlineSQL) {
+      Left(ConfigError(path, None, s"Inline SQL (use of the 'sql' attribute) has been disabled by policy. SQL statements must be supplied via files located at 'inputURI'.") :: Nil)
+    } else {
+      Right(sql)
     }
   }
 }

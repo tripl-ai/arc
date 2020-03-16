@@ -54,6 +54,14 @@ object API {
       */
     immutableViews: Boolean,
 
+    /** whether to allow ipython notebook configuration files
+      */
+    ipynb: Boolean = true,
+
+    /** whether to allow inline sql submitted to stages like SQLTransform and SQLValidate
+      */
+    inlineSQL: Boolean = true,    
+
     /** the command line arguments
       */
     commandLineArguments: Map[String, String],
