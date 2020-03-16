@@ -292,13 +292,15 @@ object ConfigUtils {
     } yield k
   }
 
-  def parseGlob(path: String)(glob: String)(implicit c: Config): Either[Errors, String] = {
+  def parseGlob(path: String)(glob: String)(implicit spark: SparkSession, c: Config): Either[Errors, String] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
       // try to compile glob which will fail with bad characters
       GlobPattern.compile(glob)
-      if (glob.trim.startsWith("s3://") | glob.trim.startsWith("s3n://")) {
+
+      val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
+      if (isLocalMaster && (glob.trim.startsWith("s3://") | glob.trim.startsWith("s3n://"))) {
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
       }      
       Right(glob)
@@ -485,15 +487,16 @@ object ConfigUtils {
     }
   }
 
-  def parseURI(path: String)(uri: String)(implicit c: Config): Either[Errors, URI] = {
+  def parseURI(path: String)(uri: String)(implicit spark: SparkSession, c: Config): Either[Errors, URI] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, URI] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
       // try to parse uri
       val u = new URI(uri)
-      if (uri.trim.startsWith("s3://") | uri.trim.startsWith("s3n://")) {
+      val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
+      if (isLocalMaster && (uri.trim.startsWith("s3://") | uri.trim.startsWith("s3n://"))) {
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
-      }      
+      }              
       Right(u)
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
