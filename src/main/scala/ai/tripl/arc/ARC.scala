@@ -457,10 +457,12 @@ object ARC {
       }      
     }
 
-    def after(result: Option[DataFrame], currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Unit = {
-      for (p <- arcContext.activeLifecyclePlugins) {
+    def after(result: Option[DataFrame], currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Option[DataFrame] = {
+      // if any lifecyclePlugin returns a modified dataframe use that for the remaining lifecyclePlugins
+      // unfortuately this means that lifecyclePlugin order is important but is required for this operation
+      arcContext.activeLifecyclePlugins.foldLeft(result) { (mutatedResult, lifeCyclePlugin) =>
         logger.trace().message(s"Executing after on LifecyclePlugin: ${stages(index).getClass.getName}")
-        p.after(result, currentValue, index, stages)
+        lifeCyclePlugin.after(mutatedResult, currentValue, index, stages)            
       }
     }
 
@@ -475,7 +477,6 @@ object ARC {
             before(stage, index, pipeline.stages)
             val result = processStage(stage)
             after(result, stage, index, pipeline.stages)
-            result
           } else {
             None
           }
