@@ -34,7 +34,8 @@ scalacOptions := Seq(
   "-encoding", "utf-8",
   "-explaintypes",
   "-target:jvm-1.8",
-  "-unchecked"
+  "-unchecked",
+  "-feature"
 
   //"-Ywarn-dead-code",
   //"-Ywarn-extra-implicit",
