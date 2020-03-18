@@ -118,10 +118,40 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(_) => {
-        println(pipelineEither)
-        assert(false)
-      }
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
+    }
+  }
+
+  test("SQLTransform: end-to-end inline sql") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "SQLTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "sql": "SELECT TRUE, '$${placeholder}'",
+          "outputView": "customer",
+          "persist": false,
+          "sqlParams": {
+            "placeholder": "value",
+          }
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
     }
   }
