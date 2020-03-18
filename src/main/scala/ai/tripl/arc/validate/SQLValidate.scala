@@ -25,32 +25,41 @@ class SQLValidate extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "authentication" :: "sqlParams" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "sql" :: "authentication" :: "sqlParams" :: "params" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
     val authentication = readAuthentication("authentication")
-    val inputSQL = parsedURI |> textContentForURI("inputURI", authentication) _
+
+
+    // requires 'inputURI' or 'sql'
+    val isInputURI = c.hasPath("inputURI")
+    val source = if (isInputURI) "inputURI" else "sql"
+    val parsedURI = if (isInputURI) getValue[String]("inputURI") |> parseURI("inputURI") _ else Right(new URI(""))
+    val inputSQL = if (isInputURI) parsedURI |> textContentForURI("inputURI", authentication) _ else Right("")
+    val inlineSQL = if (!isInputURI) getValue[String]("sql") |> verifyInlineSQLPolicy("sql") _ else Right("")
     val sqlParams = readMap("sqlParams", c)
-    val validSQL = inputSQL |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
+    val sql = if (isInputURI) inputSQL else inlineSQL
+    val validSQL = sql |> injectSQLParams(source, sqlParams, false) _ |> validateSQL(source) _
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, parsedURI, inputSQL, validSQL, invalidKeys) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(invalidKeys)) =>
+    (name, description, parsedURI, sql, validSQL, invalidKeys) match {
+      case (Right(name), Right(description), Right(parsedURI), Right(sql), Right(validSQL), Right(invalidKeys)) =>
+
+        val uri = if (isInputURI) Option(parsedURI) else None
 
         val stage = SQLValidateStage(
           plugin=this,
           name=name,
           description=description,
           inputURI=parsedURI,
-          sql=inputSQL,
+          sql=sql,
           sqlParams=sqlParams,
           params=params
         )
 
-        stage.stageDetail.put("inputURI", parsedURI.toString)
-        stage.stageDetail.put("sql", inputSQL)
+        if (uri.isDefined) stage.stageDetail.put("inputURI", parsedURI.toString)
+        stage.stageDetail.put("sql", sql)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
         stage.stageDetail.put("params", params.asJava)
 

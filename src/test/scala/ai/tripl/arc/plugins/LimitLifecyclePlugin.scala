@@ -7,7 +7,7 @@ import ai.tripl.arc.config.Error._
 import ai.tripl.arc.util.Utils
 import ai.tripl.arc.util.log.logger.Logger
 
-class TestLifecyclePlugin extends LifecyclePlugin {
+class LimitLifecyclePlugin extends LifecyclePlugin {
 
   val version = "0.0.1"
 
@@ -16,64 +16,55 @@ class TestLifecyclePlugin extends LifecyclePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "environments" :: "name" :: "outputViewBefore" :: "outputViewAfter" :: "value" :: Nil
+    val expectedKeys = "type" :: "environments" :: "name" :: "limit" :: "outputView" :: Nil
     val name = getValue[String]("name")
-    val outputViewBefore = getValue[String]("outputViewBefore")
-    val outputViewAfter = getValue[String]("outputViewAfter")
-    val value = getValue[String]("value")
+    val limit = getValue[Int]("limit")
+    val outputView = getValue[String]("outputView")
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, outputViewBefore, outputViewAfter, value, invalidKeys) match {
-      case (Right(name), Right(outputViewBefore), Right(outputViewAfter), Right(value), Right(invalidKeys)) =>
+    (name, limit, outputView, invalidKeys) match {
+      case (Right(name), Right(limit), Right(outputView), Right(invalidKeys)) =>
 
-        val instance = TestLifecyclePluginInstance(
+        val instance = LimitLifecyclePluginInstance(
           plugin=this,
           name=name,
-          outputViewBefore=outputViewBefore,
-          outputViewAfter=outputViewAfter,
-          value=value
+          limit=limit,
+          outputView=outputView
         )
 
         Right(instance)
       case _ =>
-        val allErrors: Errors = List(name, outputViewBefore, outputViewAfter, value, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, limit, outputView, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val err = StageError(index, this.getClass.getName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
     }
   }
 }
 
-case class TestLifecyclePluginInstance(
-    plugin: LifecyclePlugin,
+case class LimitLifecyclePluginInstance(
+    plugin: LimitLifecyclePlugin,
     name: String,
-    outputViewBefore: String,
-    outputViewAfter: String,
-    value: String
+    limit: Int,
+    outputView: String
   ) extends LifecyclePluginInstance {
 
   override def before(stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
-    import spark.implicits._
-
     logger.info()
       .field("event", "before")
       .field("name", name)
       .log()
-
-    val df = Seq((stage.name, "before", value)).toDF("stage","when","message")
-    df.createOrReplaceTempView(outputViewBefore)
   }
 
   override def after(currentValue: Option[DataFrame], stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    import spark.implicits._
-
     logger.info()
       .field("event", "after")
       .field("name", name)
       .log()
 
-    val df = Seq((stage.name, "after", value, currentValue.get.count)).toDF("stage","when","message","count")
-    df.createOrReplaceTempView(outputViewAfter)
-
-    Option(df)
+    currentValue.map(df => {
+      val mutatedDF = df.limit(limit)
+      mutatedDF.createOrReplaceTempView(outputView)
+      mutatedDF
+    })
   }
 }

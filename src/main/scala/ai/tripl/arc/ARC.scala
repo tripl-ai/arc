@@ -53,24 +53,32 @@ object ARC {
 
     val isStreaming = commandLineArguments.get("etl.config.streaming").orElse(envOrNone("ETL_CONF_STREAMING")) match {
       case Some(v) if v.trim.toLowerCase == "true" => true
-      case Some(v) if v.trim.toLowerCase == "false" => false
       case _ => false
     }
     MDC.put("streaming", isStreaming.toString)
 
     val ignoreEnvironments = commandLineArguments.get("etl.config.ignoreEnvironments").orElse(envOrNone("ETL_CONF_IGNORE_ENVIRONMENTS")) match {
       case Some(v) if v.trim.toLowerCase == "true" => true
-      case Some(v) if v.trim.toLowerCase == "false" => false
       case _ => false
     }
     MDC.put("ignoreEnvironments", ignoreEnvironments.toString)
 
     val enableStackTrace = commandLineArguments.get("etl.config.enableStackTrace").orElse(envOrNone("ETL_CONF_ENABLE_STACKTRACE")) match {
       case Some(v) if v.trim.toLowerCase == "true" => true
-      case Some(v) if v.trim.toLowerCase == "false" => false
       case _ => false
     }
     MDC.put("enableStackTrace", enableStackTrace.toString)    
+
+    // policies
+    val policyIPYNB = commandLineArguments.get("etl.policy.ipynb").orElse(envOrNone("ETL_POLICY_IPYNB")) match {
+      case Some(v) if v.trim.toLowerCase == "false" => false
+      case _ => true
+    }
+
+    val policyInlineSQL = commandLineArguments.get("etl.policy.inlinesql").orElse(envOrNone("ETL_POLICY_INLINESQL")) match {
+      case Some(v) if v.trim.toLowerCase == "false" => false
+      case _ => true
+    }    
 
     val configUri: Option[String] = commandLineArguments.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))
 
@@ -186,6 +194,8 @@ object ARC {
       ignoreEnvironments=ignoreEnvironments,
       storageLevel=storageLevel,
       immutableViews=immutableViews,
+      ipynb=policyIPYNB,
+      inlineSQL=policyInlineSQL,
       commandLineArguments=commandLineArguments,
       dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
       lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
@@ -210,7 +220,9 @@ object ARC {
         .field("javaVersion", System.getProperty("java.runtime.version"))
         .field("environment", environment.getOrElse(""))
         .field("storageLevel", storageLevelName)
-        .field("immutableViews", java.lang.Boolean.valueOf(immutableViews))
+        .field("immutableViews", java.lang.Boolean.valueOf(arcContext.immutableViews))
+        .field("ipynb", java.lang.Boolean.valueOf(arcContext.ipynb))
+        .field("inlineSQL", java.lang.Boolean.valueOf(arcContext.inlineSQL))
         .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
         .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
         .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
@@ -237,7 +249,9 @@ object ARC {
           .field("javaVersion", System.getProperty("java.runtime.version"))
           .field("environment", environment.getOrElse(""))
           .field("storageLevel", storageLevelName)
-          .field("immutableViews", java.lang.Boolean.valueOf(immutableViews))
+          .field("immutableViews", java.lang.Boolean.valueOf(arcContext.immutableViews))
+          .field("ipynb", java.lang.Boolean.valueOf(arcContext.ipynb))
+          .field("inlineSQL", java.lang.Boolean.valueOf(arcContext.inlineSQL))
           .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
           .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
           .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
@@ -442,10 +456,12 @@ object ARC {
       }      
     }
 
-    def after(result: Option[DataFrame], currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Unit = {
-      for (p <- arcContext.activeLifecyclePlugins) {
+    def after(result: Option[DataFrame], currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Option[DataFrame] = {
+      // if any lifecyclePlugin returns a modified dataframe use that for the remaining lifecyclePlugins
+      // unfortuately this means that lifecyclePlugin order is important but is required for this operation
+      arcContext.activeLifecyclePlugins.foldLeft(result) { (mutatedResult, lifeCyclePlugin) =>
         logger.trace().message(s"Executing after on LifecyclePlugin: ${stages(index).getClass.getName}")
-        p.after(result, currentValue, index, stages)
+        lifeCyclePlugin.after(mutatedResult, currentValue, index, stages)            
       }
     }
 
@@ -460,7 +476,6 @@ object ARC {
             before(stage, index, pipeline.stages)
             val result = processStage(stage)
             after(result, stage, index, pipeline.stages)
-            result
           } else {
             None
           }

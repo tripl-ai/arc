@@ -1,1 +1,2 @@
 ai.tripl.arc.plugins.TestLifecyclePlugin
+ai.tripl.arc.plugins.LimitLifecyclePlugin

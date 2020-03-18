@@ -54,6 +54,14 @@ object API {
       */
     immutableViews: Boolean,
 
+    /** whether to allow ipython notebook configuration files
+      */
+    ipynb: Boolean = true,
+
+    /** whether to allow inline sql submitted to stages like SQLTransform and SQLValidate
+      */
+    inlineSQL: Boolean = true,    
+
     /** the command line arguments
       */
     commandLineArguments: Map[String, String],
@@ -260,7 +268,7 @@ object API {
 
     def before(stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext)
 
-    def after(result: Option[DataFrame], stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext)
+    def after(result: Option[DataFrame], stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame]
 
     def runStage(stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Boolean = true
 
