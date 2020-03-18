@@ -294,10 +294,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(_) => {
-        println(pipelineEither)
-        assert(false)
-      }
+      case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => {
         ARC.run(pipeline)
       }
