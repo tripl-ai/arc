@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.7.0</span></strong>
+          <span class="version">2.8.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -451,7 +451,7 @@ cd arc-starter
 -e JAVA_OPTS=&quot;-Xmx4096m&quot; \
 -p 4040:4040 \
 -p 8888:8888 \
-triplai/arc-jupyter:arc-jupyter_1.10.0_scala_2.12_1.0.0 \
+triplai/arc-jupyter:arc-jupyter_2.0.0_scala_2.12_1.0.0 \
 start-notebook.sh \
 --NotebookApp.password='' \
 --NotebookApp.token=''
@@ -821,7 +821,7 @@ green_tripdata0
 -v $(pwd)/examples:/home/jovyan/examples:Z \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -p 4040:4040 \
-triplai/arc:arc_2.7.0_spark_2.4.4_scala_2.12_hadoop_2.9.2_1.0.0 \
+triplai/arc:arc_2.8.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.0.0 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=4G \
