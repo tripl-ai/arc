@@ -73,7 +73,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         plugin=new transform.SQLTransform,
         name="SQLTransform",
         description=None,
-        inputURI=new URI(targetFile),
+        inputURI=Option(new URI(targetFile)),
         sql=s"SELECT * FROM ${inputView} WHERE booleanDatum = FALSE",
         outputView=outputView,
         persist=false,
@@ -118,10 +118,40 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(_) => {
-        println(pipelineEither)
-        assert(false)
-      }
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
+    }
+  }
+
+  test("SQLTransform: end-to-end inline sql") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "SQLTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "sql": "SELECT TRUE, '$${placeholder}'",
+          "outputView": "customer",
+          "persist": false,
+          "sqlParams": {
+            "placeholder": "value",
+          }
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
     }
   }
@@ -140,7 +170,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         plugin=new transform.SQLTransform,
         name="SQLTransform",
         description=None,
-        inputURI=new URI(targetFile),
+        inputURI=Option(new URI(targetFile)),
         sql=s"SELECT * FROM ${inputView}",
         outputView=outputView,
         persist=false,
@@ -157,7 +187,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         plugin=new transform.SQLTransform,
         name="SQLTransform",
         description=None,
-        inputURI=new URI(targetFile),
+        inputURI=Option(new URI(targetFile)),
         sql=s"SELECT * FROM ${inputView}",
         outputView=outputView,
         persist=true,
@@ -184,7 +214,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         plugin=new transform.SQLTransform,
         name="SQLTransform",
         description=None,
-        inputURI=new URI(targetFile),
+        inputURI=Option(new URI(targetFile)),
         sql=s"SELECT * FROM ${inputView} WHERE booleanDatum = $${sql_boolean_param}",
         outputView=outputView,
         persist=false,
@@ -214,7 +244,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
           plugin=new transform.SQLTransform,
           name="SQLTransform",
           description=None,
-          inputURI=new URI(targetFile),
+          inputURI=Option(new URI(targetFile)),
           sql=s"SELECT * FROM ${inputView} WHERE stringDatum = $${sql_string_param} AND booleanDatum = $${sql_boolean}",
           outputView=outputView,
           persist=false,
@@ -280,7 +310,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         plugin=new transform.SQLTransform,
         name="SQLTransform",
         description=None,
-        inputURI=new URI(targetFile),
+        inputURI=Option(new URI(targetFile)),
         sql=s"SELECT * FROM parquet.`${targetFile}` WHERE booleanDatum = $${sql_boolean_param}",
         outputView=outputView,
         persist=false,
@@ -363,7 +393,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         plugin=new transform.SQLTransform,
         name="SQLTransform",
         description=None,
-        inputURI=new URI(targetFile),
+        inputURI=Option(new URI(targetFile)),
         sql=s"SELECT * FROM readstream",
         outputView=outputView,
         persist=false,

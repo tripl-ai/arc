@@ -67,11 +67,11 @@ object ConfigReader {
     def getOptionalConfigValue[A](path: String, c: Config, expectedType: String,
                                         default: Option[A] = None, validValues: Seq[A] = Seq.empty)(read: => A): Either[Errors, Option[A]] = {
         if (c.hasPath(path)) {
-        val value = getConfigValue(path, c, expectedType, None, validValues)(read)
-        value match {
-            case Right(cv) => Right(Option(cv))
-            case Left(l) => Left(l) // matching works around typing error
-        }
+            val value = getConfigValue(path, c, expectedType, None, validValues)(read)
+            value match {
+                case Right(cv) => Right(Option(cv))
+                case Left(l) => Left(l) // matching works around typing error
+            }
         } else {
         Right(default)
         }

@@ -32,6 +32,9 @@ import Error._
 object ConfigUtils {
 
   def getConfigString(uri: URI, arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], String] = {
+
+    val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
+
     uri.getScheme match {
       case "local" => {
         val filePath = new URI(SparkFiles.get(uri.getPath))
@@ -55,9 +58,10 @@ object ConfigUtils {
         Right(etlConfString)
       }
       // amazon s3
-      case "s3" | "s3n" =>
+      // for local master throw error as some providers (Amazon EMR) redirect s3:// to use the s3a:// driver transparently
+      case "s3" | "s3n" if isLocalMaster =>
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
-      case "s3a" => {
+      case "s3" | "s3n" | "s3a" => {
         val s3aAccessKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY"))
         val s3aSecretKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY"))
         val s3aEndpoint: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
@@ -184,48 +188,103 @@ object ConfigUtils {
 
     val kernelspecName = jsonTree.get("metadata").get("kernelspec").get("name").asText
     if (kernelspecName == "arc") {
-      val sources = jsonTree.get("cells").iterator.asScala.filter { cell =>
-        // only include 'code' cells
-        cell.get("cell_type").asText == "code"
-      }.map { cell =>
-        // convert the raw 'source' into a string
-        cell.get("source").iterator.asScala
-          .map { _.asText }
-          .mkString("")
-          .trim
-      }.map { cell =>
-        // replace any trailing commas
-        cell.replaceAll(",$", "")
-      }.toList
+
+      val sources = jsonTree.get("cells").iterator.asScala
+        .zipWithIndex
+        .filter { case (cell, _) =>
+          // only include 'code' cells
+          cell.get("cell_type").asText == "code"
+        }.map { case (cell, index) =>
+          // convert the raw 'source' into a string
+          (cell.get("source").iterator.asScala
+            .map { _.asText }
+            .mkString("")
+            .trim
+            .replaceAll(",$", "")
+            , index)
+        }.map { case (cell, index) =>
+          // replace any trailing commas
+          (cell.replaceAll(",$", ""), index)
+        }.toList
 
       // calculate the dynamic config plugins
-      val configs = sources.filter { cell =>
-        cell.startsWith("%configplugin")
-      }.map { cell =>
-        cell.split("\n").drop(1).mkString("\n")
-      }
+      val configs = sources
+        .filter { case (cell, _) =>
+          cell.startsWith("%configplugin")
+        }.map { case (cell, _) =>
+          cell.split("\n").drop(1).mkString("\n")
+        }
       
       // calculate the lifecycle plugins
-      val lifecycles = sources.filter { cell =>
-        cell.startsWith("%lifecycleplugin")
-      }.map { cell =>
-        cell.split("\n").drop(1).mkString("\n")
-      }
-            
-      // calculate the arc stages
-      val stages = sources.filter { cell =>
-        // only cells that are explicitly '%arc' or not other magic !'%'
-        (!cell.startsWith("%") && cell.length > 0) || cell.startsWith("%arc")
-      }.map { cell =>
-        // if is explicitly %arc drop the first row
-        if (cell.startsWith("%arc")) {
+      val lifecycles = sources
+        .filter { case (cell, _) =>
+          cell.startsWith("%lifecycleplugin")
+        }.map { case (cell, _) =>
           cell.split("\n").drop(1).mkString("\n")
-        } else {
-          cell
         }
-      }
+              
+        // calculate the arc stages
+        val stages = sources
+        .filter { case (cell, _) =>
+          val lines = cell.split("\n")
+          val behavior = lines(0).trim.toLowerCase
 
-      s"""
+          // only cells that are explicitly '%arc' or '%sql' or '%sqlvalidate' and not other magic !'%'
+          (!behavior.startsWith("%") && cell.length > 0) || behavior.startsWith("%arc") || behavior.startsWith("%sql") || behavior.startsWith("%sqlvalidate")
+        }
+        .map { case (cell, index) =>
+          val lines = cell.split("\n")
+          val behavior = lines(0).trim
+          val command = lines.drop(1).mkString("\n")
+
+          behavior match {
+            case b: String if (b.toLowerCase.startsWith("%arc")) => {
+              command
+            }
+            case b: String if (b.toLowerCase.startsWith("%sql")) => {
+              val args = parseArgs(behavior)
+              val sqlParams = args.get("sqlParams") match {
+                case Some(sqlParams) => {
+                  parseArgs(sqlParams.replace(",", " ")).map{ 
+                    case (k, v) => {
+                      if (v.trim().startsWith("${")) {
+                        s""""${k}": ${v}""" 
+                      } else {
+                        s""""${k}": "${v}""""
+                      }
+                    }
+                  }.mkString(",")
+                }
+                case None => ""
+              }    
+
+              if (behavior.toLowerCase.startsWith("%sqlvalidate")) {
+                s"""{
+                |  "type": "SQLValidate",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "sqlParams": {${sqlParams}}
+                |}""".stripMargin  
+              } else {
+                s"""{
+                |  "type": "SQLTransform",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "outputView": "${args.getOrElse("outputView", "")}",
+                |  "persist": ${args.getOrElse("persist", "false")},
+                |  "sqlParams": {${sqlParams}}
+                |}""".stripMargin 
+              }
+            }
+            case _ => cell                
+          }
+        }
+
+      val config = s"""
       |{
       |"plugins": {
       |"config": [${configs.mkString("\n", ",\n", "\n")}],
@@ -233,10 +292,29 @@ object ConfigUtils {
       |},
       |"stages": [${stages.mkString("\n",",\n","\n")}]
       |}""".stripMargin
+
+      config
     } else {
       throw new Exception(s"""file ${uri} does not appear to be a valid arc notebook. Has kernelspec: '${kernelspecName}'.""")
     }
   }
+
+  // defines rules for parsing arguments from the jupyter notebook
+  def parseArgs(input: String): collection.mutable.Map[String, String] = {
+    val args = collection.mutable.Map[String, String]()
+    val (vals, opts) = input.split("\\s(?=([^\"']*\"[^\"]*\")*[^\"']*$)").partition {
+      _.startsWith("%")
+    }
+    opts.map { x =>
+      // regex split on only single = signs not at start or end of line
+      val pair = x.split("=(?!=)(?!$)", 2)
+      if (pair.length == 2) {
+        args += (pair(0) -> pair(1))
+      }
+    }
+
+    args
+  }  
 
   def readMap(path: String, c: Config): Map[String, String] = {
     if (c.hasPath(path)) {
@@ -288,13 +366,15 @@ object ConfigUtils {
     } yield k
   }
 
-  def parseGlob(path: String)(glob: String)(implicit c: Config): Either[Errors, String] = {
+  def parseGlob(path: String)(glob: String)(implicit spark: SparkSession, c: Config): Either[Errors, String] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
       // try to compile glob which will fail with bad characters
       GlobPattern.compile(glob)
-      if (glob.trim.startsWith("s3://") | glob.trim.startsWith("s3n://")) {
+
+      val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
+      if (isLocalMaster && (glob.trim.startsWith("s3://") | glob.trim.startsWith("s3n://"))) {
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
       }      
       Right(glob)
@@ -481,15 +561,16 @@ object ConfigUtils {
     }
   }
 
-  def parseURI(path: String)(uri: String)(implicit c: Config): Either[Errors, URI] = {
+  def parseURI(path: String)(uri: String)(implicit spark: SparkSession, c: Config): Either[Errors, URI] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, URI] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
       // try to parse uri
       val u = new URI(uri)
-      if (uri.trim.startsWith("s3://") | uri.trim.startsWith("s3n://")) {
+      val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
+      if (isLocalMaster && (uri.trim.startsWith("s3://") | uri.trim.startsWith("s3n://"))) {
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
-      }      
+      }              
       Right(u)
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
@@ -628,6 +709,14 @@ object ConfigUtils {
       Right(sql)
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
+    }
+  }
+
+  def verifyInlineSQLPolicy(path: String)(sql: String)(implicit c: Config, arcContext: ARCContext): Either[Errors, String] = {
+    if (!arcContext.inlineSQL) {
+      Left(ConfigError(path, None, s"Inline SQL (use of the 'sql' attribute) has been disabled by policy. SQL statements must be supplied via files located at 'inputURI'.") :: Nil)
+    } else {
+      Right(sql)
     }
   }
 }

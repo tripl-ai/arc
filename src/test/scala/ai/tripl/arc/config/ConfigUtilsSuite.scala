@@ -450,6 +450,18 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  // this test verifies ipynb policy works
+  test("Test read .ipynb policy") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false,ipynb=false)
+
+    val thrown0 = intercept[Exception] {
+      val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/python3.ipynb")), arcContext)
+    }
+    assert(thrown0.getMessage.contains("Support for IPython Notebook Configuration Files (.ipynb) for configuration 'classpath://conf/python3.ipynb' has been disabled by policy."))
+  }  
+
   // this test verifies ipynb to job conversion works
   test("Test read .ipynb positive") {
     implicit val spark = session
@@ -481,6 +493,47 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }
     assert(thrown0.getMessage.contains("does not appear to be a valid arc notebook. Has kernelspec: 'python3'."))
   }
+
+  // this test verifies inline sql policy
+  test("Test inlinesql policy") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false,inlineSQL=false,commandLineArguments=Map[String,String]("INPUTVIEW_ARGUMENT" -> "stream0"))
+
+    val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/inlinesql.ipynb")), arcContext)
+
+    pipelineEither match {
+      case Left(err) => assert(err.toString.contains("Inline SQL (use of the 'sql' attribute) has been disabled by policy. SQL statements must be supplied via files located at 'inputURI'."))
+      case Right((pipeline, arcCtx)) => fail()
+    }    
+  } 
+
+  // this test verifies ipynb for inline sql
+  test("Test read .ipynb inlinesql") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false,commandLineArguments=Map[String,String]("INPUTVIEW_ARGUMENT" -> "stream0"))
+
+    val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/inlinesql.ipynb")), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, arcCtx)) => {
+        assert(arcCtx.activeLifecyclePlugins.length == 1)
+        assert(arcCtx.dynamicConfigurationPlugins.length == 1)
+        assert(pipeline.stages.length == 4)
+        assert(pipeline.stages(0).asInstanceOf[extract.RateExtractStage].outputView == "stream0")
+        val sqlTransformStage0 = pipeline.stages(1).asInstanceOf[transform.SQLTransformStage]
+        assert(sqlTransformStage0.outputView == "stream1")
+        assert(sqlTransformStage0.sql == "SELECT *\nFROM ${inputView}")
+        assert(sqlTransformStage0.sqlParams == Map[String, String]("inputView" -> "stream0"))
+        assert(pipeline.stages(2).asInstanceOf[extract.RateExtractStage].outputView == "stream2")
+        val sqlValidateStage0 = pipeline.stages(3).asInstanceOf[validate.SQLValidateStage]
+        assert(sqlValidateStage0.sql == "SELECT\n  TRUE AS valid\n  ,\"${message}\" AS message")
+        assert(sqlValidateStage0.sqlParams == Map[String, String]("message" -> "stream0"))        
+      }
+    }
+  }  
 
   test("Test read authentication AmazonIAM with KMS") {
 
