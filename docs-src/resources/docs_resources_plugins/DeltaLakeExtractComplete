@@ -13,4 +13,9 @@
     "country"
   ],
   "persist": false,
+  "options": {
+    "versionAsOf": 1,
+    "timestampAsOf": "2019-01-01'T'00:00:00.000Z",
+    "relativeVersion": -1
+  }
 }

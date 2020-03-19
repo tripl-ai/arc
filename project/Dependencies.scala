@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   // versions
-  lazy val sparkVersion = "2.4.4"
+  lazy val sparkVersion = "2.4.5"
   lazy val hadoopVersion = "2.9.2"
 
   // arc
@@ -24,7 +24,8 @@ object Dependencies {
   val sparkAvro = "org.apache.spark" %% "spark-avro" % sparkVersion % "provided"
 
   // spark XML
-  val sparkXML = "com.databricks" %% "spark-xml" % "0.5.0" intransitive()
+  val sparkXML = "com.databricks" %% "spark-xml" % "0.9.0" intransitive()
+  val indentingXMLStream = "com.sun.xml.txw2" % "txw2" % "20110809"
 
   // Project
   val etlDeps = Seq(
@@ -40,6 +41,7 @@ object Dependencies {
     sparkHive,
     sparkMl,
     sparkAvro,    
-    sparkXML
+    sparkXML,
+    indentingXMLStream
   )
 }

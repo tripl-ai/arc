@@ -1,4 +1,5 @@
 package ai.tripl.arc.util
+import scala.language.implicitConversions
 
 // Only needed for Scala 2.11.x can remove when supporting only 2.12.x and greater
 object EitherUtils {

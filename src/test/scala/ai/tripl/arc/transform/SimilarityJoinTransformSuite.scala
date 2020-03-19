@@ -12,7 +12,7 @@ import ai.tripl.arc.extract.ParquetExtract
 
 class SimilarityJoinTransformSuite extends FunSuite with BeforeAndAfter {
 
-  var session: SparkSession = _  
+  var session: SparkSession = _
   val leftView = "leftView"
   val rightView = "rightView"
   val outputView = "outputView"
@@ -28,7 +28,7 @@ class SimilarityJoinTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
 
     // set for deterministic timezone
-    spark.conf.set("spark.sql.session.timeZone", "UTC")   
+    spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
     import spark.implicits._
@@ -85,19 +85,16 @@ class SimilarityJoinTransformSuite extends FunSuite with BeforeAndAfter {
         }
       ]
     }"""
-    
+
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(_) => {
-        println(pipelineEither)
-        assert(false)
-      }
+      case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => {
         val df = ARC.run(pipeline)(spark, logger, arcContext)
         assert(df.get.count == 1)
       }
-    }    
+    }
 
   }
 
@@ -147,19 +144,16 @@ class SimilarityJoinTransformSuite extends FunSuite with BeforeAndAfter {
         }
       ]
     }"""
-    
+
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(_) => {
-        println(pipelineEither)
-        assert(false)
-      }
+      case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => {
         val df = ARC.run(pipeline)(spark, logger, arcContext)
         assert(df.get.count == 0)
       }
-    }    
+    }
 
-  }  
+  }
 }

@@ -3,6 +3,7 @@ package ai.tripl.arc.config
 import java.net.URI
 
 import scala.collection.JavaConverters._
+import scala.util.Properties._
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
@@ -29,7 +30,7 @@ object ArcPipeline {
           case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
         }
       }
-      case None => Left(ConfigError("file", None, s"No environment defined as a command line argument --etl.config.environment or ETL_CONF_ENVIRONMENT environment variable.") :: Nil)
+      case None => Left(ConfigError("file", None, s"No environment defined as a command line argument --etl.config.environment or ETL_CONF_ENV environment variable.") :: Nil)
     }
   }
 
@@ -46,6 +47,9 @@ object ArcPipeline {
       val (uriString, configString) = uri match {
         case Right(uri) => {
           if (uri.toString.endsWith(".ipynb")) {
+            if (!arcContext.ipynb) {
+              throw new Exception(s"Support for IPython Notebook Configuration Files (.ipynb) for configuration '${uri.toString}' has been disabled by policy.")
+            }
             (uri.toString, readIPYNB(uri.toString, etlConfRaw))
           } else {
             (uri.toString, etlConfRaw)
@@ -118,6 +122,8 @@ object ArcPipeline {
                 ignoreEnvironments=arcContext.ignoreEnvironments,
                 storageLevel=arcContext.storageLevel,
                 immutableViews=arcContext.immutableViews,
+                ipynb=arcContext.ipynb,
+                inlineSQL=arcContext.inlineSQL,
                 commandLineArguments=arcContext.commandLineArguments,
                 dynamicConfigurationPlugins=arcContext.dynamicConfigurationPlugins,
                 lifecyclePlugins=arcContext.lifecyclePlugins,

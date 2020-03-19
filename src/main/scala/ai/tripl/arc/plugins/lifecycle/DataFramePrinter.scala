@@ -42,14 +42,7 @@ case class DataFramePrinterInstance(
     truncate: Boolean
   ) extends LifecyclePluginInstance {
 
-  override def before(stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
-    logger.trace()
-      .field("event", "before")
-      .field("stage", stage.name)
-      .log()
-  }
-
-  override def after(result: Option[DataFrame], stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) {
+  override def after(result: Option[DataFrame], stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     logger.trace()
       .field("event", "after")
       .field("stage", stage.name)
@@ -59,5 +52,7 @@ case class DataFramePrinterInstance(
       case Some(df) => df.show(numRows, truncate)
       case None =>
     }
+
+    result
   }
 }

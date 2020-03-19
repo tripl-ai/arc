@@ -43,7 +43,7 @@ object TestUtils {
         logger
     }
 
-    def getARCContext(isStreaming: Boolean, environment: String = "test", commandLineArguments: Map[String,String] = Map[String,String]()): ARCContext = {
+    def getARCContext(isStreaming: Boolean, environment: String = "test", commandLineArguments: Map[String,String] = Map[String,String](), ipynb: Boolean = true, inlineSQL: Boolean = true): ARCContext = {
       val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
 
       ARCContext(
@@ -57,6 +57,8 @@ object TestUtils {
         commandLineArguments=commandLineArguments,
         storageLevel=StorageLevel.MEMORY_AND_DISK_SER,
         immutableViews=false,
+        ipynb=ipynb,
+        inlineSQL=inlineSQL,
         dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
         lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
         activeLifecyclePlugins=Nil,

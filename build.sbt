@@ -34,7 +34,8 @@ scalacOptions := Seq(
   "-encoding", "utf-8",
   "-explaintypes",
   "-target:jvm-1.8",
-  "-unchecked"
+  "-unchecked",
+  "-feature"
 
   //"-Ywarn-dead-code",
   //"-Ywarn-extra-implicit",
@@ -43,6 +44,8 @@ scalacOptions := Seq(
   //"-Ywarn-unused:privates",
   //"-Ywarn-unused:imports"
 )
+
+javacOptions += "-Xlint:unchecked"
 
 test in assembly := {}
 

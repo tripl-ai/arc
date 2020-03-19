@@ -7,6 +7,7 @@
     "test"
   ],
   "inputURI": "hdfs://datalake/sql/customer_error_threshold_dynamic.sql",
+  "sql": "SELECT TRUE AS valid, 'this message will appear in logs' AS message",
   "authentication": {},
   "sqlParams": {
     "record_error_tolerance_percentage": "0.05"

@@ -7,6 +7,7 @@
     "test"
   ],
   "inputURI": "hdfs://datalake/sql/customer_dynamic.sql",
+  "sql": "SELECT id, name FROM customer_raw",
   "outputView": "customer",
   "authentication": {},
   "numPartitions": 10,
