@@ -694,8 +694,15 @@ FROM (
 <tr>
 <td>inputURI</td>
 <td>URI</td>
-<td>true</td>
-<td>URI of the input file containing the SQL statement.</td>
+<td>*true</td>
+<td>URI of the input file containing the SQL statement. Required if <code>sql</code> not provided.</td>
+</tr>
+
+<tr>
+<td>sql</td>
+<td>String</td>
+<td>*true</td>
+<td>A SQL statement to execute. Required if <code>inputURI</code> not provided.</td>
 </tr>
 
 <tr>
