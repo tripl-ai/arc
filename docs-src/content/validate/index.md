@@ -110,6 +110,18 @@ See [patterns](../patterns/) for more examples.
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
 
+### Magic
+
+The `%sqlvalidate` magic is available via [arc-jupyter](https://github.com/tripl-ai/arc-jupyter) with these available parameters:
+
+```sql
+%sqlvaildate name="name" description="description" environments=production,test sqlParams=inputView=customer,inputField=id
+SELECT
+    ${inputField} = 1 AS valid,
+    "" AS message
+FROM ${inputView}
+```
+
 ### Examples
 
 #### Minimal

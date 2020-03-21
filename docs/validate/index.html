@@ -728,6 +728,17 @@ FROM (
 </tbody>
 </table>
 
+<h3 id="magic">Magic</h3>
+
+<p>The <code>%sqlvalidate</code> magic is available via <a href="https://github.com/tripl-ai/arc-jupyter">arc-jupyter</a> with these available parameters:</p>
+
+<pre><code class="language-sql">%sqlvaildate name=&quot;name&quot; description=&quot;description&quot; environments=production,test sqlParams=inputView=customer,inputField=id
+SELECT
+    ${inputField} = 1 AS valid,
+    &quot;&quot; AS message
+FROM ${inputView}
+</code></pre>
+
 <h3 id="examples-2">Examples</h3>
 
 <h4 id="minimal-2">Minimal</h4>

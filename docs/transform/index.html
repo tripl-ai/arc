@@ -1894,6 +1894,16 @@ FROM customer
 LEFT JOIN account ON account.customer_id = customer.customer_id
 </code></pre>
 
+<h3 id="magic">Magic</h3>
+
+<p>The <code>%sql</code> magic is available via <a href="https://github.com/tripl-ai/arc-jupyter">arc-jupyter</a> with these available parameters:</p>
+
+<pre><code class="language-sql">%sql name=&quot;sqltransform&quot; description=&quot;description&quot; environments=production,test outputView=example persist=true sqlParams=inputView=customer,inputField=id
+SELECT
+    ${inputField}
+FROM ${inputView}
+</code></pre>
+
 <h3 id="examples-9">Examples</h3>
 
 <h4 id="minimal-9">Minimal</h4>

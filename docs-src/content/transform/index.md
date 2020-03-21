@@ -383,6 +383,17 @@ FROM customer
 LEFT JOIN account ON account.customer_id = customer.customer_id
 ```
 
+### Magic
+
+The `%sql` magic is available via [arc-jupyter](https://github.com/tripl-ai/arc-jupyter) with these available parameters:
+
+```sql
+%sql name="sqltransform" description="description" environments=production,test outputView=example persist=true sqlParams=inputView=customer,inputField=id
+SELECT
+    ${inputField}
+FROM ${inputView}
+```
+
 ### Examples
 
 #### Minimal
