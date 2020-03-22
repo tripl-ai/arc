@@ -125,6 +125,7 @@ object HTTPExtractStage {
       statusCode: Int,
       reasonPhrase: String,
       contentType: String,
+      contentLength: Long,
       body: String
   )
 
@@ -215,15 +216,18 @@ object HTTPExtractStage {
               throw new Exception(s"""HTTPExtract expects all response StatusCode(s) in [${stageValidStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
             }
 
+            val headers = response.getAllHeaders
+
             // read and close response
-            val body = response.getEntity.getContentLength match {
-              case 0 => None
-              case _ => Option(Source.fromInputStream(response.getEntity.getContent).mkString)
+            val body = Source.fromInputStream(response.getEntity.getContent).mkString
+            val contentLength = response.getEntity.getContentLength match {
+              case -1 => body.length
+              case n: Long => n
             }
             response.close
 
             // cast to a RequestResponseRow to fit the Dataset map method requirements
-            val result = Seq(uri, response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, Option(response.getEntity.getContentType).map(_.toString).orNull, body.orNull)
+            val result = Seq(uri, response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, Option(response.getEntity.getContentType).map(_.toString).orNull, contentLength, body)
             Row.fromSeq(result).asInstanceOf[RequestResponseRow]
           } finally {
             request.releaseConnection
@@ -237,6 +241,9 @@ object HTTPExtractStage {
     }
 
     val df = responses.toDF
+
+    // log contentLength from first record
+    stage.stageDetail.put("contentLength", java.lang.Long.valueOf(df.first.getLong(4)))
 
     // repartition to distribute rows evenly
     val repartitionedDF = stage.partitionBy match {
