@@ -265,7 +265,8 @@ object ConfigUtils {
                 |  "description": "${args.getOrElse("description", "")}",
                 |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
                 |  "sql": \"\"\"${command}\"\"\",
-                |  "sqlParams": {${sqlParams}}
+                |  "sqlParams": {${sqlParams}},
+                |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "numRows", "truncate", "persist", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
                 |}""".stripMargin  
               } else {
                 s"""{
@@ -276,7 +277,8 @@ object ConfigUtils {
                 |  "sql": \"\"\"${command}\"\"\",
                 |  "outputView": "${args.getOrElse("outputView", "")}",
                 |  "persist": ${args.getOrElse("persist", "false")},
-                |  "sqlParams": {${sqlParams}}
+                |  "sqlParams": {${sqlParams}},
+                |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "outputView", "numRows", "truncate", "persist", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
                 |}""".stripMargin 
               }
             }

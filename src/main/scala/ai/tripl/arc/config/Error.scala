@@ -36,22 +36,22 @@ object Error {
             case ConfigError(attribute, lineNumber, message) => {
                 lineNumber match {
                     case Some(ln) => s"""${attribute} (Line ${ln}): $message"""
-                    case None => s"""${attribute}: $message"""
+                    case _ => s"""${attribute}: $message"""
                 }
             }
         }
     }
 
-    def errToSimpleString(err: Error): String = {
+    def errToSimpleString(err: Error, printLineNumber: Boolean): String = {
         err match {
             case StageError(_, stage, lineNumber, configErrors) => {
-                s"""${configErrors.map(e => "- " + errToSimpleString(e)).mkString("\n")}"""
+                s"""${configErrors.map(e => "- " + errToSimpleString(e, printLineNumber)).mkString("\n")}"""
             }
 
             case ConfigError(attribute, lineNumber, message) => {
                 lineNumber match {
-                    case Some(ln) => s"""${attribute} (Line ${ln}): $message"""
-                    case None => s"""${attribute}: $message"""
+                    case Some(ln) if (printLineNumber) => s"""${attribute} (Line ${ln}): $message"""
+                    case _ => s"""${attribute}: $message"""
                 }
             }
         }
@@ -90,8 +90,8 @@ object Error {
         errors.map(e => s"${errToString(e)}").mkString("\n")
     }
 
-    def pipelineSimpleErrorMsg(errors: List[Error]): String = {
-        errors.map(e => s"${errToSimpleString(e)}").mkString("\n")
+    def pipelineSimpleErrorMsg(errors: List[Error], printLineNumber: Boolean = true): String = {
+        errors.map(e => s"${errToSimpleString(e, printLineNumber)}").mkString("\n")
     }
 
     def pipelineErrorJSON(errors: List[Error]): java.util.List[java.util.HashMap[String, Object]] = {
