@@ -102,7 +102,7 @@ class JDBCLoad extends PipelineStagePlugin {
       case "read_uncommitted" => Right(IsolationLevelReadUncommitted)
       case "repeatable_read" => Right(IsolationLevelRepeatableRead)
       case "serializable" => Right(IsolationLevelSerializable)
-      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+      case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
 }
