@@ -100,7 +100,7 @@ class TensorFlowServingTransform extends PipelineStagePlugin {
       case "integer" => Right(IntegerResponse)
       case "double" => Right(DoubleResponse)
       case "object" => Right(StringResponse)
-      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+      case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
 

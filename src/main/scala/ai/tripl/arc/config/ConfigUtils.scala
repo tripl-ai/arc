@@ -623,7 +623,7 @@ object ConfigUtils {
     encoding.toLowerCase.trim match {
       case "base64" => Right(EncodingTypeBase64)
       case "hexadecimal" => Right(EncodingTypeHexadecimal)
-      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+      case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
 
@@ -633,7 +633,7 @@ object ConfigUtils {
       case "errorifexists" => Right(SaveMode.ErrorIfExists)
       case "ignore" => Right(SaveMode.Ignore)
       case "overwrite" => Right(SaveMode.Overwrite)
-      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+      case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
 
@@ -642,7 +642,7 @@ object ConfigUtils {
       case "append" => Right(OutputModeTypeAppend)
       case "complete" => Right(OutputModeTypeComplete)
       case "update" => Right(OutputModeTypeUpdate)
-      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+      case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
 
@@ -650,7 +650,7 @@ object ConfigUtils {
     delim.toLowerCase.trim match {
       case "permissive" => Right(FailModeTypePermissive)
       case "failfast" => Right(FailModeTypeFailFast)
-      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+      case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
 
@@ -660,7 +660,7 @@ object ConfigUtils {
       case "defaulthive" => Right(Delimiter.DefaultHive)
       case "pipe" => Right(Delimiter.Pipe)
       case "custom" => Right(Delimiter.Custom)
-      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+      case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
 
@@ -669,7 +669,7 @@ object ConfigUtils {
       case "doublequote" => Right(QuoteCharacter.DoubleQuote)
       case "singlequote" => Right(QuoteCharacter.SingleQuote)
       case "none" => Right(QuoteCharacter.Disabled)
-      case _ => Left(ConfigError(path, None, s"invalid state please raise issue.") :: Nil)
+      case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
 
