@@ -328,7 +328,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     assert(dataset.first.getInt(1) == 200)
 
     // ensure body is null
-    assert(dataset.first.isNullAt(4))
+    assert(dataset.first.isNullAt(5))
   }
 
   test("HTTPExtract: Throws exception with 404") {
@@ -488,8 +488,8 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = dataset.collect
 
     // assert body has been echoed
-    assert(actual(0).getString(4) == body0)
-    assert(actual(1).getString(4) == body1)
+    assert(actual(0).getString(5) == body0)
+    assert(actual(1).getString(5) == body1)
   }
 
   test("HTTPExtract: Can post data (POST) with Body from DataFrame by name precedence") {
@@ -524,7 +524,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = dataset.collect
 
     // assert body has been echoed
-    assert(actual(0).getString(4) == body0)
-    assert(actual(1).getString(4) == body1)
+    assert(actual(0).getString(5) == body0)
+    assert(actual(1).getString(5) == body1)
   }
 }
