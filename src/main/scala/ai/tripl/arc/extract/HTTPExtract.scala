@@ -125,6 +125,7 @@ object HTTPExtractStage {
       statusCode: Int,
       reasonPhrase: String,
       contentType: String,
+      contentLength: Long,
       body: String
   )
 
@@ -215,15 +216,27 @@ object HTTPExtractStage {
               throw new Exception(s"""HTTPExtract expects all response StatusCode(s) in [${stageValidStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
             }
 
+            val headers = response.getAllHeaders
+
             // read and close response
-            val body = response.getEntity.getContentLength match {
-              case 0 => None
-              case _ => Option(Source.fromInputStream(response.getEntity.getContent).mkString)
+            val (body, contentLength) = response.getEntity.getContentLength match {
+              // empty
+              case 0 => (None, 0L)
+              // unknown
+              case -1 => {
+                val body = Source.fromInputStream(response.getEntity.getContent).mkString
+                (Option(body), body.length.toLong)
+              }
+              // known
+              case contentLength: Long => {
+                val body = Source.fromInputStream(response.getEntity.getContent).mkString
+                (Option(body), contentLength)
+              }
             }
             response.close
 
             // cast to a RequestResponseRow to fit the Dataset map method requirements
-            val result = Seq(uri, response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, Option(response.getEntity.getContentType).map(_.toString).orNull, body.orNull)
+            val result = Seq(uri, response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, Option(response.getEntity.getContentType).map(_.toString).orNull, contentLength, body.orNull)
             Row.fromSeq(result).asInstanceOf[RequestResponseRow]
           } finally {
             request.releaseConnection
@@ -262,7 +275,12 @@ object HTTPExtractStage {
 
     if (stage.persist) {
       repartitionedDF.persist(arcContext.storageLevel)
-      stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
+
+      val records = repartitionedDF.count
+      stage.stageDetail.put("records", java.lang.Long.valueOf(records))
+      if (records != 0) {
+        stage.stageDetail.put("contentLength", java.lang.Long.valueOf(repartitionedDF.first.getLong(4)))
+      }
     }
 
     Option(repartitionedDF)

@@ -1,5 +1,10 @@
 # Change Log
 
+## 2.8.1
+
+- fix defect with `MetadataTransform` logic.
+- add `contentLength` to `HTTPExtract` response and logs.
+
 ## 2.8.0
 
 - fix defect which reported job failure when running in YARN mode.

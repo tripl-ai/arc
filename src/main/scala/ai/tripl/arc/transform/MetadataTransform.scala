@@ -50,7 +50,7 @@ class MetadataTransform extends PipelineStagePlugin {
     (name, description, inputView, outputView, extractColumns, schemaView, schemaURI, failMode, persist, invalidKeys, numPartitions, partitionBy) match {
       case (Right(name), Right(description), Right(inputView), Right(outputView), Right(extractColumns), Right(schemaView), Right(schemaURI), Right(failMode), Right(persist), Right(invalidKeys), Right(numPartitions), Right(partitionBy)) =>
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
-        val _schemaURI = if(!c.hasPath("schemaView")) None else Option(schemaURI)
+        val _schemaURI = if(!c.hasPath("schemaView")) Option(schemaURI) else None
 
         val stage = MetadataTransformStage(
           plugin=this,
