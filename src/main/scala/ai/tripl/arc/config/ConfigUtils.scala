@@ -6,6 +6,7 @@ import java.sql.DriverManager
 
 import scala.collection.JavaConverters._
 import scala.util.Properties._
+import scala.util.{Try,Success,Failure}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
@@ -26,6 +27,7 @@ import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.MetadataSchema
 
+import com.amazonaws.services.s3.AmazonS3URI
 
 import Error._
 
@@ -61,7 +63,9 @@ object ConfigUtils {
       // for local master throw error as some providers (Amazon EMR) redirect s3:// to use the s3a:// driver transparently
       case "s3" | "s3n" if isLocalMaster =>
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
-      case "s3" | "s3n" | "s3a" => {
+      case "s3" | "s3a" => {
+
+        val s3aURI = new AmazonS3URI(uri.replaceFirst("s3a://","s3://"))
         val s3aAccessKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY"))
         val s3aSecretKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY"))
         val s3aEndpoint: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
@@ -88,16 +92,16 @@ object ConfigUtils {
               }
               case None => None
             }
-            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(accessKey, secretKey, s3aEndpoint, connectionSSLEnabled)))
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(s3aURI.getBucket, accessKey, secretKey, s3aEndpoint, connectionSSLEnabled)))
           }
           case (None, _, _, _, Some(AmazonS3EncryptionType.SSE_S3), None, None) =>
-            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aEncType, s3aKmsId, None)))
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aURI.getBucket, s3aEncType, s3aKmsId, None)))
           case (None, _, _, _, Some(AmazonS3EncryptionType.SSE_KMS), None, None) =>
-            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aEncType, s3aKmsId, None)))
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aURI.getBucket, s3aEncType, s3aKmsId, None)))
           case (None, _, _, _, Some(AmazonS3EncryptionType.SSE_C), None, None) =>
-            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aEncType, None, s3aCustomKey)))   
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aURI.getBucket, s3aEncType, None, s3aCustomKey)))   
           case _ =>
-            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(None, None, None)))
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aURI.getBucket, None, None, None)))
         }
 
         val etlConfString = CloudUtils.getTextBlob(uri)
@@ -469,6 +473,7 @@ object ConfigUtils {
               Right(Some(Authentication.AzureDataLakeStorageGen2OAuth(clientID, secret, directoryID)))
             }
             case Some("AmazonAccessKey") => {
+              val s3aURI = new AmazonS3URI(uri.replaceFirst("s3a://","s3://"))
               val accessKeyID = authentication.get("accessKeyID") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AmazonAccessKey' requires 'accessKeyID' parameter.")

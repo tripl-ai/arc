@@ -324,9 +324,16 @@ object API {
       to provide access to a KMS key that would need to be done via a role and SSE-S3 should work if
       enable on the bucket as the default. Therefor unless a use case appears for adding encryption
       options to the access key method we will only support encryption options when using IAM for now.
+
+      for arc we are using this dependency resolution order if authentication is not provided:
+
      */
-    case class AmazonAccessKey(accessKeyID: String, secretAccessKey: String, endpoint: Option[String], ssl: Option[Boolean]) extends Authentication
-    case class AmazonIAM(encryptionType: Option[AmazonS3EncryptionType], keyArn: Option[String], customKey: Option[String]) extends Authentication
+    case class AmazonAccessKey(bucket: String, accessKeyID: String, secretAccessKey: String, endpoint: Option[String], ssl: Option[Boolean]) extends Authentication
+    case class AmazonAnonymous(bucket: String) extends Authentication
+    case class AmazonEnvironmentVariable(bucket: String, accessKeyID: String, secretAccessKey: String) extends Authentication
+    case class AmazonIAM(bucket: String, encryptionType: Option[AmazonS3EncryptionType], keyArn: Option[String], customKey: Option[String]) extends Authentication
+
+
     case class AzureSharedKey(accountName: String, signature: String) extends Authentication
     case class AzureSharedAccessSignature(accountName: String, container: String, token: String) extends Authentication
     case class AzureDataLakeStorageToken(clientID: String, refreshToken: String) extends Authentication
