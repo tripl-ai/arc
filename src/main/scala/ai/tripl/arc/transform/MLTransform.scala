@@ -18,6 +18,8 @@ import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.Utils
 
+import com.github.fommil.netlib.{BLAS, LAPACK}
+
 class MLTransform extends PipelineStagePlugin {
 
   val version = Utils.getFrameworkVersion
@@ -62,7 +64,9 @@ class MLTransform extends PipelineStagePlugin {
         stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("params", params.asJava)
-
+        stage.stageDetail.put("blas", BLAS.getInstance.getClass.getName)
+        stage.stageDetail.put("lapack", LAPACK.getInstance.getClass.getName)
+        
         Right(stage)
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, model, inputView, outputView, persist, numPartitions, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
