@@ -295,8 +295,36 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     assert(thrown0.getMessage.contains("No files matched '"))
     assert(thrown0.getMessage.contains("*.json.gz' and no schema has been provided to create an empty dataframe."))
 
-    // try without providing column metadata
+    // try with wildcard and basePath
     val thrown1 = intercept[Exception with DetailException] {
+      extract.JSONExtractStage.execute(
+        extract.JSONExtractStage(
+          plugin=new extract.JSONExtract,
+          name=outputView,
+          description=None,
+          schema=Right(Nil),
+          outputView=outputView,
+          input=Right(emptyDirectory),
+          settings=new JSON(multiLine=false),
+          authentication=None,
+          params=Map.empty,
+          persist=false,
+          numPartitions=None,
+          partitionBy=Nil,
+          contiguousIndex=true,
+          basePath=Some(FileUtils.getTempDirectoryPath()),
+          inputField=None,
+          watermark=None
+        )
+      )
+    }
+    println(thrown1.getMessage)
+    assert(thrown1.getMessage.contains("No files matched '"))
+    assert(thrown1.getMessage.contains("json' and no schema has been provided to create an empty dataframe."))
+
+
+    // try without providing column metadata
+    val thrown2 = intercept[Exception with DetailException] {
       extract.JSONExtractStage.execute(
         extract.JSONExtractStage(
           plugin=new extract.JSONExtract,
@@ -318,8 +346,8 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown1.getMessage.contains("Input '"))
-    assert(thrown1.getMessage.contains("empty.json' does not contain any fields and no schema has been provided to create an empty dataframe."))
+    assert(thrown2.getMessage.contains("Input '"))
+    assert(thrown2.getMessage.contains("empty.json' does not contain any fields and no schema has been provided to create an empty dataframe."))
 
     // try with column
     val dataset = extract.JSONExtractStage.execute(
