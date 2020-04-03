@@ -132,6 +132,8 @@ object JSONExtractStage {
   def execute(stage: JSONExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     import spark.implicits._
 
+    CloudUtils.setHadoopConfiguration(stage.authentication)
+
     // try to get the schema
     val optionSchema = try {
       ExtractUtils.getSchema(stage.schema)(spark, logger)
@@ -150,7 +152,6 @@ object JSONExtractStage {
       if (arcContext.isStreaming) {
         stage.input match {
           case Right(glob) => {
-            CloudUtils.setHadoopConfiguration(stage.authentication)
 
             optionSchema match {
               case Some(schema) => {
@@ -177,51 +178,66 @@ object JSONExtractStage {
       } else {
         stage.input match {
           case Right(glob) =>
-            CloudUtils.setHadoopConfiguration(stage.authentication)
-            // spark does not cope well reading many small files into json directly from hadoop file systems
-            // by reading first as text time drops by ~75%
-            // this will not throw an error for empty directory (but will for missing directory)
-            try {
-              if (stage.settings.multiLine) {
+            if (stage.basePath.isEmpty) {
+              // spark does not cope well reading many small files into json directly from hadoop file systems
+              // by reading first as text time drops by ~75%
+              // this will not throw an error for empty directory (but will for missing directory)
+              try {
+                if (stage.settings.multiLine) {
 
-                // if multiLine then remove the crlf delimiter so it is read as a full object per file
-                val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
-                val newDelimiter = s"${0x0 : Char}"
-                // temporarily remove the delimiter so all the data is loaded as a single line
-                spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)
+                  // if multiLine then remove the crlf delimiter so it is read as a full object per file
+                  val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
+                  val newDelimiter = s"${0x0 : Char}"
+                  // temporarily remove the delimiter so all the data is loaded as a single line
+                  spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)
 
-                // read the file but do not cache. caching will break the input_file_name() function
-                val textFile = spark.sparkContext.textFile(glob)
+                  // read the file but do not cache. caching will break the input_file_name() function
+                  val textFile = spark.sparkContext.textFile(glob)
 
-                val json = optionSchema match {
-                  case Some(schema) => Right(spark.read.options(options).schema(schema).json(textFile.toDS))
-                  case None => Right(spark.read.options(options).json(textFile.toDS))
-                }
+                  val json = optionSchema match {
+                    case Some(schema) => Right(spark.read.options(options).schema(schema).json(textFile.toDS))
+                    case None => Right(spark.read.options(options).json(textFile.toDS))
+                  }
 
-                // reset delimiter
-                if (oldDelimiter == null) {
-                  spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")
+                  // reset delimiter
+                  if (oldDelimiter == null) {
+                    spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")
+                  } else {
+                    spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)
+                  }
+
+                  json
                 } else {
-                  spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)
+                  // read the file but do not cache. caching will break the input_file_name() function
+                  val textFile = spark.sparkContext.textFile(glob)
+
+                  val json = optionSchema match {
+                    case Some(schema) => Right(spark.read.options(options).schema(schema).json(textFile.toDS))
+                    case None => Right(spark.read.options(options).json(textFile.toDS))
+                  }
+
+                  json
                 }
-
-                json
-              } else {
-                // read the file but do not cache. caching will break the input_file_name() function
-                val textFile = spark.sparkContext.textFile(glob)
-
-                val json = optionSchema match {
-                  case Some(schema) => Right(spark.read.options(options).schema(schema).json(textFile.toDS))
-                  case None => Right(spark.read.options(options).json(textFile.toDS))
-                }
-
-                json
+              } catch {
+                case e: org.apache.hadoop.mapred.InvalidInputException if (e.getMessage.contains("matches 0 files")) =>
+                  Left(FileNotFoundExtractError(Option(glob)))
+                case e: Exception => throw e
               }
-            } catch {
-              case e: org.apache.hadoop.mapred.InvalidInputException if (e.getMessage.contains("matches 0 files")) =>
-                Left(FileNotFoundExtractError(Option(glob)))
-              case e: Exception => throw e
-            }
+            } else {
+              // if basePath is defined the textFile hack cannot be used
+              try {
+                optionSchema match {
+                  case Some(schema) => Right(spark.read.options(options + ("multiLine" -> stage.settings.multiLine.toString)).schema(schema).json(glob))
+                  case None => Right(spark.read.options(options + ("multiLine" -> stage.settings.multiLine.toString)).json(glob))
+                }
+              } catch {
+                case e: AnalysisException if (e.getMessage == "Unable to infer schema for JSON. It must be specified manually.;") =>
+                  Left(FileNotFoundExtractError(Option(glob)))
+                case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
+                  Left(PathNotExistsExtractError(Option(glob)))
+                case e: Exception => throw e
+              }
+            }              
           case Left(view) => {
             stage.inputField match {
               case Some(inputField) => Right(spark.read.options(options).json(spark.table(view).select(col(inputField).as("value")).as[String]))
