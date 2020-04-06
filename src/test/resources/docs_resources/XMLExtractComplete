@@ -7,7 +7,7 @@
     "test"
   ],
   "inputURI": "hdfs://datalake/customer/*.xml",
-  "xsdURI": "hdfs://datalake/customer/customer.xsd",
+  "xsdURI": "hdfs://datalake/xml/customer.xsd",
   "outputView": "customer",
   "authentication": {},
   "contiguousIndex": true,
