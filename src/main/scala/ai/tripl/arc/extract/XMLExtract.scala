@@ -22,8 +22,6 @@ import com.typesafe.config._
 
 import java.io.StringReader
 
-import org.apache.commons.io.IOUtils
-
 import javax.xml.XMLConstants
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.Schema
@@ -104,7 +102,7 @@ class XMLExtract extends PipelineStagePlugin {
     try {
       // validator is not serialisable so return the input string if success
       val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-      schemaFactory.newSchema(new StreamSource(IOUtils.toInputStream(xsd))).newValidator
+      schemaFactory.newSchema(new StreamSource(new StringReader(xsd))).newValidator
       Right(xsd)
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
@@ -170,8 +168,8 @@ object XMLExtractStage {
             textRdd.foreach { xml =>
               // these objects are not serializable so need to be instantiate on each record
               val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-              val validator = schemaFactory.newSchema(new StreamSource(IOUtils.toInputStream(xsd))).newValidator
-              validator.validate(new StreamSource(IOUtils.toInputStream(xml)))
+              val validator = schemaFactory.newSchema(new StreamSource(new StringReader(xsd))).newValidator
+              validator.validate(new StreamSource(new StringReader(xml)))
             }
           }
 
@@ -196,8 +194,8 @@ object XMLExtractStage {
             textRdd.foreach { xml =>
               // these objects are not serializable so need to be instantiate on each record
               val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
-              val validator = schemaFactory.newSchema(new StreamSource(IOUtils.toInputStream(xsd))).newValidator
-              validator.validate(new StreamSource(IOUtils.toInputStream(xml)))
+              val validator = schemaFactory.newSchema(new StreamSource(new StringReader(xsd))).newValidator
+              validator.validate(new StreamSource(new StringReader(xml)))
             }
           }
 
