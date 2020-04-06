@@ -28,6 +28,10 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
   val inputView = "dataset"
   val outputView = "dataset"
 
+  val xsdSchema = getClass.getResource("/xml/shiporder.xsd").toString
+  val xmlRecordInvalid = getClass.getResource("/xml/shiporder_bad.xml").toString
+  val xmlRecordValid = getClass.getResource("/xml/shiporder_good.xml").toString
+
   before {
     implicit val spark = SparkSession
                   .builder()
@@ -84,7 +88,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        xsdValidator=None
       )
     ).get
 
@@ -125,7 +130,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        xsdValidator=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -144,7 +150,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=true,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        xsdValidator=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)
@@ -185,7 +192,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=true
+          contiguousIndex=true,
+          xsdValidator=None
         )
       )
     }
@@ -207,7 +215,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           persist=false,
           numPartitions=None,
           partitionBy=Nil,
-          contiguousIndex=true
+          contiguousIndex=true,
+          xsdValidator=None
         )
       )
     }
@@ -228,7 +237,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        xsdValidator=None
       )
     ).get
 
@@ -259,7 +269,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        xsdValidator=None
       )
     ).get
 
@@ -287,7 +298,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        xsdValidator=None
       )
     ).get
 
@@ -323,7 +335,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         persist=false,
         numPartitions=None,
         partitionBy=Nil,
-        contiguousIndex=true
+        contiguousIndex=true,
+        xsdValidator=None
       )
     ).get
 
@@ -337,5 +350,40 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     assert(TestUtils.datasetEquality(expected, actual))
 
   }
+
+  test("XMLExtract: xsd validation positive") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    
+    val dataset = extract.XMLExtractStage.execute(
+      extract.XMLExtractStage(
+        plugin=new extract.XMLExtract,
+        name=outputView,
+        description=None,
+        schema=Right(Nil),
+        outputView=outputView,
+        input=Left(inputView),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        xsdValidator=None
+      )
+    ).get
+
+    val expected = TestUtils.getKnownDataset
+      .withColumn("decimalDatum", col("decimalDatum").cast("double"))
+      .drop($"nullDatum")
+
+    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = dataset.drop(internal:_*)
+
+    assert(TestUtils.datasetEquality(expected, actual))
+
+  }  
 
 }
