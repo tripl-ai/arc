@@ -12,7 +12,9 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
+import ai.tripl.arc.config._
 import ai.tripl.arc.util._
+import ai.tripl.arc.util.log.LoggerFactory
 
 import ai.tripl.arc.util.TestUtils
 
@@ -28,9 +30,10 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
   val inputView = "dataset"
   val outputView = "dataset"
 
-  val xsdSchema = getClass.getResource("/xml/shiporder.xsd").toString
-  val xmlRecordInvalid = getClass.getResource("/xml/shiporder_bad.xml").toString
-  val xmlRecordValid = getClass.getResource("/xml/shiporder_good.xml").toString
+  val xsdSchemaValid = getClass.getResource("/conf/xml/shiporder_good.xsd").toString
+  val xsdSchemaInvalid = getClass.getResource("/conf/xml/shiporder_bad.xsd").toString
+  val xmlRecordValid = getClass.getResource("/conf/xml/shiporder_good.xml").toString
+  val xmlRecordInvalid = getClass.getResource("/conf/xml/shiporder_bad.xml").toString
 
   before {
     implicit val spark = SparkSession
@@ -89,7 +92,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         contiguousIndex=true,
-        xsdValidator=None
+        xsd=None
       )
     ).get
 
@@ -131,7 +134,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         contiguousIndex=true,
-        xsdValidator=None
+        xsd=None
       )
     )
     assert(spark.catalog.isCached(outputView) === false)
@@ -151,7 +154,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         contiguousIndex=true,
-        xsdValidator=None
+        xsd=None
       )
     )
     assert(spark.catalog.isCached(outputView) === true)
@@ -193,7 +196,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           partitionBy=Nil,
           contiguousIndex=true,
-          xsdValidator=None
+          xsd=None
         )
       )
     }
@@ -216,7 +219,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           partitionBy=Nil,
           contiguousIndex=true,
-          xsdValidator=None
+          xsd=None
         )
       )
     }
@@ -238,7 +241,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         contiguousIndex=true,
-        xsdValidator=None
+        xsd=None
       )
     ).get
 
@@ -270,7 +273,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         contiguousIndex=true,
-        xsdValidator=None
+        xsd=None
       )
     ).get
 
@@ -299,7 +302,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         contiguousIndex=true,
-        xsdValidator=None
+        xsd=None
       )
     ).get
 
@@ -336,7 +339,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         partitionBy=Nil,
         contiguousIndex=true,
-        xsdValidator=None
+        xsd=None
       )
     ).get
 
@@ -351,39 +354,104 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
 
   }
 
+
   test("XMLExtract: xsd validation positive") {
     implicit val spark = session
-    import spark.implicits._
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-    
-    val dataset = extract.XMLExtractStage.execute(
-      extract.XMLExtractStage(
-        plugin=new extract.XMLExtract,
-        name=outputView,
-        description=None,
-        schema=Right(Nil),
-        outputView=outputView,
-        input=Left(inputView),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil,
-        contiguousIndex=true,
-        xsdValidator=None
-      )
-    ).get
 
-    val expected = TestUtils.getKnownDataset
-      .withColumn("decimalDatum", col("decimalDatum").cast("double"))
-      .drop($"nullDatum")
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "XMLExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${xmlRecordValid}",
+          "xsdURI": "${xsdSchemaValid}",
+          "outputView": "shiporder",
+          "persist": false
+        }
+      ]
+    }"""
 
-    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val actual = dataset.drop(internal:_*)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
-    assert(TestUtils.datasetEquality(expected, actual))
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+      }
+    }
+  }
 
+  test("XMLExtract: xsd validation negative") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "XMLExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${xmlRecordInvalid}",
+          "xsdURI": "${xsdSchemaValid}",
+          "outputView": "shiporder",
+          "persist": false
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val thrown0 = intercept[Exception with DetailException] {
+          ARC.run(pipeline)(spark, logger, arcContext)
+        }
+        assert(thrown0.getMessage.contains("'one' is not a valid value for 'integer'"))
+      }
+    }
+  }
+
+  test("XMLExtract: invalid xsd") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "XMLExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${xmlRecordValid}",
+          "xsdURI": "${xsdSchemaInvalid}",
+          "outputView": "shiporder",
+          "persist": false
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => assert(err.toString.contains("""The prefix "xs" for element "xs:element" is not bound."""))
+      case Right((pipeline, _)) => fail("should throw error")
+    }
   }  
-
 }

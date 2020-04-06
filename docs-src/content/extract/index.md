@@ -681,7 +681,7 @@ The backtick character (`) can be used to address fields with non-alphanumeric n
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|inputURI|URI|true*|URI/Glob of the input delimited  XML files. If not present `inputView` is requred.|
+|inputURI|URI|true*|URI/Glob of the input delimited XML files. If not present `inputView` is requred.|
 |inputView|String|true*|Name of the incoming Spark dataset. If not present `inputURI` is requred.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
@@ -692,6 +692,7 @@ The backtick character (`) can be used to address fields with non-alphanumeric n
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}<br><br>Additionally, by specifying the schema here, the underlying data source can skip the schema inference step, and thus speed up data loading.|
 |schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|xsdURI|URI|false|URI of an [XML Schema Definition](https://en.wikipedia.org/wiki/XML_Schema_(W3C)) (XSD) file used to validate input XML.|
 
 ### Examples
 

@@ -22,6 +22,8 @@ import com.typesafe.config._
 
 import java.io.StringReader
 
+import org.apache.commons.io.IOUtils
+
 import javax.xml.XMLConstants
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.Schema
@@ -37,7 +39,7 @@ class XMLExtract extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "xmlURI" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "xsdURI" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
@@ -50,17 +52,17 @@ class XMLExtract extends PipelineStagePlugin {
     val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
     val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
-    val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
     val xsdURI = if(c.hasPath("xsdURI")) getValue[String]("xsdURI") else Right("")
-    val xsdValidator = if(c.hasPath("xsdURI")) xsdURI |> parseURI("xsdURI") _ |> textContentForURI("xsdURI", authentication) _ |> validateXSD("xsdURI", schemaFactory) _ else Right(schemaFactory.newSchema.newValidator)
+    val xsd = if(c.hasPath("xsdURI")) xsdURI |> parseURI("xsdURI") _ |> textContentForURI("xsdURI", authentication) _ |> validateXSD("xsdURI") _ else Right("")
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, xsdURI, xsdValidator, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(xsdURI), Right(xsdValidator), Right(invalidKeys)) =>
+    (name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, xsdURI, xsd, invalidKeys) match {
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(xsdURI), Right(xsd), Right(invalidKeys)) =>
         val input = if(c.hasPath("inputView")) Left(inputView) else Right(parsedGlob)
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
-        val xsdValidatorOption = if(c.hasPath("xsdURI")) Option(xsdValidator) else None
+        val xsdOption = if(c.hasPath("xsdURI")) Option(xsd) else None
+
         val stage = XMLExtractStage(
           plugin=this,
           name=name,
@@ -74,7 +76,7 @@ class XMLExtract extends PipelineStagePlugin {
           numPartitions=numPartitions,
           partitionBy=partitionBy,
           contiguousIndex=contiguousIndex,
-          xsdValidator=xsdValidatorOption
+          xsd=xsdOption
         )
 
         input match {
@@ -89,18 +91,21 @@ class XMLExtract extends PipelineStagePlugin {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, xsdURI, xsdValidator, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, xsdURI, xsd, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
     }
   }
 
-  def validateXSD(path: String, schemaFactory: SchemaFactory)(xsd: String)(implicit spark: SparkSession, c: Config): Either[Errors, Validator] = {
-    def err(lineNumber: Option[Int], msg: String): Either[Errors, Validator] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+  def validateXSD(path: String)(xsd: String)(implicit spark: SparkSession, c: Config): Either[Errors, String] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
-      Right(schemaFactory.newSchema(new StreamSource(org.apache.commons.io.IOUtils.toInputStream(xsd))).newValidator)
+      // validator is not serialisable so return the input string if success
+      val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+      schemaFactory.newSchema(new StreamSource(IOUtils.toInputStream(xsd))).newValidator
+      Right(xsd)
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
@@ -121,7 +126,7 @@ case class XMLExtractStage(
     numPartitions: Option[Int],
     partitionBy: List[String],
     contiguousIndex: Boolean,
-    xsdValidator: Option[Validator]
+    xsd: Option[String]
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
@@ -158,18 +163,20 @@ object XMLExtractStage {
           spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)
 
           // read the file but do not cache. caching will break the input_file_name() function
-          val textFile = spark.sparkContext.textFile(glob)
+          val textRdd = spark.sparkContext.textFile(glob)
 
-          // if we have an xml validator
-          for (validator <- stage.xsdValidator) {
-            textFile.foreach { xml => 
-              validator.validate(new StreamSource(org.apache.commons.io.IOUtils.toInputStream(xml)))
+          // if we have an xsd validator
+          for (xsd <- stage.xsd) {
+            textRdd.foreach { xml =>
+              // these objects are not serializable so need to be instantiate on each record
+              val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+              val validator = schemaFactory.newSchema(new StreamSource(IOUtils.toInputStream(xsd))).newValidator
+              validator.validate(new StreamSource(IOUtils.toInputStream(xml)))
             }
           }
 
-
           val xmlReader = new XmlReader
-          val xml = xmlReader.xmlRdd(spark, textFile)
+          val xml = xmlReader.xmlRdd(spark, textRdd)
 
           // reset delimiter
           if (oldDelimiter == null) {
@@ -182,7 +189,19 @@ object XMLExtractStage {
         }
         case Left(view) => {
           val xmlReader = new XmlReader
-          Right(xmlReader.xmlRdd(spark, spark.table(view).as[String].rdd))
+          val textRdd = spark.table(view).as[String].rdd
+
+          // if we have an xsd validator
+          for (xsd <- stage.xsd) {
+            textRdd.foreach { xml =>
+              // these objects are not serializable so need to be instantiate on each record
+              val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+              val validator = schemaFactory.newSchema(new StreamSource(IOUtils.toInputStream(xsd))).newValidator
+              validator.validate(new StreamSource(IOUtils.toInputStream(xml)))
+            }
+          }
+
+          Right(xmlReader.xmlRdd(spark, textRdd))
         }
       }
     } catch {
