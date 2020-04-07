@@ -1,5 +1,12 @@
 # Change Log
 
+## 2.9.0
+
+- fix defect with `JSONExtract` not using `basePath` correctly.
+- add ability to export to multiple files by providing second `filename` column to `TextLoad` when set to `singleFile` mode but not create a directory like the standard Spark behavior.
+- add ability to provide an [XML Schema Definition](https://en.wikipedia.org/wiki/XML_Schema_(W3C)) (XSD) to `XMLExtract` to validate input file schemas.
+- add `blas` and `lapack` implementation to `MLTransform` logs to help debug performance.
+
 ## 2.8.1
 
 - fix defect with `MetadataTransform` logic.

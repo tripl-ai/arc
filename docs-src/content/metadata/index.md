@@ -4,7 +4,7 @@ weight: 70
 type: blog
 ---
 
-The `metadata` format, consumed in the [TypingTransform](../transform/#typingtransform) stage, is an opinionated format for specifying common data typing actions. 
+The `metadata` format, consumed in the [TypingTransform](../transform/#typingtransform) stage, is an opinionated format for specifying common data typing actions.
 
 It is designed to:
 
@@ -69,7 +69,7 @@ It is designed to:
   "metadata": {
     "primaryKey" : true,
     "position": 1
-  }  
+  }
 }
 ```
 
@@ -98,14 +98,14 @@ It is designed to:
   "metadata": {
     "primaryKey" : true,
     "position": 1
-  }  
+  }
 }
 ```
 
 ## Date
 
 {{< note title="Date vs Timestamp" >}}
-This class does not store or represent a time or time-zone. Instead, it is a description of the date, as used for birthdays. It cannot represent an instant on the time-line without additional information such as an offset or time-zone. 
+This class does not store or represent a time or time-zone. Instead, it is a description of the date, as used for birthdays. It cannot represent an instant on the time-line without additional information such as an offset or time-zone.
 
 This means that if users will be executing SQL statements which have conditional logic based on date comparisons (such as `WHERE [date] < CURRENT_DATE()`) then it is safer to use a [Timestamp](#Timestamp) with a hard-coded time component for that source data so you get consistent results regardless of which time zone your users are located.
 {{</note>}}
@@ -161,7 +161,7 @@ This means that if users will be executing SQL statements which have conditional
   "metadata": {
     "primaryKey" : true,
     "position": 1
-  }  
+  }
 }
 ```
 
@@ -170,7 +170,7 @@ This means that if users will be executing SQL statements which have conditional
 A `Double` is a double-precision 64-bit IEEE 754 floating point number.
 
 {{< note title="Double vs Decimal" >}}
-A Decimal should be used whenever precision is required or for numbers which must sum up correctly or balance, e.g. monetary transactions. 
+A Decimal should be used whenever precision is required or for numbers which must sum up correctly or balance, e.g. monetary transactions.
 {{</note>}}
 
 ### Additional Attributes
@@ -308,7 +308,7 @@ Spark does not have an internal `TimeType` representation of time. This type can
   "metadata": {
     "primaryKey" : true,
     "position": 1
-  }  
+  }
 }
 ```
 
@@ -343,7 +343,7 @@ Spark does not have an internal `TimeType` representation of time. This type can
     "d/MM/uuuu HH:mm",
     "d/MM/uuuu H:mm"
   ],
-  "timezoneId": "+1000",    
+  "timezoneId": "+1000",
   "metadata": {
     "primaryKey" : true,
     "position": 1
@@ -365,7 +365,7 @@ For converting a `Date` label into a `Timestamp` supply the `time` key:
   "formatters": [
     "dd/MM/uuuu",
   ],
-  "timezoneId": "Australia/Sydney",    
+  "timezoneId": "Australia/Sydney",
   "time": {
     "hour": 23,
     "minute": 59,
@@ -375,6 +375,6 @@ For converting a `Date` label into a `Timestamp` supply the `time` key:
   "metadata": {
     "primaryKey" : true,
     "position": 1
-  }  
+  }
 }
 ```

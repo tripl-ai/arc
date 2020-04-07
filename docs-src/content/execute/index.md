@@ -29,10 +29,10 @@ The `CassandraExecute` executes a CQL statement against an external [Cassandra](
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/CassandraExecuteMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/CassandraExecuteMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/CassandraExecuteComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/CassandraExecuteComplete" highlight="json" >}}
 
 
 ## HTTPExecute
@@ -55,10 +55,10 @@ The `HTTPExecute` takes an input `Map[String, String]` from the configuration an
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/HTTPExecuteMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/HTTPExecuteMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/HTTPExecuteComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/HTTPExecuteComplete" highlight="json" >}}
 
 
 ## JDBCExecute
@@ -82,10 +82,10 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/JDBCExecuteMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/JDBCExecuteMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/JDBCExecuteComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/JDBCExecuteComplete" highlight="json" >}}
 
 
 ## KafkaCommitExecute
@@ -112,7 +112,7 @@ For example, if a job reads from a Kafka topic and writes the results to `parque
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/KafkaCommitExecuteMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/KafkaCommitExecuteMin" highlight="json" >}}
 
 ## PipelineExecute
 ##### Since: 1.0.9 - Supports Streaming: True
@@ -134,7 +134,7 @@ An example use case could be a `pipeline` which defines how your organisation de
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/PipelineExecuteMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/PipelineExecuteMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/PipelineExecuteComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/PipelineExecuteComplete" highlight="json" >}}

@@ -14,7 +14,7 @@ type: blog
 ## AvroLoad
 ##### Since: 1.0.0 - Supports Streaming: False
 
-The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avro.apache.org/) file. 
+The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avro.apache.org/) file.
 
 ### Parameters
 
@@ -33,10 +33,10 @@ The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avr
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/AvroLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/AvroLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/AvroLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/AvroLoadComplete" highlight="json" >}}
 
 
 ## CassandraLoad
@@ -45,7 +45,7 @@ The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avr
 The `CassandraLoad` is provided by the https://github.com/tripl-ai/arc-cassandra-pipeline-plugin package.
 {{</note>}}
 
-The `CassandraLoad` writes an input `DataFrame` to a target [Cassandra](https://cassandra.apache.org/) cluster. 
+The `CassandraLoad` writes an input `DataFrame` to a target [Cassandra](https://cassandra.apache.org/) cluster.
 
 ### Parameters
 
@@ -65,16 +65,16 @@ The `CassandraLoad` writes an input `DataFrame` to a target [Cassandra](https://
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/CassandraLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/CassandraLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/CassandraLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/CassandraLoadComplete" highlight="json" >}}
 
 
 ## ConsoleLoad
 ##### Since: 1.2.0 - Supports Streaming: True
 
-The `ConsoleLoad` prints an input streaming `DataFrame` the console. 
+The `ConsoleLoad` prints an input streaming `DataFrame` the console.
 
 This stage has been included for testing Structured Streaming jobs as it can be very difficult to debug. Generally this stage would only be included when Arc is run in a test mode (i.e. the `environment` is set to `test`).
 
@@ -91,10 +91,10 @@ This stage has been included for testing Structured Streaming jobs as it can be 
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/ConsoleLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/ConsoleLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/ConsoleLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/ConsoleLoadComplete" highlight="json" >}}
 
 
 ## DeltaLakeLoad
@@ -103,7 +103,7 @@ This stage has been included for testing Structured Streaming jobs as it can be 
 The `DeltaLakeLoad` is provided by the https://github.com/tripl-ai/arc-deltalake-pipeline-plugin package.
 {{</note>}}
 
-The `DeltaLakeLoad` writes an input `DataFrame` to a target [DeltaLake](https://delta.io/) file. 
+The `DeltaLakeLoad` writes an input `DataFrame` to a target [DeltaLake](https://delta.io/) file.
 
 ### Parameters
 
@@ -122,16 +122,16 @@ The `DeltaLakeLoad` writes an input `DataFrame` to a target [DeltaLake](https://
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/DeltaLakeLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/DeltaLakeLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/DeltaLakeLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/DeltaLakeLoadComplete" highlight="json" >}}
 
 
 ## DelimitedLoad
 ##### Since: 1.0.0 - Supports Streaming: True
 
-The `DelimitedLoad` writes an input `DataFrame` to a target delimited file. 
+The `DelimitedLoad` writes an input `DataFrame` to a target delimited file.
 
 ### Parameters
 
@@ -154,10 +154,10 @@ The `DelimitedLoad` writes an input `DataFrame` to a target delimited file.
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/DelimitedLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/DelimitedLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/DelimitedLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/DelimitedLoadComplete" highlight="json" >}}
 
 
 ## ElasticsearchLoad
@@ -166,7 +166,7 @@ The `DelimitedLoad` writes an input `DataFrame` to a target delimited file.
 The `ElasticsearchLoad` is provided by the https://github.com/tripl-ai/arc-elasticsearch-pipeline-plugin package.
 {{</note>}}
 
-The `ElasticsearchLoad` writes an input `DataFrame` to a target [Elasticsearch](https://www.elastic.co/products/elasticsearch) cluster. 
+The `ElasticsearchLoad` writes an input `DataFrame` to a target [Elasticsearch](https://www.elastic.co/products/elasticsearch) cluster.
 
 ### Parameters
 
@@ -184,10 +184,10 @@ The `ElasticsearchLoad` writes an input `DataFrame` to a target [Elasticsearch](
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/ElasticsearchLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/ElasticsearchLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/ElasticsearchLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/ElasticsearchLoadComplete" highlight="json" >}}
 
 
 ## HTTPLoad
@@ -212,10 +212,10 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/HTTPLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/HTTPLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/HTTPLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/HTTPLoadComplete" highlight="json" >}}
 
 
 ## JDBCLoad
@@ -249,16 +249,16 @@ Whilst it is possible to use `JDBCLoad` to create tables directly in the target 
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/JDBCLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/JDBCLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/JDBCLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/JDBCLoadComplete" highlight="json" >}}
 
 
 ## JSONLoad
 ##### Since: 1.0.0 - Supports Streaming: True
 
-The `JSONLoad` writes an input `DataFrame` to a target JSON file. 
+The `JSONLoad` writes an input `DataFrame` to a target JSON file.
 
 ### Parameters
 
@@ -277,10 +277,10 @@ The `JSONLoad` writes an input `DataFrame` to a target JSON file.
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/JSONLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/JSONLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/JSONLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/JSONLoadComplete" highlight="json" >}}
 
 
 ## KafkaLoad
@@ -312,10 +312,10 @@ In the future additional Transform stages (like `ProtoBufTransform`) may be adde
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/KafkaLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/KafkaLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/KafkaLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/KafkaLoadComplete" highlight="json" >}}
 
 
 ## MongoDBLoad
@@ -324,7 +324,7 @@ In the future additional Transform stages (like `ProtoBufTransform`) may be adde
 The `MongoDBLoad` is provided by the https://github.com/tripl-ai/arc-mongo-pipeline-plugin package.
 {{</note>}}
 
-The `MongoDBLoad` writes an input `DataFrame` to a target [MongoDB](https://www.mongodb.com/) collection. 
+The `MongoDBLoad` writes an input `DataFrame` to a target [MongoDB](https://www.mongodb.com/) collection.
 
 ### Parameters
 
@@ -342,16 +342,16 @@ The `MongoDBLoad` writes an input `DataFrame` to a target [MongoDB](https://www.
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/MongoDBLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/MongoDBLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/MongoDBLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/MongoDBLoadComplete" highlight="json" >}}
 
 
 ## ORCLoad
 ##### Since: 1.0.0 - Supports Streaming: True
 
-The `ORCLoad` writes an input `DataFrame` to a target [Apache ORC](https://orc.apache.org/) file. 
+The `ORCLoad` writes an input `DataFrame` to a target [Apache ORC](https://orc.apache.org/) file.
 
 ### Parameters
 
@@ -370,16 +370,16 @@ The `ORCLoad` writes an input `DataFrame` to a target [Apache ORC](https://orc.a
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/ORCLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/ORCLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/ORCLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/ORCLoadComplete" highlight="json" >}}
 
 
 ## ParquetLoad
 ##### Since: 1.0.0 - Supports Streaming: True
 
-The `ParquetLoad` writes an input `DataFrame` to a target [Apache Parquet](https://parquet.apache.org/) file. 
+The `ParquetLoad` writes an input `DataFrame` to a target [Apache Parquet](https://parquet.apache.org/) file.
 
 ### Parameters
 
@@ -398,16 +398,16 @@ The `ParquetLoad` writes an input `DataFrame` to a target [Apache Parquet](https
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/ParquetLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/ParquetLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/ParquetLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/ParquetLoadComplete" highlight="json" >}}
 
 
 ## TextLoad
 ##### Since: 1.9.0 - Supports Streaming: False
 
-The `TextLoad` writes an input `DataFrame` to a target text file. 
+The `TextLoad` writes an input `DataFrame` to a target text file.
 
 ### Parameters
 
@@ -422,24 +422,24 @@ The `TextLoad` writes an input `DataFrame` to a target text file.
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
-|singleFile|Boolean|false|Write to a single text file instead of a directory containing one or more partitions. Warning: this will pull the entire dataset to memory on the driver process so will not work for large datasets unless the driver has a sufficiently large memory allocation.|
+|singleFile|Boolean|false|Write to a single text file instead of a directory containing one or more partitions. Accepts datasets with either `[value: string]` or `[value: string, filename: string]` schema. If `filename` is supplied this component will write to multiple files by prepending `outputURI`. Warning: this will pull the entire dataset to memory on the driver process so will not work for large datasets unless the driver has a sufficiently large memory allocation.|
 |prefix|String|false|A string to append before the row data when in `singleFile` mode.|
-|separator|String|false|A separator string to append between the row data when in `singleFile` mode.|
+|separator|String|false|A separator string to append between the row data when in `singleFile` mode. Most common use will be `\n` which will insert newlines.|
 |suffix|String|false|A string to append after the row data when in `singleFile` mode.|
 
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/TextLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/TextLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/TextLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/TextLoadComplete" highlight="json" >}}
 
 
 ## XMLLoad
 ##### Since: 1.0.0 - Supports Streaming: False
 
-The `XMLLoad` writes an input `DataFrame` to a target XML file. 
+The `XMLLoad` writes an input `DataFrame` to a target XML file.
 
 ### Parameters
 
@@ -458,7 +458,7 @@ The `XMLLoad` writes an input `DataFrame` to a target XML file.
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/XMLLoadMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/XMLLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/XMLLoadComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/XMLLoadComplete" highlight="json" >}}

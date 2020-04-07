@@ -1,1 +1,1 @@
-A string that uniquely identifies the group of consumer processes to which this consumer belongs. This will retain the offset of the job between executions. 
+A string that uniquely identifies the group of consumer processes to which this consumer belongs. This will retain the offset of the job between executions.

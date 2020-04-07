@@ -37,16 +37,16 @@ The `CypherTransform` executes an [Cypher](https://www.opencypher.org/) graph qu
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/CypherTransformMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/CypherTransformMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/CypherTransformComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/CypherTransformComplete" highlight="json" >}}
 
 
 ## DiffTransform
 ##### Since: 1.0.8 - Supports Streaming: False
 
-The `DiffTransform` stage calculates the difference between two input datasets and produces three datasets: 
+The `DiffTransform` stage calculates the difference between two input datasets and produces three datasets:
 
 - A dataset of the `intersection` of the two datasets - or rows that exist and are the same in both datasets.
 - A dataset of the `left` dataset - or rows that only exist in the left input dataset (`inputLeftView`).
@@ -73,10 +73,10 @@ This stage performs this 'diffing' operation in a single pass so if multiple of 
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/DiffTransformMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/DiffTransformMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/DiffTransformComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/DiffTransformComplete" highlight="json" >}}
 
 ## GraphTransform
 ##### Since: 2.0.0 - Supports Streaming: True
@@ -103,10 +103,10 @@ The `GraphTransform` stage takes either a list of views of graph nodes and views
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/GraphTransformMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/GraphTransformMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/GraphTransformComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/GraphTransformComplete" highlight="json" >}}
 
 ## HTTPTransform
 ##### Since: 1.0.9 - Supports Streaming: True
@@ -139,16 +139,16 @@ https://github.com/tripl-ai/arc/tree/master/src/it/resources/flask_serving
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/HTTPTransformMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/HTTPTransformMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/HTTPTransformComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/HTTPTransformComplete" highlight="json" >}}
 
 
 ## JSONTransform
 ##### Since: 1.0.0 - Supports Streaming: True
 
-The `JSONTransform` stage transforms the incoming dataset to rows of `json` strings with the column name `value`. It is intended to be used before stages like [HTTPLoad](/load/#httpload) or [HTTPTransform](/transform/#httptransform) to prepare the data for sending externally. 
+The `JSONTransform` stage transforms the incoming dataset to rows of `json` strings with the column name `value`. It is intended to be used before stages like [HTTPLoad](/load/#httpload) or [HTTPTransform](/transform/#httptransform) to prepare the data for sending externally.
 
 ### Parameters
 
@@ -166,17 +166,17 @@ The `JSONTransform` stage transforms the incoming dataset to rows of `json` stri
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/JSONTransformMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/JSONTransformMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/JSONTransformComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/JSONTransformComplete" highlight="json" >}}
 
 
 ## MetadataFilterTransform
 ##### Since: 1.0.9 - Supports Streaming: True
 
 {{< note title="Experimental" >}}
-The `MetadataFilterTransform` is currently in experimental state whilst the requirements become clearer. 
+The `MetadataFilterTransform` is currently in experimental state whilst the requirements become clearer.
 
 This means this API is likely to change.
 {{</note>}}
@@ -195,24 +195,24 @@ This can be used like:
 
 ```sql
 -- only select columns which are not personally identifiable information
-SELECT 
-    name 
-FROM metadata 
+SELECT
+    name
+FROM metadata
 WHERE metadata.pii = false
 ```
 
-Will produce an `outputView` which only contains the columns in `inputView` where the `inputView` column metadata contains a key `pii` which has the value equal to `false`. 
+Will produce an `outputView` which only contains the columns in `inputView` where the `inputView` column metadata contains a key `pii` which has the value equal to `false`.
 
 If the `sqlParams` contains boolean parameter `pii_authorized` if the job is authorised to use Personally identifiable information or not then it could be used like:
 
 ```sql
 -- only select columns which job is authorised to access based on ${pii_authorized}
-SELECT 
-    name 
-FROM metadata 
+SELECT
+    name
+FROM metadata
 WHERE metadata.pii = (
-    CASE 
-        WHEN ${pii_authorized} = true 
+    CASE
+        WHEN ${pii_authorized} = true
         THEN metadata.pii   -- this will allow both true and false metadata.pii values if pii_authorized = true
         ELSE false          -- else if pii_authorized = false only allow metadata.pii = false values
     END
@@ -240,16 +240,16 @@ The `inputView` and `outputView` can be set to the same name so that downstream 
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/MetadataFilterTransformMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/MetadataFilterTransformMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/MetadataFilterTransformComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/MetadataFilterTransformComplete" highlight="json" >}}
 
 
 ## MetadataTransform
 ##### Since: 2.4.0 - Supports Streaming: True
 
-The `MetadataTransform` stage attaches metadata input `Dataframe` and returns a new `DataFrame`. 
+The `MetadataTransform` stage attaches metadata input `Dataframe` and returns a new `DataFrame`.
 
 ### Parameters
 
@@ -270,10 +270,10 @@ The `MetadataTransform` stage attaches metadata input `Dataframe` and returns a 
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/MetadataTransformMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/MetadataTransformMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/MetadataTransformComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/MetadataTransformComplete" highlight="json" >}}
 
 
 ## MLTransform
@@ -299,10 +299,10 @@ The `MLTransform` stage transforms the incoming dataset with a pretrained Spark 
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/MLTransformMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/MLTransformMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/MLTransformComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/MLTransformComplete" highlight="json" >}}
 
 ## SimilarityJoinTransform
 ##### Since: 2.1.0 - Supports Streaming: True
@@ -333,10 +333,10 @@ The `SimilarityJoinTransform` stage uses [Approximate String Matching](https://e
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/SimilarityJoinTransformMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/SimilarityJoinTransformMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/SimilarityJoinTransformComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/SimilarityJoinTransformComplete" highlight="json" >}}
 
 
 ## SQLTransform
@@ -373,7 +373,7 @@ Whilst SQL is capable of converting data types using the `CAST` function (e.g. `
 The SQL statement is a plain Spark SQL statement, for example:
 
 ```sql
-SELECT 
+SELECT
     customer.customer_id
     ,customer.first_name
     ,customer.last_name
@@ -397,10 +397,10 @@ FROM ${inputView}
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/SQLTransformMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/SQLTransformMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/SQLTransformComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/SQLTransformComplete" highlight="json" >}}
 
 The `current_date` and `current_timestamp` can easily be passed in as environment variables using `$(date "+%Y-%m-%d")` and `$(date "+%Y-%m-%d %H:%M:%S")` respectively.
 
@@ -408,7 +408,7 @@ The `current_date` and `current_timestamp` can easily be passed in as environmen
 ##### Since: 1.0.0 - Supports Streaming: True
 
 {{< note title="Experimental" >}}
-The `TensorFlowServingTransform` is currently in experimental state whilst the requirements become clearer. 
+The `TensorFlowServingTransform` is currently in experimental state whilst the requirements become clearer.
 
 This means this API is likely to change.
 {{</note>}}
@@ -440,16 +440,16 @@ https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/TensorFlowServingTransformMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/TensorFlowServingTransformMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/TensorFlowServingTransformComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/TensorFlowServingTransformComplete" highlight="json" >}}
 
 
 ## TypingTransform
 ##### Since: 1.0.0 - Supports Streaming: True
 
-The `TypingTransform` stage transforms the incoming dataset with based on metadata defined in the [metadata](../metadata/) format. 
+The `TypingTransform` stage transforms the incoming dataset with based on metadata defined in the [metadata](../metadata/) format.
 
 The logical process that is applied to perform the typing on a field-by-field basis is shown below.
 
@@ -473,10 +473,10 @@ The logical process that is applied to perform the typing on a field-by-field ba
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/TypingTransformMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/TypingTransformMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/TypingTransformComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/TypingTransformComplete" highlight="json" >}}
 
 
 A demonstration of how the `TypingTransform` behaves. Assuming you have read an input like a [DelimitedExtract](../extract/#DelimitedExtract) which will read a dataset where all the columns are read as strings:
@@ -527,11 +527,11 @@ In this case the goal is  to safely convert the values from strings like `"2018-
         "uuuu-MM-dd HH:mm:ss"
     ],
     "timezoneId": "UTC"
-  }   
+  }
 ]
 ```
 
-Here is the output of the `TypingTransformation` when applied to the input dataset. 
+Here is the output of the `TypingTransformation` when applied to the input dataset.
 
 ```bash
 +-------------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -544,7 +544,7 @@ Here is the output of the `TypingTransformation` when applied to the input datas
 +-------------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
-- Because the conversion happened successfully for both values on the first two rows there are no errors for those rows. 
+- Because the conversion happened successfully for both values on the first two rows there are no errors for those rows.
 - On the third row the value `'2018-02-30 01:16:40'` cannot be converted as the 30th day of February is not a valid date and the value is set to `null`. If the `nullable` in the [metadata](../metadata/) for field `startTime` was set to `false` the job would fail as it would be unable to continue.
 - On the forth row both rows are invalid as the `formatter` and `date` values are both wrong.
 

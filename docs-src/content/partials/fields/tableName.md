@@ -1,1 +1,1 @@
-The JDBC table that should be read. Note that anything that is valid in a `FROM` clause of a SQL query can be used, e.g. `(SELECT * FROM sourcetable WHERE key=value) sourcetable` or just `sourcetable`. 
+The JDBC table that should be read. Note that anything that is valid in a `FROM` clause of a SQL query can be used, e.g. `(SELECT * FROM sourcetable WHERE key=value) sourcetable` or just `sourcetable`.

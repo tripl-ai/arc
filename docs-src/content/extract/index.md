@@ -30,7 +30,7 @@ Spark will automatically match file extensions of `.zip`, `.bz2`, `.deflate` and
 ## AvroExtract
 ##### Since: 1.0.0 - Supports Streaming: False
 
-The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/) files and returns a `DataFrame`. 
+The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/) files and returns a `DataFrame`.
 
 ### Parameters
 
@@ -56,16 +56,16 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/AvroExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/AvroExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/AvroExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/AvroExtractComplete" highlight="json" >}}
 
 
 ## BytesExtract
 ##### Since: 1.0.9 - Supports Streaming: False
 
-The `BytesExtract` stage reads one or more binary files and returns a `DataFrame` containing a `Array[Byte]` of the file content (named `value`) and the file path (named `_filename`). 
+The `BytesExtract` stage reads one or more binary files and returns a `DataFrame` containing a `Array[Byte]` of the file content (named `value`) and the file path (named `_filename`).
 
 ### Parameters
 
@@ -86,10 +86,10 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/BytesExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/BytesExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/BytesExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/BytesExtractComplete" highlight="json" >}}
 
 
 ## CassandraExtract
@@ -98,7 +98,7 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
 The `CassandraExtract` is provided by the https://github.com/tripl-ai/arc-cassandra-pipeline-plugin package.
 {{</note>}}
 
-The `CassandraExtract` reads directly from a [Cassandra](https://cassandra.apache.org/) cluster and returns a `DataFrame`. 
+The `CassandraExtract` reads directly from a [Cassandra](https://cassandra.apache.org/) cluster and returns a `DataFrame`.
 
 ### Parameters
 
@@ -118,10 +118,10 @@ The `CassandraExtract` reads directly from a [Cassandra](https://cassandra.apach
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/CassandraExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/CassandraExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/CassandraExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/CassandraExtractComplete" highlight="json" >}}
 
 
 ## DeltaLakeExtract
@@ -130,7 +130,7 @@ The `CassandraExtract` reads directly from a [Cassandra](https://cassandra.apach
 The `DeltaLakeExtract` is provided by the https://github.com/tripl-ai/arc-deltalake-pipeline-plugin package.
 {{</note>}}
 
-The `DeltaLakeExtract` stage reads one or more [DeltaLake](https://delta.io/) files and returns a `DataFrame`. 
+The `DeltaLakeExtract` stage reads one or more [DeltaLake](https://delta.io/) files and returns a `DataFrame`.
 
 ### Parameters
 
@@ -150,10 +150,10 @@ The `DeltaLakeExtract` stage reads one or more [DeltaLake](https://delta.io/) fi
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/DeltaLakeExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/DeltaLakeExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/DeltaLakeExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/DeltaLakeExtractComplete" highlight="json" >}}
 
 
 ## DelimitedExtract
@@ -189,10 +189,10 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/DelimitedExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/DelimitedExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/DelimitedExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/DelimitedExtractComplete" highlight="json" >}}
 
 
 ## ElasticsearchExtract
@@ -201,7 +201,7 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 The `ElasticsearchExtract` is provided by the https://github.com/tripl-ai/arc-elasticsearch-pipeline-plugin package.
 {{</note>}}
 
-The `ElasticsearchExtract` stage reads from an [Elasticsearch](https://www.elastic.co/products/elasticsearch) cluster and returns a `DataFrame`. 
+The `ElasticsearchExtract` stage reads from an [Elasticsearch](https://www.elastic.co/products/elasticsearch) cluster and returns a `DataFrame`.
 
 ### Parameters
 
@@ -220,16 +220,16 @@ The `ElasticsearchExtract` stage reads from an [Elasticsearch](https://www.elast
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/ElasticsearchExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/ElasticsearchExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/ElasticsearchExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/ElasticsearchExtractComplete" highlight="json" >}}
 
 
 ## HTTPExtract
 ##### Since: 1.0.0 - Supports Streaming: False
 
-The `HTTPExtract` executes either a `GET` or `POST` request against a remote HTTP service and returns a `DataFrame` which will have a single row and single column holding the value of the HTTP response body. 
+The `HTTPExtract` executes either a `GET` or `POST` request against a remote HTTP service and returns a `DataFrame` which will have a single row and single column holding the value of the HTTP response body.
 
 This stage would typically be used with a `JSONExtract` stage by specifying `inputView` instead of `inputURI` (setting `multiLine`=`true` allows processing of JSON array responses).
 
@@ -256,10 +256,10 @@ This stage would typically be used with a `JSONExtract` stage by specifying `inp
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/HTTPExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/HTTPExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/HTTPExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/HTTPExtractComplete" highlight="json" >}}
 
 
 ## ImageExtract
@@ -302,10 +302,10 @@ SELECT image.height FROM dataset
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/ImageExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/ImageExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/ImageExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/ImageExtractComplete" highlight="json" >}}
 
 
 ## JDBCExtract
@@ -338,16 +338,16 @@ The `JDBCExtract` reads directly from a JDBC Database and returns a `DataFrame`.
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/JDBCExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/JDBCExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/JDBCExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/JDBCExtractComplete" highlight="json" >}}
 
 
 ## JSONExtract
 ##### Since: 1.0.0 - Supports Streaming: True
 
-The `JSONExtract` stage reads either one or more JSON files or an input `Dataset[String]` and returns a `DataFrame`. 
+The `JSONExtract` stage reads either one or more JSON files or an input `Dataset[String]` and returns a `DataFrame`.
 
 If trying to run against an `inputView` in streaming mode this stage will not work. Instead try using the [from_json](https://spark.apache.org/docs/latest/api/sql/index.html#from_json) SQL Function with a [SQLTransform](../transform/#sqltransform).
 
@@ -376,10 +376,10 @@ If trying to run against an `inputView` in streaming mode this stage will not wo
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/JSONExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/JSONExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/JSONExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/JSONExtractComplete" highlight="json" >}}
 
 
 ## KafkaExtract
@@ -406,7 +406,7 @@ Can be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecu
 To convert the `key` or `value` from a Binary/byte array to a string it is possible to use the [decode](https://spark.apache.org/docs/latest/api/sql/index.html#decode) SQL Function with a [SQLTransform](../transform/#sqltransform) like:
 
 ```sql
-SELECT 
+SELECT
   DECODE(key, 'utf-8') AS stringKey,
   DECODE(value, 'utf-8') AS stringValue,
   ...
@@ -433,16 +433,16 @@ SELECT
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/KafkaExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/KafkaExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/KafkaExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/KafkaExtractComplete" highlight="json" >}}
 
 
 ## MetadataExtract
 ##### Since: 2.4.0 - Supports Streaming: True
 
-The `MetadataExtract` stage extracts the metadata attached to an input `Dataframe` and returns a `DataFrame`. 
+The `MetadataExtract` stage extracts the metadata attached to an input `Dataframe` and returns a `DataFrame`.
 
 ### Parameters
 
@@ -460,10 +460,10 @@ The `MetadataExtract` stage extracts the metadata attached to an input `Datafram
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/MetadataExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/MetadataExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/MetadataExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/MetadataExtractComplete" highlight="json" >}}
 
 
 ## MongoDBExtract
@@ -472,7 +472,7 @@ The `MetadataExtract` stage extracts the metadata attached to an input `Datafram
 The `MongoDBExtract` is provided by the https://github.com/tripl-ai/arc-mongo-pipeline-plugin package.
 {{</note>}}
 
-The `MongoDBExtract` stage reads a collection from [MongoDB](https://www.mongodb.com/) and returns a `DataFrame`. 
+The `MongoDBExtract` stage reads a collection from [MongoDB](https://www.mongodb.com/) and returns a `DataFrame`.
 
 ### Parameters
 
@@ -493,16 +493,16 @@ The `MongoDBExtract` stage reads a collection from [MongoDB](https://www.mongodb
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/MongoDBExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/MongoDBExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/MongoDBExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/MongoDBExtractComplete" highlight="json" >}}
 
 
 ## ORCExtract
 ##### Since: 1.0.0 - Supports Streaming: True
 
-The `ORCExtract` stage reads one or more [Apache ORC](https://orc.apache.org/) files and returns a `DataFrame`. 
+The `ORCExtract` stage reads one or more [Apache ORC](https://orc.apache.org/) files and returns a `DataFrame`.
 
 ### Parameters
 
@@ -526,16 +526,16 @@ The `ORCExtract` stage reads one or more [Apache ORC](https://orc.apache.org/) f
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/ORCExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/ORCExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/ORCExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/ORCExtractComplete" highlight="json" >}}
 
 
 ## ParquetExtract
 ##### Since: 1.0.0 - Supports Streaming: True
 
-The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.apache.org/) files and returns a `DataFrame`. 
+The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.apache.org/) files and returns a `DataFrame`.
 
 ### Parameters
 
@@ -559,16 +559,16 @@ The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.ap
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/ParquetExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/ParquetExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/ParquetExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/ParquetExtractComplete" highlight="json" >}}
 
 
 ## RateExtract
 ##### Since: 1.2.0 - Supports Streaming: True
 
-The `RateExtract` stage creates a streaming datasource which creates rows into a streaming `DataFrame` with the signature `[timestamp: timestamp, value: long]`. 
+The `RateExtract` stage creates a streaming datasource which creates rows into a streaming `DataFrame` with the signature `[timestamp: timestamp, value: long]`.
 
 This stage has been included for testing Structured Streaming jobs as it can be very difficult to generate test data. Generally this stage would only be included when Arc is run in a test mode (i.e. the `environment` is set to `test`).
 
@@ -587,10 +587,10 @@ This stage has been included for testing Structured Streaming jobs as it can be 
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/RateExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/RateExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/RateExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/RateExtractComplete" highlight="json" >}}
 
 
 ## SASExtract
@@ -600,7 +600,7 @@ This stage has been included for testing Structured Streaming jobs as it can be 
 The `SASExtract` is provided by the https://github.com/tripl-ai/arc-sas-pipeline-plugin package.
 {{</note>}}
 
-The `SASExtract` stage reads a collection from SAS `sas7bdat` binary file and returns a `DataFrame`. 
+The `SASExtract` stage reads a collection from SAS `sas7bdat` binary file and returns a `DataFrame`.
 
 ### Parameters
 
@@ -622,16 +622,16 @@ The `SASExtract` stage reads a collection from SAS `sas7bdat` binary file and re
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources_plugins/SASExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/SASExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources_plugins/SASExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources_plugins/SASExtractComplete" highlight="json" >}}
 
 
 ## TextExtract
 ##### Since: 1.2.0 - Supports Streaming: True
 
-The `TextExtract` stage reads either one or more text files and returns a `DataFrame`. 
+The `TextExtract` stage reads either one or more text files and returns a `DataFrame`.
 
 ### Parameters
 
@@ -655,16 +655,16 @@ The `TextExtract` stage reads either one or more text files and returns a `DataF
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/TextExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/TextExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/TextExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/TextExtractComplete" highlight="json" >}}
 
 
 ## XMLExtract
 ##### Since: 1.0.0 - Supports Streaming: False
 
-The `XMLExtract` stage reads one or more XML files or an input `Dataset[String]` and returns a `DataFrame`. 
+The `XMLExtract` stage reads one or more XML files or an input `Dataset[String]` and returns a `DataFrame`.
 
 This extract works slightly different to the `spark-xml` package. To access the data you can use a [SQLTransform](../transform/#sqltransform) query like this which will create a new value for each row of the `bk:books` array:
 
@@ -697,7 +697,7 @@ The backtick character (`) can be used to address fields with non-alphanumeric n
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/XMLExtractMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/XMLExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/XMLExtractComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/XMLExtractComplete" highlight="json" >}}
