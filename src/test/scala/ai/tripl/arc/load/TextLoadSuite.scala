@@ -23,7 +23,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
   val targetSingleFileDelimited = FileUtils.getTempDirectoryPath() + "singledelimited.txt"
   val outputView = "dataset"
 
-  val targetSingleFileWildcard = FileUtils.getTempDirectoryPath() + "singlepart*.txt"  
+  val targetSingleFileWildcard = FileUtils.getTempDirectoryPath() + "/singlepart*.txt"  
   val targetSingleFile0 = "singlepart0.txt"  
   val targetSingleFile1 = "singlepart1.txt"  
   val targetSingleFile2 = "singlepart2.txt"
