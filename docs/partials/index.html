@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.8.0</span></strong>
+          <span class="version">2.9.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -661,14 +661,14 @@
 
 <pre><code class="language-json">{
     &quot;type&quot;: &quot;ParquetExtract&quot;,
-    &quot;name&quot;: &quot;load the manually verified known good set of data from testing&quot;, 
+    &quot;name&quot;: &quot;load the manually verified known good set of data from testing&quot;,
     &quot;environments&quot;: [&quot;test&quot;],
     &quot;outputView&quot;: &quot;known_correct_dataset&quot;,
     ...
 },
 {
     &quot;type&quot;: &quot;EqualityValidate&quot;,
-    &quot;name&quot;: &quot;ensure the business logic produces the same result as the known good set of data from testing&quot;, 
+    &quot;name&quot;: &quot;ensure the business logic produces the same result as the known good set of data from testing&quot;,
     &quot;environments&quot;: [&quot;test&quot;],
     &quot;leftView&quot;: &quot;newly_caluclated_dataset&quot;,
     &quot;rightView&quot;: &quot;known_correct_dataset&quot;,
