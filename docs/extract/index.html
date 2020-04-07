@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.8.0</span></strong>
+          <span class="version">2.9.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -2242,7 +2242,7 @@
 
 <p>To convert the <code>key</code> or <code>value</code> from a Binary/byte array to a string it is possible to use the <a href="https://spark.apache.org/docs/latest/api/sql/index.html#decode">decode</a> SQL Function with a <a href="../transform/#sqltransform">SQLTransform</a> like:</p>
 
-<pre><code class="language-sql">SELECT 
+<pre><code class="language-sql">SELECT
   DECODE(key, 'utf-8') AS stringKey,
   DECODE(value, 'utf-8') AS stringValue,
   ...
@@ -3471,7 +3471,7 @@ FROM books_xml
 <td>inputURI</td>
 <td>URI</td>
 <td>true*</td>
-<td>URI/Glob of the input delimited  XML files. If not present <code>inputView</code> is requred.</td>
+<td>URI/Glob of the input delimited XML files. If not present <code>inputView</code> is requred.</td>
 </tr>
 
 <tr>
@@ -3550,6 +3550,13 @@ FROM books_xml
 <td>false</td>
 <td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>. It takes precedence over <code>schemaURI</code> if provided.</td>
 </tr>
+
+<tr>
+<td>xsdURI</td>
+<td>URI</td>
+<td>false</td>
+<td>URI of an <a href="https://en.wikipedia.org/wiki/XML_Schema_(W3C)">XML Schema Definition</a> (XSD) file used to validate input XML.</td>
+</tr>
 </tbody>
 </table>
 
@@ -3564,7 +3571,7 @@ FROM books_xml
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
-  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/*.xml&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/xml/*.xml&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
@@ -3579,6 +3586,7 @@ FROM books_xml
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/*.xml&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;xsdURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/xml/customer.xsd&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
   <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>

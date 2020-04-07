@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.8.0</span></strong>
+          <span class="version">2.9.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -2164,7 +2164,7 @@
 <td>singleFile</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Write to a single text file instead of a directory containing one or more partitions. Warning: this will pull the entire dataset to memory on the driver process so will not work for large datasets unless the driver has a sufficiently large memory allocation.</td>
+<td>Write to a single text file instead of a directory containing one or more partitions. Accepts datasets with either <code>[value: string]</code> or <code>[value: string, filename: string]</code> schema. If <code>filename</code> is supplied this component will write to multiple files by prepending <code>outputURI</code>. Warning: this will pull the entire dataset to memory on the driver process so will not work for large datasets unless the driver has a sufficiently large memory allocation.</td>
 </tr>
 
 <tr>
@@ -2178,7 +2178,7 @@
 <td>separator</td>
 <td>String</td>
 <td>false</td>
-<td>A separator string to append between the row data when in <code>singleFile</code> mode.</td>
+<td>A separator string to append between the row data when in <code>singleFile</code> mode. Most common use will be <code>\n</code> which will insert newlines.</td>
 </tr>
 
 <tr>

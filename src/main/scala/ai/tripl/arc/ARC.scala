@@ -135,6 +135,24 @@ object ARC {
 
     implicit val logger = LoggerFactory.getLogger(jobId.getOrElse(spark.sparkContext.applicationId))
 
+    // version deprecations
+    // scala
+    val targetScalaVersion = "2.12"
+    if (scala.util.Properties.versionNumberString.startsWith("2.11")) {
+      logger.warn()
+        .field("event", "deprecation")
+        .field("message", s"scala ${scala.util.Properties.versionNumberString} support is deprecated and will be removed in coming versions. please use a scala ${targetScalaVersion} build.")
+        .log()  
+    }
+    // hadoop
+    val targetHadoopVersion = "2.9.2"
+    if (org.apache.hadoop.util.VersionInfo.getVersion.startsWith("2.7")) {
+      logger.warn()
+        .field("event", "deprecation")
+        .field("message", s"hadoop ${scala.util.Properties.versionNumberString} support is deprecated and will be removed in coming versions. please use a hadoop ${targetHadoopVersion} build.")
+        .log()        
+    }
+
     // add tags
     val tags: Option[String] = commandLineArguments.get("etl.config.tags").orElse(envOrNone("ETL_CONF_TAGS"))
     for (tgs <- tags) {
@@ -155,7 +173,11 @@ object ARC {
 
     val environmentId: Option[String] = commandLineArguments.get("etl.config.environment.id").orElse(envOrNone("ETL_CONF_ENV_ID"))
     for (e <- environmentId) {
-        MDC.put("environmentId", e)
+      MDC.put("environmentId", e)
+      logger.warn()
+        .field("event", "deprecation")
+        .field("message", s"'etl.config.environment.id' and 'ETL_CONF_ENV_ID' are deprecated in favor of 'etl.config.tags' or 'ETL_CONF_TAGS'.")
+        .log()      
     }
 
     MDC.put("applicationId", spark.sparkContext.applicationId)
@@ -216,6 +238,7 @@ object ARC {
         .field("config", sparkConf)
         .field("sparkVersion", spark.version)
         .field("frameworkVersion", frameworkVersion)
+        .field("hadoopVersion", org.apache.hadoop.util.VersionInfo.getVersion)
         .field("scalaVersion", scala.util.Properties.versionNumberString)
         .field("javaVersion", System.getProperty("java.runtime.version"))
         .field("environment", environment.getOrElse(""))
@@ -245,6 +268,7 @@ object ARC {
           .field("event", "exit")
           .field("sparkVersion", spark.version)
           .field("frameworkVersion", frameworkVersion)
+          .field("hadoopVersion", org.apache.hadoop.util.VersionInfo.getVersion)
           .field("scalaVersion", scala.util.Properties.versionNumberString)
           .field("javaVersion", System.getProperty("java.runtime.version"))
           .field("environment", environment.getOrElse(""))

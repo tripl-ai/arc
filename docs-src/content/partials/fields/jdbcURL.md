@@ -1,1 +1,1 @@
-The JDBC URL to connect to. e.g., `jdbc:mysql://localhost:3306`. 
+The JDBC URL to connect to. e.g., `jdbc:mysql://localhost:3306`.

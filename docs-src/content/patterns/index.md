@@ -8,7 +8,7 @@ This section describes some job design patterns to deal with common ETL requirem
 
 ## Database Inconsistency
 
-When writing data to targets like databases using the `JDBCLoad` raises a risk of [stale reads](https://en.wikipedia.org/wiki/Isolation_(database_systems)#Isolation_levels) where a client is reading a dataset which is either old or one which is in the process of being updated and so is internally inconsistent. 
+When writing data to targets like databases using the `JDBCLoad` raises a risk of [stale reads](https://en.wikipedia.org/wiki/Isolation_(database_systems)#Isolation_levels) where a client is reading a dataset which is either old or one which is in the process of being updated and so is internally inconsistent.
 
 ### Example
 
@@ -17,16 +17,16 @@ When writing data to targets like databases using the `JDBCLoad` raises a risk o
 - execute a `JDBCExecute` stage to perform a change to a view on the database to point to the new version of the table in a transaction-safe manner
 - if the job fails during any of these stages then the users will be unaware and will continue to consume the `customers` view which has the latest successful data
 
-{{< readfile file="/resources/docs_resources/PatternsDatabaseInconsistency" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/PatternsDatabaseInconsistency" highlight="json" >}}
 
 Where the `update_customer_view.sql` statement is:
 
 ```sql
-CREATE OR REPLACE VIEW customers AS 
+CREATE OR REPLACE VIEW customers AS
 SELECT * FROM customers_${JOB_RUN_DATE}
 ```
 
-Each of the main SQL databases behaves slighly different and has slighty different syntax but most can achieve a repointing of a view to a different table in an atomic operation (as it is a single statement). 
+Each of the main SQL databases behaves slighly different and has slighty different syntax but most can achieve a repointing of a view to a different table in an atomic operation (as it is a single statement).
 
 Note that this method will require some cleanup activity to be performed or the number of tables will grow with each execution. A second `JDBCExecute` stage could be added to clean up older verions of the underlying `customers_` tables after successful 'rollover' execution.
 
@@ -60,7 +60,7 @@ Add an additional environment variable to the `docker run` command which will ca
 -e ETL_CONF_DELTA_PERIOD="$(date --date='3 days ago' +%Y-%m-%d),$(date --date='2 days ago' +%Y-%m-%d),$(date --date='1 days ago' +%Y-%m-%d),$(date +%Y-%m-%d),$(date --date='1 days' +%Y-%m-%d)"
 ```
 
-Which will expose and environment variable that looks like `ETL_CONF_DELTA_PERIOD=2019-02-04,2019-02-05,2019-02-06,2019-02-07,2019-02-08`. 
+Which will expose and environment variable that looks like `ETL_CONF_DELTA_PERIOD=2019-02-04,2019-02-05,2019-02-06,2019-02-07,2019-02-08`.
 
 Alternatively, a [Dynamic Configuration Plugin](../extend/#dynamic-configuration-plugins) like the [arc-deltaperiod-config-plugin](https://github.com/tripl-ai/arc-deltaperiod-config-plugin) can be used to generate a similar list of dates.
 
@@ -123,7 +123,7 @@ FROM (
          *
         ,ROW_NUMBER() OVER (PARTITION BY 'customer_id' ORDER BY COALESCE('last_updated', CAST('1970-01-01 00:00:00' AS TIMESTAMP)) DESC) AS row_number
     FROM (
-        SELECT * 
+        SELECT *
         FROM customer_snapshot
 
         UNION ALL
@@ -143,14 +143,14 @@ To find duplicate keys and stop the job so any issues are not propogated can be 
 ### Example
 
 ```sql
-SELECT 
+SELECT
     COUNT(*) = 0
     ,TO_JSON(NAMED_STRUCT(
-      'duplicate_customer_count', COUNT(*), 
+      'duplicate_customer_count', COUNT(*),
       'duplicate_customer', CAST(COLLECT_LIST(DISTINCT customer_id) AS STRING)
     ))
 FROM (
-    SELECT 
+    SELECT
         customer_id
         ,COUNT(customer_id) AS customer_id_count
     FROM customer
@@ -175,7 +175,7 @@ It is also quite common to recieve fixed width formats from older systems like I
 - Use a [SQLTransform](../transform/#sqltransform) stage to split the data into columns.
 
 ```sql
-SELECT 
+SELECT
     SUBSTRING(data, 0, 6) AS _type
     ,SUBSTRING(data, 7, 8) AS date
     ,SUBSTRING(data, 17, 4) AS total
@@ -210,24 +210,24 @@ Another common data quality check is to check Foreign Key integrity, for example
 This can be done using a `SQLValidate` stage which will fail with a list of invalid accounts if any customer records are missing (be careful of not overloading your logging solution with long messages).
 
 ```sql
-SELECT 
+SELECT
     SUM(invalid_customer_id) = 0
     ,TO_JSON(NAMED_STRUCT(
-      'customers', COUNT(DISTINCT customer_id), 
-      'invalid_account_numbers_count', SUM(invalid_customer_id), 
+      'customers', COUNT(DISTINCT customer_id),
+      'invalid_account_numbers_count', SUM(invalid_customer_id),
       'invalid_account_numbers', CAST(collect_list(DISTINCT invalid_account_numbers) AS STRING)
     ))
 FROM (
-    SELECT 
+    SELECT
         account.account_number
         ,customer.customer_id
-        ,CASE 
-            WHEN customer.customer_id IS NULL THEN account.account_number 
+        ,CASE
+            WHEN customer.customer_id IS NULL THEN account.account_number
             ELSE null
         END AS invalid_account_numbers
-        ,CASE 
-            WHEN customer.customer_id IS NULL THEN 1 
-            ELSE 0 
+        ,CASE
+            WHEN customer.customer_id IS NULL THEN 1
+            ELSE 0
         END AS invalid_customer_id
     FROM account
     LEFT JOIN customer ON account.customer_id = customer.customer_id
@@ -254,7 +254,7 @@ It is common to see formats like where the input dataset contains multiple recor
 #### detail
 
 ```sql
-SELECT 
+SELECT
     col0 AS _type
     ,col1 AS date
     ,col2 AS description
@@ -272,7 +272,7 @@ WHERE col0 = 'detail'
 #### trailer
 
 ```sql
-SELECT 
+SELECT
     col0 AS _type
     ,col1 AS trailer_records
     ,col2 AS trailer_balance
@@ -288,12 +288,12 @@ WHERE col0 = 'trailer'
 - Use a `SQLValidate` stage to ensure that the count and sum of the `detail` dataset equals that of the `trailer` dataset.
 
 ```sql
-SELECT 
+SELECT
     sum_total = trailer_balance AND records_total = trailer_records
     ,TO_JSON(NAMED_STRUCT(
-      'expected_count', trailer_records, 
-      'actual_count', records_total, 
-      'expected_balance', trailer_balance, 
+      'expected_count', trailer_records,
+      'actual_count', records_total,
+      'expected_balance', trailer_balance,
       'actual_balance', sum_total
     ))
 FROM (
@@ -316,7 +316,7 @@ To easily scale these services without managed infrastructure you can use [Docke
 ```bash
 # start docker services
 docker swarm init && \
-docker service create --replicas 2 --publish 5000:5000 flask_serving/simple:latest 
+docker service create --replicas 2 --publish 5000:5000 flask_serving/simple:latest
 ```
 
 ```bash
@@ -326,7 +326,7 @@ docker swarm leave --force
 
 ## Machine Learning Prediction Thresholds
 
-When used for classification, the [MLTransform](../transform/#mltransform) stage will add a `probability` column which exposes the highest probability score from the Spark ML probability vector which led to the predicted value. This can then be used as a boundary to prevent low probability predictions being sent to other systems if, for example, a change in input data resulted in a major change in predictions. 
+When used for classification, the [MLTransform](../transform/#mltransform) stage will add a `probability` column which exposes the highest probability score from the Spark ML probability vector which led to the predicted value. This can then be used as a boundary to prevent low probability predictions being sent to other systems if, for example, a change in input data resulted in a major change in predictions.
 
 |id|input|prediction|probability|
 |---|-----|----------|-----------|
@@ -338,17 +338,17 @@ When used for classification, the [MLTransform](../transform/#mltransform) stage
 ### Example
 
 ```sql
-SELECT 
+SELECT
     SUM(low_probability) = 0
     ,TO_JSON(NAMED_STRUCT(
-      'probability_below_threshold', SUM(low_probability), 
+      'probability_below_threshold', SUM(low_probability),
       'threshold', 0.8
     ))
 FROM (
-    SELECT 
-        CASE 
-            WHEN customer_churn.probability < 0.8 THEN 1 
-            ELSE 0 
+    SELECT
+        CASE
+            WHEN customer_churn.probability < 0.8 THEN 1
+            ELSE 0
         END AS low_probability
     FROM customer_churn
 ) valid
@@ -387,7 +387,7 @@ Assuming a nested input structure like a JSON response that has been parsed via 
 To flatten the `data` array use a SQL subquery and a [POSEXPLODE](https://spark.apache.org/docs/latest/api/sql/index.html#posexplode) to extract the data. `EXPLODE` and `POSEXPLODE` will both produce a field called `col` which can be used from the parent query. `POSEXPLODE` will include an additional field `pos` to indicate the index of the value in the input array (which can is valuable if array order is important for business logic).
 
 ```sql
-SELECT 
+SELECT
   result
   ,pos
   ,col.*
@@ -452,7 +452,7 @@ nullDatum = pa.array([None, None], type=pa.null())
 
 # create the arrow table
 # we are using an arrow table rather than a dataframe to correctly align with spark datatypes
-table = pa.Table.from_arrays([booleanDatum, dateDatum, decimalDatum, doubleDatum, integerDatum, longDatum, stringDatum, timestampDatum, timeDatum, nullDatum], 
+table = pa.Table.from_arrays([booleanDatum, dateDatum, decimalDatum, doubleDatum, integerDatum, longDatum, stringDatum, timestampDatum, timeDatum, nullDatum],
   ['booleanDatum', 'dateDatum', 'decimalDatum', 'doubleDatum', 'integerDatum', 'longDatum', 'stringDatum', 'timestampDatum', 'timeDatum', 'nullDatum'])
 
 # write table to disk
@@ -461,6 +461,6 @@ pq.write_table(table, '/tmp/data/example.parquet', flavor='spark')
 
 The suggestion then is to use the `environments` key to only execute the [EqualityValidate](../validate/#equalityvalidate) stage whilst in testing mode:
 
-{{< readfile file="/resources/docs_resources/PatternsTestingWithParquet" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/PatternsTestingWithParquet" highlight="json" >}}
 
 

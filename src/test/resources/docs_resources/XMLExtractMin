@@ -5,6 +5,6 @@
     "production",
     "test"
   ],
-  "inputURI": "hdfs://datalake/customer/*.xml",
+  "inputURI": "hdfs://datalake/xml/*.xml",
   "outputView": "customer"
 }

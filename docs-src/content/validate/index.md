@@ -31,7 +31,7 @@ This stage will validate:
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/EqualityValidateMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/EqualityValidateMin" highlight="json" >}}
 
 
 ## MetadataValidate
@@ -51,16 +51,16 @@ This can be used like:
 
 ```sql
 -- ensure that no pii columns are present in the inputView
-SELECT 
+SELECT
     SUM(pii_column) = 0
     ,TO_JSON(
         NAMED_STRUCT(
-            'columns', COUNT(*), 
+            'columns', COUNT(*),
             'pii_columns', SUM(pii_column)
         )
-    ) 
+    )
 FROM (
-    SELECT 
+    SELECT
         CASE WHEN metadata.pii THEN 1 ELSE 0 END AS pii_column
     FROM detail
 ) valid
@@ -81,10 +81,10 @@ FROM (
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/MetadataValidateMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/MetadataValidateMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/MetadataValidateComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/MetadataValidateComplete" highlight="json" >}}
 
 
 ## SQLValidate
@@ -125,10 +125,10 @@ FROM ${inputView}
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/SQLValidateMin" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/SQLValidateMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/SQLValidateComplete" highlight="json" >}} 
+{{< readfile file="/resources/docs_resources/SQLValidateComplete" highlight="json" >}}
 
 For example after performing a `TypingTransform` it would be possible to execute a query which tests that a certain percentage of records are not errored:
 
@@ -141,17 +141,17 @@ For example after performing a `TypingTransform` it would be possible to execute
 With a `JSON` message (preferred):
 
 ```sql
-SELECT 
+SELECT
     (SUM(errors) / COUNT(errors)) < ${record_error_tolerance_percentage}
-    ,TO_JSON(NAMED_STRUCT('error', SUM(errors)/ COUNT(errors), 'threshold', ${record_error_tolerance_percentage})) 
+    ,TO_JSON(NAMED_STRUCT('error', SUM(errors)/ COUNT(errors), 'threshold', ${record_error_tolerance_percentage}))
 FROM (
-    SELECT 
+    SELECT
         CASE WHEN SIZE(_errors) > 0 THEN 1 ELSE 0 END AS errors
     FROM detail
 ) valid
 ```
 
-The `FILTER` function can be used to select errors only from a certain field: 
+The `FILTER` function can be used to select errors only from a certain field:
 
 ```sql
 SIZE(FILTER(_errors, _error -> _error.field == 'fieldname'))
@@ -160,14 +160,14 @@ SIZE(FILTER(_errors, _error -> _error.field == 'fieldname'))
 With a text message:
 
 ```sql
-SELECT 
+SELECT
     (SUM(errors) / COUNT(errors)) < ${record_error_tolerance_percentage}
-    ,CASE 
+    ,CASE
         WHEN (SUM(errors) / COUNT(errors)) < ${record_error_tolerance_percentage} THEN 'number of errors below threshold. success.'
-        ELSE CONCAT('error records ', ROUND((SUM(errors) / COUNT(errors)) * 100, 2), '%. required < ', ${record_error_tolerance_percentage} * 100,'%') 
-    END    
+        ELSE CONCAT('error records ', ROUND((SUM(errors) / COUNT(errors)) * 100, 2), '%. required < ', ${record_error_tolerance_percentage} * 100,'%')
+    END
 FROM (
-    SELECT 
+    SELECT
         CASE WHEN SIZE(_errors) > 0 THEN 1 ELSE 0 END AS errors
     FROM detail
 ) valid

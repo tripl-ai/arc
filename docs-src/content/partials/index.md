@@ -102,14 +102,14 @@ A practical use case of this is to execute additional stages in testing which wo
 ```json
 {
     "type": "ParquetExtract",
-    "name": "load the manually verified known good set of data from testing", 
+    "name": "load the manually verified known good set of data from testing",
     "environments": ["test"],
     "outputView": "known_correct_dataset",
     ...
 },
 {
     "type": "EqualityValidate",
-    "name": "ensure the business logic produces the same result as the known good set of data from testing", 
+    "name": "ensure the business logic produces the same result as the known good set of data from testing",
     "environments": ["test"],
     "leftView": "newly_caluclated_dataset",
     "rightView": "known_correct_dataset",
