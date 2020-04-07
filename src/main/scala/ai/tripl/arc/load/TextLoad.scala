@@ -100,6 +100,8 @@ object TextLoadStage {
 
   def execute(stage: TextLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
+    val signature = "TextLoad requires input [value: string] or [value: string, filename: string] signature when in singleFile mode."
+
     val df = spark.table(stage.inputView)
 
     if (!df.isStreaming) {
@@ -109,49 +111,86 @@ object TextLoadStage {
       }
     }
 
-    if (df.schema.length != 1 || df.schema.fields(0).dataType != StringType) {
-      throw new Exception(s"""TextLoad supports only a single text column but the input view has ${df.schema.length} columns.""") with DetailException {
-        override val detail = stage.stageDetail
-      }
-    }
-
     // set write permissions
     CloudUtils.setHadoopConfiguration(stage.authentication)
 
     try {
       if (stage.singleFile) {
+        if (df.schema.length == 0 || df.schema.length > 2 || (df.schema.length == 1 && df.schema.fields(0).dataType != StringType) || (df.schema.length == 2 && df.schema.forall { f => !Seq("filename","value").contains(f.name) || f.dataType != StringType } )) {
+          throw new Exception(s"""${signature} Got [${df.schema.map(f => s"""${f.name}: ${f.dataType.simpleString}""").mkString(", ")}].""")
+        }        
+
         val fs = FileSystem.get(spark.sparkContext.hadoopConfiguration)
-        val path = new Path(stage.outputURI)
 
-        val outputStream = if (fs.exists(path)) {
-          stage.saveMode match {
-            case SaveMode.ErrorIfExists => {
-              throw new Exception(s"File '${path}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
-            }
-            case SaveMode.Ignore => {
-              None
-            }
-            case SaveMode.Overwrite => {
-              Option(fs.create(path, true))
-            }
-            case SaveMode.Append => {
-              throw new Exception(s"File '${path}' already exists and 'saveMode' equals 'Append' which is not supported with 'singleFile' mode.")
-            }
-          }
+        // group rows by target filename
+        val groupedRows = if (df.schema.length == 2) {
+          df.collect.groupBy { row => new URI(s"""${stage.outputURI}/${row.getString(row.fieldIndex("filename"))}""") }
         } else {
-          Option(fs.create(path))
+          df.collect.groupBy { _ => stage.outputURI}
         }
 
-        outputStream match {
-          case Some(os) => {
-            os.writeBytes(df.collect.map(_.getString(0)).mkString(stage.prefix, stage.separator, stage.suffix))
-            os.close
+
+        // first test for any invalid rules 
+        groupedRows.foreach { case (outputURI, _) => 
+          val path = new Path(outputURI)
+          if (fs.exists(path)) {
+            stage.saveMode match {
+              case SaveMode.ErrorIfExists => {
+                throw new Exception(s"File '${path.toString}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
+              }
+              case _ => 
+            }
           }
-          case None =>
         }
+
+        // write the records for each group sequentially
+        groupedRows.foreach { case (outputURI, rowGroup) => 
+          val path = new Path(outputURI)
+
+          // create the outputStream for that file
+          val outputStream = if (fs.exists(path)) {
+            stage.saveMode match {
+              case SaveMode.Overwrite => {
+                Option(fs.create(path, true))
+          
+              }
+              case SaveMode.Append => {
+                Option(fs.append(path))
+              }
+              case _ => None
+            }
+          } else {
+            Option(fs.create(path))
+          }
+            
+          // write bytes to the rowgroup to the outputStream
+          outputStream match {
+            case Some(os) => {
+              os.writeBytes(
+                rowGroup
+                  .map { row => 
+                    if (df.schema.length == 1) {
+                      row.getString(0) 
+                    } else {
+                      row.getString(row.fieldIndex("value")) 
+                    }
+                  }
+                  .mkString(stage.prefix, stage.separator, stage.suffix)
+              )
+              os.close
+            }
+            case None =>
+          }          
+        }       
 
         fs.close
       } else {
+        if (df.schema.length != 1 || df.schema.fields(0).dataType != StringType) {
+          throw new Exception(s"""TextLoad supports only a single text column but the input view has ${df.schema.length} columns.""") with DetailException {
+            override val detail = stage.stageDetail
+          }
+        }
+
         // spark does not allow partitionBy when only single column dataframe
         stage.numPartitions match {
           case Some(n) => df.repartition(n).write.mode(stage.saveMode).text(stage.outputURI.toString)
