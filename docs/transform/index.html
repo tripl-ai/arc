@@ -139,7 +139,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.8.0</span></strong>
+          <span class="version">2.9.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -1154,9 +1154,9 @@
 <p>This can be used like:</p>
 
 <pre><code class="language-sql">-- only select columns which are not personally identifiable information
-SELECT 
-    name 
-FROM metadata 
+SELECT
+    name
+FROM metadata
 WHERE metadata.pii = false
 </code></pre>
 
@@ -1165,12 +1165,12 @@ WHERE metadata.pii = false
 <p>If the <code>sqlParams</code> contains boolean parameter <code>pii_authorized</code> if the job is authorised to use Personally identifiable information or not then it could be used like:</p>
 
 <pre><code class="language-sql">-- only select columns which job is authorised to access based on ${pii_authorized}
-SELECT 
-    name 
-FROM metadata 
+SELECT
+    name
+FROM metadata
 WHERE metadata.pii = (
-    CASE 
-        WHEN ${pii_authorized} = true 
+    CASE
+        WHEN ${pii_authorized} = true
         THEN metadata.pii   -- this will allow both true and false metadata.pii values if pii_authorized = true
         ELSE false          -- else if pii_authorized = false only allow metadata.pii = false values
     END
@@ -1884,7 +1884,7 @@ WHERE metadata.pii = (
 
 <p>The SQL statement is a plain Spark SQL statement, for example:</p>
 
-<pre><code class="language-sql">SELECT 
+<pre><code class="language-sql">SELECT
     customer.customer_id
     ,customer.first_name
     ,customer.last_name
@@ -2307,7 +2307,7 @@ FROM ${inputView}
         &quot;uuuu-MM-dd HH:mm:ss&quot;
     ],
     &quot;timezoneId&quot;: &quot;UTC&quot;
-  }   
+  }
 ]
 </code></pre>
 
