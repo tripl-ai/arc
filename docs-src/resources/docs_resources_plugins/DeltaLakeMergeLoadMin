@@ -1,0 +1,13 @@
+{
+  "type": "DeltaLakeMergeLoad",
+  "name": "merge with existing customer dataset",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputURI": "/delta/customers",
+  "condition": "source.customerId = target.customerId",
+  "whenNotMatchedByTargetInsert": {},
+  "whenNotMatchedBySourceDelete": {}
+}

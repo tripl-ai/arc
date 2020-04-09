@@ -1,0 +1,33 @@
+{
+  "type": "DeltaLakeMergeLoad",
+  "name": "merge with existing customer dataset",
+  "description": "merge with existing customer dataset",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "outputURI": "/delta/customers",
+  "condition": "source.customerId = target.customerId",
+  "whenMatchedDeleteFirst": true,
+  "whenMatchedDelete": {
+    "condition": "source.customerDeleteFlag = TRUE"
+  },
+  "whenMatchedUpdate": {
+    "condition": "source.customerUpdateFlag = TRUE",
+    "values": {
+      "customerId": "source.customerId",
+      "customerLastUpdated": "source.customerUpdateTimestamp"
+    }
+  },
+  "whenNotMatchedByTargetInsert": {
+    "condition": "source.customerId != 'DUMMY'",
+    "values": {
+      "customerId": "source.customerId",
+      "customerLastUpdated": "source.customerInsertTimestamp"
+    }
+  },
+  "whenNotMatchedBySourceDelete": {
+    "condition": "target.locked = FALSE"
+  }
+}
