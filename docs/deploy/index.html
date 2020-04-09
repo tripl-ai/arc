@@ -430,7 +430,7 @@
 <pre><code class="language-json">docker run \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -e &quot;ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0&quot; \
--it -p 4040:4040 triplai/arc:arc_2.9.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.0.0 \
+-it -p 4040:4040 triplai/arc:arc_2.9.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.1.0 \
 bin/spark-submit \
 --master local[*] \
 --class ai.tripl.arc.ARC \
@@ -661,7 +661,7 @@ bin/spark-submit \
 -e &quot;ETL_CONF_ENV=test&quot; \
 -e &quot;ETL_CONF_STREAMING=true&quot; \
 -e &quot;ETL_CONF_ROWS_PER_SECOND=10&quot; \
--it -p 4040:4040 triplai/arc:arc_2.9.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.0.0 \
+-it -p 4040:4040 triplai/arc:arc_2.9.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.1.0 \
 bin/spark-submit \
 --master local[*] \
 --class ai.tripl.arc.ARC \

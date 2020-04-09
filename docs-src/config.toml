@@ -26,8 +26,8 @@ pygmentsUseClasses=true
 	spark_version = "2.4.5"
 	scala_version = "2.12"
 	hadoop_version = "2.9.2"
-	arc_image_version = "1.0.0"
-	arc_jupyter_image_version = "1.0.0"
+	arc_image_version = "1.1.0"
+	arc_jupyter_image_version = "1.1.0"
 
 	logo = "images/logo.png"
 	favicon = ""
@@ -80,17 +80,17 @@ pygmentsUseClasses=true
 [[menu.main]]
 	name   = "Execute"
 	url    = "execute/"
-	weight = 50	
+	weight = 50
 
 [[menu.main]]
 	name   = "Validate"
 	url    = "validate/"
-	weight = 60	
+	weight = 60
 
 [[menu.main]]
 	name   = "Metadata"
 	url    = "metadata/"
-	weight = 70	
+	weight = 70
 
 [[menu.main]]
 	name   = "Deploy"
@@ -105,22 +105,22 @@ pygmentsUseClasses=true
 [[menu.main]]
 	name   = "Partials"
 	url    = "partials/"
-	weight = 90		
+	weight = 90
 
 [[menu.main]]
 	name   = "Patterns"
 	url    = "patterns/"
-	weight = 95	
+	weight = 95
 
 #[[menu.main]]
 #	name   = "Contributing"
 #	url    = "contributing/"
-#	weight = 100	
+#	weight = 100
 
 [[menu.main]]
 	name   = "License"
 	url    = "license/"
-	weight = 110	
+	weight = 110
 
 [blackfriday]
 	smartypants	= true
