@@ -895,13 +895,180 @@
   <span class="nt">&#34;generateSymlinkManifest&#34;</span><span class="p">:</span> <span class="kc">true</span>
 <span class="p">}</span></code></pre></div>
 
+<h2 id="deltalakemergeload">DeltaLakeMergeLoad</h2>
+
+<h5 id="since-arc-deltalake-pipeline-plugin-1-7-0-supports-streaming-true">Since: arc-deltalake-pipeline-plugin 1.7.0 - Supports Streaming: True</h5>
+
+<div class="admonition note">
+<p class="admonition-title">Plugin</p>
+<p><p>The <code>DeltaLakeMergeLoad</code> is provided by the <a href="https://github.com/tripl-ai/arc-deltalake-pipeline-plugin">https://github.com/tripl-ai/arc-deltalake-pipeline-plugin</a> package.</p>
+
+<p>NOTE: This stage includes additional functionality that is not included in the main <a href="https://delta.io/">DeltaLake</a> functionality. A pull request has been raised.</p>
+</p>
+</div>
+
+<p>The <code>DeltaLakeMergeLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://delta.io/">DeltaLake</a> file using the <code>MERGE</code> functionality.</p>
+
+<h3 id="parameters-4">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the Delta file to write to.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>condition</td>
+<td>String</td>
+<td>true</td>
+<td>The <code>join condition</code> to perform the data comparison between the <code>source</code> (the <code>inputView</code> dataset) and <code>target</code> (the <code>outputURI</code> dataset). Note that the names <code>source</code> and <code>target</code> must be used.</td>
+</tr>
+
+<tr>
+<td>whenMatchedDeleteFirst</td>
+<td>Boolean</td>
+<td>false</td>
+<td>If <code>true</code> the <code>whenMatchedDelete</code> operation will happen before <code>whenMatchedUpdate</code>.<br><br>If <code>false</code> the <code>whenMatchedUpdate</code> operation will happen before <code>whenMatchedDelete</code>.<br><br>Default: <code>true</code>.</td>
+</tr>
+
+<tr>
+<td>whenMatchedDelete</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>If specified, <code>whenMatchedDelete</code> will delete records where the record exists in both <code>source</code> and <code>target</code> based on the <code>join condition</code>.<br><br>Optionally <code>condition</code> may be specified to restrict the records to delete and can only refer to fields in both <code>source</code> and <code>target</code>.</td>
+</tr>
+
+<tr>
+<td>whenMatchedUpdate</td>
+<td>Map[String, Object]</td>
+<td>false</td>
+<td>If specified, <code>whenMatchedUpdate</code> will update records where the record exists in both <code>source</code> and <code>target</code> based on the <code>join condition</code>.<br><br>Optionally <code>condition</code> may be specified to restrict the records to update and can only refer to fields in both <code>source</code> and <code>target</code>.<br><br>Optionally <code>values</code> may be specified to define the update rules which can be used to update only selected columns.</td>
+</tr>
+
+<tr>
+<td>whenNotMatchedByTargetInsert</td>
+<td>Map[String, Object]</td>
+<td>false</td>
+<td>If specified, <code>whenNotMatchedByTargetInsert</code> will insert records in <code>source</code> which do not exist in <code>target</code> based on the <code>join condition</code>.<br><br>Optionally <code>condition</code> may be specified to restrict the records to insert but can only refer to fields in <code>source</code>.<br><br>Optionally <code>values</code> may be specified to define the insert rules which can be used to insert only selected columns.</td>
+</tr>
+
+<tr>
+<td>whenNotMatchedBySourceDelete</td>
+<td>Map[String, Object]</td>
+<td>false</td>
+<td>If specified, <code>whenNotMatchedBySourceDelete</code> will delete records in <code>target</code> which do not exist in <code>source</code> based on the <code>join condition</code>.<br><br>Optionally <code>condition</code> may be specified to restrict the records to insert but can only refer to fields in <code>source</code>.</td>
+</tr>
+
+<tr>
+<td>generateSymlinkManifest</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Create a manifest file so that the DeltaLakeMergeLoad output can be read by a Presto database.<br><br>Default: <code>true</code></td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-4">Examples</h3>
+
+<h4 id="minimal-4">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DeltaLakeMergeLoad&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;merge with existing customer dataset&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;/delta/customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;condition&#34;</span><span class="p">:</span> <span class="s2">&#34;source.customerId = target.customerId&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;whenNotMatchedByTargetInsert&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;whenNotMatchedBySourceDelete&#34;</span><span class="p">:</span> <span class="p">{}</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-4">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DeltaLakeMergeLoad&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;merge with existing customer dataset&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;merge with existing customer dataset&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;/delta/customers&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;condition&#34;</span><span class="p">:</span> <span class="s2">&#34;source.customerId = target.customerId&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;whenMatchedDeleteFirst&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;whenMatchedDelete&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;condition&#34;</span><span class="p">:</span> <span class="s2">&#34;source.customerDeleteFlag = TRUE&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;whenMatchedUpdate&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;condition&#34;</span><span class="p">:</span> <span class="s2">&#34;source.customerUpdateFlag = TRUE&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;values&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;customerId&#34;</span><span class="p">:</span> <span class="s2">&#34;source.customerId&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;customerLastUpdated&#34;</span><span class="p">:</span> <span class="s2">&#34;source.customerUpdateTimestamp&#34;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;whenNotMatchedByTargetInsert&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;condition&#34;</span><span class="p">:</span> <span class="s2">&#34;source.customerId != &#39;DUMMY&#39;&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;values&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;customerId&#34;</span><span class="p">:</span> <span class="s2">&#34;source.customerId&#34;</span><span class="p">,</span>
+      <span class="nt">&#34;customerLastUpdated&#34;</span><span class="p">:</span> <span class="s2">&#34;source.customerInsertTimestamp&#34;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;whenNotMatchedBySourceDelete&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;condition&#34;</span><span class="p">:</span> <span class="s2">&#34;target.locked = FALSE&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
 <h2 id="delimitedload">DelimitedLoad</h2>
 
 <h5 id="since-1-0-0-supports-streaming-true">Since: 1.0.0 - Supports Streaming: True</h5>
 
 <p>The <code>DelimitedLoad</code> writes an input <code>DataFrame</code> to a target delimited file.</p>
 
-<h3 id="parameters-4">Parameters</h3>
+<h3 id="parameters-5">Parameters</h3>
 
 <table>
 <thead>
@@ -1007,9 +1174,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-4">Examples</h3>
+<h3 id="examples-5">Examples</h3>
 
-<h4 id="minimal-4">Minimal</h4>
+<h4 id="minimal-5">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedLoad&#34;</span><span class="p">,</span>
@@ -1022,7 +1189,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.csv&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-4">Complete</h4>
+<h4 id="complete-5">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DelimitedLoad&#34;</span><span class="p">,</span>
@@ -1057,7 +1224,7 @@
 
 <p>The <code>ElasticsearchLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://www.elastic.co/products/elasticsearch">Elasticsearch</a> cluster.</p>
 
-<h3 id="parameters-5">Parameters</h3>
+<h3 id="parameters-6">Parameters</h3>
 
 <table>
 <thead>
@@ -1128,9 +1295,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-5">Examples</h3>
+<h3 id="examples-6">Examples</h3>
 
-<h4 id="minimal-5">Minimal</h4>
+<h4 id="minimal-6">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ElasticsearchLoad&#34;</span><span class="p">,</span>
@@ -1149,7 +1316,7 @@
   <span class="p">}</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-5">Complete</h4>
+<h4 id="complete-6">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ElasticsearchLoad&#34;</span><span class="p">,</span>
@@ -1181,7 +1348,7 @@
 
 <p>In the future additional Transform stages (like <code>ProtoBufTransform</code>) could be added to prepare binary payloads instead of just <code>json</code> <code>string</code>.</p>
 
-<h3 id="parameters-6">Parameters</h3>
+<h3 id="parameters-7">Parameters</h3>
 
 <table>
 <thead>
@@ -1245,9 +1412,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-6">Examples</h3>
+<h3 id="examples-7">Examples</h3>
 
-<h4 id="minimal-6">Minimal</h4>
+<h4 id="minimal-7">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPLoad&#34;</span><span class="p">,</span>
@@ -1260,7 +1427,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-6">Complete</h4>
+<h4 id="complete-7">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPLoad&#34;</span><span class="p">,</span>
@@ -1290,7 +1457,7 @@
 
 <p>Whilst it is possible to use <code>JDBCLoad</code> to create tables directly in the target database Spark only has a limited knowledge of the schema required in the destination database and so will translate things like <code>StringType</code> internally to a <code>TEXT</code> type in the target database (because internally Spark does not have limited length strings). The recommendation is to use a preceding <a href="../execute/#jdbcexecute">JDBCExecute</a> to execute a <code>CREATE TABLE</code> statement which creates the intended schema then inserting into that table with <code>saveMode</code> set to <code>Append</code>.</p>
 
-<h3 id="parameters-7">Parameters</h3>
+<h3 id="parameters-8">Parameters</h3>
 
 <table>
 <thead>
@@ -1417,9 +1584,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-7">Examples</h3>
+<h3 id="examples-8">Examples</h3>
 
-<h4 id="minimal-7">Minimal</h4>
+<h4 id="minimal-8">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCLoad&#34;</span><span class="p">,</span>
@@ -1437,7 +1604,7 @@
   <span class="p">}</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-7">Complete</h4>
+<h4 id="complete-8">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCLoad&#34;</span><span class="p">,</span>
@@ -1470,7 +1637,7 @@
 
 <p>The <code>JSONLoad</code> writes an input <code>DataFrame</code> to a target JSON file.</p>
 
-<h3 id="parameters-8">Parameters</h3>
+<h3 id="parameters-9">Parameters</h3>
 
 <table>
 <thead>
@@ -1548,9 +1715,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-8">Examples</h3>
+<h3 id="examples-9">Examples</h3>
 
-<h4 id="minimal-8">Minimal</h4>
+<h4 id="minimal-9">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONLoad&#34;</span><span class="p">,</span>
@@ -1563,7 +1730,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.json&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-8">Complete</h4>
+<h4 id="complete-9">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONLoad&#34;</span><span class="p">,</span>
@@ -1596,7 +1763,7 @@
 
 <p>In the future additional Transform stages (like <code>ProtoBufTransform</code>) may be added to prepare binary payloads instead of just <code>json</code> <code>string</code>.</p>
 
-<h3 id="parameters-9">Parameters</h3>
+<h3 id="parameters-10">Parameters</h3>
 
 <table>
 <thead>
@@ -1681,9 +1848,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-9">Examples</h3>
+<h3 id="examples-10">Examples</h3>
 
-<h4 id="minimal-9">Minimal</h4>
+<h4 id="minimal-10">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaLoad&#34;</span><span class="p">,</span>
@@ -1697,7 +1864,7 @@
   <span class="nt">&#34;topic&#34;</span><span class="p">:</span> <span class="s2">&#34;customers&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-9">Complete</h4>
+<h4 id="complete-10">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaLoad&#34;</span><span class="p">,</span>
@@ -1727,7 +1894,7 @@
 
 <p>The <code>MongoDBLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://www.mongodb.com/">MongoDB</a> collection.</p>
 
-<h3 id="parameters-10">Parameters</h3>
+<h3 id="parameters-11">Parameters</h3>
 
 <table>
 <thead>
@@ -1798,9 +1965,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-10">Examples</h3>
+<h3 id="examples-11">Examples</h3>
 
-<h4 id="minimal-10">Minimal</h4>
+<h4 id="minimal-11">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MongoDBLoad&#34;</span><span class="p">,</span>
@@ -1817,7 +1984,7 @@
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customers&#34;</span>
 <span class="p">}</span> </code></pre></div>
 
-<h4 id="complete-10">Complete</h4>
+<h4 id="complete-11">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MongoDBLoad&#34;</span><span class="p">,</span>
@@ -1846,7 +2013,7 @@
 
 <p>The <code>ORCLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://orc.apache.org/">Apache ORC</a> file.</p>
 
-<h3 id="parameters-11">Parameters</h3>
+<h3 id="parameters-12">Parameters</h3>
 
 <table>
 <thead>
@@ -1924,9 +2091,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-11">Examples</h3>
+<h3 id="examples-12">Examples</h3>
 
-<h4 id="minimal-11">Minimal</h4>
+<h4 id="minimal-12">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ORCLoad&#34;</span><span class="p">,</span>
@@ -1939,7 +2106,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.orc&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-11">Complete</h4>
+<h4 id="complete-12">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ORCLoad&#34;</span><span class="p">,</span>
@@ -1965,7 +2132,7 @@
 
 <p>The <code>ParquetLoad</code> writes an input <code>DataFrame</code> to a target <a href="https://parquet.apache.org/">Apache Parquet</a> file.</p>
 
-<h3 id="parameters-12">Parameters</h3>
+<h3 id="parameters-13">Parameters</h3>
 
 <table>
 <thead>
@@ -2043,9 +2210,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-12">Examples</h3>
+<h3 id="examples-13">Examples</h3>
 
-<h4 id="minimal-12">Minimal</h4>
+<h4 id="minimal-13">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetLoad&#34;</span><span class="p">,</span>
@@ -2058,7 +2225,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.parquet&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-12">Complete</h4>
+<h4 id="complete-13">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ParquetLoad&#34;</span><span class="p">,</span>
@@ -2084,7 +2251,7 @@
 
 <p>The <code>TextLoad</code> writes an input <code>DataFrame</code> to a target text file.</p>
 
-<h3 id="parameters-13">Parameters</h3>
+<h3 id="parameters-14">Parameters</h3>
 
 <table>
 <thead>
@@ -2190,9 +2357,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-13">Examples</h3>
+<h3 id="examples-14">Examples</h3>
 
-<h4 id="minimal-13">Minimal</h4>
+<h4 id="minimal-14">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TextLoad&#34;</span><span class="p">,</span>
@@ -2205,7 +2372,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.text&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-13">Complete</h4>
+<h4 id="complete-14">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TextLoad&#34;</span><span class="p">,</span>
@@ -2232,7 +2399,7 @@
 
 <p>The <code>XMLLoad</code> writes an input <code>DataFrame</code> to a target XML file.</p>
 
-<h3 id="parameters-14">Parameters</h3>
+<h3 id="parameters-15">Parameters</h3>
 
 <table>
 <thead>
@@ -2310,9 +2477,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-14">Examples</h3>
+<h3 id="examples-15">Examples</h3>
 
-<h4 id="minimal-14">Minimal</h4>
+<h4 id="minimal-15">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLLoad&#34;</span><span class="p">,</span>
@@ -2325,7 +2492,7 @@
   <span class="nt">&#34;outputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://output_data/customer/customer.xml&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-14">Complete</h4>
+<h4 id="complete-15">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLLoad&#34;</span><span class="p">,</span>

@@ -128,6 +128,43 @@ The `DeltaLakeLoad` writes an input `DataFrame` to a target [DeltaLake](https://
 {{< readfile file="/resources/docs_resources_plugins/DeltaLakeLoadComplete" highlight="json" >}}
 
 
+## DeltaLakeMergeLoad
+##### Since: arc-deltalake-pipeline-plugin 1.7.0 - Supports Streaming: True
+{{< note title="Plugin" >}}
+The `DeltaLakeMergeLoad` is provided by the https://github.com/tripl-ai/arc-deltalake-pipeline-plugin package.
+
+NOTE: This stage includes additional functionality that is not included in the main [DeltaLake](https://delta.io/) functionality. A pull request has been raised.
+{{</note>}}
+
+The `DeltaLakeMergeLoad` writes an input `DataFrame` to a target [DeltaLake](https://delta.io/) file using the `MERGE` functionality.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|outputURI|URI|true|URI of the Delta file to write to.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|condition|String|true|The `join condition` to perform the data comparison between the `source` (the `inputView` dataset) and `target` (the `outputURI` dataset). Note that the names `source` and `target` must be used.|
+|whenMatchedDeleteFirst|Boolean|false|If `true` the `whenMatchedDelete` operation will happen before `whenMatchedUpdate`.<br><br>If `false` the `whenMatchedUpdate` operation will happen before `whenMatchedDelete`.<br><br>Default: `true`.|
+|whenMatchedDelete|Map[String, String]|false|If specified, `whenMatchedDelete` will delete records where the record exists in both `source` and `target` based on the `join condition`.<br><br>Optionally `condition` may be specified to restrict the records to delete and can only refer to fields in both `source` and `target`.|
+|whenMatchedUpdate|Map[String, Object]|false|If specified, `whenMatchedUpdate` will update records where the record exists in both `source` and `target` based on the `join condition`.<br><br>Optionally `condition` may be specified to restrict the records to update and can only refer to fields in both `source` and `target`.<br><br>Optionally `values` may be specified to define the update rules which can be used to update only selected columns.|
+|whenNotMatchedByTargetInsert|Map[String, Object]|false|If specified, `whenNotMatchedByTargetInsert` will insert records in `source` which do not exist in `target` based on the `join condition`.<br><br>Optionally `condition` may be specified to restrict the records to insert but can only refer to fields in `source`.<br><br>Optionally `values` may be specified to define the insert rules which can be used to insert only selected columns.|
+|whenNotMatchedBySourceDelete|Map[String, Object]|false|If specified, `whenNotMatchedBySourceDelete` will delete records in `target` which do not exist in `source` based on the `join condition`.<br><br>Optionally `condition` may be specified to restrict the records to insert but can only refer to fields in `source`.|
+|generateSymlinkManifest|Boolean|false|Create a manifest file so that the DeltaLakeMergeLoad output can be read by a Presto database.<br><br>Default: `true`|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/DeltaLakeMergeLoadMin" highlight="json" >}}
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/DeltaLakeMergeLoadComplete" highlight="json" >}}
+
+
+
 ## DelimitedLoad
 ##### Since: 1.0.0 - Supports Streaming: True
 
