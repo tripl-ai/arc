@@ -328,10 +328,10 @@ object API {
       for arc we are using this dependency resolution order if authentication is not provided:
 
      */
-    case class AmazonAccessKey(bucket: String, accessKeyID: String, secretAccessKey: String, endpoint: Option[String], ssl: Option[Boolean]) extends Authentication
-    case class AmazonAnonymous(bucket: String) extends Authentication
-    case class AmazonEnvironmentVariable(bucket: String, accessKeyID: String, secretAccessKey: String) extends Authentication
-    case class AmazonIAM(bucket: String, encryptionType: Option[AmazonS3EncryptionType], keyArn: Option[String], customKey: Option[String]) extends Authentication
+    case class AmazonAccessKey(bucket: Option[String], accessKeyID: String, secretAccessKey: String, endpoint: Option[String], ssl: Option[Boolean]) extends Authentication
+    case class AmazonAnonymous(bucket: Option[String]) extends Authentication
+    case class AmazonEnvironmentVariable(bucket: Option[String]) extends Authentication
+    case class AmazonIAM(bucket: Option[String], encryptionType: Option[AmazonS3EncryptionType], keyArn: Option[String], customKey: Option[String]) extends Authentication
 
 
     case class AzureSharedKey(accountName: String, signature: String) extends Authentication
