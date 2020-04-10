@@ -12,6 +12,7 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
+import ai.tripl.arc.config._
 
 import ai.tripl.arc.util.TestUtils
 
@@ -46,9 +47,9 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     // ensure targets removed
     FileUtils.deleteQuietly(new java.io.File(targetFile))
     FileUtils.deleteQuietly(new java.io.File(targetSingleFile))
-    FileUtils.deleteQuietly(new java.io.File(targetSingleFile0))
-    FileUtils.deleteQuietly(new java.io.File(targetSingleFile1))
-    FileUtils.deleteQuietly(new java.io.File(targetSingleFile2))
+    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile0))
+    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile1))
+    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile2))
   }
 
   after {
@@ -57,9 +58,9 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     // clean up test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile))
     FileUtils.deleteQuietly(new java.io.File(targetSingleFile))
-    FileUtils.deleteQuietly(new java.io.File(targetSingleFile0))
-    FileUtils.deleteQuietly(new java.io.File(targetSingleFile1))
-    FileUtils.deleteQuietly(new java.io.File(targetSingleFile2))    
+    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile0))
+    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile1))
+    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile2))    
   }
 
   test("TextLoad") {
@@ -134,7 +135,6 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-
     val dataset = Seq(
       (targetSingleFile0, "a"),
       (targetSingleFile0, "b"),
@@ -145,28 +145,82 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     ).toDF("filename", "value")
     dataset.createOrReplaceTempView(outputView)
 
-    load.TextLoadStage.execute(
-      load.TextLoadStage(
-        plugin=new load.TextLoad,
-        name=outputView,
-        description=None,
-        inputView=outputView,
-        outputURI=new URI(FileUtils.getTempDirectoryPath().stripSuffix("/")),
-        numPartitions=None,
-        authentication=None,
-        saveMode=SaveMode.Overwrite,
-        params=Map.empty,
-        singleFile=true,
-        prefix="",
-        separator="\n",
-        suffix=""
-      )
-    )
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "TextLoad",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${outputView}",
+          "outputURI": "${new URI(FileUtils.getTempDirectoryPath().stripSuffix("/"))}",
+          "singleFile": true,
+          "separator": "\\n"
+        }
+      ]
+    }"""
 
-    val actual = spark.read.text(targetSingleFileWildcard).withColumn("_filename", input_file_name())
-    assert(actual.where(s"_filename LIKE '%${targetSingleFile0}'").collect.map(_.getString(0)).mkString("|") == "a|b|c")
-    assert(actual.where(s"_filename LIKE '%${targetSingleFile1}'").collect.map(_.getString(0)).mkString("|") == "d|e")
-    assert(actual.where(s"_filename LIKE '%${targetSingleFile2}'").collect.map(_.getString(0)).mkString("|") == "f")
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
+
+      val actual = spark.read.text(targetSingleFileWildcard).withColumn("_filename", input_file_name())
+      assert(actual.where(s"_filename LIKE '%${targetSingleFile0}'").collect.map(_.getString(0)).mkString("|") == "a|b|c")
+      assert(actual.where(s"_filename LIKE '%${targetSingleFile1}'").collect.map(_.getString(0)).mkString("|") == "d|e")
+      assert(actual.where(s"_filename LIKE '%${targetSingleFile2}'").collect.map(_.getString(0)).mkString("|") == "f")      
+    }
+  }  
+
+  test("TextLoad: singleFile with filename and index") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val dataset = Seq(
+      (targetSingleFile0, "b", 1),
+      (targetSingleFile0, "a", 0),
+      (targetSingleFile0, "c", 2),
+      (targetSingleFile1, "e", 1), 
+      (targetSingleFile1, "d", 0), 
+      (targetSingleFile2, "f", 0)
+    ).toDF("filename", "value", "index")
+    dataset.createOrReplaceTempView(outputView)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "TextLoad",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${outputView}",
+          "outputURI": "${new URI(FileUtils.getTempDirectoryPath().stripSuffix("/"))}",
+          "singleFile": true,
+          "separator": "\\n"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
+
+      val actual = spark.read.text(targetSingleFileWildcard).withColumn("_filename", input_file_name())
+      assert(actual.where(s"_filename LIKE '%${targetSingleFile0}'").collect.map(_.getString(0)).mkString("|") == "a|b|c")
+      assert(actual.where(s"_filename LIKE '%${targetSingleFile1}'").collect.map(_.getString(0)).mkString("|") == "d|e")
+      assert(actual.where(s"_filename LIKE '%${targetSingleFile2}'").collect.map(_.getString(0)).mkString("|") == "f")      
+    }
   }  
 
   test("TextLoad: singleFile prefix/separator/suffix") {
