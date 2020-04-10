@@ -35,6 +35,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
                   .builder()
                   .master("local[*]")
                   .config("spark.ui.port", "9999")
+                  .config("spark.sql.legacy.allowUntypedScalaUDF", true)
                   .appName("Spark ETL Test")
                   .getOrCreate()
     spark.sparkContext.setLogLevel("FATAL")
