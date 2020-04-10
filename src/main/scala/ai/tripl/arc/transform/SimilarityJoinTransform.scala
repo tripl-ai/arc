@@ -144,7 +144,7 @@ object SimilarityJoinTransformStage {
       .setNumHashTables(stage.numHashTables)
 
     // the lshmodel cannot process empty vectors
-    val notEmptyVector = udf({v: SparseVector => v.numNonzeros > 0}, DataTypes.BooleanType)
+    val notEmptyVector = udf({v: SparseVector => v.numNonzeros > 0})
 
     val leftView = spark.table(stage.leftView)
     val rightView = spark.table(stage.rightView)

@@ -5,8 +5,6 @@ import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationProvider, TableScan}
 import org.apache.spark.sql.types._
 
-import scala.util.Try
-
 object BinaryContent {
   val schema = StructType(
     Seq(
@@ -23,7 +21,7 @@ class BinaryContentRelation(val sqlContext: SQLContext, val path: String) extend
   }
 
   override def buildScan(): RDD[Row] = {
-    sqlContext.sparkContext.binaryFiles(path).map { case (k, pds) => Row(Try(pds.toArray()).toOption, k) }
+    sqlContext.sparkContext.binaryFiles(path).map { case (k, pds) => Row(pds.toArray(), k) }
   }
 
 }
