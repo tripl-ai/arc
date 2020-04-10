@@ -1,8 +1,7 @@
 import Dependencies._
 
-lazy val scala211 = "2.11.12"
 lazy val scala212 = "2.12.10"
-lazy val supportedScalaVersions = List(scala211, scala212)
+lazy val supportedScalaVersions = List(scala212)
 
 lazy val root = (project in file(".")).
   enablePlugins(BuildInfoPlugin).
@@ -26,6 +25,8 @@ lazy val root = (project in file(".")).
     pgpPublicRing := file("/pgp/pubring.asc"),
     updateOptions := updateOptions.value.withGigahorse(false)
   )
+
+resolvers += "Spark Staging" at "https://repository.apache.org/content/repositories/orgapachespark-1341/"
 
 fork in run := true  
 
