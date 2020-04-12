@@ -7,6 +7,7 @@
 - add `singleFile` mode to `XMLLoad`.
 - add `to_xml` UDF.
 - fix any deprecations preventing upgrade to Spark 3.0.
+- deprecate of `get_json_double_array`, `get_json_integer_array`, `get_json_long_array` in favor of inbuilt `get_json_object`.
 
 **NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
 

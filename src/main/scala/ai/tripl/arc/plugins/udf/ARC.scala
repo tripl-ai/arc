@@ -38,6 +38,7 @@ class ARC extends ai.tripl.arc.plugins.UDFPlugin {
 }
 
 object ARCPlugin {
+  
   // extract the object from the json string
   def jsonPath(json: String, path: String): List[JsonNode] = {
     if (!path.startsWith("$")) {
