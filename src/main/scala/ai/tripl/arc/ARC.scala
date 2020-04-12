@@ -29,7 +29,7 @@ object ARC {
     // read command line arguments into a map
     // must be in --key=value format
     val clArgs = collection.mutable.Map[String, String]()
-    val (opts, vals) = args.partition {
+    val (opts, _) = args.partition {
       _.startsWith("--")
     }
     opts.map { x =>

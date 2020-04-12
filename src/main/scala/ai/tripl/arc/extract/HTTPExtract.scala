@@ -236,8 +236,16 @@ object HTTPExtractStage {
             response.close
 
             // cast to a RequestResponseRow to fit the Dataset map method requirements
-            val result = Seq(uri, response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, Option(response.getEntity.getContentType).map(_.toString).orNull, contentLength, body.orNull)
-            Row.fromSeq(result).asInstanceOf[RequestResponseRow]
+            Row.fromSeq(
+              Seq(
+                uri,
+                response.getStatusLine.getStatusCode,
+                response.getStatusLine.getReasonPhrase,
+                Option(response.getEntity.getContentType).map(_.toString).orNull,
+                contentLength,
+                body.orNull
+              )
+            ).asInstanceOf[RequestResponseRow]
           } finally {
             request.releaseConnection
           }
