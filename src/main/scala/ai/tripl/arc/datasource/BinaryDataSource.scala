@@ -5,8 +5,6 @@ import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationProvider, TableScan}
 import org.apache.spark.sql.types._
 
-import scala.util.Try
-
 object BinaryContent {
   val schema = StructType(
     Seq(
