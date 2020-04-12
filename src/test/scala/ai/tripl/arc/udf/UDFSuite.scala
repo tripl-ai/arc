@@ -94,4 +94,35 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.first.getDouble(0) < 1.0)
     assert(df.schema.fields(0).dataType.toString == "DoubleType")
   }
+
+  test("to_xml") {
+    implicit val spark = session
+
+    val df = spark.sql("""
+    SELECT
+      to_xml(
+        NAMED_STRUCT(
+          'Document', NAMED_STRUCT(
+              '_VALUE', NAMED_STRUCT(
+                'child0', 0,
+                'child1', NAMED_STRUCT(
+                  'nested0', 0,
+                  'nested1', 'nestedvalue'
+                )
+              ),
+          '_attribute', 'attribute'
+          )
+        )
+      ) AS xml
+    """)
+
+    assert(df.first.getString(0) ==
+    """<Document attribute="attribute">
+    |  <child0>0</child0>
+    |  <child1>
+    |    <nested0>0</nested0>
+    |    <nested1>nestedvalue</nested1>
+    |  </child1>
+    |</Document>""".stripMargin)
+  }  
 }
