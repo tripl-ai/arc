@@ -23,7 +23,7 @@ class BinaryContentRelation(val sqlContext: SQLContext, val path: String) extend
   }
 
   override def buildScan(): RDD[Row] = {
-    sqlContext.sparkContext.binaryFiles(path).map { case (k, pds) => Row(Try(pds.toArray()).toOption, k) }
+    sqlContext.sparkContext.binaryFiles(path).map { case (k, pds) => Row(pds.toArray(), k) }
   }
 
 }
