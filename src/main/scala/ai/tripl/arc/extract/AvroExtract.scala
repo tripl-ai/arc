@@ -4,7 +4,7 @@ import java.io._
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.avro._
+import org.apache.spark.sql.avro.functions.from_avro
 import org.apache.spark.sql.functions._
 
 import com.typesafe.config._
@@ -164,8 +164,8 @@ object AvroExtractStage {
           stage.avroSchema match {
             case Some(avroSchema) => {
               stage.inputField match {
-                case Some(inputField) => Right(inputView.withColumn(inputField, from_avro(col(inputField), avroSchema.toString)))
-                case None => Right(inputView.withColumn("value", from_avro(col("value"), avroSchema.toString)))
+                case Some(inputField) => Right(inputView.withColumn(inputField, avro.functions.from_avro(col(inputField), avroSchema.toString)))
+                case None => Right(inputView.withColumn("value", avro.functions.from_avro(col("value"), avroSchema.toString)))
               }
             }
             case None => throw new Exception(s"AvroExtract requires the 'avroSchema' to be provided when reading from an 'inputView'.")
@@ -263,4 +263,3 @@ object AvroExtractStage {
   }
 
 }
-
