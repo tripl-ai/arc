@@ -1,5 +1,15 @@
 # Change Log
 
+## 2.10.0
+
+- make `TextLoad` `singleFile` mode load in parallel from the Spark `executor` processes rather than `driver` as they will have likely have more ram available.
+- add option to supply `index` in addition to [`value`, `filename`] to ensure correct output ordering when in `singleFile` mode.
+- add `singleFile` mode to `XMLLoad`.
+- add `to_xml` UDF.
+- fix any deprecations preventing upgrade to Spark 3.0.
+
+**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
+
 ## 2.9.0
 
 - fix defect with `JSONExtract` not using `basePath` correctly.
@@ -20,8 +30,6 @@
 - added capability to replace the returned dataset via a `LifecyclePlugin` `after` hook.
 - removed `tutorials` directory from main arc repo as it is available via [arc-starter](https://github.com/tripl-ai/arc-starter).
 - bump to Spark [2.4.5](https://spark.apache.org/releases/spark-release-2-4-5.html).
-
-**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
 
 ## 2.7.0
 
