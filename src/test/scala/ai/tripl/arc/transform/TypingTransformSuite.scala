@@ -35,7 +35,6 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
                   .builder()
                   .master("local[*]")
                   .config("spark.ui.port", "9999")
-                  .config("spark.sql.legacy.allowUntypedScalaUDF", true)
                   .appName("Spark ETL Test")
                   .getOrCreate()
     spark.sparkContext.setLogLevel("FATAL")
@@ -52,7 +51,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     // recreate test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile))
     // Delimited does not support writing NullType
-    TestUtils.getKnownDataset.repartition(1).drop($"nullDatum").write.csv(targetFile)
+    TestUtils.getKnownDataset.repartition(1).drop(col("nullDatum")).write.csv(targetFile)
   }
 
   after {
@@ -92,7 +91,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     // parse json schema to List[ExtractColumn]
     val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
 
-    val dataset = transform.TypingTransformStage.execute(
+    val actual = transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
         name="dataset",
@@ -108,23 +107,13 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
       )
     ).get
 
-    // add errors array to schema using udf
-    val errorStructType: StructType =
-      StructType(
-        StructField("field", StringType, false) ::
-        StructField("message", StringType, false) :: Nil
-      )
-    val addErrors = org.apache.spark.sql.functions.udf(() => new Array(0), ArrayType(errorStructType) )
-
     val expected = TestUtils.getKnownDataset
       .drop($"nullDatum")
-      .withColumn("_errors", addErrors())
 
-    val actual = dataset
-
-    assert(TestUtils.datasetEquality(expected, actual.drop("_filename").drop("_index")))
-    assert(actual.filter($"_filename".contains(targetFile)).count == 2)
-    assert(actual.filter($"_index".isNotNull).count == 2)
+    assert(TestUtils.datasetEquality(expected, actual.drop("_filename").drop("_index").drop("_errors")))
+    assert(actual.filter(col("_filename").contains(targetFile)).count == 2)
+    assert(actual.filter(col("_index").isNotNull).count == 2)
+    assert(actual.filter("SIZE(_errors) = 0").count == 2)
 
     // test metadata
     val booleanDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("booleanDatum")).metadata
