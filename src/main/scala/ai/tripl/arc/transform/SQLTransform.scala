@@ -49,31 +49,31 @@ class SQLTransform extends PipelineStagePlugin {
     (name, description, parsedURI, inlineSQL, sql, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
       case (Right(name), Right(description), Right(parsedURI), Right(inlineSQL), Right(sql), Right(validSQL), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) =>
 
-        if (validSQL.toLowerCase() contains "now") {
-          logger.warn()
-            .field("event", "validateConfig")
-            .field("name", name)
-            .field("type", "SQLTransform")
-            .field("message", "sql contains NOW() function which may produce non-deterministic results")
-            .log()
+        val lowerValidSQL = validSQL.toLowerCase
+
+        Seq("now()", "current_date()", "current_timestamp()").foreach { nonDeterministic => 
+          if (lowerValidSQL contains nonDeterministic) {
+            logger.warn()
+              .field("event", "validateConfig")
+              .field("name", name)
+              .field("type", "SQLTransform")
+              .field("message", s"sql contains ${nonDeterministic.toUpperCase} function which may produce non-deterministic result")
+              .log()
+          }
         }
 
-        if (validSQL.toLowerCase() contains "current_date") {
-          logger.warn()
-            .field("event", "validateConfig")
-            .field("name", name)
-            .field("type", "SQLTransform")
-            .field("message", "sql contains CURRENT_DATE() function which may produce non-deterministic results")
-            .log()
-        }
-
-        if (validSQL.toLowerCase() contains "current_timestamp") {
-          logger.warn()
-            .field("event", "validateConfig")
-            .field("name", name)
-            .field("type", "SQLTransform")
-            .field("message", "sql contains CURRENT_TIMESTAMP() function which may produce non-deterministic results")
-            .log()
+        // warn for deprecated UDFs
+        arcContext.udfPlugins.foreach { plugin =>
+          plugin.deprecations.foreach { deprecation =>
+            if (lowerValidSQL contains s"${deprecation.function}(") {
+              logger.warn()
+                .field("event", "validateConfig")
+                .field("name", name)
+                .field("type", "SQLTransform")
+                .field("message", s"sql contains deprecated function '${deprecation.function}' which will be removed in future Arc version. Use `${deprecation.replaceFunction}` instead.")
+                .log()
+            }            
+          }
         }
 
         val uri = if (isInputURI) Option(parsedURI) else None

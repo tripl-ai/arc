@@ -35,10 +35,19 @@ class ARC extends ai.tripl.arc.plugins.UDFPlugin {
     spark.sqlContext.udf.register("to_xml", ARCPlugin.toXML _ )
 
   }
+
+  override def deprecations()(implicit spark: SparkSession, logger: Logger, arcContext: ARCContext) = {
+    Seq(
+      Deprecation("get_json_double_array", "get_json_object"),
+      Deprecation("get_json_integer_array", "get_json_object"),
+      Deprecation("get_json_long_array", "get_json_object")
+    )  
+  }
+
 }
 
 object ARCPlugin {
-  
+
   // extract the object from the json string
   def jsonPath(json: String, path: String): List[JsonNode] = {
     if (!path.startsWith("$")) {
