@@ -553,3 +553,34 @@ Produces a the XML string:
   </child1>
 </Document>
 ```
+
+### struct_keys
+##### Since: 2.10.0
+
+`struct_keys` returns an array with the names of the keys in the struct.
+
+```sql
+SELECT
+  STRUCT_KEYS(
+    NAMED_STRUCT(
+      'key0', 'value0',
+      'key1', 'value1'
+    )
+  )
+```
+
+### struct_keys_contains
+##### Since: 2.10.0
+
+`struct_keys_contains` returns a `boolean` of whether the key exists in the struct.
+
+```sql
+SELECT
+  STRUCT_KEYS_CONTAINS(
+    NAMED_STRUCT(
+      'key0', 'value0',
+      'key1', 'value1'
+    )
+  , 'key1'
+  )
+```

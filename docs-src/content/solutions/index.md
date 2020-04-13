@@ -461,6 +461,4 @@ pq.write_table(table, '/tmp/data/example.parquet', flavor='spark')
 
 The suggestion then is to use the `environments` key to only execute the [EqualityValidate](../validate/#equalityvalidate) stage whilst in testing mode:
 
-{{< readfile file="/resources/docs_resources/PatternsTestingWithParquet" highlight="json" >}}
-
-
+{{< readfile file="/resources/docs_resourcesre;TestingWithParquet" highlight="json" >}}

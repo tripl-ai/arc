@@ -33,7 +33,8 @@ class ARC extends ai.tripl.arc.plugins.UDFPlugin {
     spark.sqlContext.udf.register("get_json_long_array", ARCPlugin.getJSONLongArray _ )
     spark.sqlContext.udf.register("random", ARCPlugin.getRandom _ )
     spark.sqlContext.udf.register("to_xml", ARCPlugin.toXML _ )
-
+    spark.sqlContext.udf.register("struct_keys", ARCPlugin.structKeys _ )
+    spark.sqlContext.udf.register("struct_keys_contains", ARCPlugin.structKeysContains _ )
   }
 
   override def deprecations()(implicit spark: SparkSession, logger: Logger, arcContext: ARCContext) = {
@@ -41,7 +42,7 @@ class ARC extends ai.tripl.arc.plugins.UDFPlugin {
       Deprecation("get_json_double_array", "get_json_object"),
       Deprecation("get_json_integer_array", "get_json_object"),
       Deprecation("get_json_long_array", "get_json_object")
-    )  
+    )
   }
 
 }
@@ -94,7 +95,15 @@ object ARCPlugin {
     val indentingXmlWriter = new IndentingXMLStreamWriter(xmlWriter)
     ai.tripl.arc.load.XMLLoad.StaxXmlGenerator(input.schema, indentingXmlWriter)(input)
     indentingXmlWriter.flush
-    writer.toString.trim    
-  }  
+    writer.toString.trim
+  }
+
+  def structKeys(input: Row): Array[String] = {
+    input.schema.fieldNames
+  }
+
+  def structKeysContains(input: Row, field: String): Boolean = {
+    input.schema.fieldNames.contains(field)
+  }
 
 }

@@ -22,7 +22,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("INFO")
+    spark.sparkContext.setLogLevel("WARN")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")
@@ -124,5 +124,55 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     |    <nested1>nestedvalue</nested1>
     |  </child1>
     |</Document>""".stripMargin)
-  }  
+  }
+
+  test("struct_keys") {
+    implicit val spark = session
+
+    val df = spark.sql("""
+    SELECT
+      STRUCT_KEYS(
+        NAMED_STRUCT(
+          'key0', 'value0',
+          'key1', 'value1'
+        )
+      )
+    """)
+
+    assert(df.first.getSeq[String](0) == Seq("key0", "key1"))
+  }
+
+  test("struct_contains true") {
+    implicit val spark = session
+
+    val df = spark.sql("""
+    SELECT
+      STRUCT_CONTAINS(
+        NAMED_STRUCT(
+          'key0', 'value0',
+          'key1', 'value1'
+        )
+      , 'key1'
+      )
+    """)
+
+    assert(df.first.getBoolean(0) == true)
+  }
+
+  test("struct_contains false") {
+    implicit val spark = session
+
+    val df = spark.sql("""
+    SELECT
+      STRUCT_CONTAINS(
+        NAMED_STRUCT(
+          'key0', 'value0',
+          'key1', 'value1'
+        )
+      , 'key2'
+      )
+    """)
+    assert(df.first.getBoolean(0) == false)
+  }
+
 }
