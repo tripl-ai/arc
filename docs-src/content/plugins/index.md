@@ -475,3 +475,81 @@ The plugin then needs to be registered by adding the full plugin name must be li
 ```sql
 SELECT age, add_ten(age) FROM customer
 ```
+
+## Included User Defined Functions
+
+To help with common data tasks several additional functions have been added to Arc in addition to the inbuilt [Spark SQL Functions](https://spark.apache.org/docs/latest/api/sql/index.html).
+
+### get_json_double_array
+##### Since: 1.0.9
+
+{{< note title="Deprecated" >}}
+Deprecated. Please use inbuilt Spark function [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object).
+{{</note>}}
+
+Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object) - but extracts a json `double` `array` from path.
+
+```sql
+SELECT get_json_double_array('[0.1, 1.1]', '$')
+```
+
+### get_json_integer_array
+##### Since: 1.0.9
+
+{{< note title="Deprecated" >}}
+Deprecated. Please use inbuilt Spark function [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object).
+{{</note>}}
+
+Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object) - but extracts a json `integer` `array` from path.
+
+```sql
+SELECT get_json_integer_array('[1, 2]', '$')
+```
+
+### get_json_long_array
+##### Since: 1.0.9
+
+{{< note title="Deprecated" >}}
+Deprecated. Please use inbuilt Spark function [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object).
+{{</note>}}
+
+Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object) - but extracts a json `long` `array` from path.
+
+```sql
+SELECT get_json_long_array('[2147483648, 2147483649]', '$')
+```
+
+### to_xml
+##### Since: 2.10.0
+
+`to_xml` returns a XML string with a given struct value.
+
+```sql
+SELECT
+  to_xml(
+    NAMED_STRUCT(
+      'Document', NAMED_STRUCT(
+          '_VALUE', NAMED_STRUCT(
+            'child0', 0,
+            'child1', NAMED_STRUCT(
+              'nested0', 0,
+              'nested1', 'nestedvalue'
+            )
+          ),
+      '_attribute', 'attribute'
+      )
+    )
+  ) AS xml
+```
+
+Produces a the XML string:
+
+```xml
+<Document attribute="attribute">
+  <child0>0</child0>
+  <child1>
+    <nested0>0</nested0>
+    <nested1>nestedvalue</nested1>
+  </child1>
+</Document>
+```

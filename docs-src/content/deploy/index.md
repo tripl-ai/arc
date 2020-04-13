@@ -8,47 +8,29 @@ Arc has been packaged as a [Docker](https://hub.docker.com/u/triplai) image to s
 
 ## Running a Job
 
-An example command to start a job is:
+An example command to start a job from the [Arc Starter](https://github.com/tripl-ai/arc-starter) base directory:
 
-```json
+```bash
 docker run \
--e "ETL_CONF_ENV=production" \
--e "ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0" \
--it -p 4040:4040 {{% docker_image %}} \
+--rm \
+--volume $(pwd)/examples:/home/jovyan/examples:Z \
+--env "ETL_CONF_ENV=production" \
+--env "ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0" \
+-p 4040:4040 \
+{{% docker_image %}} \
 bin/spark-submit \
 --master local[*] \
+--driver-memory 4g \
 --class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
---etl.config.uri=file:///opt/tutorial/basic/job/0/basic.json
-```
-
-This job executes the following job file which is included in the docker image:
-
-```json
-{"stages":
-  [{
-    "type": "SQLValidate",
-    "name": "a simple stage which prints a message",
-    "environments": [
-      "production",
-      "test"
-    ],
-    "inputURI": ${ETL_CONF_JOB_PATH}"/print_message.sql",
-    "sqlParams": {
-      "message0": "Hello",
-      "message1": "World!"
-    },
-    "authentication": {},
-    "params": {}
-  }]
-}
+--etl.config.uri=file:///home/jovyan/examples/tutorial/0/nyctaxi.ipynb
 ```
 
 This example is included to demonstrate:
 
-- `ETL_CONF_ENV` is a reserved environment variable which determines which stages to execute in the current mode. For each of the stages the job designer can specify an array of `stages` under which that stage will be executed (in the case above `production` and `test` are specified).<br><br>The purpose of this stage is so that it is possible to add or remove stages for execution modes like `test` or `integration` which are executed by a [CI/CD](https://en.wikipedia.org/wiki/CI/CD) tool prior to deployment and that you do not want to run in `production` mode - so maybe a comparison against a known 'good' test dataset could be executed in only `test` mode.
+- `ETL_CONF_ENV` is a reserved environment variable which determines which stages to execute in the current mode. For each of the stages the job designer can specify an array of `environments` under which that stage will be executed (in the case above `production` and `test` are specified).<br><br>The purpose of this stage is so that it is possible to add or remove stages for execution modes like `test` or `integration` which are executed by a [CI/CD](https://en.wikipedia.org/wiki/CI/CD) tool prior to deployment and that you do not want to run in `production` mode - so maybe a comparison against a known 'good' test dataset could be executed in only `test` mode.
 
-- `ETL_CONF_JOB_PATH` is an environment variable that is parsed and included by string interpolation when the job file is executed. So when then job starts Arc will attempt to resolve all environment variables set in the `basic.json` job file. In this case `"inputURI": ${ETL_CONF_JOB_PATH}"/print_message.sql",` becomes `"inputURI": "/opt/tutorial/basic/job/0/print_message.sql",` after resolution. This is included so that potentially different paths would be set for running in `test` vs `production` mode.
+- `ETL_CONF_JOB_PATH` is an environment variable that is parsed and included by string interpolation when the job file is executed. This is included so that potentially different paths would be set for running in `test` vs `production` mode.
 
 - In this sample job the spark master is `local[*]` indicating that this is a single instance 'cluster' where Arc relies on [vertical](https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling) not [horizonal](https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling) scaling. Depending on the constrains of the job (i.e. CPU vs disk IO) it is often better to execute with vertical scaling on cloud compute rather than pay the cost of network shuffling.
 
@@ -56,10 +38,9 @@ This example is included to demonstrate:
 
 ## Configuration Parameters
 
-| Variable | Property | Description |
+| Environment Variable | Property | Description |
 |----------|----------|-------------|
 |ETL_CONF_ENABLE_STACKTRACE|etl.config.enableStackTrace|Whether to enable stacktraces in the event of exception which can be useful for debugging but is not very intuitive for many users. Boolean. Default `false`.|
-|ETL_CONF_ENV_ID|etl.config.environment.id|An environment identifier to be added to all logging messages. Could be something like a [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier) which allows joining to logs produced by ephemeral compute started by something like [Terraform](https://www.terraform.io/).|
 |ETL_CONF_ENV|etl.config.environment|The `environment` to run under.<br><br>E.g. if `ETL_CONF_ENV` is set to `production` then a stage with `"environments": ["production", "test"]` would be executed and one with `"environments": ["test"]` would not be executed.|
 |ETL_CONF_IGNORE_ENVIRONMENTS|etl.config.ignoreEnvironments|Allows skipping the `environments` tests and execute all stages/plugins.|
 |ETL_CONF_JOB_ID|etl.config.job.id|A job identifier added to all the logging messages.|
@@ -88,32 +69,41 @@ Additionally there are permissions arguments that can be used to retrieve the jo
 |ETL_CONF_S3A_KMS_ARN|The Key Management Service Amazon Resource Name when using `SSE-KMS` encryptionAlgorithm e.g. `arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab`.|
 |ETL_CONF_S3A_CUSTOM_KEY|etl.config.fs.s3a.custom.key|The key to use when using Customer-Provided Encryption Keys (`SSE-C`).|
 
-## Examples
+## Environments
 
-### Streaming
+The `Environments` list specifies a list of environments under which the stage will be executed. The environments list must contain the value in the `ETL_CONF_ENV` environment variable or `etl.config.environment` `spark-submit` argument for the stage to be executed.
 
-This is an example of a streaming job [source](https://github.com/tripl-ai/arc/blob/master/tutorial/streaming/job/0/streaming.json). This job is intended to be executed after the integration test envornment has been started:
+### Examples
 
-Start integration test environments:
+If a stage is to be executed in both production and testing and the `ETL_CONF_ENV` environment variable is set to `production` or `test` then the `DelimitedExtract` stage defined here will be executed. If the `ETL_CONF_ENV` environment variable was set to something else like `user_acceptance_testing` then this stage will not be executed and a warning message will be logged.
 
+```json
+{
+    "type": "DelimitedExtract",
+    ...
+    "environments": ["production", "test"],
+    ...
+}
 ```
-docker-compose -f src/it/resources/docker-compose.yml up --build -d
-```
 
-Start the streaming job:
+A practical use case of this is to execute additional stages in testing which would prevent the job from being automatically deployed to production via [Continuous Delivery](https://en.wikipedia.org/wiki/Continuous_delivery) if it fails:
 
-```bash
-docker run \
---net "arc-integration" \
--e "ETL_CONF_ENV=test" \
--e "ETL_CONF_STREAMING=true" \
--e "ETL_CONF_ROWS_PER_SECOND=10" \
--it -p 4040:4040 {{% docker_image %}} \
-bin/spark-submit \
---master local[*] \
---class ai.tripl.arc.ARC \
-/opt/spark/jars/arc.jar \
---etl.config.uri=file:///opt/tutorial/streaming/job/0/streaming.json
+```json
+{
+    "type": "ParquetExtract",
+    "name": "load the manually verified known good set of data from testing",
+    "environments": ["test"],
+    "outputView": "known_correct_dataset",
+    ...
+},
+{
+    "type": "EqualityValidate",
+    "name": "ensure the business logic produces the same result as the known good set of data from testing",
+    "environments": ["test"],
+    "leftView": "newly_caluclated_dataset",
+    "rightView": "known_correct_dataset",
+    ...
+}
 ```
 
 ## Spark and ulimit

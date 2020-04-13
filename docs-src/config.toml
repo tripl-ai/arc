@@ -98,18 +98,18 @@ pygmentsUseClasses=true
 	weight = 80
 
 [[menu.main]]
-	name   = "Plugins"
-	url    = "plugins/"
-	weight = 85
+	name   = "Security"
+	url    = "security/"
+	weight = 85	
 
 [[menu.main]]
-	name   = "Partials"
-	url    = "partials/"
+	name   = "Plugins"
+	url    = "plugins/"
 	weight = 90
 
 [[menu.main]]
-	name   = "Patterns"
-	url    = "patterns/"
+	name   = "Common Solutions"
+	url    = "solutions/"
 	weight = 95
 
 #[[menu.main]]

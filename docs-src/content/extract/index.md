@@ -12,7 +12,7 @@ type: blog
 - Do not [transform/mutate](../transform) the data.
 - Allow for [Predicate Pushdown](http://www.dbms2.com/2014/07/15/the-point-of-predicate-pushdown/) depending on data source.
 
-File based `*Extract` stages can accept `glob` patterns as input filenames which can be very useful to load just a subset of data. For example [delta processing](../patterns/#delta-processing):
+File based `*Extract` stages can accept `glob` patterns as input filenames which can be very useful to load just a subset of data. For example [delta processing](../solutions/#delta-processing):
 
 | Pattern | Description |
 |---------|-------------|

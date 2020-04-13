@@ -1,5 +1,5 @@
 ---
-title: Patterns
+title: Common Solutions
 weight: 95
 type: blog
 ---

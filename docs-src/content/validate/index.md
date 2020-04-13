@@ -96,7 +96,7 @@ For example it can be used to perform automated extract validation against file 
 
 `SQLValidate` will try to convert the message from a JSON string which can be manually created in the SQL statement so that logging is easier to parse by log aggregation tools.
 
-See [patterns](../patterns/) for more examples.
+See [patterns](../solutions/) for more examples.
 
 ### Parameters
 
