@@ -34,7 +34,6 @@ class ARC extends ai.tripl.arc.plugins.UDFPlugin {
     spark.sqlContext.udf.register("random", ARCPlugin.getRandom _ )
     spark.sqlContext.udf.register("to_xml", ARCPlugin.toXML _ )
     spark.sqlContext.udf.register("struct_keys", ARCPlugin.structKeys _ )
-    spark.sqlContext.udf.register("struct_keys_contains", ARCPlugin.structKeysContains _ )
   }
 
   override def deprecations()(implicit spark: SparkSession, logger: Logger, arcContext: ARCContext) = {
@@ -100,10 +99,6 @@ object ARCPlugin {
 
   def structKeys(input: Row): Array[String] = {
     input.schema.fieldNames
-  }
-
-  def structKeysContains(input: Row, field: String): Boolean = {
-    input.schema.fieldNames.contains(field)
   }
 
 }

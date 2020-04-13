@@ -568,19 +568,3 @@ SELECT
     )
   )
 ```
-
-### struct_keys_contains
-##### Since: 2.10.0
-
-`struct_keys_contains` returns a `boolean` of whether the key exists in the struct.
-
-```sql
-SELECT
-  STRUCT_KEYS_CONTAINS(
-    NAMED_STRUCT(
-      'key0', 'value0',
-      'key1', 'value1'
-    )
-  , 'key1'
-  )
-```

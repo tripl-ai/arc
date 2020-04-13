@@ -147,12 +147,14 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
     val df = spark.sql("""
     SELECT
-      STRUCT_KEYS_CONTAINS(
-        NAMED_STRUCT(
-          'key0', 'value0',
-          'key1', 'value1'
+      ARRAY_CONTAINS(
+        STRUCT_KEYS(
+          NAMED_STRUCT(
+            'key0', 'value0',
+            'key1', 'value1'
+          )
         )
-      , 'key1'
+        ,'key1'
       )
     """)
 
@@ -164,12 +166,14 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
     val df = spark.sql("""
     SELECT
-      STRUCT_KEYS_CONTAINS(
-        NAMED_STRUCT(
-          'key0', 'value0',
-          'key1', 'value1'
+      ARRAY_CONTAINS(
+        STRUCT_KEYS(
+          NAMED_STRUCT(
+            'key0', 'value0',
+            'key1', 'value1'
+          )
         )
-      , 'key2'
+        ,'key2'
       )
     """)
     assert(df.first.getBoolean(0) == false)
