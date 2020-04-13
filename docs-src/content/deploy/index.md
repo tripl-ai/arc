@@ -6,6 +6,8 @@ type: blog
 
 Arc has been packaged as a [Docker](https://hub.docker.com/u/triplai) image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the [https://hub.docker.com/u/triplai](https://hub.docker.com/u/triplai) for the relevant version.
 
+The [deploy](https://github.com/tripl-ai/deploy) repository has examples of how to run Arc jobs on common cloud environments.
+
 ## Running a Job
 
 An example command to start a job from the [Arc Starter](https://github.com/tripl-ai/arc-starter) base directory:
