@@ -154,18 +154,12 @@ object XMLExtractStage {
         case Right(glob) => {
           CloudUtils.setHadoopConfiguration(stage.authentication)
 
-          // remove the crlf delimiter so it is read as a full object per file
-          val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
-          val newDelimiter = s"${0x0 : Char}"
-          // temporarily remove the delimiter so all the data is loaded as a single line
-          spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)
-
           // read the file but do not cache. caching will break the input_file_name() function
-          val textRdd = spark.sparkContext.textFile(glob)
+          val textDS = spark.read.option("wholetext", true).text(glob).as[String]
 
           // if we have an xsd validator
           for (xsd <- stage.xsd) {
-            textRdd.foreach { xml =>
+            textDS.foreach { xml =>
               // these objects are not serializable so need to be instantiate on each record
               val schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
               val validator = schemaFactory.newSchema(new StreamSource(new StringReader(xsd))).newValidator
@@ -174,16 +168,10 @@ object XMLExtractStage {
           }
 
           val xmlReader = new XmlReader
-          val xml = xmlReader.xmlRdd(spark, textRdd)
-
-          // reset delimiter
-          if (oldDelimiter == null) {
-            spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")
-          } else {
-            spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)
+          optionSchema match {
+            case Some(schema) => Right(xmlReader.withSchema(schema).xmlRdd(spark, textDS.rdd))
+            case None => Right(xmlReader.xmlRdd(spark, textDS.rdd))
           }
-
-          Right(xml)
         }
         case Left(view) => {
           val xmlReader = new XmlReader
@@ -199,7 +187,10 @@ object XMLExtractStage {
             }
           }
 
-          Right(xmlReader.xmlRdd(spark, textRdd))
+          optionSchema match {
+            case Some(schema) => Right(xmlReader.withSchema(schema).xmlRdd(spark, textRdd))
+            case None => Right(xmlReader.xmlRdd(spark, textRdd))
+          }
         }
       }
     } catch {
@@ -244,19 +235,8 @@ object XMLExtractStage {
       }
     }
 
-    // try to explode the rows returned by the XML reader
-    val flattenedDF = if (emptyDataframeHandlerDF.schema.length == 1) {
-      emptyDataframeHandlerDF.schema.fields(0).dataType.typeName match {
-        case "array" => emptyDataframeHandlerDF.select(explode(col(emptyDataframeHandlerDF.schema.fieldNames(0)))).select("col.*")
-        case "struct" => emptyDataframeHandlerDF.select(s"${emptyDataframeHandlerDF.schema.fieldNames(0)}.*")
-        case _ => emptyDataframeHandlerDF
-      }
-    } else {
-      emptyDataframeHandlerDF
-    }
-
     // add internal columns data _filename, _index
-    val sourceEnrichedDF = ExtractUtils.addInternalColumns(flattenedDF, stage.contiguousIndex)
+    val sourceEnrichedDF = ExtractUtils.addInternalColumns(emptyDataframeHandlerDF, stage.contiguousIndex)
 
     // set column metadata if exists
     val enrichedDF = optionSchema match {

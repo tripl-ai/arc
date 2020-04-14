@@ -66,7 +66,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
           ],
           "inputView": "${inputView}",
           "outputView": "${outputView}",
-          "schemaURI": "${getClass.getResource("/conf/metadata").toString}/knownDataset.json",
+          "schemaURI": "${getClass.getResource("/conf/schema").toString}/knownDataset.json",
           "failMode": "failfast"
         }
       ]

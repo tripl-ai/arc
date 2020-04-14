@@ -67,7 +67,7 @@ object ARC {
       case Some(v) if v.trim.toLowerCase == "true" => true
       case _ => false
     }
-    MDC.put("enableStackTrace", enableStackTrace.toString)    
+    MDC.put("enableStackTrace", enableStackTrace.toString)
 
     // policies
     val policyIPYNB = commandLineArguments.get("etl.policy.ipynb").orElse(envOrNone("ETL_POLICY_IPYNB")) match {
@@ -78,7 +78,7 @@ object ARC {
     val policyInlineSQL = commandLineArguments.get("etl.policy.inlinesql").orElse(envOrNone("ETL_POLICY_INLINESQL")) match {
       case Some(v) if v.trim.toLowerCase == "false" => false
       case _ => true
-    }    
+    }
 
     val configUri: Option[String] = commandLineArguments.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))
 
@@ -142,7 +142,7 @@ object ARC {
       logger.warn()
         .field("event", "deprecation")
         .field("message", s"scala ${scala.util.Properties.versionNumberString} support is deprecated and will be removed in coming versions. please use a scala ${targetScalaVersion} build.")
-        .log()  
+        .log()
     }
     // hadoop
     val targetHadoopVersion = "2.9.2"
@@ -150,7 +150,7 @@ object ARC {
       logger.warn()
         .field("event", "deprecation")
         .field("message", s"hadoop ${scala.util.Properties.versionNumberString} support is deprecated and will be removed in coming versions. please use a hadoop ${targetHadoopVersion} build.")
-        .log()        
+        .log()
     }
 
     // add tags
@@ -177,7 +177,7 @@ object ARC {
       logger.warn()
         .field("event", "deprecation")
         .field("message", s"'etl.config.environment.id' and 'ETL_CONF_ENV_ID' are deprecated in favor of 'etl.config.tags' or 'ETL_CONF_TAGS'.")
-        .log()      
+        .log()
     }
 
     MDC.put("applicationId", spark.sparkContext.applicationId)
@@ -425,7 +425,7 @@ object ARC {
         // if running on local master (not databricks cluster or yarn) try to shutdown so that status is returned to the console correctly
         // databricks will fail if spark.stop is called: see https://docs.databricks.com/user-guide/jobs.html#jar-job-tips
         val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
-        if (isLocalMaster) {        
+        if (isLocalMaster) {
           // silently try to shut down log so that all messages are sent before stopping the spark session
           try {
             org.apache.log4j.LogManager.shutdown
@@ -477,7 +477,7 @@ object ARC {
       for (p <- arcContext.activeLifecyclePlugins) {
         logger.trace().message(s"Executing after on LifecyclePlugin: ${stages(index).getClass.getName}")
         p.before(currentValue, index, stages)
-      }      
+      }
     }
 
     def after(result: Option[DataFrame], currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Option[DataFrame] = {
@@ -485,7 +485,7 @@ object ARC {
       // unfortuately this means that lifecyclePlugin order is important but is required for this operation
       arcContext.activeLifecyclePlugins.foldLeft(result) { (mutatedResult, lifeCyclePlugin) =>
         logger.trace().message(s"Executing after on LifecyclePlugin: ${stages(index).getClass.getName}")
-        lifeCyclePlugin.after(mutatedResult, currentValue, index, stages)            
+        lifeCyclePlugin.after(mutatedResult, currentValue, index, stages)
       }
     }
 
@@ -511,7 +511,7 @@ object ARC {
             runStages(tail)
           } else {
             None
-          }            
+          }
       }
     }
 

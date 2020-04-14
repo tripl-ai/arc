@@ -84,7 +84,7 @@ At this stage we have a stage which will tell Spark where to read one or more `.
 
 To make this data more useful for querying (for example doing aggregation by time period) we need to **safely** apply data typing.
 
-Add a new stage to apply a `TypingTransformation` to the data extracted in the first stage named `green_tripdata0_raw` which will parse the data and produce an output dataset called `green_tripdata0` with correctly typed data. To do this we have to tell Arc how to parse the `string` data back into their original data types (like `timestamp` or `integer`). To do this transformation we need some way to pass in the description of how to parse the data and that is described in the `metadata` file passed in using the `schemaURI` key and described in the next step.
+Add a new stage to apply a `TypingTransformation` to the data extracted in the first stage named `green_tripdata0_raw` which will parse the data and produce an output dataset called `green_tripdata0` with correctly typed data. To do this we have to tell Arc how to parse the `string` data back into their original data types (like `timestamp` or `integer`). To do this transformation we need some way to pass in the description of how to parse the data and that is described in the `schema` file passed in using the `schemaURI` key and described in the next step.
 
 ```json
 {
@@ -99,13 +99,13 @@ Add a new stage to apply a `TypingTransformation` to the data extracted in the f
 
 ## Specifying Data Typing Rules
 
-The [metadata format](/metadata/) provides the information needed to parse an untyped (`string`) dataset into a typed dataset. Where a traditional database will fail when a data conversion fails (for example `CAST('abc' AS INT)`) Spark defaults to returning `NULL` which makes safely and precisely parsing data using only Spark SQL very difficult.
+The [schema format](/schema/) provides the information needed to parse an untyped (`string`) dataset into a typed dataset. Where a traditional database will fail when a data conversion fails (for example `CAST('abc' AS INT)`) Spark defaults to returning `NULL` which makes safely and precisely parsing data using only Spark SQL very difficult.
 
-{{< note title="Metadata Order" >}}
-This format does not use input field names and will only try to convert data by its column index - meaning that the order of the fields in the metadata file must match the input dataset.
+{{< note title="Schema Order" >}}
+This format does not use input field names and will only try to convert data by its column index - meaning that the order of the fields in the schema file must match the input dataset.
 {{</note>}}
 
-Here is the top of of the `/home/jovyan/examples/tutorial/0/green_tripdata0.json` file which provides the detailed metadata of how to convert `string` values back into their correct data types. The description fields have come from the [official data dictionary](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml).
+Here is the top of of the `/home/jovyan/examples/tutorial/0/green_tripdata0.json` file which provides the detailed schema of how to convert `string` values back into their correct data types. The description fields have come from the [official data dictionary](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml).
 
 ```json
 [
@@ -159,7 +159,7 @@ Here is the top of of the `/home/jovyan/examples/tutorial/0/green_tripdata0.json
   ...
 ```
 
-Picking one of the more interesting fields, `lpep_pickup_datetime`, a [timestamp](/metadata/#timestamp) field, we can highlight a few details:
+Picking one of the more interesting fields, `lpep_pickup_datetime`, a [timestamp](/schema/#timestamp) field, we can highlight a few details:
 
 - the `id` value is a unique identifier for this field (in this case a `string` formatted `uuid`). This field can be used to help track changes in the business *intent* of the field, for example if the field changed name from `lpep_pickup_datetime` to just `pickup_datetime` in a subsequent schema it is still the same field as the *intent* has not changed, just the name so the same `id` value should be the same.
 - the `formatters` key specifies an `array` rather than a simple `string`. This is because real world data often has multiple date/datetime formats used in a single column. By defining an `array` Arc will try to apply each of the formats specified in sequence and only fail if *none* of the formatters can be successfully applied.

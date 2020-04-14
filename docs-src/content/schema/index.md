@@ -1,10 +1,10 @@
 ---
-title: Metadata
+title: Schema
 weight: 70
 type: blog
 ---
 
-The `metadata` format, consumed in the [TypingTransform](../transform/#typingtransform) stage, is an opinionated format for specifying common data typing actions.
+The `schema` format, consumed in the [TypingTransform](../transform/#typingtransform) stage, is an opinionated format for specifying common data typing actions.
 
 It is designed to:
 
@@ -274,6 +274,33 @@ Use a Long Integer when dealing with values greater than ±2 billion (-2<sup>63<
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
   "primaryKey" : false,
+  "metadata": {
+    "primaryKey" : true,
+    "position": 1
+  }
+}
+```
+
+## Struct
+
+### Additional Attributes
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|children|Array|true|The binary-to-text encoding format of the value. Valid values `base64`, `hexadecimal`.|
+
+### Examples
+
+```json
+{
+  "id" : "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
+  "name" : "id",
+  "description" : "GUID identifier",
+  "type" : "binary",
+  "trim" : true,
+  "nullable" : true,
+  "nullableValues" : [ "", "null" ],
+  "encoding" : "base64",
   "metadata": {
     "primaryKey" : true,
     "position": 1

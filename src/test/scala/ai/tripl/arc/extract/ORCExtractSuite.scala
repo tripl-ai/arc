@@ -64,7 +64,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.ORCExtractStage.execute(
       extract.ORCExtractStage(
@@ -252,7 +252,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.ORCExtractStage.execute(
       extract.ORCExtractStage(

@@ -20,7 +20,7 @@
   ],
   "persist": false,
   "quote": "DoubleQuote",
-  "schemaURI": "hdfs://datalake/metadata/customer.json",
+  "schemaURI": "hdfs://datalake/schema/customer.json",
   "schemaView": "customer_schema",
   "basePath": "hdfs://datalake/customer/",
   "watermark": {

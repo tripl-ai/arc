@@ -37,7 +37,7 @@ class MetadataTransform extends PipelineStagePlugin {
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
     val authentication = readAuthentication("authentication")
-    val extractColumns = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
+    val extractColumns = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ |> checkSimpleColumnTypes("schemaURI", "MetadataTransform") _ else Right(List.empty)
     val schemaURI = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") else Right("")
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val failMode = getValue[String]("failMode", default = Some("permissive"), validValues = "permissive" :: "failfast" :: Nil) |> parseFailMode("failMode") _

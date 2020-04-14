@@ -24,7 +24,7 @@ import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.ControlUtils._
 import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.SQLUtils
-import ai.tripl.arc.util.MetadataSchema
+import ai.tripl.arc.util.ArcSchema
 
 
 import Error._
@@ -368,6 +368,16 @@ object ConfigUtils {
     } yield k
   }
 
+  def hasPath(path: String)(implicit c: Config): Either[Errors, ConfigValue] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, ConfigValue] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    if (!c.hasPath(path)) {
+      err(None, s"""Missing required attribute '$path'.""")
+    } else {
+      Right(c.getValue(path))
+    }
+  }
+
   def parseGlob(path: String)(glob: String)(implicit spark: SparkSession, c: Config): Either[Errors, String] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
@@ -583,14 +593,39 @@ object ConfigUtils {
     val schema = textContentForURI(uriKey, authentication)(uri).rightFlatMap(text => Right(Option(text)))
 
     schema.rightFlatMap { sch =>
-      val cols = sch.map{ s => MetadataSchema.parseJsonMetadata(s) }.getOrElse(Right(Nil))
+      val cols = sch.map{ s => ArcSchema.parseArcSchema(s) }.getOrElse(Right(Nil))
 
       cols match {
-        case Left(errs) => Left(errs.map( e => ConfigError("metadata error", None, Error.pipelineSimpleErrorMsg(e.errors)) ))
+        case Left(errs) => Left(errs.map( e => ConfigError("schema error", None, Error.pipelineSimpleErrorMsg(e.errors)) ))
         case Right(extractColumns) => Right(extractColumns)
       }
     }
   }
+
+  def checkSimpleColumnTypes(path: String, stageType: String)(extractColumns: List[ExtractColumn])(implicit c: Config): Either[Errors, List[ExtractColumn]] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, ExtractColumn] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    val cols = extractColumns.map { extractColumn =>
+      extractColumn match {
+        case col: StructColumn => err(Some(c.getValue(path).origin.lineNumber()), s"""${stageType} does not support complex types like column '${col.name}' of type struct.""")
+        case col: ArrayColumn => err(Some(c.getValue(path).origin.lineNumber()), s"""${stageType} does not support complex types like column '${col.name}' of type array.""")
+        case col => Right(col)
+      }
+    }
+
+    val (schema, errors) = cols.foldLeft[(List[ExtractColumn], List[ConfigError])]( (Nil, Nil) ) { case ( (columns, errs), metaOrError ) =>
+      metaOrError match {
+        case Right(c) => (c :: columns, errs)
+        case Left(metaErrors) => (columns, metaErrors ::: errs)
+      }
+    }
+
+    errors match {
+      case Nil => Right(schema.reverse)
+      case _ => Left(errors.reverse)
+    }    
+  }
+
 
   def textContentForURI(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, String] = {
     uri.getScheme match {

@@ -154,6 +154,7 @@ object API {
 
       StructField(col.name, col.sparkDataType, col.nullable, metadataBuilder.build())
     }
+    
   }
 
   case class StringColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], minLength: Option[Int], maxLength: Option[Int]) extends ExtractColumn {
@@ -214,6 +215,15 @@ object API {
   case class DecimalColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], precision: Int, scale: Int, metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
     val sparkDataType: DataType = DecimalType(precision, scale)
   }
+
+  case class StructColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], fields: List[ExtractColumn], metadata: Option[String]) extends ExtractColumn {
+    val sparkDataType: DataType = StructType(fields.map { child => ExtractColumn.toStructField(child) }.toSeq)
+  }    
+
+
+  case class ArrayColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], elementType: ExtractColumn, metadata: Option[String]) extends ExtractColumn {
+    val sparkDataType: DataType = ArrayType(ExtractColumn.toStructField(elementType).dataType, false)
+  }      
 
   sealed trait MetadataFormat
   object MetadataFormat {

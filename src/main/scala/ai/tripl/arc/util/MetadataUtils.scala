@@ -1,5 +1,7 @@
 package ai.tripl.arc.util
 
+import scala.util.{Try, Success, Failure}
+
 import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.node._
 

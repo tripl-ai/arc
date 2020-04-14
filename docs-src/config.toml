@@ -88,8 +88,8 @@ pygmentsUseClasses=true
 	weight = 60
 
 [[menu.main]]
-	name   = "Metadata"
-	url    = "metadata/"
+	name   = "Schema"
+	url    = "schema/"
 	weight = 70
 
 [[menu.main]]

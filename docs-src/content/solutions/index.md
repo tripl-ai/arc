@@ -437,7 +437,7 @@ import pytz
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-# create two rows (columnar) of each core data type corresponding with the metadata format
+# create two rows (columnar) of each core data type corresponding with the schema format
 # be careful with null type here as it will be silently converted to a null IntegerType and will not match Spark's NullType
 booleanDatum = pa.array([True, False], type=pa.bool_())
 dateDatum = pa.array([datetime.date(2016, 12, 18), datetime.date(2016, 12, 19)])

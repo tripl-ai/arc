@@ -15,9 +15,9 @@
     "country"
   ],
   "persist": false,
-  "schemaURI": "hdfs://datalake/metadata/customer.json",
+  "schemaURI": "hdfs://datalake/schema/customer.json",
   "schemaView": "customer_schema",
   "basePath": "hdfs://datalake/customer/*.avro",
   "inputField": "value",
-  "avroSchemaURI": "hdfs://datalake/metadata/user.avsc"
+  "avroSchemaURI": "hdfs://datalake/schema/user.avsc"
 }

@@ -170,7 +170,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
       }
     ]
     """
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(jsonSchema)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(jsonSchema)
 
     val dataset = extract.TextExtractStage.execute(
       extract.TextExtractStage(

@@ -41,7 +41,7 @@ class TypingTransform extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val authentication = readAuthentication("authentication")
-    val extractColumns = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
+    val extractColumns = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ |> checkSimpleColumnTypes("schemaURI", "TypingTransform") _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
@@ -118,7 +118,7 @@ object TypingTransformStage {
         }
       }
       case Left(view) => {
-        val parseResult: ai.tripl.arc.util.MetadataSchema.ParseResult = ai.tripl.arc.util.MetadataSchema.parseDataFrameMetadata(spark.table(view))
+        val parseResult: ai.tripl.arc.util.ArcSchema.ParseResult = ai.tripl.arc.util.ArcSchema.parseArcSchemaDataFrame(spark.table(view))
         parseResult match {
           case Right(cols) => cols
           case Left(errors) => throw new Exception(s"""Schema view '${view}' to cannot be parsed as it has errors: ${errors.mkString(", ")}.""") with DetailException {
@@ -322,16 +322,18 @@ object Typing {
         col.nullReplacementValue match {
             case Some(nullReplacementValue) => {
               col match {
-                case c:BinaryColumn => BinaryTypeable.typeValue(c, nullReplacementValue)
-                case c:BooleanColumn => BooleanTypeable.typeValue(c, nullReplacementValue)
-                case c:DateColumn => DateTypeable.typeValue(c, nullReplacementValue)
-                case c:DecimalColumn => DecimalTypeable.typeValue(c, nullReplacementValue)
-                case c:DoubleColumn => DoubleTypeable.typeValue(c, nullReplacementValue)
-                case c:TimeColumn => TimeTypeable.typeValue(c, nullReplacementValue)
-                case c:IntegerColumn => IntegerTypeable.typeValue(c, nullReplacementValue)
-                case c:LongColumn => LongTypeable.typeValue(c, nullReplacementValue)
-                case c:StringColumn => StringTypeable.typeValue(c, nullReplacementValue)
-                case c:TimestampColumn => TimestampTypeable.typeValue(c, nullReplacementValue)
+                case c: BinaryColumn => BinaryTypeable.typeValue(c, nullReplacementValue)
+                case c: BooleanColumn => BooleanTypeable.typeValue(c, nullReplacementValue)
+                case c: DateColumn => DateTypeable.typeValue(c, nullReplacementValue)
+                case c: DecimalColumn => DecimalTypeable.typeValue(c, nullReplacementValue)
+                case c: DoubleColumn => DoubleTypeable.typeValue(c, nullReplacementValue)
+                case c: TimeColumn => TimeTypeable.typeValue(c, nullReplacementValue)
+                case c: IntegerColumn => IntegerTypeable.typeValue(c, nullReplacementValue)
+                case c: LongColumn => LongTypeable.typeValue(c, nullReplacementValue)
+                case c: StringColumn => StringTypeable.typeValue(c, nullReplacementValue)
+                case c: TimestampColumn => TimestampTypeable.typeValue(c, nullReplacementValue)
+                case c: StructColumn => throw new Exception("TypingTransform does not support 'StructColumn' type.")
+                case c: ArrayColumn => throw new Exception("TypingTransform does not support 'ArrayColumn' type.")
               }
             }
             case None => {
@@ -345,16 +347,18 @@ object Typing {
     } else {
       // else take string value and try to convert to column type
       col match {
-        case c:BinaryColumn => BinaryTypeable.typeValue(c, valueToType)
-        case c:BooleanColumn => BooleanTypeable.typeValue(c, valueToType)
-        case c:DateColumn => DateTypeable.typeValue(c, valueToType)
-        case c:DecimalColumn => DecimalTypeable.typeValue(c, valueToType)
-        case c:DoubleColumn => DoubleTypeable.typeValue(c, valueToType)
-        case c:IntegerColumn => IntegerTypeable.typeValue(c, valueToType)
-        case c:LongColumn => LongTypeable.typeValue(c, valueToType)
-        case c:StringColumn => StringTypeable.typeValue(c, valueToType)
-        case c:TimeColumn => TimeTypeable.typeValue(c, valueToType)
-        case c:TimestampColumn => TimestampTypeable.typeValue(c, valueToType)
+        case c: BinaryColumn => BinaryTypeable.typeValue(c, valueToType)
+        case c: BooleanColumn => BooleanTypeable.typeValue(c, valueToType)
+        case c: DateColumn => DateTypeable.typeValue(c, valueToType)
+        case c: DecimalColumn => DecimalTypeable.typeValue(c, valueToType)
+        case c: DoubleColumn => DoubleTypeable.typeValue(c, valueToType)
+        case c: IntegerColumn => IntegerTypeable.typeValue(c, valueToType)
+        case c: LongColumn => LongTypeable.typeValue(c, valueToType)
+        case c: StringColumn => StringTypeable.typeValue(c, valueToType)
+        case c: TimeColumn => TimeTypeable.typeValue(c, valueToType)
+        case c: TimestampColumn => TimestampTypeable.typeValue(c, valueToType)
+        case c: StructColumn => throw new Exception("TypingTransform does not support 'StructColumn' type.")
+        case c: ArrayColumn => throw new Exception("TypingTransform does not support 'ArrayColumn' type.")        
       }
     }
   }

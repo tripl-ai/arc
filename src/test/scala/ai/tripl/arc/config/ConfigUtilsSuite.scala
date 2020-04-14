@@ -71,7 +71,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val mlConf = sqlConf.replaceAll("hdfs://datalake/ml/", getClass.getResource("/conf/ml/").toString)
 
       // replace meta directory with config so that the examples read correctly but have resource to validate
-      val metaConf = mlConf.replaceAll("hdfs://datalake/metadata/", getClass.getResource("/conf/metadata/").toString)
+      val metaConf = mlConf.replaceAll("hdfs://datalake/schema/", getClass.getResource("/conf/schema/").toString)
 
       // replace job directory with config so that the examples read correctly but have resource to validate
       val xmlConf = metaConf.replaceAll("hdfs://datalake/xml/", getClass.getResource("/conf/xml/").toString)      
