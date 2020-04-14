@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.node._
 
 import org.apache.spark.sql._
+import org.apache.spark.sql.catalyst.encoders.{ExpressionEncoder, RowEncoder}
+import org.apache.spark.sql.catalyst.expressions.{UnsafeProjection}
+import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
@@ -31,6 +34,32 @@ object MetadataUtils {
 
     output.cache.count
     output
+  }
+
+  // this function will do an unsafe replacement of schema
+  // use very carefully
+  def replaceSchema(input: DataFrame, schema: StructType): DataFrame = {
+
+    class RowProcessor(
+      inputRowEncoder: ExpressionEncoder[Row],
+      outputRowEncoder: ExpressionEncoder[Row]
+      ) extends Serializable {
+
+      def processPartition(rowIterator: Iterator[Row]): Iterator[Row] = {
+        rowIterator
+          .map { row => inputRowEncoder.toRow(row) }
+          .map { row => outputRowEncoder.fromRow(UnsafeProjection.create(outputRowEncoder.schema)(row)) }
+      }   
+    }
+
+    val inputRowEncoder = RowEncoder(input.schema).resolveAndBind()
+    val outputRowEncoder = RowEncoder(schema).resolveAndBind()
+    val processor = new RowProcessor(
+      inputRowEncoder,
+      outputRowEncoder
+    )    
+
+    input.mapPartitions(processor.processPartition)(outputRowEncoder)
   }
 
   // attach metadata by column name name to input dataframe
