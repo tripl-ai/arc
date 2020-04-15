@@ -25,7 +25,7 @@ File based `*Extract` stages can accept `glob` patterns as input filenames which
 |`\c`|Removes (escapes) any special meaning of character `c`.|
 |`{ab,c{de, fg}}`|Matches a string from the string set `{ab, cde, cfg}`.|
 
-Spark will automatically match file extensions of `.zip`, `.bz2`, `.deflate` and `.gz` and perform decompression automatically.
+Spark will automatically match file extensions of `.bz2`, `.deflate` and `.gz` and perform decompression automatically.
 
 ## AvroExtract
 ##### Since: 1.0.0 - Supports Streaming: False

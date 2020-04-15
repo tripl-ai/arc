@@ -4,13 +4,13 @@ weight: 70
 type: blog
 ---
 
-The `schema` format, consumed in the [TypingTransform](../transform/#typingtransform) stage, is an opinionated format for specifying common data typing actions.
+The `schema` format, consumed in the [TypingTransform](../transform/#typingtransform) and other stages, is an opinionated format for specifying common data typing actions.
 
 It is designed to:
 
-- Support common data typing conversions found in business datasets.
-- Support limited 'schema evolution' of source data in the form of allowed lists of accepted input formats.
-- Collect errors into array columns so that a user can decide how to handle errors once all have been collected.
+- Allow precise definition of how to perform common data typing conversions found in business datasets.
+- Support limited [Schema Evolution](https://en.wikipedia.org/wiki/Schema_evolution) of source data in the form of allowed lists of accepted input formats.
+- Specification of metadata to attach to columns.
 
 ## Common
 
@@ -42,6 +42,38 @@ It is designed to:
   "metadata": {
     "primaryKey" : true,
     "position": 1
+  }
+}
+```
+
+## Array
+
+An `array` defines a schema for a repeated list of elements. It requires the specification of the [schema](../schema/) of the nested elements which must all be of the same type.
+
+### Additional Attributes
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|elementType|[schema](../schema/)|true|The [schema](../schema/) of the nested list of elements.|
+
+### Examples
+
+```json
+{
+  "id" : "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
+  "name" : "customer_phone_numbers",
+  "description" : "Customer Phone Numbers",
+  "type" : "array",
+  "trim" : true,
+  "metadata": {},
+  "elementType": {
+    "id" : "9712c383-22d1-44a6-9ca2-0087af4857f1",
+    "name" : "phone_number",
+    "description" : "Phone Number",
+    "type" : "string",
+    "trim" : true,
+    "nullable" : true,
+    "nullableValues" : [ "", "null" ]
   }
 }
 ```
@@ -273,7 +305,6 @@ Use a Long Integer when dealing with values greater than ±2 billion (-2<sup>63<
   "trim" : true,
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
-  "primaryKey" : false,
   "metadata": {
     "primaryKey" : true,
     "position": 1
@@ -283,28 +314,57 @@ Use a Long Integer when dealing with values greater than ±2 billion (-2<sup>63<
 
 ## Struct
 
+A `struct` is a nested field similar to a `map` in most programming languages. It can be used to support complex data types.
+
 ### Additional Attributes
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
-|children|Array|true|The binary-to-text encoding format of the value. Valid values `base64`, `hexadecimal`.|
+|fields|Array|true|A list of [schema](../schema/) fields.|
 
 ### Examples
 
 ```json
 {
   "id" : "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
-  "name" : "id",
-  "description" : "GUID identifier",
-  "type" : "binary",
+  "name" : "customer_name",
+  "description" : "Customer Name",
+  "type" : "struct",
   "trim" : true,
-  "nullable" : true,
-  "nullableValues" : [ "", "null" ],
-  "encoding" : "base64",
   "metadata": {
     "primaryKey" : true,
     "position": 1
-  }
+  },
+  "fields": [
+    {
+      "id" : "9712c383-22d1-44a6-9ca2-0087af4857f1",
+      "name" : "first_name",
+      "description" : "Customer First Name",
+      "type" : "string",
+      "trim" : true,
+      "nullable" : true,
+      "nullableValues" : [ "", "null" ],
+      "primaryKey" : false,
+      "metadata": {
+        "primaryKey" : true,
+        "position": 1
+      }
+    },
+    {
+      "id" : "3f11973f-9448-4b3b-bb2a-bebdbf774ea4",
+      "name" : "last_name",
+      "description" : "Customer Last Name",
+      "type" : "string",
+      "trim" : true,
+      "nullable" : true,
+      "nullableValues" : [ "", "null" ],
+      "primaryKey" : false,
+      "metadata": {
+        "primaryKey" : true,
+        "position": 1
+      }
+    }
+  ]
 }
 ```
 

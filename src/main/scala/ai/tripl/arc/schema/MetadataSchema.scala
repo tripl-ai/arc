@@ -18,6 +18,15 @@ import org.apache.commons.lang.StringEscapeUtils
 
 object MetadataSchema {
 
+  def parseDataFrameMetadata(source: DataFrame)(implicit logger: ai.tripl.arc.util.log.logger.Logger): ArcSchema.ParseResult = {
+    logger.warn()
+      .field("event", "deprecation")
+      .field("message", s"MetadataSchema.parseDataFrameMetadata(source: String) is deprecated. please use ArcSchema.parseArcSchemaDataFrame(source: String).")
+      .log()  
+
+    ArcSchema.parseArcSchemaDataFrame(source)
+  }  
+
   def parseJsonMetadata(source: String)(implicit logger: ai.tripl.arc.util.log.logger.Logger): ArcSchema.ParseResult = {
     logger.warn()
       .field("event", "deprecation")
@@ -26,5 +35,8 @@ object MetadataSchema {
 
     ArcSchema.parseArcSchema(source)
   }
+
+
+  
 
 }

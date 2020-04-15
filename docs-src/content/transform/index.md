@@ -307,7 +307,7 @@ The `MLTransform` stage transforms the incoming dataset with a pretrained Spark 
 ## SimilarityJoinTransform
 ##### Since: 2.1.0 - Supports Streaming: True
 
-The `SimilarityJoinTransform` stage uses [Approximate String Matching](https://en.wikipedia.org/wiki/Approximate_string_matching) (a.k.a. Fuzzy Matching) to find similar records between two datasets. It is possible to pass the same datasets into both the `leftView` and `rightView` to find duplicates (in which case the `threshold` value should be high to avoid a potentially very large cross-product resultset).
+The `SimilarityJoinTransform` stage uses [Approximate String Matching](https://en.wikipedia.org/wiki/Approximate_string_matching) (a.k.a. Fuzzy Matching) to find similar records between two datasets. It is possible to pass the same dataset into both side of the comparison to find duplicates (ie. both `leftView` and `rightView`) to find duplicates (in which case the `threshold` value should be high (close to `1.0`) to avoid a potentially very large cross-product resultset).
 
 ### Parameters
 

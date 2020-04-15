@@ -6,8 +6,11 @@
 - add option to supply `index` in addition to [`value`, `filename`] to ensure correct output ordering when in `singleFile` mode.
 - add `singleFile` mode to `XMLLoad`.
 - add `to_xml` UDF.
+- add support for `struct` and `array` types in the schema definition file.
+- add `ChaosMonkey` lifecycle plugin to help with regression testing.
 - fix any deprecations preventing upgrade to Spark 3.0.
 - deprecate of `get_json_double_array`, `get_json_integer_array`, `get_json_long_array` in favor of inbuilt `get_json_object`.
+- **BREAKING** remove ability to read `.zip` files.
 
 **NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
 

@@ -194,9 +194,9 @@ object XMLExtractStage {
         }
       }
     } catch {
-      case e: org.apache.hadoop.mapred.InvalidInputException if (e.getMessage.contains("matches 0 files")) =>
+      case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
         stage.input match {
-          case Right(glob) => Left(FileNotFoundExtractError(Option(glob)))
+          case Right(glob) => Left(PathNotExistsExtractError(Option(glob)))
           case Left(_) => Left(FileNotFoundExtractError(None))
         }
       case e: Exception => throw new Exception(e) with DetailException {

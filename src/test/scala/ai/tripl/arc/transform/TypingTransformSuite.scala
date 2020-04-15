@@ -381,47 +381,6 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("TypingTransform: metadata bad type object") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-    val meta = """
-    [
-      {
-        "id": "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
-        "name": "booleanDatum",
-        "description": "booleanDatum",
-        "type": "boolean",
-        "trim": false,
-        "nullable": false,
-        "nullableValues": [
-            "",
-            "null"
-        ],
-        "trueValues": [
-            "true"
-        ],
-        "falseValues": [
-            "false"
-        ],
-        "metadata": {
-            "booleanArrayMeta": {"derp": true}
-        }
-      }
-    ]
-    """
-
-    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(meta)
-    schema match {
-      case Left(stageError) => {
-        assert(stageError == StageError(0, "booleanDatum",2,List(ConfigError("booleanArrayMeta", Some(20), "Metadata attribute 'booleanArrayMeta' cannot contain nested `objects`."))) :: Nil)
-      }
-      case Right(_) => assert(false)
-    }
-  }
-
   test("TypingTransform: metadata bad type null") {
     implicit val spark = session
     import spark.implicits._
@@ -544,6 +503,46 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("TypingTransform: metadata nested object") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val meta = """
+    [
+      {
+        "id": "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
+        "name": "booleanDatum",
+        "description": "booleanDatum",
+        "type": "boolean",
+        "trim": false,
+        "nullable": false,
+        "nullableValues": [
+            "",
+            "null"
+        ],
+        "trueValues": [
+            "true"
+        ],
+        "falseValues": [
+            "false"
+        ],
+        "metadata": {
+          "test": {
+            "abc": {
+              "def": true
+            }
+          }
+        }
+      }
+    ]
+    """
+
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    assert(ExtractColumn.toStructField(schema.right.get(0)).metadata.json == """{"internal":false,"nullable":false,"description":"booleanDatum","test":{"abc":{"def":true}}}""")
+  }  
+
   test("TypingTransform: Execute with Structured Streaming" ) {
     implicit val spark = session
     import spark.implicits._
@@ -657,7 +656,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     assert(values(2).isNullAt(0) == true)
   }
 
-  test("BinaryTyping: config") {
+  test("TypingTransform: binary type") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()

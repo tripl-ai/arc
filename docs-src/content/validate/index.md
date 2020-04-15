@@ -4,7 +4,7 @@ weight: 60
 type: blog
 ---
 
-`*Validate` stages are used to perform validation and basic workflow controls..
+`*Validate` stages are used to perform validation and basic workflow controls.
 
 ## EqualityValidate
 ##### Since: 1.0.0 - Supports Streaming: False

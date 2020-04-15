@@ -48,7 +48,6 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
-    spark.sparkContext.hadoopConfiguration.set("io.compression.codecs", classOf[ai.tripl.arc.util.ZipCodec].getName)
 
     // recreate test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile))
@@ -69,41 +68,40 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
   }
 
-  // test("XMLExtract: end-to-end") {
-  //   implicit val spark = session
-  //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  test("XMLExtract: end-to-end") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-  //   val conf = s"""{
-  //     "stages": [
-  //       {
-  //         "type": "XMLExtract",
-  //         "name": "test",
-  //         "description": "test",
-  //         "environments": [
-  //           "production",
-  //           "test"
-  //         ],
-  //         "inputURI": "${targetFileGlob}",
-  //         "outputView": "${outputView}"
-  //       }
-  //     ]
-  //   }"""
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "XMLExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${targetFileGlob}",
+          "outputView": "${outputView}"
+        }
+      ]
+    }"""
 
-  //   val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
-  //   pipelineEither match {
-  //     case Left(err) => {
-  //       println(err)
-  //       assert(false)
-  //     }
-  //     case Right((pipeline, _)) => {
-  //       val df = ARC.run(pipeline)(spark, logger, arcContext).get
-  //       df.show(false)
-  //       println(df.schema.prettyJson)
-  //     }
-  //   }
-  // }
+    pipelineEither match {
+      case Left(err) => {
+        println(err)
+        assert(false)
+      }
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+        assert(df.count == 2)
+      }
+    }
+  }
 
   test("XMLExtract: end-to-end with schema") {
     implicit val spark = session
@@ -133,367 +131,395 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
       case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => {
         val df = ARC.run(pipeline)(spark, logger, arcContext).get
-        df.show(false)
-        // println(df.schema.prettyJson)
+
+        val expectedSchema = """{
+        |  "type" : "struct",
+        |  "fields" : [ {
+        |    "name" : "testRow",
+        |    "type" : {
+        |      "type" : "struct",
+        |      "fields" : [ {
+        |        "name" : "booleanDatum",
+        |        "type" : "boolean",
+        |        "nullable" : false,
+        |        "metadata" : {
+        |          "booleanMeta" : true,
+        |          "nullable" : false,
+        |          "internal" : false,
+        |          "private" : false,
+        |          "stringArrayMeta" : [ "string0", "string1" ],
+        |          "doubleArrayMeta" : [ 0.141, 0.52 ],
+        |          "description" : "booleanDatum",
+        |          "longMeta" : 10,
+        |          "securityLevel" : 0,
+        |          "doubleMeta" : 0.141,
+        |          "stringMeta" : "string",
+        |          "booleanArrayMeta" : [ true, false ],
+        |          "longArrayMeta" : [ 10, 20 ]
+        |        }
+        |      }, {
+        |        "name" : "dateDatum",
+        |        "type" : "date",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : true,
+        |          "description" : "dateDatum",
+        |          "securityLevel" : 3
+        |        }
+        |      }, {
+        |        "name" : "decimalDatum",
+        |        "type" : "decimal(38,18)",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : true,
+        |          "description" : "decimalDatum",
+        |          "securityLevel" : 2
+        |        }
+        |      }, {
+        |        "name" : "doubleDatum",
+        |        "type" : "double",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : true,
+        |          "description" : "doubleDatum",
+        |          "securityLevel" : 8
+        |        }
+        |      }, {
+        |        "name" : "integerDatum",
+        |        "type" : "integer",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : true,
+        |          "description" : "integerDatum",
+        |          "securityLevel" : 10
+        |        }
+        |      }, {
+        |        "name" : "longDatum",
+        |        "type" : "long",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : false,
+        |          "description" : "longDatum",
+        |          "securityLevel" : 0
+        |        }
+        |      }, {
+        |        "name" : "stringDatum",
+        |        "type" : "string",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : false,
+        |          "description" : "stringDatum",
+        |          "securityLevel" : 0
+        |        }
+        |      }, {
+        |        "name" : "timeDatum",
+        |        "type" : "string",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : true,
+        |          "description" : "timeDatum",
+        |          "securityLevel" : 8
+        |        }
+        |      }, {
+        |        "name" : "timestampDatum",
+        |        "type" : "timestamp",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : true,
+        |          "description" : "timestampDatum",
+        |          "securityLevel" : 7
+        |        }
+        |      } ]
+        |    },
+        |    "nullable" : true,
+        |    "metadata" : {
+        |      "nullable" : true,
+        |      "internal" : false,
+        |      "description" : "testrow",
+        |      "primaryKey" : true,
+        |      "position" : 1
+        |    }
+        |  }, {
+        |    "name" : "_filename",
+        |    "type" : "string",
+        |    "nullable" : false,
+        |    "metadata" : {
+        |      "internal" : true
+        |    }
+        |  }, {
+        |    "name" : "_index",
+        |    "type" : "integer",
+        |    "nullable" : true,
+        |    "metadata" : {
+        |      "internal" : true
+        |    }
+        |  } ]
+        |}""".stripMargin
+
+        assert(df.schema.prettyJson == expectedSchema)
+
+        val expected = TestUtils.getKnownDataset
+          .drop(col("nullDatum"))
+
+        val internal = df.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+        val actual = df.drop(internal:_*).select("testRow.*")
+
+        assert(TestUtils.datasetEquality(expected, actual))          
       }
     }
   }  
 
-    // // test that the filename is correctly populated
-    // assert(dataset.filter($"_filename".contains(targetFile)).count != 0)
+  test("XMLExtract: Caching") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    // val expected = TestUtils.getKnownDataset
-    //   .withColumn("decimalDatum", col("decimalDatum").cast("double"))
-    //   .drop($"nullDatum")
+    // no cache
+    extract.XMLExtractStage.execute(
+      extract.XMLExtractStage(
+        plugin=new extract.XMLExtract,
+        name=outputView,
+        description=None,
+        schema=Right(Nil),
+        outputView=outputView,
+        input=Right(targetFile),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        xsd=None
+      )
+    )
+    assert(spark.catalog.isCached(outputView) === false)
 
-    // val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    // val actual = dataset.drop(internal:_*)
+    // cache
+    extract.XMLExtractStage.execute(
+      extract.XMLExtractStage(
+        plugin=new extract.XMLExtract,
+        name=outputView,
+        description=None,
+        schema=Right(Nil),
+        outputView=outputView,
+        input=Right(targetFile),
+        authentication=None,
+        params=Map.empty,
+        persist=true,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        xsd=None
+      )
+    )
+    assert(spark.catalog.isCached(outputView) === true)
+  }
 
-    // assert(TestUtils.datasetEquality(expected, actual))
+  test("XMLExtract: Empty Dataset") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    // // test metadata
-    // val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata
-    // assert(timestampDatumMetadata.getLong("securityLevel") == 7)
+    val schema =
+      BooleanColumn(
+        id="1",
+        name="booleanDatum",
+        description=None,
+        nullable=true,
+        nullReplacementValue=None,
+        trim=false,
+        nullableValues=Nil,
+        trueValues=Nil,
+        falseValues=Nil,
+        metadata=None
+      ) :: Nil
 
-  // test("XMLExtract: Caching") {
-  //   implicit val spark = session
-  //   import spark.implicits._
-  //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    // try with wildcard
+    val thrown0 = intercept[Exception with DetailException] {
+      extract.XMLExtractStage.execute(
+        extract.XMLExtractStage(
+          plugin=new extract.XMLExtract,
+          name=outputView,
+          description=None,
+          schema=Right(Nil),
+          outputView=outputView,
+          input=Right(emptyWildcardDirectory),
+          authentication=None,
+          params=Map.empty,
+          persist=false,
+          numPartitions=None,
+          partitionBy=Nil,
+          contiguousIndex=true,
+          xsd=None
+        )
+      )
+    }
+    assert(thrown0.getMessage.contains("*.xml.gz' does not exist and no schema has been provided to create an empty dataframe."))
 
-  //   // no cache
-  //   extract.XMLExtractStage.execute(
-  //     extract.XMLExtractStage(
-  //       plugin=new extract.XMLExtract,
-  //       name=outputView,
-  //       description=None,
-  //       schema=Right(Nil),
-  //       outputView=outputView,
-  //       input=Right(targetFile),
-  //       authentication=None,
-  //       params=Map.empty,
-  //       persist=false,
-  //       numPartitions=None,
-  //       partitionBy=Nil,
-  //       contiguousIndex=true,
-  //       xsd=None
-  //     )
-  //   )
-  //   assert(spark.catalog.isCached(outputView) === false)
+    // try without providing column metadata
+    val thrown1 = intercept[Exception with DetailException] {
+      extract.XMLExtractStage.execute(
+        extract.XMLExtractStage(
+          plugin=new extract.XMLExtract,
+          name=outputView,
+          description=None,
+          schema=Right(Nil),
+          outputView=outputView,
+          input=Right(emptyDirectory),
+          authentication=None,
+          params=Map.empty,
+          persist=false,
+          numPartitions=None,
+          partitionBy=Nil,
+          contiguousIndex=true,
+          xsd=None
+        )
+      )
+    }
+    assert(thrown1.getMessage.contains("empty.xml' does not contain any fields and no schema has been provided to create an empty dataframe."))
 
-  //   // cache
-  //   extract.XMLExtractStage.execute(
-  //     extract.XMLExtractStage(
-  //       plugin=new extract.XMLExtract,
-  //       name=outputView,
-  //       description=None,
-  //       schema=Right(Nil),
-  //       outputView=outputView,
-  //       input=Right(targetFile),
-  //       authentication=None,
-  //       params=Map.empty,
-  //       persist=true,
-  //       numPartitions=None,
-  //       partitionBy=Nil,
-  //       contiguousIndex=true,
-  //       xsd=None
-  //     )
-  //   )
-  //   assert(spark.catalog.isCached(outputView) === true)
-  // }
+    // try with column
+    val dataset = extract.XMLExtractStage.execute(
+      extract.XMLExtractStage(
+        plugin=new extract.XMLExtract,
+        name=outputView,
+        description=None,
+        schema=Right(schema),
+        outputView=outputView,
+        input=Right(emptyDirectory),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        xsd=None
+      )
+    ).get
 
-  // test("XMLExtract: Empty Dataset") {
-  //   implicit val spark = session
-  //   import spark.implicits._
-  //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    val expected = TestUtils.getKnownDataset.select($"booleanDatum").limit(0)
 
-  //   val schema =
-  //     BooleanColumn(
-  //       id="1",
-  //       name="booleanDatum",
-  //       description=None,
-  //       nullable=true,
-  //       nullReplacementValue=None,
-  //       trim=false,
-  //       nullableValues=Nil,
-  //       trueValues=Nil,
-  //       falseValues=Nil,
-  //       metadata=None
-  //     ) :: Nil
+    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = dataset.drop(internal:_*)
 
-  //   // try with wildcard
-  //   val thrown0 = intercept[Exception with DetailException] {
-  //     extract.XMLExtractStage.execute(
-  //       extract.XMLExtractStage(
-  //         plugin=new extract.XMLExtract,
-  //         name=outputView,
-  //         description=None,
-  //         schema=Right(Nil),
-  //         outputView=outputView,
-  //         input=Right(emptyWildcardDirectory),
-  //         authentication=None,
-  //         params=Map.empty,
-  //         persist=false,
-  //         numPartitions=None,
-  //         partitionBy=Nil,
-  //         contiguousIndex=true,
-  //         xsd=None
-  //       )
-  //     )
-  //   }
-  //   assert(thrown0.getMessage.contains("No files matched '"))
-  //   assert(thrown0.getMessage.contains("*.xml.gz' and no schema has been provided to create an empty dataframe."))
+    assert(TestUtils.datasetEquality(expected, actual))
+  }
 
-  //   // try without providing column metadata
-  //   val thrown1 = intercept[Exception with DetailException] {
-  //     extract.XMLExtractStage.execute(
-  //       extract.XMLExtractStage(
-  //         plugin=new extract.XMLExtract,
-  //         name=outputView,
-  //         description=None,
-  //         schema=Right(Nil),
-  //         outputView=outputView,
-  //         input=Right(emptyDirectory),
-  //         authentication=None,
-  //         params=Map.empty,
-  //         persist=false,
-  //         numPartitions=None,
-  //         partitionBy=Nil,
-  //         contiguousIndex=true,
-  //         xsd=None
-  //       )
-  //     )
-  //   }
-  //   assert(thrown1.getMessage.contains("Input '"))
-  //   assert(thrown1.getMessage.contains("empty.xml' does not contain any fields and no schema has been provided to create an empty dataframe."))
+  test("XMLExtract: xsd validation positive") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-  //   // try with column
-  //   val dataset = extract.XMLExtractStage.execute(
-  //     extract.XMLExtractStage(
-  //       plugin=new extract.XMLExtract,
-  //       name=outputView,
-  //       description=None,
-  //       schema=Right(schema),
-  //       outputView=outputView,
-  //       input=Right(emptyDirectory),
-  //       authentication=None,
-  //       params=Map.empty,
-  //       persist=false,
-  //       numPartitions=None,
-  //       partitionBy=Nil,
-  //       contiguousIndex=true,
-  //       xsd=None
-  //     )
-  //   ).get
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "XMLExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${xmlRecordValid}",
+          "xsdURI": "${xsdSchemaValid}",
+          "outputView": "shiporder",
+          "persist": false
+        }
+      ]
+    }"""
 
-  //   val expected = TestUtils.getKnownDataset.select($"booleanDatum").limit(0)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
-  //   val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-  //   val actual = dataset.drop(internal:_*)
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+      }
+    }
+  }
 
-  //   assert(TestUtils.datasetEquality(expected, actual))
-  // }
+  test("XMLExtract: xsd validation negative") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-  // test("XMLExtract: .zip single record") {
-  //   implicit val spark = session
-  //   import spark.implicits._
-  //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "XMLExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${xmlRecordInvalid}",
+          "xsdURI": "${xsdSchemaValid}",
+          "outputView": "shiporder",
+          "persist": false
+        }
+      ]
+    }"""
 
-  //   val dataset = extract.XMLExtractStage.execute(
-  //     extract.XMLExtractStage(
-  //       plugin=new extract.XMLExtract,
-  //       name=outputView,
-  //       description=None,
-  //       schema=Right(Nil),
-  //       outputView=outputView,
-  //       input=Right(zipSingleRecord),
-  //       authentication=None,
-  //       params=Map.empty,
-  //       persist=false,
-  //       numPartitions=None,
-  //       partitionBy=Nil,
-  //       contiguousIndex=true,
-  //       xsd=None
-  //     )
-  //   ).get
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
-  //   // test that the filename is correctly populated
-  //   assert(dataset.filter($"_filename".contains(zipSingleRecord)).count != 0)
-  //   assert(dataset.schema.fieldNames.contains("body"))
-  // }
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val thrown0 = intercept[Exception with DetailException] {
+          ARC.run(pipeline)(spark, logger, arcContext)
+        }
+        assert(thrown0.getMessage.contains("'one' is not a valid value for 'integer'"))
+      }
+    }
+  }
 
-  // test("XMLExtract: .zip multiple record") {
-  //   implicit val spark = session
-  //   import spark.implicits._
-  //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  test("XMLExtract: invalid xsd") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-  //   val dataset = extract.XMLExtractStage.execute(
-  //     extract.XMLExtractStage(
-  //       plugin=new extract.XMLExtract,
-  //       name=outputView,
-  //       description=None,
-  //       schema=Right(Nil),
-  //       outputView=outputView,
-  //       input=Right(zipMultipleRecord),
-  //       authentication=None,
-  //       params=Map.empty,
-  //       persist=false,
-  //       numPartitions=None,
-  //       partitionBy=Nil,
-  //       contiguousIndex=true,
-  //       xsd=None
-  //     )
-  //   ).get
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "XMLExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${xmlRecordValid}",
+          "xsdURI": "${xsdSchemaInvalid}",
+          "outputView": "shiporder",
+          "persist": false
+        }
+      ]
+    }"""
 
-  //   // test that the filename is correctly populated
-  //   assert(dataset.filter($"_filename".contains(zipMultipleRecord)).count != 0)
-  //   assert(dataset.schema.fieldNames.contains("body"))
-  //   assert(dataset.count == 2)
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
-  // }
-
-  // test("XMLExtract: Dataframe") {
-  //   implicit val spark = session
-  //   import spark.implicits._
-  //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-  //   // temporarily remove the delimiter so all the data is loaded as a single line
-  //   spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", s"${0x0 : Char}")
-
-  //   val textFile = spark.sparkContext.textFile(targetFileGlob)
-  //   textFile.toDF.createOrReplaceTempView(inputView)
-
-  //   val dataset = extract.XMLExtractStage.execute(
-  //     extract.XMLExtractStage(
-  //       plugin=new extract.XMLExtract,
-  //       name=outputView,
-  //       description=None,
-  //       schema=Right(Nil),
-  //       outputView=outputView,
-  //       input=Left(inputView),
-  //       authentication=None,
-  //       params=Map.empty,
-  //       persist=false,
-  //       numPartitions=None,
-  //       partitionBy=Nil,
-  //       contiguousIndex=true,
-  //       xsd=None
-  //     )
-  //   ).get
-
-  //   val expected = TestUtils.getKnownDataset
-  //     .withColumn("decimalDatum", col("decimalDatum").cast("double"))
-  //     .drop($"nullDatum")
-
-  //   val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-  //   val actual = dataset.drop(internal:_*)
-
-  //   assert(TestUtils.datasetEquality(expected, actual))
-
-  // }
-
-
-  // test("XMLExtract: xsd validation positive") {
-  //   implicit val spark = session
-  //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-  //   val conf = s"""{
-  //     "stages": [
-  //       {
-  //         "type": "XMLExtract",
-  //         "name": "test",
-  //         "description": "test",
-  //         "environments": [
-  //           "production",
-  //           "test"
-  //         ],
-  //         "inputURI": "${xmlRecordValid}",
-  //         "xsdURI": "${xsdSchemaValid}",
-  //         "outputView": "shiporder",
-  //         "persist": false
-  //       }
-  //     ]
-  //   }"""
-
-  //   val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
-
-  //   pipelineEither match {
-  //     case Left(err) => fail(err.toString)
-  //     case Right((pipeline, _)) => {
-  //       val df = ARC.run(pipeline)(spark, logger, arcContext).get
-  //     }
-  //   }
-  // }
-
-  // test("XMLExtract: xsd validation negative") {
-  //   implicit val spark = session
-  //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-  //   val conf = s"""{
-  //     "stages": [
-  //       {
-  //         "type": "XMLExtract",
-  //         "name": "test",
-  //         "description": "test",
-  //         "environments": [
-  //           "production",
-  //           "test"
-  //         ],
-  //         "inputURI": "${xmlRecordInvalid}",
-  //         "xsdURI": "${xsdSchemaValid}",
-  //         "outputView": "shiporder",
-  //         "persist": false
-  //       }
-  //     ]
-  //   }"""
-
-  //   val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
-
-  //   pipelineEither match {
-  //     case Left(err) => fail(err.toString)
-  //     case Right((pipeline, _)) => {
-  //       val thrown0 = intercept[Exception with DetailException] {
-  //         ARC.run(pipeline)(spark, logger, arcContext)
-  //       }
-  //       assert(thrown0.getMessage.contains("'one' is not a valid value for 'integer'"))
-  //     }
-  //   }
-  // }
-
-  // test("XMLExtract: invalid xsd") {
-  //   implicit val spark = session
-  //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-  //   val conf = s"""{
-  //     "stages": [
-  //       {
-  //         "type": "XMLExtract",
-  //         "name": "test",
-  //         "description": "test",
-  //         "environments": [
-  //           "production",
-  //           "test"
-  //         ],
-  //         "inputURI": "${xmlRecordValid}",
-  //         "xsdURI": "${xsdSchemaInvalid}",
-  //         "outputView": "shiporder",
-  //         "persist": false
-  //       }
-  //     ]
-  //   }"""
-
-  //   val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
-
-  //   pipelineEither match {
-  //     case Left(err) => assert(err.toString.contains("""The prefix "xs" for element "xs:element" is not bound."""))
-  //     case Right((pipeline, _)) => fail("should throw error")
-  //   }
-  // }  
+    pipelineEither match {
+      case Left(err) => assert(err.toString.contains("""The prefix "xs" for element "xs:element" is not bound."""))
+      case Right((pipeline, _)) => fail("should throw error")
+    }
+  }  
 }

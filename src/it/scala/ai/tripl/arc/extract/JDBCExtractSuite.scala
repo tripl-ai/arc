@@ -270,7 +270,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     // test metadata
-    val meta = ai.tripl.arc.util.MetadataSchema.parseDataFrameMetadata(actual).right.getOrElse(Nil)
+    val meta = ai.tripl.arc.util.ArcSchema.parseArcSchemaDataFrame(actual).right.getOrElse(Nil)
     val metaSchema = Extract.toStructType(meta)
     val timestampDatumMetadata = metaSchema.fields(metaSchema.fieldIndex("timestampDatum")).metadata
     assert(timestampDatumMetadata.getLong("securityLevel") == 7)
