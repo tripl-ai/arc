@@ -104,7 +104,7 @@ font-style:italic;
 font-weight:700;
 }
 
-.highlight {
+code {
 	position: relative;
 }
 
@@ -112,8 +112,8 @@ font-weight:700;
 	color: #909090;
 	position: absolute;
 	right: 0;
-	margin-top: 2px;
-	margin-right: 2px;
+	margin-top: 3px;
+	margin-right: 3px;
 	width: 14px;
 
   /* use !important to prevent issues with browser extensions that change fonts */
@@ -139,9 +139,6 @@ font-weight:700;
 		 but darken the button for accessibility.
 		 See https://stackoverflow.com/a/25298082/1481479 */
 	outline: 0;
-}
-
-.copy-code-button:active {
 }
 
 .copy-code-button:before {

@@ -55,6 +55,8 @@
       document.querySelectorAll('pre > code').forEach(function (codeBlock) {
         var button = document.createElement('div');
         button.className = 'copy-code-button';
+        button.role = 'img';
+        button.alt = 'copy-code-button';
 
         button.addEventListener('click', function () {
             clipboard.writeText(codeBlock.innerText).then(function () {
@@ -64,8 +66,7 @@
             });
         });        
 
-        var pre = codeBlock.parentNode;
-        pre.insertBefore(button, codeBlock);
+        codeBlock.insertBefore(button, codeBlock.firstChild);
       });
     </script>
 
