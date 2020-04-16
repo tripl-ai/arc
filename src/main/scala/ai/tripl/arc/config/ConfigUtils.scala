@@ -580,9 +580,9 @@ object ConfigUtils {
   }
 
   def getExtractColumns(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, List[ExtractColumn]] = {
-    val schema = textContentForURI(uriKey, authentication)(uri).rightFlatMap(text => Right(Option(text)))
+    val schema = textContentForURI(uriKey, authentication)(uri).flatMap(text => Right(Option(text)))
 
-    schema.rightFlatMap { sch =>
+    schema.flatMap { sch =>
       val cols = sch.map{ s => MetadataSchema.parseJsonMetadata(s) }.getOrElse(Right(Nil))
 
       cols match {
