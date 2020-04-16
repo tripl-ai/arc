@@ -19,8 +19,8 @@ class ChaosMonkey extends LifecyclePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "environments" :: "proability" :: "strategy" :: Nil
-    val probability = getValue[java.lang.Double]("probability")
+    val expectedKeys = "type" :: "environments" :: "probability" :: "strategy" :: Nil
+    val probability = getValue[java.lang.Double]("probability") |> doubleMinMax("probability", Some(0), Some(1)) _
     val strategy = getValue[String]("strategy", default = Some("exception"), validValues = "exception" :: Nil) |> parseChaosMonkeyStrategy("strategy") _
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
@@ -62,11 +62,9 @@ case class ChaosMonkeyInstance(
   ) extends LifecyclePluginInstance {
 
   override def after(result: Option[DataFrame], stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    logger.info()
+    logger.trace()
       .field("event", "after")
       .field("stage", stage.name)
-      .field("probability", java.lang.Double.valueOf(probability))
-      .field("strategy", strategy.sparkString)
       .log()
 
     val secureRandom = new SecureRandom

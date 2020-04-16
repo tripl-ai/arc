@@ -4,18 +4,139 @@ weight: 85
 type: blog
 ---
 
+Arc has been designed so that it can be extended by simply building a JAR with logic that meets the [interface](#custom-plugins) specifications and placing it in the classpath. The rationalle for this is to allow teams to add custom functionality easily and not be reliant on a central team for development.
+
 Arc can be exended in four ways by registering:
 
-- [Dynamic Configuration Plugins](#dynamic-configuration-plugins) which allow users to inject custom configuration parameters which will be processed before resolving the job configuration file..
+- [Dynamic Configuration Plugins](#dynamic-configuration-plugins) which allow users to inject custom configuration parameters which will be processed before resolving the job configuration file.
 - [Lifecycle Plugins](#lifecycle-plugins) which allow users to extend the base Arc framework with pipeline lifecycle hooks.
-- [Pipeline Stage Plugins](#pipeline-stage-plugins) which allow users to extend the base Arc framework with custom stages which allow the full use of the Spark [Scala API](https://spark.apache.org/docs/latest/api/scala/).
+- [Pipeline Stage Plugins](#pipeline-stage-plugins) which allow users to extend the base Arc framework with custom stages which allow the full use of the Spark [Scala API](https://spark.apache.org/docs/latest/api/scala/). All the Arc core stages are built by using this plugin interface.
 - [User Defined Functions](#user-defined-functions) which extend the Spark SQL dialect.
 
-## Resolution
+## Included Plugins
+
+### Lifecycle Plugins
+
+#### ChaosMonkey
+##### Since: 2.10.0 - Supports Streaming: False
+
+The `ChaosMonkey` plugin is intended to be used for testing your orchestration design. It will randomly execute a strategy `after` each stage such as to throw an `exception` based on a `probability`.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|strategy|String|true|The strategy to apply. Supported values: `exception`.<br><br>Default: `exception`.|
+|probability|Double|true|The probability of this strategy being executed. Must be between `0.0` and `1.0`.|
+
+### Examples
+
+{{< readfile file="/resources/docs_resources_plugins/ChaosMonkeyComplete" highlight="json" >}}
+
+### User Defined Functions
+
+To help with common data tasks several additional functions have been added to Arc in addition to the inbuilt [Spark SQL Functions](https://spark.apache.org/docs/latest/api/sql/index.html).
+
+#### get_json_double_array
+##### Since: 1.0.9
+
+{{< note title="Deprecated" >}}
+Deprecated. Please use inbuilt Spark function [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object).
+{{</note>}}
+
+Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object) - but extracts a json `double` `array` from path.
+
+```sql
+SELECT get_json_double_array('[0.1, 1.1]', '$')
+```
+
+#### get_json_integer_array
+##### Since: 1.0.9
+
+{{< note title="Deprecated" >}}
+Deprecated. Please use inbuilt Spark function [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object).
+{{</note>}}
+
+Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object) - but extracts a json `integer` `array` from path.
+
+```sql
+SELECT get_json_integer_array('[1, 2]', '$')
+```
+
+#### get_json_long_array
+##### Since: 1.0.9
+
+{{< note title="Deprecated" >}}
+Deprecated. Please use inbuilt Spark function [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object).
+{{</note>}}
+
+Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object) - but extracts a json `long` `array` from path.
+
+```sql
+SELECT get_json_long_array('[2147483648, 2147483649]', '$')
+```
+
+#### to_xml
+##### Since: 2.10.0
+
+`to_xml` returns a XML string with a given struct value.
+
+```sql
+SELECT
+  to_xml(
+    NAMED_STRUCT(
+      'Document', NAMED_STRUCT(
+          '_VALUE', NAMED_STRUCT(
+            'child0', 0,
+            'child1', NAMED_STRUCT(
+              'nested0', 0,
+              'nested1', 'nestedvalue'
+            )
+          ),
+      '_attribute', 'attribute'
+      )
+    )
+  ) AS xml
+```
+
+Produces a the XML string:
+
+```xml
+<Document attribute="attribute">
+  <child0>0</child0>
+  <child1>
+    <nested0>0</nested0>
+    <nested1>nestedvalue</nested1>
+  </child1>
+</Document>
+```
+
+#### struct_keys
+##### Since: 2.10.0
+
+`struct_keys` returns an array with the names of the keys in the struct.
+
+```sql
+SELECT
+  STRUCT_KEYS(
+    NAMED_STRUCT(
+      'key0', 'value0',
+      'key1', 'value1'
+    )
+  )
+```
+
+
+## Custom Plugins
+
+
+### Resolution
 
 Plugins are resolved dynamically at runtime and are resolved by name and version.
 
-### Examples
+#### Examples
 
 Assuming we wanted to execute a `KafkaExtract` [Pipeline Stage Plugin](#pipeline-stage-plugins):
 
@@ -51,7 +172,7 @@ To allow more specitivity you can use either the full package name and/or includ
 ```
 
 
-## Dynamic Configuration Plugins
+### Dynamic Configuration Plugins
 ##### Since: 1.3.0
 
 {{<note title="Dynamic vs Deterministic Configuration">}}
@@ -60,7 +181,7 @@ Use of this functionality is discouraged as it goes against the [principles of A
 
 The `Dynamic Configuration Plugin` plugin allow users to inject custom configuration parameters which will be processed before resolving the job configuration file. The plugin must return a Typesafe Config object (which is easily created from a `java.util.Map[String, Object]` which will be included in the job configuration resolution step.
 
-### Examples
+#### Examples
 
 For example a custom runtime configuration plugin could be used calculate a formatted list of dates to be used with an [Extract](../extract) stage to read only a subset of documents:
 
@@ -186,12 +307,12 @@ The `ETL_CONF_DELTA_PERIOD` variable is then available to be resolved in a stand
 ```
 
 
-## Lifecycle Plugins
+### Lifecycle Plugins
 ##### Since: 1.3.0
 
 Custom `Lifecycle Plugins` allow users to extend the base Arc framework with logic which is executed `before` or `after` each Arc stage (lifecycle hooks). These stages are useful for implementing things like dataset logging after each stage execution for debugging.
 
-### Examples
+#### Examples
 
 ```scala
 package ai.tripl.arc.plugins.lifecycle
@@ -287,7 +408,7 @@ To execute:
 ```
 
 
-## Pipeline Stage Plugins
+### Pipeline Stage Plugins
 ##### Since: 1.3.0
 
 Custom `Pipeline Stage Plugins` allow users to extend the base Arc framework with custom stages which allow the full use of the Spark [Scala API](https://spark.apache.org/docs/latest/api/scala/). This means that private business logic or code which relies on libraries not included in the base Arc framework can be used - however it is strongly advised to use the inbuilt SQL stages where possible. If stages are general purpose enough for use outside your organisation consider contributing them to [ai.tripl](https://github.com/tripl-ai) so that others can benefit.
@@ -316,7 +437,7 @@ val transformedDF = try {
     val uri = stageUri.toString
 ```
 
-### Examples
+#### Examples
 
 ```scala
 class ConsoleLoad extends PipelineStagePlugin {
@@ -419,7 +540,7 @@ To execute:
 }
 ```
 
-## User Defined Functions
+### User Defined Functions
 ##### Since: 1.3.0
 
 {{<note title="User Defined Functions vs Spark SQL Functions">}}
@@ -430,7 +551,7 @@ The inbuilt [Spark SQL Functions](https://spark.apache.org/docs/latest/api/sql/i
 
 Arc already includes [some addtional functions](partials/#user-defined-functions) which are not included in the base [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) dialect so any useful generic functions can be included in the [Arc repository](https://github.com/tripl-ai/arc) so that others can benefit.
 
-### Examples
+#### Examples
 
 Write the code to define the custom `User Defined Function`:
 
@@ -476,95 +597,3 @@ The plugin then needs to be registered by adding the full plugin name must be li
 SELECT age, add_ten(age) FROM customer
 ```
 
-## Included User Defined Functions
-
-To help with common data tasks several additional functions have been added to Arc in addition to the inbuilt [Spark SQL Functions](https://spark.apache.org/docs/latest/api/sql/index.html).
-
-### get_json_double_array
-##### Since: 1.0.9
-
-{{< note title="Deprecated" >}}
-Deprecated. Please use inbuilt Spark function [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object).
-{{</note>}}
-
-Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object) - but extracts a json `double` `array` from path.
-
-```sql
-SELECT get_json_double_array('[0.1, 1.1]', '$')
-```
-
-### get_json_integer_array
-##### Since: 1.0.9
-
-{{< note title="Deprecated" >}}
-Deprecated. Please use inbuilt Spark function [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object).
-{{</note>}}
-
-Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object) - but extracts a json `integer` `array` from path.
-
-```sql
-SELECT get_json_integer_array('[1, 2]', '$')
-```
-
-### get_json_long_array
-##### Since: 1.0.9
-
-{{< note title="Deprecated" >}}
-Deprecated. Please use inbuilt Spark function [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object).
-{{</note>}}
-
-Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.html#get_json_object) - but extracts a json `long` `array` from path.
-
-```sql
-SELECT get_json_long_array('[2147483648, 2147483649]', '$')
-```
-
-### to_xml
-##### Since: 2.10.0
-
-`to_xml` returns a XML string with a given struct value.
-
-```sql
-SELECT
-  to_xml(
-    NAMED_STRUCT(
-      'Document', NAMED_STRUCT(
-          '_VALUE', NAMED_STRUCT(
-            'child0', 0,
-            'child1', NAMED_STRUCT(
-              'nested0', 0,
-              'nested1', 'nestedvalue'
-            )
-          ),
-      '_attribute', 'attribute'
-      )
-    )
-  ) AS xml
-```
-
-Produces a the XML string:
-
-```xml
-<Document attribute="attribute">
-  <child0>0</child0>
-  <child1>
-    <nested0>0</nested0>
-    <nested1>nestedvalue</nested1>
-  </child1>
-</Document>
-```
-
-### struct_keys
-##### Since: 2.10.0
-
-`struct_keys` returns an array with the names of the keys in the struct.
-
-```sql
-SELECT
-  STRUCT_KEYS(
-    NAMED_STRUCT(
-      'key0', 'value0',
-      'key1', 'value1'
-    )
-  )
-```
