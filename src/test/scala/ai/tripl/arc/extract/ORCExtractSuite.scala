@@ -157,7 +157,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
 
     val schema =
       BooleanColumn(
-        id="1",
+        id=None,
         name="booleanDatum",
         description=None,
         nullable=true,

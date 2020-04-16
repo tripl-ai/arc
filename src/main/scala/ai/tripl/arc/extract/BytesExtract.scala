@@ -104,20 +104,20 @@ object BytesExtractStage {
 
   def execute(stage: BytesExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    val signature = "BytesExtract requires pathView to be dataset with [value: string] signature."
+    val signature = "BytesExtract requires 'inputView' to be dataset with [value: string] signature."
 
     CloudUtils.setHadoopConfiguration(stage.authentication)
 
     val df = try {
       stage.input match {
         case Left(view) => {
-          val pathView = spark.table(view)
-          val schema = pathView.schema
+          val inputView = spark.table(view)
+          val schema = inputView.schema
 
           val fieldIndex = try {
             schema.fieldIndex("value")
           } catch {
-            case e: Exception => throw new Exception(s"""${signature} inputView has: [${pathView.schema.map(_.name).mkString(", ")}].""") with DetailException {
+            case e: Exception => throw new Exception(s"""${signature} inputView has: [${inputView.schema.map(_.name).mkString(", ")}].""") with DetailException {
               override val detail = stage.stageDetail
             }
           }
@@ -129,7 +129,7 @@ object BytesExtractStage {
             }
           }
 
-          val path = pathView.select(col("value")).collect().map( _.getString(0) ).mkString(",")
+          val path = inputView.select(col("value")).collect().map( _.getString(0) ).mkString(",")
           spark.read.format("bytes").load(path)
         }
         case Right(glob) => {

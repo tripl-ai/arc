@@ -19,6 +19,7 @@ import ai.tripl.arc.config.Error._
 import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.Utils
 import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
 
 class SimilarityJoinTransform extends PipelineStagePlugin {
 
@@ -40,7 +41,7 @@ class SimilarityJoinTransform extends PipelineStagePlugin {
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val shingleLength = getValue[Int]("shingleLength", default = Some(3))
     val numHashTables = getValue[Int]("numHashTables", default = Some(5))
-    val threshold = getValue[java.lang.Double]("threshold", default = Some(0.8))
+    val threshold = getValue[java.lang.Double]("threshold", default = Some(0.8)) |> doubleMinMax("threshold", Some(0), Some(1)) _
     val caseSensitive = getValue[java.lang.Boolean]("caseSensitive", default = Some(false))
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")

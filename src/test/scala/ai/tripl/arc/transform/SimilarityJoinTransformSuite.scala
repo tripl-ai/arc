@@ -156,4 +156,51 @@ class SimilarityJoinTransformSuite extends FunSuite with BeforeAndAfter {
     }
 
   }
+
+  test("SimilarityJoinTransformSuite: Threshold Limit") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val leftDF = Seq(
+      ("GANSW705647478",Option("UNIT 3"),59,"INVERNESS","AVENUE","PENSHURST",2222,"NSW")
+    ).toDF("gnaf_pid", "flat_number", "number_first", "street_name", "street_type", "locality_name", "postcode", "state")
+    leftDF.createOrReplaceTempView(leftView)
+
+    val rightDF = Seq(
+      (0L,"a","a")
+    ).toDF("id", "street", "state_postcode_suburb")
+    rightDF.createOrReplaceTempView(rightView)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "SimilarityJoinTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "leftView": "${leftView}",
+          "leftFields": ["flat_number", "number_first", "street_name", "street_type", "locality_name", "postcode", "state"],
+          "rightView": "${rightView}",
+          "rightFields": ["street", "state_postcode_suburb"],
+          "outputView": "${outputView}",
+          "threshold": 1.1,
+          "shingleLength": 3,
+          "numHashTables": 10
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => assert(err.toString.contains("""'threshold' 1.1 must be between 0.0 and 1.0."""))
+      case Right((pipeline, _)) => fail("should fail")
+    }
+
+  }  
 }

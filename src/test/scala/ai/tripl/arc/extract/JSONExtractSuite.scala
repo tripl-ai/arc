@@ -257,7 +257,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
 
     val schema =
       BooleanColumn(
-        id="1",
+        None,
         name="booleanDatum",
         description=None,
         nullable=true,
@@ -536,7 +536,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
 
     val schema =
       BooleanColumn(
-        id="1",
+        id=None,
         name="booleanDatum",
         description=None,
         nullable=true,
@@ -548,7 +548,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         metadata=None
       ) ::
       IntegerColumn(
-        id="2",
+        id=None,
         name="integerDatum",
         description=None,
         nullable=true,

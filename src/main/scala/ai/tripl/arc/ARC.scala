@@ -472,9 +472,9 @@ object ARC {
     }
 
     def before(currentValue: PipelineStage, index: Int, stages: List[PipelineStage]): Unit = {
-      for (p <- arcContext.activeLifecyclePlugins) {
+      for (lifeCyclePlugin <- arcContext.activeLifecyclePlugins) {
         logger.trace().message(s"Executing after on LifecyclePlugin: ${stages(index).getClass.getName}")
-        p.before(currentValue, index, stages)
+        lifeCyclePlugin.before(currentValue, index, stages)
       }
     }
 
@@ -490,22 +490,61 @@ object ARC {
     // runStage will not execute the stage nor before/after if ANY of the LifecyclePlugins.runStage methods return false
     // this is to simplify the job of workflow designers trying to ensure plugins are ordered correctly
     @tailrec
-    def runStages(stages: List[(PipelineStage, Int)]): Option[DataFrame] = {
+    def runStages(stages: List[(PipelineStage, Int)])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
       stages match {
         case Nil => None // end
         case (stage, index) :: Nil =>
           if (runStage(stage, index, pipeline.stages)) {
+
+            // allow enriching the stageDetail by before
             before(stage, index, pipeline.stages)
-            val result = processStage(stage)
-            after(result, stage, index, pipeline.stages)
+
+            logger.info()
+              .field("event", "enter")
+              .map("stage", stage.stageDetail.asJava)
+              .log()
+
+            val startTime = System.currentTimeMillis()
+            val result = stage.execute()
+            val endTime = System.currentTimeMillis()
+
+            // allow enriching the stageDetail by after
+            val afterResult = after(result, stage, index, pipeline.stages)
+
+            logger.info()
+              .field("event", "exit")
+              .field("duration", endTime - startTime)
+              .map("stage", stage.stageDetail.asJava)
+              .log()
+
+            afterResult
           } else {
             None
           }
         case (stage, index) :: tail =>
           if (runStage(stage, index, pipeline.stages)) {
+
+            // allow enriching the stageDetail by before
             before(stage, index, pipeline.stages)
-            val result = processStage(stage)
+
+            logger.info()
+              .field("event", "enter")
+              .map("stage", stage.stageDetail.asJava)
+              .log()
+
+            val startTime = System.currentTimeMillis()
+            val result = stage.execute()
+            val endTime = System.currentTimeMillis()
+
+            // allow enriching the stageDetail by after
             after(result, stage, index, pipeline.stages)
+
+            logger.info()
+              .field("event", "exit")
+              .field("duration", endTime - startTime)
+              .map("stage", stage.stageDetail.asJava)
+              .log()
+
             runStages(tail)
           } else {
             None
@@ -514,25 +553,6 @@ object ARC {
     }
 
     runStages(pipeline.stages.zipWithIndex)
-  }
-
-  def processStage(stage: PipelineStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    val startTime = System.currentTimeMillis()
-
-    logger.info()
-      .field("event", "enter")
-      .map("stage", stage.stageDetail.asJava)
-      .log()
-
-    val df = stage.execute()
-
-    logger.info()
-      .field("event", "exit")
-      .field("duration", System.currentTimeMillis() - startTime)
-      .map("stage", stage.stageDetail.asJava)
-      .log()
-
-    df
   }
 
 }
