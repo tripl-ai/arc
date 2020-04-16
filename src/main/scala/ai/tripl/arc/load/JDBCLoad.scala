@@ -95,13 +95,13 @@ class JDBCLoad extends PipelineStagePlugin {
     }
   }
 
-  def parseIsolationLevel(path: String)(quote: String)(implicit c: Config): Either[Errors, IsolationLevelType] = {
+  def parseIsolationLevel(path: String)(quote: String)(implicit c: Config): Either[Errors, IsolationLevel] = {
     quote.toLowerCase.trim match {
-      case "none" => Right(IsolationLevelNone)
-      case "read_committed" => Right(IsolationLevelReadCommitted)
-      case "read_uncommitted" => Right(IsolationLevelReadUncommitted)
-      case "repeatable_read" => Right(IsolationLevelRepeatableRead)
-      case "serializable" => Right(IsolationLevelSerializable)
+      case "none" => Right(IsolationLevel.None)
+      case "read_committed" => Right(IsolationLevel.ReadCommitted)
+      case "read_uncommitted" => Right(IsolationLevel.ReadUncommitted)
+      case "repeatable_read" => Right(IsolationLevel.RepeatableRead)
+      case "serializable" => Right(IsolationLevel.Serializable)
       case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
@@ -116,7 +116,7 @@ case class JDBCLoadStage(
     tableName: String,
     partitionBy: List[String],
     numPartitions: Option[Int],
-    isolationLevel: IsolationLevelType,
+    isolationLevel: IsolationLevel,
     batchsize: Int,
     truncate: Boolean,
     createTableOptions: Option[String],

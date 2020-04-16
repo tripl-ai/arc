@@ -64,7 +64,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         contiguousIndex=true,
         params=Map.empty,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     )
 
@@ -85,7 +85,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         delimiter="",
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     ).get
 

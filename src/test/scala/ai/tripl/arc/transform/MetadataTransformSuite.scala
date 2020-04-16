@@ -163,7 +163,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           schema=Left(schemaView),
           schemaURI=None,
-          failMode=FailModeTypeFailFast,
+          failMode=FailMode.FailFast,
           persist=false,
           params=Map.empty,
           numPartitions=None,

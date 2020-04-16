@@ -350,7 +350,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         contiguousIndex=true,
         params=Map.empty,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     )
 

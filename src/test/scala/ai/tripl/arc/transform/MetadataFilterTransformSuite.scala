@@ -78,7 +78,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )
@@ -134,7 +134,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )
@@ -186,7 +186,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )
@@ -254,7 +254,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )

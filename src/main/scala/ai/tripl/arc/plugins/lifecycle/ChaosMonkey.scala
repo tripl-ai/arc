@@ -43,7 +43,7 @@ class ChaosMonkey extends LifecyclePlugin {
     import ai.tripl.arc.config.ConfigUtils._
 
     strategy.toLowerCase.trim match {
-      case "exception" => Right(ChaosMonkeyStrategyException())
+      case "exception" => Right(ChaosMonkeyStrategy.StrategyException)
       case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
@@ -52,8 +52,11 @@ class ChaosMonkey extends LifecyclePlugin {
 sealed trait ChaosMonkeyStrategy {
   def sparkString(): String
 }
-case class ChaosMonkeyStrategyException() extends ChaosMonkeyStrategy { val sparkString = "exception" }
-case class ChaosMonkeyStrategyDropRecords(percent: Double) extends ChaosMonkeyStrategy { val sparkString = "dropRecords" }
+
+object ChaosMonkeyStrategy {
+  case object StrategyException extends ChaosMonkeyStrategy { val sparkString = "exception" }
+  case class StrategyDropRecords(percent: Double) extends ChaosMonkeyStrategy { val sparkString = "dropRecords" }
+}
 
 case class ChaosMonkeyInstance(
     plugin: ChaosMonkey,
@@ -70,7 +73,7 @@ case class ChaosMonkeyInstance(
     val secureRandom = new SecureRandom
     if (secureRandom.nextDouble < probability) {
       strategy match {
-        case _: ChaosMonkeyStrategyException => throw new Exception("ChaosMonkey triggered and exception thrown.")
+        case ChaosMonkeyStrategy.StrategyException => throw new Exception("ChaosMonkey triggered and exception thrown.")
         case _ =>
       }
     }

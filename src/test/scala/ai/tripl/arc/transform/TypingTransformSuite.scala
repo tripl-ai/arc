@@ -101,7 +101,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )
@@ -276,7 +276,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          failMode=FailModeTypeFailFast,
+          failMode=FailMode.FailFast,
           numPartitions=None,
           partitionBy=Nil
         )
@@ -328,7 +328,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          failMode=FailModeTypePermissive,
+          failMode=FailMode.Permissive,
           numPartitions=None,
           partitionBy=Nil
         )
@@ -583,7 +583,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )
@@ -644,7 +644,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )
