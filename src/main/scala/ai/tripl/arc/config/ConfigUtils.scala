@@ -27,8 +27,6 @@ import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.MetadataSchema
 
-import com.amazonaws.services.s3.AmazonS3URI
-
 import Error._
 
 object ConfigUtils {
@@ -65,7 +63,7 @@ object ConfigUtils {
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
       case "s3" | "s3a" => {
 
-        val s3aBucket = new AmazonS3URI(uri.toString.replaceFirst("s3a://","s3://")).getBucket
+        val s3aBucket = uri.getAuthority
         val s3aAccessKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY"))
         val s3aSecretKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY"))
         val s3aEndpoint: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
@@ -473,7 +471,7 @@ object ConfigUtils {
               Right(Some(Authentication.AzureDataLakeStorageGen2OAuth(clientID, secret, directoryID)))
             }
             case Some("AmazonAccessKey") => {
-              val s3aBucket = uri.map { uri => new AmazonS3URI(uri.replaceFirst("s3a://","s3://")).getBucket }
+              val s3aBucket = uri.map { new URI(_).getAuthority }
               val accessKeyID = authentication.get("accessKeyID") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AmazonAccessKey' requires 'accessKeyID' parameter.")
@@ -505,15 +503,15 @@ object ConfigUtils {
               Right(Some(Authentication.AmazonAccessKey(s3aBucket, accessKeyID, secretAccessKey, endpoint, sslEnabled)))
             }
             case Some("AmazonAnonymous") => {
-              val s3aBucket = uri.map { uri => new AmazonS3URI(uri.replaceFirst("s3a://","s3://")).getBucket }
+              val s3aBucket = uri.map { new URI(_).getAuthority }
               Right(Some(Authentication.AmazonAnonymous(s3aBucket)))
             }        
             case Some("AmazonEnvironmentVariable") => {
-              val s3aBucket = uri.map { uri => new AmazonS3URI(uri.replaceFirst("s3a://","s3://")).getBucket }
+              val s3aBucket = uri.map { new URI(_).getAuthority }
               Right(Some(Authentication.AmazonEnvironmentVariable(s3aBucket)))
             }                      
             case Some("AmazonIAM") => {
-              val s3aBucket = uri.map { uri => new AmazonS3URI(uri.replaceFirst("s3a://","s3://")).getBucket }
+              val s3aBucket = uri.map { new URI(_).getAuthority }
               val encType = authentication.get("encryptionAlgorithm").flatMap( AmazonS3EncryptionType.fromString(_) )
               val kmsId = authentication.get("kmsArn")
               val customKey = authentication.get("customKey")

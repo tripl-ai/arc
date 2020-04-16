@@ -24,7 +24,6 @@ object Dependencies {
   // hadoop
   val hadoopCommon =  "org.apache.hadoop" % "hadoop-common" % hadoopVersion
   val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % hadoopVersion  
-  val awsS3 = "com.amazonaws" % "aws-java-sdk-s3" % "1.11.199"
 
   // spark XML
   val sparkXML = "com.databricks" %% "spark-xml" % "0.9.0" 
@@ -36,7 +35,6 @@ object Dependencies {
     jetty,
     hadoopCommon,
     hadoopAWS,
-    awsS3,
     postgresJDBC,
     sqlServerJDBC,
     sparkCore,
