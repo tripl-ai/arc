@@ -115,7 +115,7 @@ case class HTTPTransformStage(
     delimiter: String,
     numPartitions: Option[Int],
     partitionBy: List[String],
-    failMode: FailModeType
+    failMode: FailMode
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
@@ -162,8 +162,8 @@ object HTTPTransformStage {
 
 
     val typedSchema = stage.failMode match {
-      case FailModeTypePermissive => StructType(df.schema.fields.toList ::: List(StructField("body", StringType, false), StructField("response", StructType(StructField("statusCode", IntegerType, false) :: StructField("reasonPhrase", StringType, false) :: StructField("contentType", StringType, false) :: StructField("responseTime", LongType, false):: Nil), false)))
-      case FailModeTypeFailFast => StructType(df.schema.fields.toList ::: List(StructField("body", StringType, false)))
+      case FailMode.Permissive => StructType(df.schema.fields.toList ::: List(StructField("body", StringType, false), StructField("response", StructType(StructField("statusCode", IntegerType, false) :: StructField("reasonPhrase", StringType, false) :: StructField("contentType", StringType, false) :: StructField("responseTime", LongType, false):: Nil), false)))
+      case FailMode.FailFast => StructType(df.schema.fields.toList ::: List(StructField("body", StringType, false)))
     }
 
     /** Create a dynamic RowEncoder from the provided schema. We use the phantom
@@ -232,7 +232,7 @@ object HTTPTransformStage {
             val responseTime = System.currentTimeMillis - requestStartTime
 
             // verify status code is correct
-            if (stageFailMode == FailModeTypeFailFast && !stageValidStatusCodes.contains(response.getStatusLine.getStatusCode)) {
+            if (stageFailMode == FailMode.FailFast && !stageValidStatusCodes.contains(response.getStatusLine.getStatusCode)) {
               throw new Exception(s"""HTTPTransform expects all response StatusCode(s) in [${stageValidStatusCodes.mkString(", ")}] but server responded with ${response.getStatusLine.getStatusCode} (${response.getStatusLine.getReasonPhrase}).""")
             }
 
@@ -252,8 +252,8 @@ object HTTPTransformStage {
             // cast to a TransformedRow to fit the Dataset map method requirements
             groupedRow.zipWithIndex.map { case (row, index) => {
               stageFailMode match {
-                case FailModeTypePermissive => Row.fromSeq(row.toSeq ++ Seq(body(index), Row(response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, response.getEntity.getContentType.toString.replace("Content-Type: ",""), responseTime))).asInstanceOf[TransformedRow]
-                case FailModeTypeFailFast => Row.fromSeq(row.toSeq ++ Seq(body(index))).asInstanceOf[TransformedRow]
+                case FailMode.Permissive => Row.fromSeq(row.toSeq ++ Seq(body(index), Row(response.getStatusLine.getStatusCode, response.getStatusLine.getReasonPhrase, response.getEntity.getContentType.toString.replace("Content-Type: ",""), responseTime))).asInstanceOf[TransformedRow]
+                case FailMode.FailFast => Row.fromSeq(row.toSeq ++ Seq(body(index))).asInstanceOf[TransformedRow]
               }
             }}
 

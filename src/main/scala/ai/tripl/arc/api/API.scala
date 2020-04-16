@@ -146,8 +146,8 @@ object API {
         case None => new MetadataBuilder()
       }
 
-      col.id.foreach { metadataBuilder.putString("id", _) }
-      col.description.foreach { metadataBuilder.putString("description", _) }
+      for (id <- col.id) metadataBuilder.putString("id", id)
+      for (desc <- col.description) metadataBuilder.putString("description", desc)
 
       metadataBuilder.putBoolean("nullable", col.nullable)
       metadataBuilder.putBoolean("internal", false)
@@ -297,35 +297,43 @@ object API {
   }
 
 
-  sealed trait FailModeType {
+  sealed trait FailMode {
     def sparkString(): String
   }
-  case object FailModeTypePermissive extends FailModeType { val sparkString = "permissive" }
-  case object FailModeTypeFailFast extends FailModeType { val sparkString = "failfast" }
+  object FailMode {
+    case object Permissive extends FailMode { val sparkString = "permissive" }
+    case object FailFast extends FailMode { val sparkString = "failfast" }
+  }
 
 
   sealed trait OutputModeType {
     def sparkString(): String
   }
-  case object OutputModeTypeAppend extends OutputModeType { val sparkString = "append" }
-  case object OutputModeTypeComplete extends OutputModeType { val sparkString = "complete" }
-  case object OutputModeTypeUpdate extends OutputModeType { val sparkString = "update" }
+  object OutputModeType {
+    case object Append extends OutputModeType { val sparkString = "append" }
+    case object Complete extends OutputModeType { val sparkString = "complete" }
+    case object Update extends OutputModeType { val sparkString = "update" }
+  }
 
-  sealed trait IsolationLevelType {
+  sealed trait IsolationLevel {
     def sparkString(): String
   }
-  case object IsolationLevelNone extends IsolationLevelType { val sparkString = "NONE" }
-  case object IsolationLevelReadCommitted extends IsolationLevelType { val sparkString = "READ_COMMITTED" }
-  case object IsolationLevelReadUncommitted extends IsolationLevelType { val sparkString = "READ_UNCOMMITTED" }
-  case object IsolationLevelRepeatableRead extends IsolationLevelType { val sparkString = "REPEATABLE_READ" }
-  case object IsolationLevelSerializable extends IsolationLevelType { val sparkString = "SERIALIZABLE" }
+  object IsolationLevel {
+    case object None extends IsolationLevel { val sparkString = "NONE" }
+    case object ReadCommitted extends IsolationLevel { val sparkString = "READ_COMMITTED" }
+    case object ReadUncommitted extends IsolationLevel { val sparkString = "READ_UNCOMMITTED" }
+    case object RepeatableRead extends IsolationLevel { val sparkString = "REPEATABLE_READ" }
+    case object Serializable extends IsolationLevel { val sparkString = "SERIALIZABLE" }
+  }
 
   sealed trait ResponseType {
     def sparkString(): String
   }
-  case object IntegerResponse extends ResponseType { val sparkString = "integer" }
-  case object DoubleResponse extends ResponseType { val sparkString = "double" }
-  case object StringResponse extends ResponseType { val sparkString = "string" }
+  object ResponseType {
+    case object IntegerResponse extends ResponseType { val sparkString = "integer" }
+    case object DoubleResponse extends ResponseType { val sparkString = "double" }
+    case object StringResponse extends ResponseType { val sparkString = "string" }
+  }
 
   sealed trait Authentication
   object Authentication {

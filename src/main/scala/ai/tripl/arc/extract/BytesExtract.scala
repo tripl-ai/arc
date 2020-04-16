@@ -92,7 +92,7 @@ case class BytesExtractStage(
     persist: Boolean,
     numPartitions: Option[Int],
     contiguousIndex: Boolean,
-    failMode: FailModeType
+    failMode: FailMode
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
@@ -141,7 +141,7 @@ object BytesExtractStage {
       }
     } catch {
       case e: InvalidInputException =>
-        if (stage.failMode == FailModeTypeFailFast) {
+        if (stage.failMode == FailMode.FailFast) {
           throw new Exception("BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.") with DetailException {
             override val detail = stage.stageDetail
           }

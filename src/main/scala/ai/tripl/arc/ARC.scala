@@ -419,7 +419,6 @@ object ARC {
         sys.exit(1)
       } else {
 
-
         // if running on local master (not databricks cluster or yarn) try to shutdown so that status is returned to the console correctly
         // databricks will fail if spark.stop is called: see https://docs.databricks.com/user-guide/jobs.html#jar-job-tips
         val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
@@ -494,62 +493,40 @@ object ARC {
       stages match {
         case Nil => None // end
         case (stage, index) :: Nil =>
-          if (runStage(stage, index, pipeline.stages)) {
-
-            // allow enriching the stageDetail by before
-            before(stage, index, pipeline.stages)
-
-            logger.info()
-              .field("event", "enter")
-              .map("stage", stage.stageDetail.asJava)
-              .log()
-
-            val startTime = System.currentTimeMillis()
-            val result = stage.execute()
-            val endTime = System.currentTimeMillis()
-
-            // allow enriching the stageDetail by after
-            val afterResult = after(result, stage, index, pipeline.stages)
-
-            logger.info()
-              .field("event", "exit")
-              .field("duration", endTime - startTime)
-              .map("stage", stage.stageDetail.asJava)
-              .log()
-
-            afterResult
-          } else {
-            None
-          }
+          if (runStage(stage, index, pipeline.stages)) processStage(stage, index) else None
         case (stage, index) :: tail =>
           if (runStage(stage, index, pipeline.stages)) {
-
-            // allow enriching the stageDetail by before
-            before(stage, index, pipeline.stages)
-
-            logger.info()
-              .field("event", "enter")
-              .map("stage", stage.stageDetail.asJava)
-              .log()
-
-            val startTime = System.currentTimeMillis()
-            val result = stage.execute()
-            val endTime = System.currentTimeMillis()
-
-            // allow enriching the stageDetail by after
-            after(result, stage, index, pipeline.stages)
-
-            logger.info()
-              .field("event", "exit")
-              .field("duration", endTime - startTime)
-              .map("stage", stage.stageDetail.asJava)
-              .log()
-
+            processStage(stage, index)
             runStages(tail)
           } else {
             None
           }
       }
+    }
+
+    def processStage(stage: PipelineStage, index: Int)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+      // allow enriching the stageDetail by before
+      before(stage, index, pipeline.stages)
+
+      logger.info()
+        .field("event", "enter")
+        .map("stage", stage.stageDetail.asJava)
+        .log()
+
+      val startTime = System.currentTimeMillis()
+      val result = stage.execute()
+      val endTime = System.currentTimeMillis()
+
+      // allow enriching the stageDetail by after
+      val afterResult = after(result, stage, index, pipeline.stages)
+
+      logger.info()
+        .field("event", "exit")
+        .field("duration", endTime - startTime)
+        .map("stage", stage.stageDetail.asJava)
+        .log()
+
+      afterResult
     }
 
     runStages(pipeline.stages.zipWithIndex)

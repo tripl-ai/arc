@@ -676,17 +676,17 @@ object ConfigUtils {
 
   def parseOutputModeType(path: String)(delim: String)(implicit c: Config): Either[Errors, OutputModeType] = {
     delim.toLowerCase.trim match {
-      case "append" => Right(OutputModeTypeAppend)
-      case "complete" => Right(OutputModeTypeComplete)
-      case "update" => Right(OutputModeTypeUpdate)
+      case "append" => Right(OutputModeType.Append)
+      case "complete" => Right(OutputModeType.Complete)
+      case "update" => Right(OutputModeType.Update)
       case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
 
-  def parseFailMode(path: String)(delim: String)(implicit c: Config): Either[Errors, FailModeType] = {
+  def parseFailMode(path: String)(delim: String)(implicit c: Config): Either[Errors, FailMode] = {
     delim.toLowerCase.trim match {
-      case "permissive" => Right(FailModeTypePermissive)
-      case "failfast" => Right(FailModeTypeFailFast)
+      case "permissive" => Right(FailMode.Permissive)
+      case "failfast" => Right(FailMode.FailFast)
       case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }

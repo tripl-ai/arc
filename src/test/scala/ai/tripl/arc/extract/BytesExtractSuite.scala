@@ -68,7 +68,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         contiguousIndex=true,
         params=Map.empty,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     ).get
 
@@ -97,14 +97,14 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         contiguousIndex=true,
         params=Map.empty,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     ).get
 
     assert(dataset.count == 2)
   }
 
-  test("BytesExtract: FailModeTypeFailFast") {
+  test("BytesExtract: FailModeFailFast") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
@@ -124,7 +124,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           contiguousIndex=true,
           params=Map.empty,
-          failMode=FailModeTypeFailFast
+          failMode=FailMode.FailFast
         )
       )
     }
@@ -144,7 +144,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           contiguousIndex=true,
           params=Map.empty,
-          failMode=FailModeTypeFailFast
+          failMode=FailMode.FailFast
         )
       )
     }
@@ -164,7 +164,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
           numPartitions=None,
           contiguousIndex=true,
           params=Map.empty,
-          failMode=FailModeTypeFailFast
+          failMode=FailMode.FailFast
         )
       )
     }
@@ -183,7 +183,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
         numPartitions=None,
         contiguousIndex=true,
         params=Map.empty,
-        failMode=FailModeTypePermissive
+        failMode=FailMode.Permissive
       )
     ).get
 

@@ -94,7 +94,7 @@ case class TypingTransformStage(
     outputView: String,
     params: Map[String, String],
     persist: Boolean,
-    failMode: FailModeType,
+    failMode: FailMode,
     numPartitions: Option[Int],
     partitionBy: List[String]
   ) extends PipelineStage {
@@ -205,7 +205,7 @@ object Typing {
     * We must use the DataFrame map and not RDD as RDD operations break the
     * logical plan which is required for lineage.
     */
-  private def performTyping(df: DataFrame, cols: List[ExtractColumn], typedSchema: StructType, failMode: FailModeType, valueAccumulator: LongAccumulator, errorAccumulator: LongAccumulator)( implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Dataset[TypedRow] = {
+  private def performTyping(df: DataFrame, cols: List[ExtractColumn], typedSchema: StructType, failMode: FailMode, valueAccumulator: LongAccumulator, errorAccumulator: LongAccumulator)( implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Dataset[TypedRow] = {
     val incomingSchema = df.schema.zipWithIndex
 
     /** Create a dynamic RowEncoder from the provided schema. We use the phantom
@@ -233,7 +233,7 @@ object Typing {
                 case (Some(v), Some(err)) => (v :: valuesAccum, err :: errorsAccum)
                 case (Some(v), None) => (v :: valuesAccum, errorsAccum)
                 case (None, Some(err)) => {
-                  if (col.nullable || failMode == FailModeTypeFailFast) {
+                  if (col.nullable || failMode == FailMode.FailFast) {
                     (null :: valuesAccum, err :: errorsAccum)
                   } else {
                     // this exception is to override the default spark non-nullable error which is not intuitive: 
@@ -255,7 +255,7 @@ object Typing {
             }
         }
 
-        if (failMode == FailModeTypeFailFast && allErrors.length != 0) {
+        if (failMode == FailMode.FailFast && allErrors.length != 0) {
           throw new Exception(s"""TypingTransform with failMode equal to '${failMode.sparkString}' cannot continue due to row with error(s): [${allErrors.map(_.toString).mkString(", ")}].""")
         }
 
@@ -272,7 +272,7 @@ object Typing {
     }
   }
 
-  def typeDataFrame(untypedDataframe: DataFrame, cols: List[ExtractColumn], failMode: FailModeType, valueAccumulator: LongAccumulator, errorAccumulator: LongAccumulator)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
+  def typeDataFrame(untypedDataframe: DataFrame, cols: List[ExtractColumn], failMode: FailMode, valueAccumulator: LongAccumulator, errorAccumulator: LongAccumulator)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
     val schema = Extract.toStructType(cols)
     val internalFields = untypedDataframe.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).toList
 

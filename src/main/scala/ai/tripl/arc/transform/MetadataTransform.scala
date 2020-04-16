@@ -97,7 +97,7 @@ case class MetadataTransformStage(
     outputView: String,
     schemaURI: Option[String],
     schema: Either[String, List[ExtractColumn]],
-    failMode: FailModeType,
+    failMode: FailMode,
     params: Map[String, String],
     persist: Boolean,
     numPartitions: Option[Int],
@@ -128,7 +128,7 @@ object MetadataTransformStage {
     val enrichedDF = try {
       stage.failMode match {
         // failfast requires all fields in schema to match (by name) fields in inputView
-        case FailModeTypeFailFast => {
+        case FailMode.FailFast => {
           val schemaFields = schema.fields.map(_.name).toSet
           val inputFields = df.columns.toSet
 
@@ -147,7 +147,7 @@ object MetadataTransformStage {
           }
         }
         // permissive will not throw issue if no columns match by name
-        case FailModeTypePermissive =>
+        case FailMode.Permissive =>
       }
 
       MetadataUtils.setMetadata(df, schema)
