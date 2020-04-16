@@ -22,7 +22,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
     {
       val dateValue = Date.valueOf("2016-12-18")
       val fmt = List("yyyy-MM-dd")
-      val col = DateColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("2016-12-18"), trim=true, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
+      val col = DateColumn(None, name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("2016-12-18"), trim=true, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
 
       // value is null -> nullReplacementValue
       {
@@ -85,7 +85,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
     {
       val dateValue = Date.valueOf("2016-12-18")
       val fmt = List("yyyy-MM-dd")
-      val col = DateColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("2016-12-18"), trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
+      val col = DateColumn(None, name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("2016-12-18"), trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
 
             // value has leading spaces
             {
@@ -142,7 +142,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
     {
       val dateValue = Date.valueOf("2016-12-18")
       val fmt = List("yyyy-MM-dd")
-      val col = DateColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("2016-12-18"), trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
+      val col = DateColumn(None, name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("2016-12-18"), trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
 
       // value.isNull
       {
@@ -182,7 +182,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
     {
       val dateValue = Date.valueOf("2016-12-18")
       val fmt = List("yyyy-MM-dd")
-      val col = DateColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
+      val col = DateColumn(None, name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
 
       // value.isNull
       {
@@ -221,7 +221,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
     // Test other miscellaneous input types
     {
       val fmt = List("yyyy-MM-dd")
-      val col = DateColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
+      val col = DateColumn(None, name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
 
       // format is different (e.g. dd-mm-yyyy)
       {
@@ -288,7 +288,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
     {
       val dateValue = Date.valueOf("2016-12-18")
       val fmt = List("yyyy-MM-dd", "dd-MM-yyyy", "dd MMM yyyy")
-      val col = DateColumn(id="1", name="date", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
+      val col = DateColumn(None, name="date", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
 
       {
         val value = "18-12-2016"
@@ -338,7 +338,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
 
   test("Type Date Column: impossible date: strict") {
       val fmt = List("yyyy-MM-dd")
-      val col = DateColumn(id="1", name="date", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=true)
+      val col = DateColumn(None, name="date", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=true)
 
     // 30 February is impossible
     val value = "2000-02-30"
@@ -353,7 +353,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
   test("Type Date Column: impossible date: not strict") {
       val dateValue = Date.valueOf("2000-02-29")
       val fmt = List("yyyy-MM-dd")
-      val col = DateColumn(id="1", name="date", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
+      val col = DateColumn(None, name="date", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false)
 
     // 30 February is impossible
     val value = "2000-02-30"

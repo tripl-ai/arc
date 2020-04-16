@@ -18,7 +18,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test trimming
     {
-      val col = IntegerColumn(id = "1", name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42"), trim = true, nullableValues = "" :: Nil, metadata=None, formatters = None)
+      val col = IntegerColumn(None, name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42"), trim = true, nullableValues = "" :: Nil, metadata=None, formatters = None)
 
       // value is null -> nullReplacementValue
       {
@@ -78,7 +78,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test not trimming
     {
-      val col = IntegerColumn(id = "1", name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42"), trim = false, nullableValues = "" :: Nil, metadata=None, formatters = None)
+      val col = IntegerColumn(None, name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42"), trim = false, nullableValues = "" :: Nil, metadata=None, formatters = None)
 
       {
         val value = "   42"
@@ -119,7 +119,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITH nullReplacementValue
     {
-      val col = IntegerColumn(id = "1", name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42"), trim = false, nullableValues = "" :: Nil, metadata=None, formatters = None)
+      val col = IntegerColumn(None, name = "name", description = Some("description"), nullable = true, nullReplacementValue = Some("42"), trim = false, nullableValues = "" :: Nil, metadata=None, formatters = None)
 
       // value.isNull
       {
@@ -157,7 +157,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITHOUT nullReplacementValue
     {
-      val col = IntegerColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = None)
+      val col = IntegerColumn(None, name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = None)
 
       // value.isNull
       {
@@ -195,7 +195,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test other miscellaneous input types
     {
-      val col = IntegerColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = None)
+      val col = IntegerColumn(None, name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = None)
 
       // value contains non numbers or characters
       {
@@ -263,7 +263,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
 
     //test formatter change negative suffix
     {
-      val col = IntegerColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0;#,##0-")))
+      val col = IntegerColumn(None, name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0;#,##0-")))
 
       // value contains negative number
       {
@@ -280,7 +280,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
 
     //test multiple formatter
     {
-      val col = IntegerColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0;#,##0-", "#,##0;(#,##0)")))
+      val col = IntegerColumn(None, name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0;#,##0-", "#,##0;(#,##0)")))
 
       // value contains negative number
       {
@@ -297,7 +297,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
 
     //test formatter in error message
     {
-      val col = IntegerColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0;#,##0-")))
+      val col = IntegerColumn(None, name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0;#,##0-")))
 
       // value contains negative number
       {

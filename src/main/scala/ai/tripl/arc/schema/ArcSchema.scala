@@ -61,7 +61,7 @@ object ArcSchema {
     val baseKeys = "id" :: "name" :: "description" :: "type" :: "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "metadata" :: Nil
 
     // common attributes
-    val id = ConfigReader.getValue[String]("id")
+    val id = ConfigReader.getOptionalValue[String]("id")
     val name = ConfigReader.getValue[String]("name")
     val description = ConfigReader.getOptionalValue[String]("description")
     val _type = ConfigReader.getValue[String]("type", validValues = "boolean" :: "date" :: "decimal" :: "double" :: "integer" :: "long" :: "string" :: "time" :: "timestamp" :: "binary" :: "struct" :: "array" :: Nil)
@@ -360,7 +360,7 @@ object ArcSchema {
             val expectedKeys = "elementType" :: baseKeys
             val hasElementType = hasPath("elementType") |> valueTypeObject("elementType") _
             val elementType = if (hasElementType.isRight) Option(c.getConfig("elementType")) else None
-            val elementField = elementType.map { child => readField(child, 0, true) }.getOrElse(Right(StringColumn("","",None,true,None,true,Nil,None,None,None)))
+            val elementField = elementType.map { child => readField(child, 0, true) }.getOrElse(Right(StringColumn(None,"",None,true,None,true,Nil,None,None,None)))
             val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, hasElementType, elementField) match {
