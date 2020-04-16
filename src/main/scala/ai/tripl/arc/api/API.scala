@@ -102,7 +102,7 @@ object API {
       * constructing the initial hash for lineage as well as a general
       * reference.
       */
-    def id(): String
+    def id(): Option[String]
 
     /** The name of the column, should match the source.
       */
@@ -146,9 +146,9 @@ object API {
         case None => new MetadataBuilder()
       }
 
-      for (desc <- col.description) {
-        metadataBuilder.putString("description", desc)
-      }
+      for (id <- col.id) { metadataBuilder.putString("id", _) }
+      for (desc <- col.description) { metadataBuilder.putString("description", _) }
+
       metadataBuilder.putBoolean("nullable", col.nullable)
       metadataBuilder.putBoolean("internal", false)
 
@@ -157,32 +157,32 @@ object API {
     
   }
 
-  case class StringColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], minLength: Option[Int], maxLength: Option[Int]) extends ExtractColumn {
+  case class StringColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], minLength: Option[Int], maxLength: Option[Int]) extends ExtractColumn {
     val sparkDataType: DataType = StringType
   }
 
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class DateColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String], strict: Boolean) extends ExtractColumn {
+  case class DateColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String], strict: Boolean) extends ExtractColumn {
     val sparkDataType: DataType = DateType
   }
 
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class TimeColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String]) extends ExtractColumn {
+  case class TimeColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = StringType
   }
 
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class TimestampColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], timezoneId: String, formatters: List[String], time: Option[LocalTime], metadata: Option[String], strict: Boolean) extends ExtractColumn {
+  case class TimestampColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], timezoneId: String, formatters: List[String], time: Option[LocalTime], metadata: Option[String], strict: Boolean) extends ExtractColumn {
     val sparkDataType: DataType = TimestampType
   }
 
-  case class BinaryColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], encoding: EncodingType, metadata: Option[String]) extends ExtractColumn {
+  case class BinaryColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], encoding: EncodingType, metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = BinaryType
   }
 
@@ -196,32 +196,32 @@ object API {
   /** true / false values are lists of strings that are considered equivalent
     * to true or false e.g. "Y", "yes", "N", "no".
     */
-  case class BooleanColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], trueValues: List[String], falseValues: List[String], metadata: Option[String]) extends ExtractColumn {
+  case class BooleanColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], trueValues: List[String], falseValues: List[String], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = BooleanType
   }
 
-  case class IntegerColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean = true, nullableValues: List[String], metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
+  case class IntegerColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean = true, nullableValues: List[String], metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
     val sparkDataType: DataType = IntegerType
   }
 
-  case class LongColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
+  case class LongColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
     val sparkDataType: DataType = LongType
   }
 
-  case class DoubleColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
+  case class DoubleColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
     val sparkDataType: DataType = DoubleType
   }
 
-  case class DecimalColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], precision: Int, scale: Int, metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
+  case class DecimalColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], precision: Int, scale: Int, metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
     val sparkDataType: DataType = DecimalType(precision, scale)
   }
 
-  case class StructColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], fields: List[ExtractColumn], metadata: Option[String]) extends ExtractColumn {
+  case class StructColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], fields: List[ExtractColumn], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = StructType(fields.map { child => ExtractColumn.toStructField(child) }.toSeq)
   }    
 
 
-  case class ArrayColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], elementType: ExtractColumn, metadata: Option[String]) extends ExtractColumn {
+  case class ArrayColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], elementType: ExtractColumn, metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = ArrayType(ExtractColumn.toStructField(elementType).dataType, false)
   }      
 

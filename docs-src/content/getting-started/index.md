@@ -6,13 +6,15 @@ type: blog
 
 ## Get Started
 
-To quickly get started with a real-world example with real data you can clone the [Arc Starter](https://github.com/tripl-ai/arc-starter) project which has included job definitions and includes a limited set of data for you to quickly try Arc in a [custom](https://github.com/tripl-ai/arc-jupyter) [Jupyter Notebooks](https://jupyter.org/) environment.
+To quickly get started with a real-world example you can clone the [Arc Starter](https://github.com/tripl-ai/arc-starter) project which has included job definitions and includes a limited [set of data](https://registry.opendata.aws/nyc-tlc-trip-records-pds/) for you to quickly try Arc in a [custom](https://github.com/tripl-ai/arc-jupyter) [Jupyter Notebooks](https://jupyter.org/) environment.
 
 ```bash
 git clone https://github.com/tripl-ai/arc-starter.git
 cd arc-starter
 ./develop.sh
 ```
+
+The example is within the `examples/0/` directory.
 
 To work through a complete example try completing the [tutorial](/tutorial).
 

@@ -18,7 +18,7 @@ It is designed to:
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
-|id|String|true|{{< readfile file="/content/partials/fields/id.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/id.md" markdown="true" >}}|
 |name|String|true|{{< readfile file="/content/partials/fields/fieldName.md" markdown="true" >}}|
 |description|String|false|A description of the field which will be embedded in the dataset metadata (and persisted in formats like Parquet/ORC).|
 |type|String|true|{{< readfile file="/content/partials/fields/type.md" markdown="true" >}}|

@@ -4,7 +4,7 @@ weight: 95
 type: blog
 ---
 
-This section describes some job design patterns to deal with common ETL requirements.
+This section describes some common solutions to problems encountered when building ETL jobs. If this does not answer your question or you want to make an addition you can raise an issue in the [questions](https://github.com/tripl-ai/questions) repository.
 
 ## Database Inconsistency
 
