@@ -42,7 +42,7 @@ object ArcPipeline {
       case Right(uri) => getConfigString(uri)(spark, logger, arcContext)
     }
 
-    etlConfString.rightFlatMap { etlConfRaw =>
+    etlConfString.flatMap { etlConfRaw =>
       // convert from ipynb to config if required
       val (uriString, configString) = uri match {
         case Right(uri) => {
