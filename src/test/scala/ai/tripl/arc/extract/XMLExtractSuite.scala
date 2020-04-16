@@ -129,7 +129,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, _)) => {
         val df = ARC.run(pipeline)(spark, logger, arcContext).get
 
-        val expectedSchema = """{
+        val expectedSchema = """|{
         |  "type" : "struct",
         |  "fields" : [ {
         |    "name" : "testRow",
@@ -150,6 +150,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         |          "longMeta" : 10,
         |          "securityLevel" : 0,
         |          "doubleMeta" : 0.141,
+        |          "id" : "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
         |          "stringMeta" : "string",
         |          "booleanArrayMeta" : [ true, false ],
         |          "longArrayMeta" : [ 10, 20 ]
@@ -163,7 +164,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         |          "internal" : false,
         |          "private" : true,
         |          "description" : "dateDatum",
-        |          "securityLevel" : 3
+        |          "securityLevel" : 3,
+        |          "id" : "0e8109ba-1000-4b7d-8a4c-b01bae07027f"
         |        }
         |      }, {
         |        "name" : "decimalDatum",
@@ -174,7 +176,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         |          "internal" : false,
         |          "private" : true,
         |          "description" : "decimalDatum",
-        |          "securityLevel" : 2
+        |          "securityLevel" : 2,
+        |          "id" : "9712c383-22d1-44a6-9ca2-0087af4857f1"
         |        }
         |      }, {
         |        "name" : "doubleDatum",
@@ -185,7 +188,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         |          "internal" : false,
         |          "private" : true,
         |          "description" : "doubleDatum",
-        |          "securityLevel" : 8
+        |          "securityLevel" : 8,
+        |          "id" : "31541ea3-5b74-4753-857c-770bd601c35b"
         |        }
         |      }, {
         |        "name" : "integerDatum",
@@ -196,7 +200,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         |          "internal" : false,
         |          "private" : true,
         |          "description" : "integerDatum",
-        |          "securityLevel" : 10
+        |          "securityLevel" : 10,
+        |          "id" : "a66f3bbe-d1c6-44c7-b096-a4be59fdcd78"
         |        }
         |      }, {
         |        "name" : "longDatum",
@@ -207,7 +212,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         |          "internal" : false,
         |          "private" : false,
         |          "description" : "longDatum",
-        |          "securityLevel" : 0
+        |          "securityLevel" : 0,
+        |          "id" : "1c0eec1d-17cd-45da-8744-7a9ef5b8b086"
         |        }
         |      }, {
         |        "name" : "stringDatum",
@@ -218,7 +224,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         |          "internal" : false,
         |          "private" : false,
         |          "description" : "stringDatum",
-        |          "securityLevel" : 0
+        |          "securityLevel" : 0,
+        |          "id" : "9712c383-22d1-44a6-9ca2-0087af4857f1"
         |        }
         |      }, {
         |        "name" : "timeDatum",
@@ -229,7 +236,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         |          "internal" : false,
         |          "private" : true,
         |          "description" : "timeDatum",
-        |          "securityLevel" : 8
+        |          "securityLevel" : 8,
+        |          "id" : "eb17a18e-4664-4016-8beb-cd2a492d4f20"
         |        }
         |      }, {
         |        "name" : "timestampDatum",
@@ -240,7 +248,8 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         |          "internal" : false,
         |          "private" : true,
         |          "description" : "timestampDatum",
-        |          "securityLevel" : 7
+        |          "securityLevel" : 7,
+        |          "id" : "8e42c8f0-22a8-40db-9798-6dd533c1de36"
         |        }
         |      } ]
         |    },
@@ -250,6 +259,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         |      "internal" : false,
         |      "description" : "testrow",
         |      "primaryKey" : true,
+        |      "id" : "",
         |      "position" : 1
         |    }
         |  }, {
@@ -277,10 +287,10 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         val internal = df.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
         val actual = df.drop(internal:_*).select("testRow.*")
 
-        assert(TestUtils.datasetEquality(expected, actual))          
+        assert(TestUtils.datasetEquality(expected, actual))
       }
     }
-  }  
+  }
 
   test("XMLExtract: end-to-end with dynamic text input") {
     implicit val spark = session
@@ -305,7 +315,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           "inputView": "${inputView}",
           "outputView": "${outputView}",
           "multiLine": true
-        },        
+        },
         {
           "type": "XMLExtract",
           "name": "test",
@@ -335,10 +345,10 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         val internal = df.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
         val actual = df.drop(internal:_*).select("testRow.*")
 
-        assert(TestUtils.datasetEquality(expected, actual))      
+        assert(TestUtils.datasetEquality(expected, actual))
       }
     }
-  }  
+  }
 
 
   test("XMLExtract: Caching") {
@@ -582,5 +592,5 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
       case Left(err) => assert(err.toString.contains("""The prefix "xs" for element "xs:element" is not bound."""))
       case Right((pipeline, _)) => fail("should throw error")
     }
-  }  
+  }
 }

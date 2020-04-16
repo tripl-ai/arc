@@ -540,7 +540,8 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     """
 
     val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(meta)
-    assert(ExtractColumn.toStructField(schema.right.get(0)).metadata.json == """{"internal":false,"nullable":false,"description":"booleanDatum","test":{"abc":{"def":true}}}""")
+
+    assert(ExtractColumn.toStructField(schema.right.get(0)).metadata.json == """{"nullable":false,"test":{"abc":{"def":true}},"internal":false,"description":"booleanDatum","id":"982cbf60-7ba7-4e50-a09b-d8624a5c49e6"}""")
   }  
 
   test("TypingTransform: Execute with Structured Streaming" ) {

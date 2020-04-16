@@ -146,8 +146,8 @@ object API {
         case None => new MetadataBuilder()
       }
 
-      for (id <- col.id) { metadataBuilder.putString("id", _) }
-      for (desc <- col.description) { metadataBuilder.putString("description", _) }
+      col.id.foreach { metadataBuilder.putString("id", _) }
+      col.description.foreach { metadataBuilder.putString("description", _) }
 
       metadataBuilder.putBoolean("nullable", col.nullable)
       metadataBuilder.putBoolean("internal", false)
