@@ -17,5 +17,7 @@
   ],
   "persist": false,
   "schemaURI": "hdfs://datalake/schema/customer.json",
-  "schemaView": "customer_schema"
+  "schemaView": "customer_schema",
+  "inputView": "customer_xml",
+  "inputField": "xml"
 }

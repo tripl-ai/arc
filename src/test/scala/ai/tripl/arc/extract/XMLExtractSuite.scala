@@ -92,10 +92,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(err) => {
-        println(err)
-        assert(false)
-      }
+      case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => {
         val df = ARC.run(pipeline)(spark, logger, arcContext).get
         assert(df.count == 2)
@@ -285,6 +282,65 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     }
   }  
 
+  test("XMLExtract: end-to-end with dynamic text input") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    spark.sql(s"""
+    SELECT 'b' AS notValue, '${targetFileGlob}' AS value
+    """).createOrReplaceTempView(inputView)
+
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "TextExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${inputView}",
+          "outputView": "${outputView}",
+          "multiLine": true
+        },        
+        {
+          "type": "XMLExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${outputView}",
+          "inputField": "value",
+          "outputView": "${outputView}",
+          "schemaURI": "${getClass.getResource("/conf/schema/").toString}/knownDatasetXML.json"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+
+        val expected = TestUtils.getKnownDataset
+          .drop(col("nullDatum"))
+
+        val internal = df.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+        val actual = df.drop(internal:_*).select("testRow.*")
+
+        assert(TestUtils.datasetEquality(expected, actual))      
+      }
+    }
+  }  
+
+
   test("XMLExtract: Caching") {
     implicit val spark = session
     import spark.implicits._
@@ -300,6 +356,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         schema=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
+        inputField=None,
         authentication=None,
         params=Map.empty,
         persist=false,
@@ -320,6 +377,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         schema=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
+        inputField=None,
         authentication=None,
         params=Map.empty,
         persist=true,
@@ -340,7 +398,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
 
     val schema =
       BooleanColumn(
-        id="1",
+        None,
         name="booleanDatum",
         description=None,
         nullable=true,
@@ -362,6 +420,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           schema=Right(Nil),
           outputView=outputView,
           input=Right(emptyWildcardDirectory),
+          inputField=None,
           authentication=None,
           params=Map.empty,
           persist=false,
@@ -384,6 +443,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           schema=Right(Nil),
           outputView=outputView,
           input=Right(emptyDirectory),
+          inputField=None,
           authentication=None,
           params=Map.empty,
           persist=false,
@@ -405,6 +465,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         schema=Right(schema),
         outputView=outputView,
         input=Right(emptyDirectory),
+        inputField=None,
         authentication=None,
         params=Map.empty,
         persist=false,

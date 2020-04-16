@@ -37,11 +37,12 @@ class XMLExtract extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "xsdURI" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "inputField" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "xsdURI" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
     val parsedGlob = if (!c.hasPath("inputView")) getValue[String]("inputURI") |> parseGlob("inputURI") _ else Right("")
+    val inputField = getOptionalValue[String]("inputField")
     val authentication = readAuthentication("authentication")
     val outputView = getValue[String]("outputView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
@@ -55,8 +56,8 @@ class XMLExtract extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, xsdURI, xsd, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(xsdURI), Right(xsd), Right(invalidKeys)) =>
+    (name, description, extractColumns, schemaView, inputView, parsedGlob, inputField, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, xsdURI, xsd, invalidKeys) match {
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(inputField), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(xsdURI), Right(xsd), Right(invalidKeys)) =>
         val input = if(c.hasPath("inputView")) Left(inputView) else Right(parsedGlob)
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
         val xsdOption = if(c.hasPath("xsdURI")) Option(xsd) else None
@@ -68,6 +69,7 @@ class XMLExtract extends PipelineStagePlugin {
           schema=schema,
           outputView=outputView,
           input=input,
+          inputField=inputField,
           authentication=authentication,
           params=params,
           persist=persist,
@@ -82,6 +84,7 @@ class XMLExtract extends PipelineStagePlugin {
           case Right(parsedGlob) => stage.stageDetail.put("inputURI", parsedGlob)
         }
         if (c.hasPath("xsdURI")) stage.stageDetail.put("xsdURI", xsdURI)
+        inputField.foreach { stage.stageDetail.put("inputField", _) }
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
@@ -89,7 +92,7 @@ class XMLExtract extends PipelineStagePlugin {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, xsdURI, xsd, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, inputField, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, xsdURI, xsd, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -118,6 +121,7 @@ case class XMLExtractStage(
     schema: Either[String, List[ExtractColumn]],
     outputView: String,
     input: Either[String, String],
+    inputField: Option[String],
     authentication: Option[Authentication],
     params: Map[String, String],
     persist: Boolean,
@@ -175,7 +179,11 @@ object XMLExtractStage {
         }
         case Left(view) => {
           val xmlReader = new XmlReader
-          val textRdd = spark.table(view).as[String].rdd
+
+          val textRdd = stage.inputField match {
+            case Some(inputField) => spark.table(view).select(col(inputField)).as[String].rdd
+            case None => spark.table(view).as[String].rdd
+          }
 
           // if we have an xsd validator
           for (xsd <- stage.xsd) {
