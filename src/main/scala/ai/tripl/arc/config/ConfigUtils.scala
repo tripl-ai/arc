@@ -95,7 +95,7 @@ object ConfigUtils {
           case (None, _, _, _, Some(AmazonS3EncryptionType.SSE_KMS), None, None) =>
             CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aEncType, s3aKmsId, None)))
           case (None, _, _, _, Some(AmazonS3EncryptionType.SSE_C), None, None) =>
-            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aEncType, None, s3aCustomKey)))   
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aEncType, None, s3aCustomKey)))
           case _ =>
             CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(None, None, None)))
         }
@@ -214,7 +214,7 @@ object ConfigUtils {
         }.map { case (cell, _) =>
           cell.split("\n").drop(1).mkString("\n")
         }
-      
+
       // calculate the lifecycle plugins
       val lifecycles = sources
         .filter { case (cell, _) =>
@@ -222,7 +222,7 @@ object ConfigUtils {
         }.map { case (cell, _) =>
           cell.split("\n").drop(1).mkString("\n")
         }
-              
+
         // calculate the arc stages
         val stages = sources
         .filter { case (cell, _) =>
@@ -245,10 +245,10 @@ object ConfigUtils {
               val args = parseArgs(behavior)
               val sqlParams = args.get("sqlParams") match {
                 case Some(sqlParams) => {
-                  parseArgs(sqlParams.replace(",", " ")).map{ 
+                  parseArgs(sqlParams.replace(",", " ")).map{
                     case (k, v) => {
                       if (v.trim().startsWith("${")) {
-                        s""""${k}": ${v}""" 
+                        s""""${k}": ${v}"""
                       } else {
                         s""""${k}": "${v}""""
                       }
@@ -256,7 +256,7 @@ object ConfigUtils {
                   }.mkString(",")
                 }
                 case None => ""
-              }    
+              }
 
               if (behavior.toLowerCase.startsWith("%sqlvalidate")) {
                 s"""{
@@ -267,7 +267,7 @@ object ConfigUtils {
                 |  "sql": \"\"\"${command}\"\"\",
                 |  "sqlParams": {${sqlParams}},
                 |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "numRows", "truncate", "persist", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
-                |}""".stripMargin  
+                |}""".stripMargin
               } else {
                 s"""{
                 |  "type": "SQLTransform",
@@ -279,10 +279,10 @@ object ConfigUtils {
                 |  "persist": ${args.getOrElse("persist", "false")},
                 |  "sqlParams": {${sqlParams}},
                 |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "outputView", "numRows", "truncate", "persist", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
-                |}""".stripMargin 
+                |}""".stripMargin
               }
             }
-            case _ => cell                
+            case _ => cell
           }
         }
 
@@ -316,7 +316,7 @@ object ConfigUtils {
     }
 
     args
-  }  
+  }
 
   def readMap(path: String, c: Config): Map[String, String] = {
     if (c.hasPath(path)) {
@@ -388,7 +388,7 @@ object ConfigUtils {
       val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
       if (isLocalMaster && (glob.trim.startsWith("s3://") | glob.trim.startsWith("s3n://"))) {
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
-      }      
+      }
       Right(glob)
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
@@ -582,7 +582,7 @@ object ConfigUtils {
       val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
       if (isLocalMaster && (uri.trim.startsWith("s3://") | uri.trim.startsWith("s3n://"))) {
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
-      }              
+      }
       Right(u)
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
@@ -623,7 +623,7 @@ object ConfigUtils {
     errors match {
       case Nil => Right(schema.reverse)
       case _ => Left(errors.reverse)
-    }    
+    }
   }
 
 
@@ -756,4 +756,14 @@ object ConfigUtils {
       Right(sql)
     }
   }
+
+  def doubleMinMax(path: String, min: Option[Double], max: Option[Double])(value: java.lang.Double)(implicit c: com.typesafe.config.Config): Either[Errors, Double] = {
+    (value, min, max) match {
+      case (v: java.lang.Double, Some(min), None) if (v < min) => Left(ConfigError(path, None, s"'${path}' ${v} below minimal allowed value ${min}.") :: Nil)
+      case (v: java.lang.Double, Some(min), Some(max)) if (v < min || v > max) => Left(ConfigError(path, None, s"'${path}' ${v} must be between ${min} and ${max}.") :: Nil)
+      case (v: java.lang.Double, None, Some(max)) if (v > max) => Left(ConfigError(path, None, s"'${path}' ${v} above maximum allowed value ${max}.") :: Nil)
+      case (v: java.lang.Double, _, _) => Right(v)
+    }
+  }
+  
 }
