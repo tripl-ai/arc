@@ -45,6 +45,22 @@
         font-weight: normal;
         font-style: normal;
       }
+
+      @font-face {
+        font-family: 'clipboard';
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot'); 
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot') 
+            format('embedded-opentype'),
+            url('https://arc.tripl.ai/fonts/clipboard.ttf') 
+              format('truetype'),
+            url('https://arc.tripl.ai/fonts/clipboard.woff') 
+              format('woff'),
+            url('https://arc.tripl.ai/fonts/clipboard.svg') 
+              format('svg');
+        font-weight: normal;
+        font-style: normal;
+        font-display: block;
+      }
     </style>
 
     <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
@@ -139,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.9.0</span></strong>
+          <span class="version">2.10.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -293,9 +309,9 @@
 
 
 
-<a  title="Metadata" href="https://arc.tripl.ai/metadata/">
+<a  title="Schema" href="https://arc.tripl.ai/schema/">
 	
-	Metadata
+	Schema
 </a>
 
 
@@ -329,6 +345,24 @@
 
 
 
+<a  title="Security" href="https://arc.tripl.ai/security/">
+	
+	Security
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="Plugins" href="https://arc.tripl.ai/plugins/">
 	
 	Plugins
@@ -347,27 +381,9 @@
 
 
 
-<a  title="Partials" href="https://arc.tripl.ai/partials/">
+<a  title="Common Solutions" href="https://arc.tripl.ai/solutions/">
 	
-	Partials
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Patterns" href="https://arc.tripl.ai/patterns/">
-	
-	Patterns
+	Common Solutions
 </a>
 
 
@@ -431,7 +447,7 @@
 <li>Allow for <a href="http://www.dbms2.com/2014/07/15/the-point-of-predicate-pushdown/">Predicate Pushdown</a> depending on data source.</li>
 </ul>
 
-<p>File based <code>*Extract</code> stages can accept <code>glob</code> patterns as input filenames which can be very useful to load just a subset of data. For example <a href="../patterns/#delta-processing">delta processing</a>:</p>
+<p>File based <code>*Extract</code> stages can accept <code>glob</code> patterns as input filenames which can be very useful to load just a subset of data. For example <a href="../solutions/#delta-processing">delta processing</a>:</p>
 
 <table>
 <thead>
@@ -484,7 +500,7 @@
 </tbody>
 </table>
 
-<p>Spark will automatically match file extensions of <code>.zip</code>, <code>.bz2</code>, <code>.deflate</code> and <code>.gz</code> and perform decompression automatically.</p>
+<p>Spark will automatically match file extensions of <code>.bz2</code>, <code>.deflate</code> and <code>.gz</code> and perform decompression automatically.</p>
 
 <h2 id="avroextract">AvroExtract</h2>
 
@@ -544,7 +560,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -660,11 +676,11 @@
     <span class="s2">&#34;country&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
   <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/*.avro&#34;</span><span class="p">,</span>
   <span class="nt">&#34;inputField&#34;</span><span class="p">:</span> <span class="s2">&#34;value&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;avroSchemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/user.avsc&#34;</span>
+  <span class="nt">&#34;avroSchemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/user.avsc&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="bytesextract">BytesExtract</h2>
@@ -725,7 +741,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1119,7 +1135,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1268,7 +1284,7 @@
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;quote&#34;</span><span class="p">:</span> <span class="s2">&#34;DoubleQuote&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
   <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span><span class="p">,</span>
   <span class="nt">&#34;watermark&#34;</span><span class="p">:</span> <span class="p">{</span>
@@ -1689,7 +1705,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1842,7 +1858,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1979,7 +1995,7 @@
     <span class="s2">&#34;id=3&#34;</span><span class="p">,</span>
     <span class="s2">&#34;id=4&#34;</span>
   <span class="p">],</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
 <span class="p">}</span></code></pre></div>
 
@@ -2043,7 +2059,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -2168,7 +2184,7 @@
     <span class="s2">&#34;country&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
   <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span><span class="p">,</span>
   <span class="nt">&#34;watermark&#34;</span><span class="p">:</span> <span class="p">{</span>
@@ -2569,7 +2585,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -2712,7 +2728,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -2821,7 +2837,7 @@
     <span class="s2">&#34;country&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
   <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span><span class="p">,</span>
   <span class="nt">&#34;watermark&#34;</span><span class="p">:</span> <span class="p">{</span>
@@ -2881,7 +2897,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -2990,7 +3006,7 @@
     <span class="s2">&#34;country&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
   <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span><span class="p">,</span>
   <span class="nt">&#34;watermark&#34;</span><span class="p">:</span> <span class="p">{</span>
@@ -3157,7 +3173,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -3293,10 +3309,17 @@
 </tr>
 
 <tr>
+<td>inputView</td>
+<td>String</td>
+<td>true*</td>
+<td>Name of the incoming Spark dataset containing a list of URI/Globs to extract from.  If not present <code>inputURI</code> is requred.</td>
+</tr>
+
+<tr>
 <td>inputURI</td>
 <td>URI</td>
-<td>true</td>
-<td>URI/Glob of the input <code>text</code> files.</td>
+<td>true*</td>
+<td>URI/Glob of the input text files. If not present <code>inputView</code> is requred.</td>
 </tr>
 
 <tr>
@@ -3310,7 +3333,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -3338,7 +3361,7 @@
 <td>multiLine</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether the to load the file as a single record or as individual records split by newline.<br><br>Default: false.</td>
+<td>Whether the to load the file as a single record or as individual records split by newline.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -3411,13 +3434,14 @@
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/*.txt&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;list_of_text_files_to_extract&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
   <span class="nt">&#34;contiguousIndex&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
   <span class="nt">&#34;multiLine&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
   <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
   <span class="nt">&#34;basePath&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/customer/&#34;</span><span class="p">,</span>
   <span class="nt">&#34;watermark&#34;</span><span class="p">:</span> <span class="p">{</span>
@@ -3492,7 +3516,7 @@ FROM books_xml
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -3507,6 +3531,13 @@ FROM books_xml
 <td>String</td>
 <td>false</td>
 <td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>inputField</td>
+<td>String</td>
+<td>false</td>
+<td>If using <code>inputView</code> this option allows you to specify the name of the field which contains the XML data.</td>
 </tr>
 
 <tr>
@@ -3595,8 +3626,10 @@ FROM books_xml
     <span class="s2">&#34;country&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_xml&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputField&#34;</span><span class="p">:</span> <span class="s2">&#34;xml&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 
@@ -3716,10 +3749,30 @@ FROM books_xml
       }
     </script>
 
+    <script>
+      document.querySelectorAll('pre > code').forEach(function (codeBlock) {
+        var button = document.createElement('div');
+        button.className = 'copy-code-button';
+        button.role = 'img';
+        button.alt = 'copy-code-button';
+
+        button.addEventListener('click', function () {
+            clipboard.writeText(codeBlock.innerText).then(function () {
+                button.blur();
+            }, function (error) {
+              console.log(`cannot copy to clipboard ${error}`)
+            });
+        });        
+
+        codeBlock.insertBefore(button, codeBlock.firstChild);
+      });
+    </script>
+
     
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard-polyfill/2.7.0/clipboard-polyfill.promise.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
   </body>
 </html>

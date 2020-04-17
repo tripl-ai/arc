@@ -45,6 +45,22 @@
         font-weight: normal;
         font-style: normal;
       }
+
+      @font-face {
+        font-family: 'clipboard';
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot'); 
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot') 
+            format('embedded-opentype'),
+            url('https://arc.tripl.ai/fonts/clipboard.ttf') 
+              format('truetype'),
+            url('https://arc.tripl.ai/fonts/clipboard.woff') 
+              format('woff'),
+            url('https://arc.tripl.ai/fonts/clipboard.svg') 
+              format('svg');
+        font-weight: normal;
+        font-style: normal;
+        font-display: block;
+      }
     </style>
 
     <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
@@ -139,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.9.0</span></strong>
+          <span class="version">2.10.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -293,9 +309,9 @@
 
 
 
-<a  title="Metadata" href="https://arc.tripl.ai/metadata/">
+<a  title="Schema" href="https://arc.tripl.ai/schema/">
 	
-	Metadata
+	Schema
 </a>
 
 
@@ -329,6 +345,24 @@
 
 
 
+<a  title="Security" href="https://arc.tripl.ai/security/">
+	
+	Security
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="Plugins" href="https://arc.tripl.ai/plugins/">
 	
 	Plugins
@@ -347,27 +381,9 @@
 
 
 
-<a  title="Partials" href="https://arc.tripl.ai/partials/">
+<a  title="Common Solutions" href="https://arc.tripl.ai/solutions/">
 	
-	Partials
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Patterns" href="https://arc.tripl.ai/patterns/">
-	
-	Patterns
+	Common Solutions
 </a>
 
 
@@ -472,7 +488,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -695,7 +711,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -887,7 +903,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1044,10 +1060,30 @@
       }
     </script>
 
+    <script>
+      document.querySelectorAll('pre > code').forEach(function (codeBlock) {
+        var button = document.createElement('div');
+        button.className = 'copy-code-button';
+        button.role = 'img';
+        button.alt = 'copy-code-button';
+
+        button.addEventListener('click', function () {
+            clipboard.writeText(codeBlock.innerText).then(function () {
+                button.blur();
+            }, function (error) {
+              console.log(`cannot copy to clipboard ${error}`)
+            });
+        });        
+
+        codeBlock.insertBefore(button, codeBlock.firstChild);
+      });
+    </script>
+
     
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard-polyfill/2.7.0/clipboard-polyfill.promise.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
   </body>
 </html>

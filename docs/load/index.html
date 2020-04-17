@@ -45,6 +45,22 @@
         font-weight: normal;
         font-style: normal;
       }
+
+      @font-face {
+        font-family: 'clipboard';
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot'); 
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot') 
+            format('embedded-opentype'),
+            url('https://arc.tripl.ai/fonts/clipboard.ttf') 
+              format('truetype'),
+            url('https://arc.tripl.ai/fonts/clipboard.woff') 
+              format('woff'),
+            url('https://arc.tripl.ai/fonts/clipboard.svg') 
+              format('svg');
+        font-weight: normal;
+        font-style: normal;
+        font-display: block;
+      }
     </style>
 
     <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
@@ -139,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.9.0</span></strong>
+          <span class="version">2.10.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -293,9 +309,9 @@
 
 
 
-<a  title="Metadata" href="https://arc.tripl.ai/metadata/">
+<a  title="Schema" href="https://arc.tripl.ai/schema/">
 	
-	Metadata
+	Schema
 </a>
 
 
@@ -329,6 +345,24 @@
 
 
 
+<a  title="Security" href="https://arc.tripl.ai/security/">
+	
+	Security
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="Plugins" href="https://arc.tripl.ai/plugins/">
 	
 	Plugins
@@ -347,27 +381,9 @@
 
 
 
-<a  title="Partials" href="https://arc.tripl.ai/partials/">
+<a  title="Common Solutions" href="https://arc.tripl.ai/solutions/">
 	
-	Partials
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Patterns" href="https://arc.tripl.ai/patterns/">
-	
-	Patterns
+	Common Solutions
 </a>
 
 
@@ -481,7 +497,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1113,7 +1129,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1682,7 +1698,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -2058,7 +2074,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -2177,7 +2193,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -2296,7 +2312,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -2331,7 +2347,7 @@
 <td>singleFile</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Write to a single text file instead of a directory containing one or more partitions. Accepts datasets with either <code>[value: string]</code> or <code>[value: string, filename: string]</code> schema. If <code>filename</code> is supplied this component will write to multiple files by prepending <code>outputURI</code>. Warning: this will pull the entire dataset to memory on the driver process so will not work for large datasets unless the driver has a sufficiently large memory allocation.</td>
+<td>Write in single file mode instead of a directory containing one or more partitions. Accepts datasets with either <code>[value: string]</code>, <code>[value: string, filename: string]</code> or <code>[value: string, filename: string, index: integer]</code> schema. If <code>filename</code> is supplied this component will write to multiple files by prepending <code>outputURI</code>. If <code>index</code> is supplied this component will order the records in each <code>filename</code> by <code>index</code> before writing.</td>
 </tr>
 
 <tr>
@@ -2444,7 +2460,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -2474,10 +2490,50 @@
 <td>false</td>
 <td>The mode for writing the output file to describe how errors are handled. Available options are: <code>Append</code>, <code>ErrorIfExists</code>, <code>Ignore</code>, <code>Overwrite</code>. Default is <code>Overwrite</code> if not specified.</td>
 </tr>
+
+<tr>
+<td>singleFile</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Write in single file mode instead of a directory containing one or more partitions. Accepts datasets with either <code>[value: string]</code>, <code>[value: string, filename: string]</code> or <code>[value: string, filename: string, index: integer]</code> schema. If <code>filename</code> is supplied this component will write to multiple files by prepending <code>outputURI</code>. If <code>index</code> is supplied this component will order the records in each <code>filename</code> by <code>index</code> before writing.</td>
+</tr>
+
+<tr>
+<td>prefix</td>
+<td>String</td>
+<td>false</td>
+<td>A string to append before the row data when in <code>singleFile</code> mode. Useful for specifying the encoding <code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</code>.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-15">Examples</h3>
+
+<p>The XML writer uses reserved keywords to be able to set attributes as well as values. The <code>_VALUE</code> value is reserved to define values when attributes which are prefixed with an underscore (<code>_</code>) exist:</p>
+
+<pre><code class="language-sql">SELECT
+  NAMED_STRUCT(
+    '_VALUE', NAMED_STRUCT(
+      'child0', 0,
+      'child1', NAMED_STRUCT(
+        'nested0', 0,
+        'nested1', 'nestedvalue'
+      )
+    ),
+    '_attributeName', 'attributeValue'
+  ) AS Document
+</code></pre>
+
+<p>Results in:</p>
+
+<pre><code class="language-xml">&lt;Document attributeName=&quot;attributeValue&quot;&gt;
+  &lt;child0&gt;1&lt;/child0&gt;
+  &lt;child1&gt;
+    &lt;nested0&gt;1&lt;/nested0&gt;
+    &lt;nested1&gt;nestedvalue&lt;/nested1&gt;
+  &lt;/child1&gt;
+&lt;/Document&gt;
+</code></pre>
 
 <h4 id="minimal-15">Minimal</h4>
 
@@ -2509,7 +2565,9 @@
   <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;country&#34;</span>
   <span class="p">],</span>
-  <span class="nt">&#34;saveMode&#34;</span><span class="p">:</span> <span class="s2">&#34;Overwrite&#34;</span>
+  <span class="nt">&#34;saveMode&#34;</span><span class="p">:</span> <span class="s2">&#34;Overwrite&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;singleFile&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;prefix&#34;</span><span class="p">:</span> <span class="s2">&#34;&lt;?xml version=&#34;</span><span class="mf">1.0</span><span class="s2">&#34; encoding=&#34;</span><span class="err">UTF</span><span class="mi">-8</span><span class="s2">&#34;?&gt;\n&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 
@@ -2629,10 +2687,30 @@
       }
     </script>
 
+    <script>
+      document.querySelectorAll('pre > code').forEach(function (codeBlock) {
+        var button = document.createElement('div');
+        button.className = 'copy-code-button';
+        button.role = 'img';
+        button.alt = 'copy-code-button';
+
+        button.addEventListener('click', function () {
+            clipboard.writeText(codeBlock.innerText).then(function () {
+                button.blur();
+            }, function (error) {
+              console.log(`cannot copy to clipboard ${error}`)
+            });
+        });        
+
+        codeBlock.insertBefore(button, codeBlock.firstChild);
+      });
+    </script>
+
     
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard-polyfill/2.7.0/clipboard-polyfill.promise.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
   </body>
 </html>
