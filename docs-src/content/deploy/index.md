@@ -4,11 +4,11 @@ weight: 80
 type: blog
 ---
 
-Arc has been packaged as a [Docker](https://hub.docker.com/u/triplai) image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the [https://hub.docker.com/u/triplai](https://hub.docker.com/u/triplai) for the relevant version.
+Arc has been packaged as a [Docker](https://hub.docker.com/u/triplai) image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the [https://hub.docker.com/u/triplai](https://hub.docker.com/u/triplai) for the relevant version. The Arc container is built using the offical Spark Kubernetes images so running locally requires overriding the Docker `entrypoint`.
 
 The [deploy](https://github.com/tripl-ai/deploy) repository has examples of how to run Arc jobs on common cloud environments.
 
-## Running a Job
+## Local
 
 An example command to start a job from the [Arc Starter](https://github.com/tripl-ai/arc-starter) base directory:
 
@@ -17,12 +17,13 @@ docker run \
 --rm \
 --volume $(pwd)/examples:/home/jovyan/examples:Z \
 --env "ETL_CONF_ENV=production" \
---env "ETL_CONF_JOB_PATH=/opt/tutorial/basic/job/0" \
--p 4040:4040 \
+--entrypoint='' \
+--publish 4040:4040 \
 {{% docker_image %}} \
 bin/spark-submit \
 --master local[*] \
 --driver-memory 4g \
+--driver-java-options "-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
 --class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///home/jovyan/examples/tutorial/0/nyctaxi.ipynb
@@ -32,11 +33,29 @@ This example is included to demonstrate:
 
 - `ETL_CONF_ENV` is a reserved environment variable which determines which stages to execute in the current mode. For each of the stages the job designer can specify an array of `environments` under which that stage will be executed (in the case above `production` and `test` are specified).<br><br>The purpose of this stage is so that it is possible to add or remove stages for execution modes like `test` or `integration` which are executed by a [CI/CD](https://en.wikipedia.org/wiki/CI/CD) tool prior to deployment and that you do not want to run in `production` mode - so maybe a comparison against a known 'good' test dataset could be executed in only `test` mode.
 
-- `ETL_CONF_JOB_PATH` is an environment variable that is parsed and included by string interpolation when the job file is executed. This is included so that potentially different paths would be set for running in `test` vs `production` mode.
-
 - In this sample job the spark master is `local[*]` indicating that this is a single instance 'cluster' where Arc relies on [vertical](https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling) not [horizonal](https://en.wikipedia.org/wiki/Scalability#Horizontal_and_vertical_scaling) scaling. Depending on the constrains of the job (i.e. CPU vs disk IO) it is often better to execute with vertical scaling on cloud compute rather than pay the cost of network shuffling.
 
 - `etl.config.uri` is a reserved JVM property which describes to Arc which job to execute. See below for all the properties that can be passed to Arc.
+
+## Kubernetes
+
+Arc is built using the offical [Spark Kubernetes](https://spark.apache.org/docs/latest/running-on-kubernetes) image [build process](https://spark.apache.org/docs/latest/running-on-kubernetes.html#docker-images) which allows Arc to be easily deployed to a Kubernetes cluster.
+
+```bash
+bin/spark-submit \
+--master k8s://https://<k8s-apiserver-host>:<k8s-apiserver-port> \
+--deploy-mode cluster \
+--name arc \
+--class ai.tripl.arc.ARC \
+--conf spark.executor.instances=1 \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+--conf spark.kubernetes.container.image={{% docker_image %}}  \
+--conf spark.kubernetes.driverEnv.ETL_CONF_ENV=production \
+--conf spark.kubernetes.driverEnv.ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data \
+--conf spark.kubernetes.driverEnv.ETL_CONF_JOB_URL=https://raw.githubusercontent.com/tripl-ai/arc-starter/master/examples/kubernetes \
+local:///opt/spark/jars/arc.jar \
+--etl.config.uri=https://raw.githubusercontent.com/tripl-ai/arc-starter/master/examples/kubernetes/nyctaxi.ipynb
+```
 
 ## Configuration Parameters
 
