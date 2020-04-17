@@ -111,7 +111,6 @@ class DataLineageSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, arcCtx)) => 
     
       val df = ARC.run(pipeline)(spark, logger, arcCtx).get
-      df.show(false)
     
     }
   }  

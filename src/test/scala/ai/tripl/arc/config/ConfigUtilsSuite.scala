@@ -553,7 +553,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val auth = ConfigUtils.readAuthentication("authentication")
 
     auth match {
-      case Right(Some(Authentication.AmazonIAM(encType, arn, customKey))) => {
+      case Right(Some(Authentication.AmazonIAM(None, encType, arn, customKey))) => {
         assert(encType == Some(AmazonS3EncryptionType.SSE_KMS))
         assert(arn == Some("586E7EA1-845F-41D5-A2F6-9B72A4A76243"))
         assert(customKey == None)

@@ -99,6 +99,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
 
       val actual = spark.read.text(targetSingleFileWildcard).withColumn("_filename", input_file_name())
+      actual.persist
       assert(actual.where(s"_filename LIKE '%${targetSingleFile0}'").collect.map(_.getString(0)).mkString("|") == "a|b|c")
       assert(actual.where(s"_filename LIKE '%${targetSingleFile1}'").collect.map(_.getString(0)).mkString("|") == "d|e")
       assert(actual.where(s"_filename LIKE '%${targetSingleFile2}'").collect.map(_.getString(0)).mkString("|") == "f")      

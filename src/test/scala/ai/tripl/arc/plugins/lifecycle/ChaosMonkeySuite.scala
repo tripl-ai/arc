@@ -44,7 +44,7 @@ class ChaosMonkeySuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  test("DataLineage: test log") {
+  test("ChaosMonkey: test exception") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
