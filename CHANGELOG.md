@@ -13,6 +13,7 @@
 - deprecate of `get_json_double_array`, `get_json_integer_array`, `get_json_long_array` in favor of inbuilt `get_json_object`.
 - ability to pass in config file via `http` or `https`.
 - **BREAKING** remove `DataFramePrinter` lifecycle plugin as it presents too much risk of data leakage.
+- **BREAKING** Amazon Web Services `authentication` methods will now limit their scope to specific buckets rather than global.
 - **BREAKING** remove ability to read `.zip` files.
 
 **NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
