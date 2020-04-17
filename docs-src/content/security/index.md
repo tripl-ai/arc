@@ -100,10 +100,10 @@ This approach is being reworked to be more targeted 'scope', i.e. to specific bu
 
 ## Amazon Web Services
 
-When running on Amazon Web Services Arc will try to resolve permissions in this order. Work is underway to allow override of these defaults at bucket level.
+When running on Amazon Web Services Arc will try to resolve permissions in this order. These can ben overridden for a specific stage by specifying a [authentication](../security/#authentication) method.
 
 - `SimpleAWSCredentialsProvider`: access key and secret
 - `EnvironmentVariableCredentialsProvider`: environment variables of access key and secret
 - `InstanceProfileCredentialsProvider`: IAM Role attached to the EC2 instance
 - `ContainerCredentialsProvider`: IAM Role attached to the container in case of ECS and EKS
-- `AnonymousAWSCredentialsProvider`: try to access without s3.
+- `AnonymousAWSCredentialsProvider`: try to access without credentials - useful for accessing the [Registry of Open Data on AWS](https://registry.opendata.aws/).
