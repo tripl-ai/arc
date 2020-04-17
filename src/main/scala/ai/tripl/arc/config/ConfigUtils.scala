@@ -52,6 +52,10 @@ object ConfigUtils {
         }
         Right(etlConfString)
       }
+      case "http" | "https" => {
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }      
       // databricks file system
       case "dbfs" => {
         val etlConfString = CloudUtils.getTextBlob(uri)
@@ -182,7 +186,7 @@ object ConfigUtils {
   }
 
   // read an ipython notebook and convert to arc standard job string
-  def readIPYNB(uri: String, notebook: String): String = {
+  def readIPYNB(uri: Option[String], notebook: String): String = {
     val objectMapper = new ObjectMapper
     val jsonTree = objectMapper.readTree(notebook)
 
@@ -242,7 +246,9 @@ object ConfigUtils {
               command
             }
             case b: String if (b.toLowerCase.startsWith("%sql")) => {
-              val args = parseArgs(behavior)
+              val args = parseArgs(behavior).map {
+                case (k,v) => (k, v.stripPrefix(""""""").stripSuffix(""""""").trim)
+              }
               val sqlParams = args.get("sqlParams") match {
                 case Some(sqlParams) => {
                   parseArgs(sqlParams.replace(",", " ")).map{

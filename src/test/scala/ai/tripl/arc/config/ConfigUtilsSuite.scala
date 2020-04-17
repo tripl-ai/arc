@@ -594,4 +594,16 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  // this test verifies ipynb for inline sql
+  test("Test read .ipynb tutorial") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false,commandLineArguments=Map[String,String]("ETL_CONF_DATA_URL" -> "", "ETL_CONF_JOB_URL" -> ""))
+
+    val targetFile = getClass.getResource("/conf/nyctaxi.ipynb").toString
+    val file = spark.read.option("wholetext", true).text(targetFile)
+    val conf = ConfigUtils.readIPYNB(None, file.first.getString(0))
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+  }  
+
 }
