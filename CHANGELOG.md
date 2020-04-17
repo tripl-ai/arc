@@ -11,6 +11,7 @@
 - add support for `TextExtract` to be suppiled an `inputView`.
 - fix any deprecations preventing upgrade to Spark 3.0.
 - deprecate of `get_json_double_array`, `get_json_integer_array`, `get_json_long_array` in favor of inbuilt `get_json_object`.
+- ability to pass in config file via `http` or `https`.
 - **BREAKING** remove `DataFramePrinter` lifecycle plugin as it presents too much risk of data leakage.
 - **BREAKING** remove ability to read `.zip` files.
 
