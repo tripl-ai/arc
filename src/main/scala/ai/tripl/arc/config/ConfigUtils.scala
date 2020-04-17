@@ -471,7 +471,7 @@ object ConfigUtils {
               Right(Some(Authentication.AzureDataLakeStorageGen2OAuth(clientID, secret, directoryID)))
             }
             case Some("AmazonAccessKey") => {
-              val s3aBucket = uri.map { new URI(_).getAuthority }
+              val s3aBucket = getS3Bucket(uri)
               val accessKeyID = authentication.get("accessKeyID") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AmazonAccessKey' requires 'accessKeyID' parameter.")
@@ -503,15 +503,15 @@ object ConfigUtils {
               Right(Some(Authentication.AmazonAccessKey(s3aBucket, accessKeyID, secretAccessKey, endpoint, sslEnabled)))
             }
             case Some("AmazonAnonymous") => {
-              val s3aBucket = uri.map { new URI(_).getAuthority }
+              val s3aBucket = getS3Bucket(uri)
               Right(Some(Authentication.AmazonAnonymous(s3aBucket)))
             }        
             case Some("AmazonEnvironmentVariable") => {
-              val s3aBucket = uri.map { new URI(_).getAuthority }
+              val s3aBucket = getS3Bucket(uri)
               Right(Some(Authentication.AmazonEnvironmentVariable(s3aBucket)))
             }                      
             case Some("AmazonIAM") => {
-              val s3aBucket = uri.map { new URI(_).getAuthority }
+              val s3aBucket = getS3Bucket(uri)
               val encType = authentication.get("encryptionAlgorithm").flatMap( AmazonS3EncryptionType.fromString(_) )
               val kmsId = authentication.get("kmsArn")
               val customKey = authentication.get("customKey")
@@ -550,6 +550,8 @@ object ConfigUtils {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), s"Unable to read config value: ${e.getMessage}")
     }
   }
+
+  def getS3Bucket(uri: Option[String]): Option[String] = uri.map { new URI(_).getAuthority }
 
   def readWatermark(path: String)(implicit c: Config): Either[Errors, Option[Watermark]] = {
 
