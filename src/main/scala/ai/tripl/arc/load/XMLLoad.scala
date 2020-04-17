@@ -285,8 +285,7 @@ object XMLLoadStage {
 
         repartitionedDF.foreachPartition { partition: Iterator[Row] =>
           if (partition.hasNext) {
-            val haodopConf = broadcastHadoopConf.value.value
-            val fs = FileSystem.get(haodopConf)
+            val hadoopConf = broadcastHadoopConf.value.value
 
             // buffer so first row can be accessed
             val bufferedPartition = partition.buffered
@@ -298,32 +297,32 @@ object XMLLoadStage {
               0
             }
             val valueSchema = StructType(Seq(firstRow.schema.fields(valueIndex)))
-            val filename = if (hasFilename) {
-              if (!fs.isDirectory(new Path(stageOutputURI))) {
-                throw new Exception(s"TextLoad requires outputURI '${stageOutputURI}' to be a directory when in singleFile with 'filename' mode.")
-              }
+
+            val path = if (hasFilename) {
               new Path(new URI(s"""${stageOutputURI}/${firstRow.getString(firstRow.fieldIndex("filename"))}"""))
             } else {
               new Path(stageOutputURI)
             }
 
+            val fs = path.getFileSystem(hadoopConf)            
+
             // create the outputStream for that file
-            val outputStream = if (fs.exists(filename)) {
+            val outputStream = if (fs.exists(path)) {
               stageSaveMode match {
                 case SaveMode.ErrorIfExists => {
-                  throw new Exception(s"File '${filename.toString}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
+                  throw new Exception(s"File '${path.toString}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
                 }
                 case SaveMode.Overwrite => {
-                  Option(fs.create(filename, true))
+                  Option(fs.create(path, true))
 
                 }
                 case SaveMode.Append => {
-                  Option(fs.append(filename))
+                  Option(fs.append(path))
                 }
                 case _ => None
               }
             } else {
-              Option(fs.create(filename))
+              Option(fs.create(path))
             }
 
             val factory = XMLOutputFactory.newInstance
@@ -355,7 +354,7 @@ object XMLLoadStage {
                   }
 
                 os.close
-                outputFileAccumulator.add(filename.toString)
+                outputFileAccumulator.add(path.toString)
               }
               case None =>
             }
