@@ -25,9 +25,9 @@ class XMLLoadSuite extends FunSuite with BeforeAndAfter {
   val targetSingleFile0 = "singlefile0.xml"
   val targetSingleFileWildcard = FileUtils.getTempDirectoryPath() + "/singlefile*.xml"
 
-  val targetSinglePartWildcard = FileUtils.getTempDirectoryPath() + "/singlepart*.txt"  
-  val targetSinglePart0 = "singlepart0.txt"  
-  val targetSinglePart1 = "singlepart1.txt"  
+  val targetSinglePartWildcard = FileUtils.getTempDirectoryPath() + "/singlepart*.xml"  
+  val targetSinglePart0 = "singlepart0.xml"  
+  val targetSinglePart1 = "singlepart1.xml"  
 
   before {
     implicit val spark = SparkSession
