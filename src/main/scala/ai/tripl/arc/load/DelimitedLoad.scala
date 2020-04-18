@@ -63,6 +63,8 @@ class DelimitedLoad extends PipelineStagePlugin {
           params=params
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("options", Delimited.toSparkOptions(settings).asJava)
         stage.stageDetail.put("outputURI", outputURI.toString)
@@ -104,13 +106,6 @@ object DelimitedLoadStage {
   def execute(stage: DelimitedLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val df = spark.table(stage.inputView)
-
-    if (!df.isStreaming) {
-      stage.numPartitions match {
-        case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
-        case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
-      }
-    }
 
     // set write permissions
     CloudUtils.setHadoopConfiguration(stage.authentication)

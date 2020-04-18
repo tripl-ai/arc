@@ -79,16 +79,17 @@ class XMLExtract extends PipelineStagePlugin {
           xsd=xsdOption
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         input match {
           case Left(inputView) => stage.stageDetail.put("inputView", inputView)
           case Right(parsedGlob) => stage.stageDetail.put("inputURI", parsedGlob)
         }
         if (c.hasPath("xsdURI")) stage.stageDetail.put("xsdURI", xsdURI)
         inputField.foreach { stage.stageDetail.put("inputField", _) }
-        stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
 
         Right(stage)
       case _ =>

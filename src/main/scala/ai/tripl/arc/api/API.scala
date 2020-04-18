@@ -335,7 +335,9 @@ object API {
     case object StringResponse extends ResponseType { val sparkString = "string" }
   }
 
-  sealed trait Authentication
+  sealed trait Authentication {
+    def method(): String
+  }
   object Authentication {
     /**
       In the Amazon case, we support encryption options using IAM access only as in order
@@ -346,18 +348,37 @@ object API {
       for arc we are using this dependency resolution order if authentication is not provided:
 
      */
-    case class AmazonAccessKey(bucket: Option[String], accessKeyID: String, secretAccessKey: String, endpoint: Option[String], ssl: Option[Boolean]) extends Authentication
-    case class AmazonAnonymous(bucket: Option[String]) extends Authentication
-    case class AmazonEnvironmentVariable(bucket: Option[String]) extends Authentication
-    case class AmazonIAM(bucket: Option[String], encryptionType: Option[AmazonS3EncryptionType], keyArn: Option[String], customKey: Option[String]) extends Authentication
+    case class AmazonAccessKey(bucket: Option[String], accessKeyID: String, secretAccessKey: String, endpoint: Option[String], ssl: Option[Boolean]) extends Authentication {
+      def method = "AmazonAccessKey"
+    }
+    case class AmazonAnonymous(bucket: Option[String]) extends Authentication {
+      def method = "AmazonAnonymous"
+    }
+    case class AmazonEnvironmentVariable(bucket: Option[String]) extends Authentication {
+      def method = "AmazonEnvironmentVariable"
+    }
+    case class AmazonIAM(bucket: Option[String], encryptionType: Option[AmazonS3EncryptionType], keyArn: Option[String], customKey: Option[String]) extends Authentication {
+      def method = "AmazonIAM"
+    }
 
-
-    case class AzureSharedKey(accountName: String, signature: String) extends Authentication
-    case class AzureSharedAccessSignature(accountName: String, container: String, token: String) extends Authentication
-    case class AzureDataLakeStorageToken(clientID: String, refreshToken: String) extends Authentication
-    case class AzureDataLakeStorageGen2AccountKey(accountName: String, accessKey: String) extends Authentication
-    case class AzureDataLakeStorageGen2OAuth(clientID: String, secret: String, directoryId: String) extends Authentication
-    case class GoogleCloudStorageKeyFile(projectID: String, keyFilePath: String) extends Authentication
+    case class AzureSharedKey(accountName: String, signature: String) extends Authentication{
+      def method = "AzureSharedKey"
+    }
+    case class AzureSharedAccessSignature(accountName: String, container: String, token: String) extends Authentication{
+      def method = "AzureSharedAccessSignature"
+    }
+    case class AzureDataLakeStorageToken(clientID: String, refreshToken: String) extends Authentication{
+      def method = "AzureDataLakeStorageToken"
+    }
+    case class AzureDataLakeStorageGen2AccountKey(accountName: String, accessKey: String) extends Authentication{
+      def method = "AzureDataLakeStorageGen2AccountKey"
+    }
+    case class AzureDataLakeStorageGen2OAuth(clientID: String, secret: String, directoryId: String) extends Authentication{
+      def method = "AzureDataLakeStorageGen2OAuth"
+    }
+    case class GoogleCloudStorageKeyFile(projectID: String, keyFilePath: String) extends Authentication{
+      def method = "GoogleCloudStorageKeyFile"
+    }
   }
 
   sealed trait AmazonS3EncryptionType

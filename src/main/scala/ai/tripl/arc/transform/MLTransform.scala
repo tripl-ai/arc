@@ -43,8 +43,8 @@ class MLTransform extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputURI, model, inputView, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputURI), Right(model), Right(inputView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) =>
+    (name, description, inputURI, model, inputView, outputView, persist, numPartitions, partitionBy, invalidKeys, authentication) match {
+      case (Right(name), Right(description), Right(inputURI), Right(model), Right(inputView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys), Right(authentication)) =>
 
         val stage = MLTransformStage(
           plugin=this,
@@ -60,16 +60,20 @@ class MLTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
+        stage.stageDetail.put("blas", BLAS.getInstance.getClass.getName)
         stage.stageDetail.put("inputURI", inputURI.toString)
         stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("lapack", LAPACK.getInstance.getClass.getName)
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("params", params.asJava)
-        stage.stageDetail.put("blas", BLAS.getInstance.getClass.getName)
-        stage.stageDetail.put("lapack", LAPACK.getInstance.getClass.getName)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputURI, model, inputView, outputView, persist, numPartitions, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputURI, model, inputView, outputView, persist, numPartitions, partitionBy, invalidKeys, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

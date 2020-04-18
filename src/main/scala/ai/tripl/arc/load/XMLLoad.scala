@@ -48,6 +48,7 @@ class XMLLoad extends PipelineStagePlugin {
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
     val singleFile = getValue[java.lang.Boolean]("singleFile", default = Some(false))
     val prefix = getValue[String]("prefix", default = Some(""))
+    val singleFileNumPartitions = getValue[Int]("singleFileNumPartitions", default = Some(4096))
     val validOutputURI = (outputURI, singleFile) match {
       case (Right(None), Right(singleFile)) if (singleFile == false) => Left(ConfigError("outputURI", None, "Missing required attribute 'outputURI' when not in 'singleFile' mode.") :: Nil)
       case _ => Right("")
@@ -55,8 +56,8 @@ class XMLLoad extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, singleFile, prefix, validOutputURI, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(partitionBy), Right(singleFile), Right(prefix), Right(validOutputURI), Right(invalidKeys)) =>
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, singleFile, prefix, singleFileNumPartitions, validOutputURI, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(partitionBy), Right(singleFile), Right(prefix), Right(singleFileNumPartitions), Right(validOutputURI), Right(invalidKeys)) =>
 
         val stage = XMLLoadStage(
           plugin=this,
@@ -70,14 +71,19 @@ class XMLLoad extends PipelineStagePlugin {
           saveMode=saveMode,
           singleFile=singleFile,
           prefix=prefix,
+          singleFileNumPartitions=singleFileNumPartitions,
           params=params
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
+        outputURI.foreach { outputURI => stage.stageDetail.put("outputURI", outputURI.toString) }
         stage.stageDetail.put("inputView", inputView)
-        stage.stageDetail.put("outputURI", outputURI.toString)
-        stage.stageDetail.put("partitionBy", partitionBy.asJava)
-        stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
+        stage.stageDetail.put("prefix", prefix)
+        stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
+        stage.stageDetail.put("singleFile", java.lang.Boolean.valueOf(singleFile))
 
         Right(stage)
       case _ =>
@@ -223,6 +229,7 @@ case class XMLLoadStage(
     saveMode: SaveMode,
     singleFile: Boolean,
     prefix: String,
+    singleFileNumPartitions: Int,
     params: Map[String, String]
   ) extends PipelineStage {
 
@@ -243,11 +250,6 @@ object XMLLoadStage {
     val stageSaveMode = stage.saveMode
 
     val df = spark.table(stage.inputView)
-
-    stage.numPartitions match {
-      case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
-      case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
-    }
 
     // set write permissions
     CloudUtils.setHadoopConfiguration(stage.authentication)
@@ -284,7 +286,7 @@ object XMLLoadStage {
 
         // repartition so that there is a 1:1 mapping of partition:filename
         val repartitionedDF = if (hasFilename) {
-          df.repartition(4096, col("filename"))
+          df.repartition(stage.singleFileNumPartitions, col("filename"))
         } else {
           df.repartition(1)
         }

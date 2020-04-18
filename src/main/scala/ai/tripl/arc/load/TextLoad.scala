@@ -40,6 +40,7 @@ class TextLoad extends PipelineStagePlugin {
     val prefix = getValue[String]("prefix", default = Some(""))
     val separator = getValue[String]("separator", default = Some(""))
     val suffix = getValue[String]("suffix", default = Some(""))
+    val singleFileNumPartitions = getValue[Int]("singleFileNumPartitions", default = Some(4096))
     val validOutputURI = (outputURI, singleFile) match {
       case (Right(None), Right(singleFile)) if (singleFile == false) => Left(ConfigError("outputURI", None, "Missing required attribute 'outputURI' when not in 'singleFile' mode.") :: Nil)
       case _ => Right("")
@@ -47,8 +48,8 @@ class TextLoad extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, validOutputURI, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(singleFile), Right(prefix), Right(separator), Right(suffix), Right(validOutputURI), Right(invalidKeys)) =>
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, singleFileNumPartitions, validOutputURI, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(singleFile), Right(prefix), Right(separator), Right(suffix), Right(singleFileNumPartitions), Right(validOutputURI), Right(invalidKeys)) =>
         val stage = TextLoadStage(
           plugin=this,
           name=name,
@@ -62,17 +63,24 @@ class TextLoad extends PipelineStagePlugin {
           singleFile=singleFile,
           prefix=prefix,
           separator=separator,
-          suffix=suffix
+          suffix=suffix,
+          singleFileNumPartitions=singleFileNumPartitions
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
+        outputURI.foreach { outputURI => stage.stageDetail.put("outputURI", outputURI.toString) }
         stage.stageDetail.put("inputView", inputView)
-        stage.stageDetail.put("outputURI", outputURI.toString)
-        stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("prefix", prefix)
+        stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
+        stage.stageDetail.put("separator", separator)
+        stage.stageDetail.put("singleFile", java.lang.Boolean.valueOf(singleFile))
+        stage.stageDetail.put("suffix", suffix)
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, validOutputURI, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, singleFileNumPartitions, validOutputURI, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -93,7 +101,8 @@ case class TextLoadStage(
     singleFile: Boolean,
     prefix: String,
     separator: String,
-    suffix: String
+    suffix: String,
+    singleFileNumPartitions: Int
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
@@ -114,13 +123,6 @@ object TextLoadStage {
     val stageSaveMode = stage.saveMode
 
     val df = spark.table(stage.inputView)
-
-    if (!df.isStreaming) {
-      stage.numPartitions match {
-        case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
-        case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
-      }
-    }
 
     // set write permissions
     CloudUtils.setHadoopConfiguration(stage.authentication)
@@ -143,7 +145,7 @@ object TextLoadStage {
 
         // repartition so that there is a 1:1 mapping of partition:filename
         val repartitionedDF = if (hasFilename) {
-          df.repartition(4096, col("filename"))
+          df.repartition(stage.singleFileNumPartitions, col("filename"))
         } else {
           df.repartition(1)
         }

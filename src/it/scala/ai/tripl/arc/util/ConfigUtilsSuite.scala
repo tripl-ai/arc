@@ -24,7 +24,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   var session: SparkSession = _
 
   val outputView = "akita"
-  val bucketName = "test"
+  val bucketName = "bucket0"
+  val forbiddenBucketName = "bucket1"
 
   // minio seems to need ip address not hostname
   val minioHostPort = "http://minio:9000"
@@ -103,10 +104,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(_) => {
-        println(pipelineEither)
-        assert(false)
-      }
+      case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => {
         ARC.run(pipeline)
       }
@@ -114,4 +112,61 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
     assert(spark.table(outputView).first.getString(0) == "Akita")
   }
+
+  test("ConfigUtilsSuite: Test that AWS permissions are scoped to bucket") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    // note: initial files are created in the src/it/resources/minio/Dockerfile
+    // then mounted in the minio command in src/it/resources/docker-compose.yml
+    // first stage should work as authentication provided for ${bucketName} 
+    // second stage should fail as authentication not provided for ${forbiddenBucketName} 
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "DelimitedExtract",
+          "name": "get the file back from minio",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "s3a://${bucketName}/akc_breed_info.csv",
+          "authentication": {
+            "method": "AmazonAccessKey",
+            "accessKeyID": "${minioAccessKey}",
+            "secretAccessKey": "${minioSecretKey}",
+            "endpoint": "${minioHostPort}"
+          },
+          "outputView": "akc_breed_info0",
+          "delimiter": "Comma",
+          "header": true
+        },
+        {
+          "type": "DelimitedExtract",
+          "name": "get the file back from minio",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "s3a://${forbiddenBucketName}/akc_breed_info.csv",
+          "outputView": "akc_breed_info1",
+          "delimiter": "Comma",
+          "header": true
+        }        
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val thrown0 = intercept[Exception with DetailException] {
+          val df = ARC.run(pipeline).get
+        }
+        assert(thrown0.getMessage.contains(s"java.nio.file.AccessDeniedException: s3a://${forbiddenBucketName}/akc_breed_info.csv"))
+      } 
+    }  
+  }
+
 }

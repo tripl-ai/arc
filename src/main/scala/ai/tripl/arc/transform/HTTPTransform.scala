@@ -76,17 +76,18 @@ class HTTPTransform extends PipelineStagePlugin {
           failMode=failMode
         )
 
-        stage.stageDetail.put("inputView", inputView)
-        stage.stageDetail.put("inputField", inputField)
-        stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("uri", uri.toString)
-        stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(headers).asJava)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("batchSize", java.lang.Integer.valueOf(batchSize))
         stage.stageDetail.put("delimiter", delimiter)
         stage.stageDetail.put("failMode", failMode.sparkString)
-        stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(headers).asJava)
+        stage.stageDetail.put("inputField", inputField)
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
+        stage.stageDetail.put("uri", uri.toString)
+        stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
 
         Right(stage)
       case _ =>
