@@ -28,9 +28,9 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
   val minioSecretKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 
   val targetSingleFileWildcard = s"s3a://${bucketName}/singlepart*.txt"
-  val targetSingleFile0 = "singlepart0.txt"
-  val targetSingleFile1 = "singlepart1.txt"
-  val targetSingleFile2 = "singlepart2.txt"
+  val targetSingleFile0 = s"s3a://${bucketName}/singlepart0.txt"
+  val targetSingleFile1 = s"s3a://${bucketName}/singlepart1.txt"
+  val targetSingleFile2 = s"ss3a://${bucketName}/inglepart2.txt"
 
   before {
     implicit val spark = SparkSession
