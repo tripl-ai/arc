@@ -88,7 +88,8 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
         singleFile=false,
         prefix="",
         separator="",
-        suffix=""
+        suffix="",
+        singleFileNumPartitions=4096
       )
     )
 
@@ -151,7 +152,8 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
         singleFile=true,
         prefix="",
         separator="",
-        suffix=""
+        suffix="",
+        singleFileNumPartitions=4096
       )
     )
 
@@ -278,7 +280,8 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
         singleFile=true,
         prefix="[",
         separator=",",
-        suffix="]"
+        suffix="]",
+        singleFileNumPartitions=4096
       )
     )
 

@@ -83,6 +83,7 @@ class XMLLoadSuite extends FunSuite with BeforeAndAfter {
         saveMode=SaveMode.Overwrite,
         singleFile=false,
         prefix="",
+        singleFileNumPartitions=4096,
         params=Map.empty
       )
     )
@@ -118,6 +119,7 @@ class XMLLoadSuite extends FunSuite with BeforeAndAfter {
         saveMode=SaveMode.Overwrite,
         singleFile=false,
         prefix="",
+        singleFileNumPartitions=4096,
         params=Map.empty
       )
     )
