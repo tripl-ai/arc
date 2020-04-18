@@ -75,16 +75,16 @@ class TensorFlowServingTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        stage.stageDetail.put("inputView", inputView)
-        stage.stageDetail.put("inputField", inputField)
-        stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("uri", uri.toString)
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
+        signatureName.foreach { stage.stageDetail.put("signatureName", _)}
         stage.stageDetail.put("batchSize", java.lang.Integer.valueOf(batchSize))
+        stage.stageDetail.put("inputField", inputField)
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("responseType", responseType.sparkString)
-        for (signatureName <- signatureName) {
-          stage.stageDetail.put("signatureName", signatureName)
-        }
-        stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("uri", uri.toString)
 
         Right(stage)
       case _ =>

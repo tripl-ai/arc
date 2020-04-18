@@ -55,7 +55,7 @@ object ConfigUtils {
       case "http" | "https" => {
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
-      }      
+      }
       // databricks file system
       case "dbfs" => {
         val etlConfString = CloudUtils.getTextBlob(uri)
@@ -101,7 +101,7 @@ object ConfigUtils {
           case (None, _, _, _, Some(AmazonS3EncryptionType.SSE_KMS), None, None) =>
             CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(Option(s3aBucket), s3aEncType, s3aKmsId, None)))
           case (None, _, _, _, Some(AmazonS3EncryptionType.SSE_C), None, None) =>
-            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(Option(s3aBucket), s3aEncType, None, s3aCustomKey)))   
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(Option(s3aBucket), s3aEncType, None, s3aCustomKey)))
           case _ =>
             CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(Option(s3aBucket), None, None, None)))
         }
@@ -521,11 +521,11 @@ object ConfigUtils {
             case Some("AmazonAnonymous") => {
               val s3aBucket = getS3Bucket(uri)
               Right(Some(Authentication.AmazonAnonymous(s3aBucket)))
-            }        
+            }
             case Some("AmazonEnvironmentVariable") => {
               val s3aBucket = getS3Bucket(uri)
               Right(Some(Authentication.AmazonEnvironmentVariable(s3aBucket)))
-            }                      
+            }
             case Some("AmazonIAM") => {
               val s3aBucket = getS3Bucket(uri)
               val encType = authentication.get("encryptionAlgorithm").flatMap( AmazonS3EncryptionType.fromString(_) )
@@ -604,6 +604,27 @@ object ConfigUtils {
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
       }
       Right(u)
+    } catch {
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
+    }
+  }
+
+  def parseOptionURI(path: String)(uri: Option[String])(implicit spark: SparkSession, c: Config): Either[Errors, Option[URI]] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, Option[URI]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    try {
+      uri match {
+        case Some(uri) => {
+          // try to parse uri
+          val u = new URI(uri)
+          val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
+          if (isLocalMaster && (uri.trim.startsWith("s3://") | uri.trim.startsWith("s3n://"))) {
+            throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
+          }
+          Right(Some(u))
+        }
+        case None => Right(None)
+      }
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
@@ -785,5 +806,5 @@ object ConfigUtils {
       case (v: java.lang.Double, _, _) => Right(v)
     }
   }
-  
+
 }

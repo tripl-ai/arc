@@ -32,7 +32,6 @@ class SQLTransform extends PipelineStagePlugin {
     // requires 'inputURI' or 'sql'
     val isInputURI = c.hasPath("inputURI")
     val source = if (isInputURI) "inputURI" else "sql"
-
     val parsedURI = if (isInputURI) getValue[String]("inputURI") |> parseURI("inputURI") _ else Right(new URI(""))
     val inputSQL = if (isInputURI) parsedURI |> textContentForURI("inputURI", authentication) _ else Right("")
     val inlineSQL = if (!isInputURI) getValue[String]("sql") |> verifyInlineSQLPolicy("sql") _ else Right("")
@@ -46,8 +45,8 @@ class SQLTransform extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, parsedURI, inlineSQL, sql, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(inlineSQL), Right(sql), Right(validSQL), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) =>
+    (name, description, parsedURI, inlineSQL, sql, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys, authentication) match {
+      case (Right(name), Right(description), Right(parsedURI), Right(inlineSQL), Right(sql), Right(validSQL), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys), Right(authentication)) =>
 
         val lowerValidSQL = validSQL.toLowerCase
 
@@ -92,16 +91,18 @@ class SQLTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        if (uri.isDefined) stage.stageDetail.put("inputURI", parsedURI.toString)
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("sql", sql)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
-        stage.stageDetail.put("params", params.asJava)
+        uri.foreach { uri => stage.stageDetail.put("inputURI", uri.toString) }
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, parsedURI, inlineSQL, sql, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, inlineSQL, sql, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

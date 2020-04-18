@@ -30,7 +30,6 @@ class SQLValidate extends PipelineStagePlugin {
     val description = getOptionalValue[String]("description")
     val authentication = readAuthentication("authentication")
 
-
     // requires 'inputURI' or 'sql'
     val isInputURI = c.hasPath("inputURI")
     val source = if (isInputURI) "inputURI" else "sql"
@@ -43,8 +42,8 @@ class SQLValidate extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, parsedURI, sql, validSQL, invalidKeys) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(sql), Right(validSQL), Right(invalidKeys)) =>
+    (name, description, parsedURI, sql, validSQL, invalidKeys, authentication) match {
+      case (Right(name), Right(description), Right(parsedURI), Right(sql), Right(validSQL), Right(invalidKeys), Right(authentication)) =>
 
         val uri = if (isInputURI) Option(parsedURI) else None
 
@@ -58,14 +57,14 @@ class SQLValidate extends PipelineStagePlugin {
           params=params
         )
 
-        if (uri.isDefined) stage.stageDetail.put("inputURI", parsedURI.toString)
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         stage.stageDetail.put("sql", sql)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
-        stage.stageDetail.put("params", params.asJava)
+        uri.foreach { uri => stage.stageDetail.put("inputURI", uri.toString) }
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, invalidKeys, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

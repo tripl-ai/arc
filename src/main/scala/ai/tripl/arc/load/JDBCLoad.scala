@@ -73,18 +73,20 @@ class JDBCLoad extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("inputView", inputView)
-        stage.stageDetail.put("jdbcURL", JDBCUtils.maskPassword(jdbcURL))
-        stage.stageDetail.put("tableName", tableName)
+
+        createTableColumnTypes.foreach { stage.stageDetail.put("createTableColumnTypes", _) }
+        createTableOptions.foreach { stage.stageDetail.put("createTableOptions", _) }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("batchsize", java.lang.Integer.valueOf(batchsize))
         stage.stageDetail.put("driver", driver.getClass.toString)
+        stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("isolationLevel", isolationLevel.sparkString)
+        stage.stageDetail.put("jdbcURL", JDBCUtils.maskPassword(jdbcURL))
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
+        stage.stageDetail.put("tableName", tableName)
         stage.stageDetail.put("tablock", java.lang.Boolean.valueOf(tablock))
         stage.stageDetail.put("truncate", java.lang.Boolean.valueOf(truncate))
-        stage.stageDetail.put("createTableOptions", createTableOptions)
-        stage.stageDetail.put("createTableColumnTypes", createTableColumnTypes)
 
         Right(stage)
       case _ =>
@@ -139,13 +141,6 @@ object JDBCLoadStage {
   def execute(stage: JDBCLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val df = spark.table(stage.inputView)
-
-    if (!df.isStreaming) {
-      stage.numPartitions match {
-        case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
-        case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
-      }
-    }
 
     // force cache the table so that when write verification is performed any upstream calculations are not executed twice
     if (!df.isStreaming && !spark.catalog.isCached(stage.inputView)) {

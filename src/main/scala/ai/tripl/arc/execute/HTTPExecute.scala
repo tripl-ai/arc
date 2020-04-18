@@ -54,10 +54,10 @@ class HTTPExecute extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("uri", uri.toString)
         stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
-        stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("uri", uri.toString)
+        stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
 
         Right(stage)
       case _ =>

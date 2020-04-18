@@ -59,8 +59,8 @@ class MetadataExtract extends PipelineStagePlugin {
 
         stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
 
         Right(stage)
       case _ =>

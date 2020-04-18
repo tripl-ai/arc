@@ -678,14 +678,14 @@
 
 <h2 id="amazon-web-services">Amazon Web Services</h2>
 
-<p>When running on Amazon Web Services Arc will try to resolve permissions in this order. Work is underway to allow override of these defaults at bucket level.</p>
+<p>When running on Amazon Web Services Arc will try to resolve permissions in this order. These can ben overridden for a specific stage by specifying a <a href="../security/#authentication">authentication</a> method.</p>
 
 <ul>
 <li><code>SimpleAWSCredentialsProvider</code>: access key and secret</li>
 <li><code>EnvironmentVariableCredentialsProvider</code>: environment variables of access key and secret</li>
 <li><code>InstanceProfileCredentialsProvider</code>: IAM Role attached to the EC2 instance</li>
 <li><code>ContainerCredentialsProvider</code>: IAM Role attached to the container in case of ECS and EKS</li>
-<li><code>AnonymousAWSCredentialsProvider</code>: try to access without s3.</li>
+<li><code>AnonymousAWSCredentialsProvider</code>: try to access without credentials - useful for accessing the <a href="https://registry.opendata.aws/">Registry of Open Data on AWS</a>.</li>
 </ul>
 
 

@@ -47,8 +47,8 @@ class MetadataTransform extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, outputView, extractColumns, schemaView, schemaURI, failMode, persist, invalidKeys, numPartitions, partitionBy) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputView), Right(extractColumns), Right(schemaView), Right(schemaURI), Right(failMode), Right(persist), Right(invalidKeys), Right(numPartitions), Right(partitionBy)) =>
+    (name, description, inputView, outputView, extractColumns, schemaView, schemaURI, failMode, persist, invalidKeys, numPartitions, partitionBy, authentication) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputView), Right(extractColumns), Right(schemaView), Right(schemaURI), Right(failMode), Right(persist), Right(invalidKeys), Right(numPartitions), Right(partitionBy), Right(authentication)) =>
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
         val _schemaURI = if(!c.hasPath("schemaView")) Option(schemaURI) else None
 
@@ -67,20 +67,23 @@ class MetadataTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        if(c.hasPath("schemaView")) {
-          stage.stageDetail.put("schemaView", schemaView)
-        } else {
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        if (c.hasPath("schemaView")) {
           stage.stageDetail.put("schemaURI", schemaURI)
+        } else {
+          stage.stageDetail.put("schemaView", schemaView)
         }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("failMode", failMode.sparkString)
         stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputView, extractColumns, schemaView, failMode, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputView, extractColumns, schemaView, failMode, persist, invalidKeys, numPartitions, partitionBy, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

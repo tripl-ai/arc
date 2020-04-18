@@ -41,8 +41,8 @@ class EqualityValidate extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("leftView", leftView)
-        stage.stageDetail.put("rightView", rightView)
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("rightView", rightView)
 
         Right(stage)
       case _ =>

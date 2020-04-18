@@ -53,11 +53,11 @@ class JDBCExecute extends PipelineStagePlugin {
         )
 
         stage.stageDetail.put("driver", driver.getClass.toString)
-        stage.stageDetail.put("jdbcURL", JDBCUtils.maskPassword(jdbcURL))
         stage.stageDetail.put("inputURI", parsedURI.toString)
+        stage.stageDetail.put("jdbcURL", JDBCUtils.maskPassword(jdbcURL))
+        stage.stageDetail.put("params", params.asJava)
         stage.stageDetail.put("sql", inputSQL)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
-        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>

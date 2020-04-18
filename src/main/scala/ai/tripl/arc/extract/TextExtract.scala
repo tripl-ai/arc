@@ -67,18 +67,17 @@ class TextExtract extends PipelineStagePlugin {
           watermark=watermark
         )
 
-        stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         input match {
           case Left(inputView) => stage.stageDetail.put("inputView", inputView)
-          case Right(parsedGlob) =>stage.stageDetail.put("inputURI", parsedGlob)
+          case Right(parsedGlob) => stage.stageDetail.put("inputURI", parsedGlob)
         }
+        basePath.foreach { stage.stageDetail.put("basePath", _) }
+        stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
         stage.stageDetail.put("multiLine", java.lang.Boolean.valueOf(multiLine))
         stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        for (basePath <- basePath) {
-          stage.stageDetail.put("basePath", basePath)
-        }
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         for (watermark <- watermark) {
           val watermarkMap = new java.util.HashMap[String, Object]()
           watermarkMap.put("eventTime", watermark.eventTime)

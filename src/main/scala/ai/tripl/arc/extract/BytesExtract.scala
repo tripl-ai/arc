@@ -62,14 +62,16 @@ class BytesExtract extends PipelineStagePlugin {
           failMode=failMode
         )
 
-        stage.stageDetail.put("failMode", stage.failMode.sparkString)
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         input match {
           case Left(inputView) => stage.stageDetail.put("inputView", inputView)
-          case Right(parsedGlob) =>stage.stageDetail.put("inputURI", parsedGlob)
+          case Right(parsedGlob) => stage.stageDetail.put("inputURI", parsedGlob)
         }
+        stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
+        stage.stageDetail.put("failMode", stage.failMode.sparkString)
         stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(stage.persist))
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(stage.persist))
 
         Right(stage)
       case _ =>

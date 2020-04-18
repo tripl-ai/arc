@@ -47,19 +47,13 @@ class DiffTransform extends PipelineStagePlugin {
           persist=persist
         )
 
+        outputIntersectionView.foreach { stage.stageDetail.put("outputIntersectionView", _)}
+        outputLeftView.foreach { stage.stageDetail.put("outputLeftView", _)}
+        outputRightView.foreach { stage.stageDetail.put("outputRightView", _)}
         stage.stageDetail.put("inputLeftView", inputLeftView)
         stage.stageDetail.put("inputRightView", inputRightView)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        for (outputIntersectionView <- outputIntersectionView) {
-          stage.stageDetail.put("outputIntersectionView", outputIntersectionView)
-        }
-        for (outputLeftView <- outputLeftView) {
-          stage.stageDetail.put("outputLeftView", outputLeftView)
-        }
-        for (outputRightView <- outputRightView) {
-          stage.stageDetail.put("outputRightView", outputRightView)
-        }
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
 
         Right(stage)
       case _ =>

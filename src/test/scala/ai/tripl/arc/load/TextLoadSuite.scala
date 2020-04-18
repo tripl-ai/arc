@@ -24,10 +24,10 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
   val targetSingleFileDelimited = FileUtils.getTempDirectoryPath() + "singledelimited.txt"
   val outputView = "dataset"
 
-  val targetSingleFileWildcard = FileUtils.getTempDirectoryPath() + "/singlepart*.txt"  
-  val targetSingleFile0 = "singlepart0.txt"  
-  val targetSingleFile1 = "singlepart1.txt"  
-  val targetSingleFile2 = "singlepart2.txt"
+  val targetSingleFileWildcard = FileUtils.getTempDirectoryPath() + "singlepart*.txt"
+  val targetSingleFile0 = FileUtils.getTempDirectoryPath() + "singlepart0.txt"
+  val targetSingleFile1 = FileUtils.getTempDirectoryPath() + "singlepart1.txt"
+  val targetSingleFile2 = FileUtils.getTempDirectoryPath() + "singlepart2.txt"
 
   before {
     implicit val spark = SparkSession
@@ -47,9 +47,10 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     // ensure targets removed
     FileUtils.deleteQuietly(new java.io.File(targetFile))
     FileUtils.deleteQuietly(new java.io.File(targetSingleFile))
-    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile0))
-    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile1))
-    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile2))
+    FileUtils.deleteQuietly(new java.io.File(targetSingleFileDelimited))
+    FileUtils.deleteQuietly(new java.io.File(targetSingleFile0))
+    FileUtils.deleteQuietly(new java.io.File(targetSingleFile1))
+    FileUtils.deleteQuietly(new java.io.File(targetSingleFile2))
   }
 
   after {
@@ -57,10 +58,11 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
 
     // clean up test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile))
+    FileUtils.deleteQuietly(new java.io.File(targetSingleFileDelimited))
     FileUtils.deleteQuietly(new java.io.File(targetSingleFile))
-    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile0))
-    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile1))
-    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile2))    
+    FileUtils.deleteQuietly(new java.io.File(targetSingleFile0))
+    FileUtils.deleteQuietly(new java.io.File(targetSingleFile1))
+    FileUtils.deleteQuietly(new java.io.File(targetSingleFile2))
   }
 
   test("TextLoad") {
@@ -78,7 +80,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         description=None,
         inputView=outputView,
-        outputURI=new URI(targetFile),
+        outputURI=Some(new URI(targetFile)),
         numPartitions=None,
         authentication=None,
         saveMode=SaveMode.Overwrite,
@@ -86,7 +88,8 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
         singleFile=false,
         prefix="",
         separator="",
-        suffix=""
+        suffix="",
+        singleFileNumPartitions=4096
       )
     )
 
@@ -94,6 +97,36 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     val actual = spark.read.text(targetFile)
 
     assert(TestUtils.datasetEquality(expected, actual))
+  }
+
+  test("TextLoad: no outputURI, not singleFile") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "TextLoad",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${outputView}",
+          "singleFile": false
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => assert(err.toString.contains("Missing required attribute 'outputURI' when not in 'singleFile' mode."))
+      case Right((pipeline, _)) => fail("should fail")
+    }
   }
 
   test("TextLoad: singleFile") {
@@ -111,7 +144,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         description=None,
         inputView=outputView,
-        outputURI=new URI(targetSingleFile),
+        outputURI=Some(new URI(targetSingleFile)),
         numPartitions=None,
         authentication=None,
         saveMode=SaveMode.Overwrite,
@@ -119,7 +152,8 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
         singleFile=true,
         prefix="",
         separator="",
-        suffix=""
+        suffix="",
+        singleFileNumPartitions=4096
       )
     )
 
@@ -139,8 +173,8 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
       (targetSingleFile0, "a"),
       (targetSingleFile0, "b"),
       (targetSingleFile0, "c"),
-      (targetSingleFile1, "d"), 
-      (targetSingleFile1, "e"), 
+      (targetSingleFile1, "d"),
+      (targetSingleFile1, "e"),
       (targetSingleFile2, "f")
     ).toDF("filename", "value")
     dataset.createOrReplaceTempView(outputView)
@@ -172,9 +206,9 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
       val actual = spark.read.text(targetSingleFileWildcard).withColumn("_filename", input_file_name())
       assert(actual.where(s"_filename LIKE '%${targetSingleFile0}'").collect.map(_.getString(0)).mkString("|") == "a|b|c")
       assert(actual.where(s"_filename LIKE '%${targetSingleFile1}'").collect.map(_.getString(0)).mkString("|") == "d|e")
-      assert(actual.where(s"_filename LIKE '%${targetSingleFile2}'").collect.map(_.getString(0)).mkString("|") == "f")      
+      assert(actual.where(s"_filename LIKE '%${targetSingleFile2}'").collect.map(_.getString(0)).mkString("|") == "f")
     }
-  }  
+  }
 
   test("TextLoad: singleFile with filename and index") {
     implicit val spark = session
@@ -186,8 +220,8 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
       (targetSingleFile0, "b", 1),
       (targetSingleFile0, "a", 0),
       (targetSingleFile0, "c", 2),
-      (targetSingleFile1, "e", 1), 
-      (targetSingleFile1, "d", 0), 
+      (targetSingleFile1, "e", 1),
+      (targetSingleFile1, "d", 0),
       (targetSingleFile2, "f", 0)
     ).toDF("filename", "value", "index")
     dataset.createOrReplaceTempView(outputView)
@@ -219,9 +253,9 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
       val actual = spark.read.text(targetSingleFileWildcard).withColumn("_filename", input_file_name())
       assert(actual.where(s"_filename LIKE '%${targetSingleFile0}'").collect.map(_.getString(0)).mkString("|") == "a|b|c")
       assert(actual.where(s"_filename LIKE '%${targetSingleFile1}'").collect.map(_.getString(0)).mkString("|") == "d|e")
-      assert(actual.where(s"_filename LIKE '%${targetSingleFile2}'").collect.map(_.getString(0)).mkString("|") == "f")      
+      assert(actual.where(s"_filename LIKE '%${targetSingleFile2}'").collect.map(_.getString(0)).mkString("|") == "f")
     }
-  }  
+  }
 
   test("TextLoad: singleFile prefix/separator/suffix") {
     implicit val spark = session
@@ -238,7 +272,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         description=None,
         inputView=outputView,
-        outputURI=new URI(targetSingleFileDelimited),
+        outputURI=Some(new URI(targetSingleFileDelimited)),
         numPartitions=None,
         authentication=None,
         saveMode=SaveMode.Overwrite,
@@ -246,7 +280,8 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
         singleFile=true,
         prefix="[",
         separator=",",
-        suffix="]"
+        suffix="]",
+        singleFileNumPartitions=4096
       )
     )
 

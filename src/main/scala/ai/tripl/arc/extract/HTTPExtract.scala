@@ -73,16 +73,18 @@ class HTTPExtract extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
         input match {
           case Left(inputView) => stage.stageDetail.put("inputView", inputView)
-          case Right(parsedGlob) =>stage.stageDetail.put("inputURI", parsedGlob)
+          case Right(parsedURI) => stage.stageDetail.put("inputURI", parsedURI)
         }
+        bodyField.foreach { stage.stageDetail.put("bodyField", _) }
+        stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
         stage.stageDetail.put("method", method)
         stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("params", params.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
-        stage.stageDetail.put("params", params.asJava)
+        uriField.foreach { stage.stageDetail.put("uriField", _) }
 
         Right(stage)
       case _ =>

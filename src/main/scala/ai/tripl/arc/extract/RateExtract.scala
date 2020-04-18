@@ -43,11 +43,11 @@ class RateExtract extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("rowsPerSecond", Integer.valueOf(rowsPerSecond))
-        stage.stageDetail.put("rampUpTime", Integer.valueOf(rampUpTime))
         stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions))
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("rampUpTime", Integer.valueOf(rampUpTime))
+        stage.stageDetail.put("rowsPerSecond", Integer.valueOf(rowsPerSecond))
 
         Right(stage)
       case _ =>

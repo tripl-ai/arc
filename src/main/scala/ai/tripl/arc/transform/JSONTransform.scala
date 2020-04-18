@@ -47,10 +47,11 @@ class JSONTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>

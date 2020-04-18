@@ -70,17 +70,18 @@ class SimilarityJoinTransform extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("leftView", leftView)
-        stage.stageDetail.put("leftFields", leftFields.asJava)
-        stage.stageDetail.put("rightView", rightView)
-        stage.stageDetail.put("rightFields", rightFields.asJava)
-        stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        stage.stageDetail.put("shingleLength", java.lang.Integer.valueOf(shingleLength))
-        stage.stageDetail.put("numHashTables", java.lang.Integer.valueOf(numHashTables))
-        stage.stageDetail.put("threshold", java.lang.Double.valueOf(threshold))
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("caseSensitive", java.lang.Boolean.valueOf(caseSensitive))
+        stage.stageDetail.put("leftFields", leftFields.asJava)
+        stage.stageDetail.put("leftView", leftView)
+        stage.stageDetail.put("numHashTables", java.lang.Integer.valueOf(numHashTables))
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
+        stage.stageDetail.put("rightFields", rightFields.asJava)
+        stage.stageDetail.put("rightView", rightView)
+        stage.stageDetail.put("shingleLength", java.lang.Integer.valueOf(shingleLength))
+        stage.stageDetail.put("threshold", java.lang.Double.valueOf(threshold))
 
         Right(stage)
       case _ =>

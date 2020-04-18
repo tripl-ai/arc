@@ -72,17 +72,17 @@ class AvroExtract extends PipelineStagePlugin {
           inputField=inputField
         )
 
-        stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         input match {
           case Left(inputView) => stage.stageDetail.put("inputView", inputView)
-          case Right(parsedGlob) =>stage.stageDetail.put("inputURI", parsedGlob)
+          case Right(parsedGlob) => stage.stageDetail.put("inputURI", parsedGlob)
         }
+        basePath.foreach { stage.stageDetail.put("basePath", _) }
+        inputField.foreach { stage.stageDetail.put("inputField", _) }
+        stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
         stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        for (inputField <- inputField) {
-          stage.stageDetail.put("inputField", inputField)
-        }
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
 
         Right(stage)
       case _ =>

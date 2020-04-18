@@ -38,8 +38,8 @@ class MetadataValidate extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, parsedURI, inputView, inputSQL, validSQL, invalidKeys) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(inputView), Right(inputSQL), Right(validSQL), Right(invalidKeys)) =>
+    (name, description, parsedURI, inputView, inputSQL, validSQL, invalidKeys, authentication) match {
+      case (Right(name), Right(description), Right(parsedURI), Right(inputView), Right(inputSQL), Right(validSQL), Right(invalidKeys), Right(authentication)) =>
 
         val stage = MetadataValidateStage(
           plugin=this,
@@ -52,15 +52,15 @@ class MetadataValidate extends PipelineStagePlugin {
           params=params
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         stage.stageDetail.put("inputURI", parsedURI.toString)
         stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("sql", inputSQL)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
-        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, parsedURI, inputView, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, inputView, inputSQL, validSQL, invalidKeys, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

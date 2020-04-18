@@ -19,15 +19,15 @@ import ai.tripl.arc.util.TestUtils
 class XMLLoadSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _
-  val targetFile = FileUtils.getTempDirectoryPath() + "extract.xml"
+  val targetFile = "/tmp/extract.xml"
   val outputView = "dataset"
 
-  val targetSingleFile0 = "singlefile0.xml"
-  val targetSingleFileWildcard = FileUtils.getTempDirectoryPath() + "/singlefile*.xml"
+  val targetSingleFile0 = FileUtils.getTempDirectoryPath() + "singlefile0.xml"
+  val targetSingleFileWildcard = FileUtils.getTempDirectoryPath() + "singlefile*.xml"
 
-  val targetSinglePartWildcard = FileUtils.getTempDirectoryPath() + "/singlepart*.txt"  
-  val targetSinglePart0 = "singlepart0.txt"  
-  val targetSinglePart1 = "singlepart1.txt"  
+  val targetSinglePartWildcard = FileUtils.getTempDirectoryPath() + "singlepart*.xml"
+  val targetSinglePart0 = FileUtils.getTempDirectoryPath() + "singlepart0.xml"
+  val targetSinglePart1 = FileUtils.getTempDirectoryPath() + "singlepart1.xml"
 
   before {
     implicit val spark = SparkSession
@@ -45,19 +45,20 @@ class XMLLoadSuite extends FunSuite with BeforeAndAfter {
 
     // ensure targets removed
     FileUtils.deleteQuietly(new java.io.File(targetFile))
-    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile0))
-    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSinglePart0))
-    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSinglePart1))
+    FileUtils.deleteQuietly(new java.io.File(targetSingleFile0))
+    FileUtils.deleteQuietly(new java.io.File(targetSinglePart0))
+    FileUtils.deleteQuietly(new java.io.File(targetSinglePart1))
+
   }
 
   after {
     session.stop()
-    
+
     // ensure targets removed
     FileUtils.deleteQuietly(new java.io.File(targetFile))
-    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSingleFile0))
-    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSinglePart0))
-    FileUtils.deleteQuietly(new java.io.File(FileUtils.getTempDirectoryPath() + targetSinglePart1))
+    FileUtils.deleteQuietly(new java.io.File(targetSingleFile0))
+    FileUtils.deleteQuietly(new java.io.File(targetSinglePart0))
+    FileUtils.deleteQuietly(new java.io.File(targetSinglePart1))
   }
 
   test("XMLLoad") {
@@ -75,13 +76,14 @@ class XMLLoadSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         description=None,
         inputView=outputView,
-        outputURI=new URI(targetFile),
+        outputURI=Some(new URI(targetFile)),
         partitionBy=Nil,
         numPartitions=None,
         authentication=None,
         saveMode=SaveMode.Overwrite,
         singleFile=false,
         prefix="",
+        singleFileNumPartitions=4096,
         params=Map.empty
       )
     )
@@ -110,19 +112,50 @@ class XMLLoadSuite extends FunSuite with BeforeAndAfter {
         name=outputView,
         description=None,
         inputView=outputView,
-        outputURI=new URI(targetFile),
+        outputURI=Some(new URI(targetFile)),
         partitionBy="booleanDatum" :: Nil,
         numPartitions=None,
         authentication=None,
         saveMode=SaveMode.Overwrite,
         singleFile=false,
         prefix="",
+        singleFileNumPartitions=4096,
         params=Map.empty
       )
     )
 
     val actual = spark.read.format("com.databricks.spark.xml").load(targetFile)
     assert(actual.select(spark_partition_id()).distinct.count === 2)
+  }
+
+  test("XMLLoad: no outputURI, not singleFile") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "XMLLoad",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${outputView}",
+          "singleFile": false
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => assert(err.toString.contains("Missing required attribute 'outputURI' when not in 'singleFile' mode."))
+      case Right((pipeline, _)) => fail("should fail")
+    }
   }
 
   test("XMLLoad: singleFile no filename") {
@@ -157,7 +190,7 @@ class XMLLoadSuite extends FunSuite with BeforeAndAfter {
             "test"
           ],
           "inputView": "${outputView}",
-          "outputURI": "${FileUtils.getTempDirectoryPath()}${targetSingleFile0}",
+          "outputURI": "${targetSingleFile0}",
           "singleFile": true,
           "prefix": "<?xml version="1.0" encoding="UTF-8"?>\\n"
         }
@@ -171,6 +204,7 @@ class XMLLoadSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
 
       val actual = spark.read.option("wholetext", true).text(targetSingleFileWildcard).withColumn("_filename", input_file_name())
+      actual.persist
       assert(actual.count == 1)
       assert(actual.first.getString(0) ==
       """<?xml version=1.0 encoding=UTF-8?>
@@ -204,9 +238,9 @@ class XMLLoadSuite extends FunSuite with BeforeAndAfter {
           '_attribute', 'attribute'
       ) AS Document
       ,'${targetSinglePart0}' AS filename
-    
+
     UNION ALL
-    
+
     SELECT
       NAMED_STRUCT(
           '_VALUE', NAMED_STRUCT(
@@ -218,7 +252,7 @@ class XMLLoadSuite extends FunSuite with BeforeAndAfter {
           ),
           '_attribute', 'attribute'
       ) AS Document
-      ,'${targetSinglePart1}' AS filename    
+      ,'${targetSinglePart1}' AS filename
 
     """)
     dataset.createOrReplaceTempView(outputView)
@@ -268,9 +302,9 @@ class XMLLoadSuite extends FunSuite with BeforeAndAfter {
       |    <nested0>1</nested0>
       |    <nested1>nestedvalue</nested1>
       |  </child1>
-      |</Document>""".stripMargin)      
+      |</Document>""".stripMargin)
       assert(rows(1).getString(1).contains(targetSinglePart1))
     }
-  }  
+  }
 
 }

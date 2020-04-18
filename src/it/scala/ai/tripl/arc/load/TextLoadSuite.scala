@@ -22,15 +22,15 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
   val outputView = "dataset"
 
   // minio seems to need ip address not hostname
-  val bucketName = "test"
+  val bucketName = "bucket0"
   val minioHostPort = "http://minio:9000"
   val minioAccessKey = "AKIAIOSFODNN7EXAMPLE"
   val minioSecretKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 
-  val targetSingleFileWildcard = s"s3a://${bucketName}/singlepart*.txt"  
-  val targetSingleFile0 = "singlepart0.txt"  
-  val targetSingleFile1 = "singlepart1.txt"  
-  val targetSingleFile2 = "singlepart2.txt"
+  val targetSingleFileWildcard = s"s3a://${bucketName}/singlepart*.txt"
+  val targetSingleFile0 = s"s3a://${bucketName}/singlepart0.txt"
+  val targetSingleFile1 = s"s3a://${bucketName}/singlepart1.txt"
+  val targetSingleFile2 = s"s3a://${bucketName}/singlepart2.txt"
 
   before {
     implicit val spark = SparkSession
@@ -62,8 +62,8 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
       (targetSingleFile0, "a"),
       (targetSingleFile0, "b"),
       (targetSingleFile0, "c"),
-      (targetSingleFile1, "d"), 
-      (targetSingleFile1, "e"), 
+      (targetSingleFile1, "d"),
+      (targetSingleFile1, "e"),
       (targetSingleFile2, "f")
     ).toDF("filename", "value")
     dataset.createOrReplaceTempView(outputView)
@@ -79,7 +79,6 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
             "test"
           ],
           "inputView": "${outputView}",
-          "outputURI": "s3a://${bucketName}",
           "singleFile": true,
           "separator": "\\n",
           "authentication": {
@@ -87,7 +86,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
             "accessKeyID": "${minioAccessKey}",
             "secretAccessKey": "${minioSecretKey}",
             "endpoint": "${minioHostPort}"
-          }    
+          }
         }
       ]
     }"""
@@ -99,11 +98,13 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
 
       val actual = spark.read.text(targetSingleFileWildcard).withColumn("_filename", input_file_name())
-      actual.persist
-      assert(actual.where(s"_filename LIKE '%${targetSingleFile0}'").collect.map(_.getString(0)).mkString("|") == "a|b|c")
-      assert(actual.where(s"_filename LIKE '%${targetSingleFile1}'").collect.map(_.getString(0)).mkString("|") == "d|e")
-      assert(actual.where(s"_filename LIKE '%${targetSingleFile2}'").collect.map(_.getString(0)).mkString("|") == "f")      
+      val rows = actual.collect()
+      val valueFieldIndex = rows.head.schema.fieldIndex("value")
+      val filenameFieldIndex = rows.head.schema.fieldIndex("_filename")
+      assert(rows.filter { row => row.getString(filenameFieldIndex).contains(targetSingleFile0) }.map(_.getString(valueFieldIndex)).mkString("|") == "a|b|c")
+      assert(rows.filter { row => row.getString(filenameFieldIndex).contains(targetSingleFile1) }.map(_.getString(valueFieldIndex)).mkString("|") == "d|e")
+      assert(rows.filter { row => row.getString(filenameFieldIndex).contains(targetSingleFile2) }.map(_.getString(valueFieldIndex)).mkString("|") == "f")
     }
-  }  
+  }
 
 }
