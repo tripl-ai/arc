@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+  
+  
+  
+  
+   <html class="no-js"> 
+
+  <head lang="en-us">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>Schema - Arc</title>
+    <meta name="generator" content="Hugo 0.51" />
+
+    
+    <meta name="description" content="Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.">
+    
+    <link rel="canonical" href="https://arc.tripl.ai/schema/">
+    
+    <meta name="author" content="ai.tripl.arc">
+    
+
+    <meta property="og:url" content="https://arc.tripl.ai/schema/">
+    <meta property="og:title" content="Arc">
+    <meta property="og:image" content="https://arc.tripl.ai/images/logo.png">
+    <meta name="apple-mobile-web-app-title" content="Arc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="shortcut icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
+
+    <style>
+      @font-face {
+        font-family: 'Icon';
+        src: url('https://arc.tripl.ai/fonts/icon.eot');
+        src: url('https://arc.tripl.ai/fonts/icon.eot')
+               format('embedded-opentype'),
+             url('https://arc.tripl.ai/fonts/icon.woff')
+               format('woff'),
+             url('https://arc.tripl.ai/fonts/icon.ttf')
+               format('truetype'),
+             url('https://arc.tripl.ai/fonts/icon.svg')
+               format('svg');
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: 'clipboard';
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot'); 
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot') 
+            format('embedded-opentype'),
+            url('https://arc.tripl.ai/fonts/clipboard.ttf') 
+              format('truetype'),
+            url('https://arc.tripl.ai/fonts/clipboard.woff') 
+              format('woff'),
+            url('https://arc.tripl.ai/fonts/clipboard.svg') 
+              format('svg');
+        font-weight: normal;
+        font-style: normal;
+        font-display: block;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/temporary.css">
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/palettes.css">
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/highlight/highlight.css">
+
+    
+    
+    
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu&#43;Mono">
+    <style>
+      body, input {
+        font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+      }
+      pre, code {
+        font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
+      }
+    </style>
+
+    
+    <script src="https://arc.tripl.ai/javascripts/modernizr.js"></script>
+
+    
+
+  </head>
+  <body class="palette-primary-red palette-accent-red">
+
+
+
+	
+	
+
+
+<div class="backdrop">
+	<div class="backdrop-paper"></div>
+</div>
+
+<input class="toggle" type="checkbox" id="toggle-drawer">
+<input class="toggle" type="checkbox" id="toggle-search">
+<label class="toggle-button overlay" for="toggle-drawer"></label>
+
+<header class="header">
+	<nav aria-label="Header">
+  <div class="bar default">
+    <div class="button button-menu" role="button" aria-label="Menu">
+      <label class="toggle-button icon icon-menu" for="toggle-drawer">
+        <span></span>
+      </label>
+    </div>
+    <div class="stretch">
+      <div class="title">
+        Schema
+      </div>
+    </div>
+
+    
+
+    
+    <div class="button button-github" role="button" aria-label="GitHub">
+      <a href="https://github.com/tripl-ai/arc" title="@https://github.com/tripl-ai/arc on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
+    </div>
+    
+    
+        
+  </div>
+  <div class="bar search">
+    <div class="button button-close" role="button" aria-label="Close">
+      <label class="toggle-button icon icon-back" for="toggle-search"></label>
+    </div>
+    <div class="stretch">
+      <div class="field">
+        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+      </div>
+    </div>
+    <div class="button button-reset" role="button" aria-label="Search">
+      <button class="toggle-button icon icon-close" id="reset-search"></button>
+    </div>
+  </div>
+</nav>
+</header>
+
+<main class="main">
+	<div class="drawer">
+		<nav aria-label="Navigation">
+  <a href="https://arc.tripl.ai/" class="project">
+    <div class="banner">
+      
+      <div class="logo">
+        <img src="https://arc.tripl.ai/images/logo.png">
+      </div>
+      
+      <div class="name">
+        <strong>Arc 
+          <span class="version">2.10.0</span></strong>
+        
+        <br> tripl-ai/arc 
+      </div>
+    </div>
+  </a>
+
+  <div class="scrollable">
+    <div class="wrapper">
+      
+
+      <div class="toc">
+        
+        <ul>
+          
+
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://arc.tripl.ai/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Tutorial" href="https://arc.tripl.ai/tutorial/">
+	
+	Tutorial
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Extract" href="https://arc.tripl.ai/extract/">
+	
+	Extract
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Transform" href="https://arc.tripl.ai/transform/">
+	
+	Transform
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Load" href="https://arc.tripl.ai/load/">
+	
+	Load
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Execute" href="https://arc.tripl.ai/execute/">
+	
+	Execute
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Validate" href="https://arc.tripl.ai/validate/">
+	
+	Validate
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a class="current" title="Schema" href="https://arc.tripl.ai/schema/">
+	
+	Schema
+</a>
+
+
+<ul id="scrollspy">
+</ul>
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Deploy" href="https://arc.tripl.ai/deploy/">
+	
+	Deploy
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Security" href="https://arc.tripl.ai/security/">
+	
+	Security
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Plugins" href="https://arc.tripl.ai/plugins/">
+	
+	Plugins
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Common Solutions" href="https://arc.tripl.ai/solutions/">
+	
+	Common Solutions
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="License" href="https://arc.tripl.ai/license/">
+	
+	License
+</a>
+
+
+
+  
+</li>
+
+
+        </ul>
+         
+        <hr>
+        <span class="section">The author</span>
+
+        <ul>
+           
+          <li>
+            <a href="https://github.com/tripl-ai" target="_blank" title="@tripl-ai on GitHub">
+              @tripl-ai on GitHub
+            </a>
+          </li>
+           
+        </ul>
+        
+      </div>
+    </div>
+  </div>
+</nav>
+	</div>
+
+	<article class="article">
+		<div class="wrapper">
+			<h1>Schema </h1>
+
+			
+
+<p>The <code>schema</code> format, consumed in the <a href="../transform/#typingtransform">TypingTransform</a> and other stages, is an opinionated format for specifying common data typing actions.</p>
+
+<p>It is designed to:</p>
+
+<ul>
+<li>Allow precise definition of how to perform common data typing conversions found in business datasets.</li>
+<li>Support limited <a href="https://en.wikipedia.org/wiki/Schema_evolution">Schema Evolution</a> of source data in the form of allowed lists of accepted input formats.</li>
+<li>Specification of metadata to attach to columns.</li>
+</ul>
+
+<h2 id="common">Common</h2>
+
+<h3 id="attributes">Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this field. Ideally this is a GUID and should remain constant even when changing field attributes over time.</td>
+</tr>
+
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>The field name.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>A description of the field which will be embedded in the dataset metadata (and persisted in formats like Parquet/ORC).</td>
+</tr>
+
+<tr>
+<td>type</td>
+<td>String</td>
+<td>true</td>
+<td>The data type to convert the field to. Supported values: <code>boolean</code>, <code>date</code>, <code>decimal</code>, <code>double</code>, <code>integer</code>, <code>long</code>, <code>string</code>, <code>timestamp</code>.</td>
+</tr>
+
+<tr>
+<td>trim</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Trim the field prior to data typing attempts.</td>
+</tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
+
+<tr>
+<td>nullableValues</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
+</tr>
+
+<tr>
+<td>nullReplacementValue</td>
+<td>String</td>
+<td>false</td>
+<td>An optional value that a null value input value is replaced with before typing.</td>
+</tr>
+
+<tr>
+<td>metadata</td>
+<td>Object</td>
+<td>false</td>
+<td>Metadata to attach to the column.<br><br>Basic JSON types <code>string</code>, <code>double</code>, <code>long</code>, <code>object</code> and <code>array</code> are supported.<br><br>With array types the values must be all of the same type (i.e. <code>[true, false]</code> works but <code>[true, 0]</code> will not).</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;9712c383-22d1-44a6-9ca2-0087af4857f1&quot;,
+  &quot;name&quot; : &quot;first_name&quot;,
+  &quot;description&quot; : &quot;Customer First Name&quot;,
+  &quot;type&quot; : &quot;string&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+<h2 id="array">Array</h2>
+
+<p>An <code>array</code> defines a schema for a repeated list of elements. It requires the specification of the <a href="../schema/">schema</a> of the nested elements which must all be of the same type.</p>
+
+<h3 id="additional-attributes">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>elementType</td>
+<td><a href="../schema/">schema</a></td>
+<td>true</td>
+<td>The <a href="../schema/">schema</a> of the nested list of elements.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-1">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;982cbf60-7ba7-4e50-a09b-d8624a5c49e6&quot;,
+  &quot;name&quot; : &quot;customer_phone_numbers&quot;,
+  &quot;description&quot; : &quot;Customer Phone Numbers&quot;,
+  &quot;type&quot; : &quot;array&quot;,
+  &quot;trim&quot; : true,
+  &quot;metadata&quot;: {},
+  &quot;elementType&quot;: {
+    &quot;id&quot; : &quot;9712c383-22d1-44a6-9ca2-0087af4857f1&quot;,
+    &quot;name&quot; : &quot;phone_number&quot;,
+    &quot;description&quot; : &quot;Phone Number&quot;,
+    &quot;type&quot; : &quot;string&quot;,
+    &quot;trim&quot; : true,
+    &quot;nullable&quot; : true,
+    &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ]
+  }
+}
+</code></pre>
+
+<h2 id="binary">Binary</h2>
+
+<h3 id="additional-attributes-1">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>encoding</td>
+<td>String</td>
+<td>true</td>
+<td>The binary-to-text encoding format of the value. Valid values <code>base64</code>, <code>hexadecimal</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-2">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;982cbf60-7ba7-4e50-a09b-d8624a5c49e6&quot;,
+  &quot;name&quot; : &quot;id&quot;,
+  &quot;description&quot; : &quot;GUID identifier&quot;,
+  &quot;type&quot; : &quot;binary&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;encoding&quot; : &quot;base64&quot;,
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+<h2 id="boolean">Boolean</h2>
+
+<h3 id="additional-attributes-2">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>trueValues</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of values which are considered as true. Try to order this list so the values are arranged from most frequent to least frequent.</td>
+</tr>
+
+<tr>
+<td>falseValues</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of values which are considered as false. Try to order this list so the values are arranged from most frequent to least frequent.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-3">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;982cbf60-7ba7-4e50-a09b-d8624a5c49e6&quot;,
+  &quot;name&quot; : &quot;marketing_opt_in_flag&quot;,
+  &quot;description&quot; : &quot;Whether the customer has opted in to receive marketing communications.&quot;,
+  &quot;type&quot; : &quot;boolean&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;trueValues&quot; : [ &quot;true&quot;, &quot;TRUE&quot;, &quot;t&quot;, &quot;1&quot; ],
+  &quot;falseValues&quot; : [ &quot;false&quot;, &quot;FALSE&quot;, &quot;f&quot;, &quot;0&quot; ],
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+<h2 id="date">Date</h2>
+
+<div class="admonition note">
+<p class="admonition-title">Date vs Timestamp</p>
+<p><p>This class does not store or represent a time or time-zone. Instead, it is a description of the date, as used for birthdays. It cannot represent an instant on the time-line without additional information such as an offset or time-zone.</p>
+
+<p>This means that if users will be executing SQL statements which have conditional logic based on date comparisons (such as <code>WHERE [date] &lt; CURRENT_DATE()</code>) then it is safer to use a <a href="#Timestamp">Timestamp</a> with a hard-coded time component for that source data so you get consistent results regardless of which time zone your users are located.</p>
+</p>
+</div>
+
+<h3 id="additional-attributes-3">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>formatters</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-4">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;0e8109ba-1000-4b7d-8a4c-b01bae07027f&quot;,
+  &quot;name&quot; : &quot;birth_date&quot;,
+  &quot;description&quot; : &quot;Customer Birth Date&quot;,
+  &quot;type&quot; : &quot;date&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;formatters&quot; : [ &quot;uuuuMMdd&quot;, &quot;uuuu-MM-dd&quot; ],
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+<h2 id="decimal">Decimal</h2>
+
+<h3 id="additional-attributes-4">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>precision</td>
+<td>Integer</td>
+<td>true</td>
+<td>The total number of digits. e.g. 1234.567 has a precision of 7.</td>
+</tr>
+
+<tr>
+<td>scale</td>
+<td>Integer</td>
+<td>true</td>
+<td>The number of digits in the fraction part. e.g. 1234.567 has a scale of 3.</td>
+</tr>
+
+<tr>
+<td>formatters</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0.###;-#,##0.###</code></td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-5">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;9712c383-22d1-44a6-9ca2-0087af4857f1&quot;,
+  &quot;name&quot; : &quot;account_balance&quot;,
+  &quot;description&quot; : &quot;The current account balance&quot;,
+  &quot;type&quot; : &quot;decimal&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;precision&quot;: 10,
+  &quot;scale&quot;: 2,
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+<h2 id="double">Double</h2>
+
+<p>A <code>Double</code> is a double-precision 64-bit IEEE 754 floating point number.</p>
+
+<div class="admonition note">
+<p class="admonition-title">Double vs Decimal</p>
+<p>A Decimal should be used whenever precision is required or for numbers which must sum up correctly or balance, e.g. monetary transactions.</p>
+</div>
+
+<h3 id="additional-attributes-5">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>formatters</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0.###;-#,##0.###</code></td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-6">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;31541ea3-5b74-4753-857c-770bd601c35b&quot;,
+  &quot;name&quot; : &quot;last_meter_reading&quot;,
+  &quot;description&quot; : &quot;The last reading from the customer power meter.&quot;,
+  &quot;type&quot; : &quot;double&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+<h2 id="integer">Integer</h2>
+
+<p>Use Integer when dealing with values up to ±2 billion (-2<sup>31</sup> to +2<sup>31</sup>-1)</p>
+
+<h3 id="additional-attributes-6">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>formatters</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0;-#,##0</code></td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-7">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;a66f3bbe-d1c6-44c7-b096-a4be59fdcd78&quot;,
+  &quot;name&quot; : &quot;update_count&quot;,
+  &quot;description&quot; : &quot;Number of updates to this customer record.&quot;,
+  &quot;type&quot; : &quot;integer&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+<h2 id="long">Long</h2>
+
+<p>Use a Long Integer when dealing with values greater than ±2 billion (-2<sup>63</sup> to +2<sup>63</sup>-1)</p>
+
+<h3 id="additional-attributes-7">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>formatters</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0;-#,##0</code></td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-8">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;1c0eec1d-17cd-45da-8744-7a9ef5b8b086&quot;,
+  &quot;name&quot; : &quot;transaction_num&quot;,
+  &quot;description&quot; : &quot;Global transaction sequence number.&quot;,
+  &quot;type&quot; : &quot;long&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+<h2 id="string">String</h2>
+
+<h3 id="additional-attributes-8">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>minLength</td>
+<td>Integer</td>
+<td>false</td>
+<td>The minimum length of the string value.</td>
+</tr>
+
+<tr>
+<td>maxLength</td>
+<td>Integer</td>
+<td>false</td>
+<td>The maximum length of the string value.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-9">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;9712c383-22d1-44a6-9ca2-0087af4857f1&quot;,
+  &quot;name&quot; : &quot;first_name&quot;,
+  &quot;description&quot; : &quot;Customer First Name&quot;,
+  &quot;type&quot; : &quot;string&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+<h2 id="struct">Struct</h2>
+
+<p>A <code>struct</code> is a nested field similar to a <code>map</code> in most programming languages. It can be used to support complex data types.</p>
+
+<h3 id="additional-attributes-9">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>fields</td>
+<td>Array</td>
+<td>true</td>
+<td>A list of <a href="../schema/">schema</a> fields.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-10">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;982cbf60-7ba7-4e50-a09b-d8624a5c49e6&quot;,
+  &quot;name&quot; : &quot;customer_name&quot;,
+  &quot;description&quot; : &quot;Customer Name&quot;,
+  &quot;type&quot; : &quot;struct&quot;,
+  &quot;trim&quot; : true,
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  },
+  &quot;fields&quot;: [
+    {
+      &quot;id&quot; : &quot;9712c383-22d1-44a6-9ca2-0087af4857f1&quot;,
+      &quot;name&quot; : &quot;first_name&quot;,
+      &quot;description&quot; : &quot;Customer First Name&quot;,
+      &quot;type&quot; : &quot;string&quot;,
+      &quot;trim&quot; : true,
+      &quot;nullable&quot; : true,
+      &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+      &quot;primaryKey&quot; : false,
+      &quot;metadata&quot;: {
+        &quot;primaryKey&quot; : true,
+        &quot;position&quot;: 1
+      }
+    },
+    {
+      &quot;id&quot; : &quot;3f11973f-9448-4b3b-bb2a-bebdbf774ea4&quot;,
+      &quot;name&quot; : &quot;last_name&quot;,
+      &quot;description&quot; : &quot;Customer Last Name&quot;,
+      &quot;type&quot; : &quot;string&quot;,
+      &quot;trim&quot; : true,
+      &quot;nullable&quot; : true,
+      &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+      &quot;primaryKey&quot; : false,
+      &quot;metadata&quot;: {
+        &quot;primaryKey&quot; : true,
+        &quot;position&quot;: 1
+      }
+    }
+  ]
+}
+</code></pre>
+
+<h2 id="time">Time</h2>
+
+<div class="admonition note">
+<p class="admonition-title">TimeType</p>
+<p>Spark does not have an internal <code>TimeType</code> representation of time. This type can be used to ensure time values are able to be successfully parsed as <a href="https://docs.oracle.com/javase/8/docs/api/java/time/LocalTime.html">LocalTime</a> objects but they are always stored in Spark as <code>string</code> formatted in the standard <code>HH:mm:ss</code> format type meaning they can safely used in the <a href="https://spark.apache.org/docs/latest/api/sql/index.html#to_utc_timestamp">to_utc_timestamp</a> SQL function (but be very careful with timezone offsets). If they cannot be parsed then an error will be inserted into the <code>_errors</code> array like all other types.</p>
+</div>
+
+<h3 id="additional-attributes-10">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>formatters</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-11">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;0f5162ce-64ca-409d-abd1-f0b5bb5830de&quot;,
+  &quot;name&quot; : &quot;transaction_time&quot;,
+  &quot;description&quot; : &quot;Time of the database transaction&quot;,
+  &quot;type&quot; : &quot;time&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;formatters&quot; : [ &quot;HHmmss&quot; ],
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+<h2 id="timestamp">Timestamp</h2>
+
+<h3 id="additional-attributes-11">Additional Attributes</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>formatters</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Custom formats <code>ssssssssss</code> and <code>sssssssssssss</code> have been added to support epoch time (i.e. 1527727035) and epoch millis time (i.e. 1527727035456) respectively. Both require <code>timezoneId</code> of <code>UTC</code>.</td>
+</tr>
+
+<tr>
+<td>timezoneId</td>
+<td>String</td>
+<td>true</td>
+<td>The timezone of the incoming timestamp. This uses the <a href="https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html#timezone">SimpleDateFormat</a> supported timezones. All timestamps are internally stored in <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a> to allow correctly sequenced events when dealing with events from multiple systems which may all run with different internal timezones.</td>
+</tr>
+
+<tr>
+<td>time</td>
+<td>Map[String, Integer]</td>
+<td>false</td>
+<td>Use this capability if converting a Date label into a Timestamp for relative comparisons. Required fields are <code>hour</code>, <code>minute</code>, <code>second</code> and <code>nano</code> . These values can be agreed with source data suppliers to ensure intra-system data alignment. See below for example.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-12">Examples</h3>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;8e42c8f0-22a8-40db-9798-6dd533c1de36&quot;,
+  &quot;name&quot; : &quot;create_date&quot;,
+  &quot;description&quot; : &quot;Customer Creation Date&quot;,
+  &quot;type&quot; : &quot;timestamp&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;formatters&quot;: [
+    &quot;dd/MM/uuuu HH:mm:ss&quot;,
+    &quot;dd/MM/uuuu H:mm:ss&quot;,
+    &quot;dd/MM/uuuu HH:mm&quot;,
+    &quot;dd/MM/uuuu H:mm&quot;,
+    &quot;d/MM/uuuu HH:mm:ss&quot;,
+    &quot;d/MM/uuuu H:mm:ss&quot;,
+    &quot;d/MM/uuuu HH:mm&quot;,
+    &quot;d/MM/uuuu H:mm&quot;
+  ],
+  &quot;timezoneId&quot;: &quot;+1000&quot;,
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+<p>For converting a <code>Date</code> label into a <code>Timestamp</code> supply the <code>time</code> key:</p>
+
+<pre><code class="language-json">{
+  &quot;id&quot; : &quot;8e42c8f0-22a8-40db-9798-6dd533c1de36&quot;,
+  &quot;name&quot; : &quot;create_date&quot;,
+  &quot;description&quot; : &quot;Customer Creation Date&quot;,
+  &quot;type&quot; : &quot;timestamp&quot;,
+  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
+  &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
+  &quot;formatters&quot;: [
+    &quot;dd/MM/uuuu&quot;,
+  ],
+  &quot;timezoneId&quot;: &quot;Australia/Sydney&quot;,
+  &quot;time&quot;: {
+    &quot;hour&quot;: 23,
+    &quot;minute&quot;: 59,
+    &quot;second&quot;: 59,
+    &quot;nano&quot;: 0,
+  },
+  &quot;metadata&quot;: {
+    &quot;primaryKey&quot; : true,
+    &quot;position&quot;: 1
+  }
+}
+</code></pre>
+
+
+			<aside class="copyright" role="note">
+				
+				&copy; 2020 Released under the MIT license
+				
+			</aside>
+
+			<footer class="footer">
+				
+
+<nav class="pagination" aria-label="Footer">
+  <div class="previous">
+    
+    <a href="https://arc.tripl.ai/validate/" title="Validate">
+      <span class="direction">
+        Previous
+      </span>
+      <div class="page">
+        <div class="button button-previous" role="button" aria-label="Previous">
+          <i class="icon icon-back"></i>
+        </div>
+        <div class="stretch">
+          <div class="title">
+            Validate
+          </div>
+        </div>
+      </div>
+    </a>
+    
+  </div>
+
+  <div class="next">
+    
+    <a href="https://arc.tripl.ai/deploy/" title="Deploy">
+      <span class="direction">
+        Next
+      </span>
+      <div class="page">
+        <div class="stretch">
+          <div class="title">
+            Deploy
+          </div>
+        </div>
+        <div class="button button-next" role="button" aria-label="Next">
+          <i class="icon icon-forward"></i>
+        </div>
+      </div>
+    </a>
+    
+  </div>
+</nav>
+
+
+
+
+			</footer>
+		</div>
+	</article>
+
+	<div class="results" role="status" aria-live="polite">
+		<div class="scrollable">
+			<div class="wrapper">
+				<div class="meta"></div>
+				<div class="list"></div>
+			</div>
+		</div>
+	</div>
+</main>
+
+    <script>
+    
+      var base_url = 'https:\/\/arc.tripl.ai\/';
+      var repo_id  = 'tripl-ai\/arc';
+    
+    </script>
+
+    <script src="https://arc.tripl.ai/javascripts/application.js"></script>
+    
+
+    <script>
+      /* Add headers to scrollspy */
+      var headers   = document.getElementsByTagName("h2");
+      var scrollspy = document.getElementById('scrollspy');
+
+      if(scrollspy) {
+        if(headers.length > 0) {
+          for(var i = 0; i < headers.length; i++) {
+            var li = document.createElement("li");
+            li.setAttribute("class", "anchor");
+
+            var a  = document.createElement("a");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", headers[i].innerHTML);
+            a.innerHTML = headers[i].innerHTML;
+
+            li.appendChild(a)
+            scrollspy.appendChild(li);
+          }
+        } else {
+          scrollspy.parentElement.removeChild(scrollspy)
+        }
+
+
+        /* Add permanent link next to the headers */
+        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+        for(var i = 0; i < headers.length; i++) {
+            var a = document.createElement("a");
+            a.setAttribute("class", "headerlink");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", "Permanent link")
+            a.innerHTML = "#";
+            headers[i].appendChild(a);
+        }
+      }
+    </script>
+
+    <script>
+      document.querySelectorAll('pre > code').forEach(function (codeBlock) {
+        var button = document.createElement('div');
+        button.className = 'copy-code-button';
+        button.role = 'img';
+        button.alt = 'copy-code-button';
+
+        button.addEventListener('click', function () {
+            clipboard.writeText(codeBlock.innerText).then(function () {
+                button.blur();
+            }, function (error) {
+              console.log(`cannot copy to clipboard ${error}`)
+            });
+        });        
+
+        codeBlock.insertBefore(button, codeBlock.firstChild);
+      });
+    </script>
+
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard-polyfill/2.7.0/clipboard-polyfill.promise.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
+

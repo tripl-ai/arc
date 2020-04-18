@@ -48,7 +48,6 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
-    spark.sparkContext.hadoopConfiguration.set("io.compression.codecs", classOf[ai.tripl.arc.util.ZipCodec].getName)
 
     // recreate test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile))
@@ -69,49 +68,288 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
   }
 
-  test("XMLExtract") {
+  test("XMLExtract: end-to-end") {
     implicit val spark = session
-    import spark.implicits._
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "XMLExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${targetFileGlob}",
+          "outputView": "${outputView}"
+        }
+      ]
+    }"""
 
-    val dataset = extract.XMLExtractStage.execute(
-      extract.XMLExtractStage(
-        plugin=new extract.XMLExtract,
-        name=outputView,
-        description=None,
-        schema=Right(schema.right.getOrElse(Nil)),
-        outputView=outputView,
-        input=Right(targetFileGlob),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil,
-        contiguousIndex=true,
-        xsd=None
-      )
-    ).get
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
-    // test that the filename is correctly populated
-    assert(dataset.filter($"_filename".contains(targetFile)).count != 0)
-
-    val expected = TestUtils.getKnownDataset
-      .withColumn("decimalDatum", col("decimalDatum").cast("double"))
-      .drop($"nullDatum")
-
-    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val actual = dataset.drop(internal:_*)
-
-    assert(TestUtils.datasetEquality(expected, actual))
-
-    // test metadata
-    val timestampDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("timestampDatum")).metadata
-    assert(timestampDatumMetadata.getLong("securityLevel") == 7)
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+        assert(df.count == 2)
+      }
+    }
   }
+
+  test("XMLExtract: end-to-end with schema") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "XMLExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${targetFileGlob}",
+          "outputView": "${outputView}",
+          "schemaURI": "${getClass.getResource("/conf/schema/").toString}/knownDatasetXML.json"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+
+        val expectedSchema = """|{
+        |  "type" : "struct",
+        |  "fields" : [ {
+        |    "name" : "testRow",
+        |    "type" : {
+        |      "type" : "struct",
+        |      "fields" : [ {
+        |        "name" : "booleanDatum",
+        |        "type" : "boolean",
+        |        "nullable" : false,
+        |        "metadata" : {
+        |          "booleanMeta" : true,
+        |          "nullable" : false,
+        |          "internal" : false,
+        |          "private" : false,
+        |          "stringArrayMeta" : [ "string0", "string1" ],
+        |          "doubleArrayMeta" : [ 0.141, 0.52 ],
+        |          "description" : "booleanDatum",
+        |          "longMeta" : 10,
+        |          "securityLevel" : 0,
+        |          "doubleMeta" : 0.141,
+        |          "id" : "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
+        |          "stringMeta" : "string",
+        |          "booleanArrayMeta" : [ true, false ],
+        |          "longArrayMeta" : [ 10, 20 ]
+        |        }
+        |      }, {
+        |        "name" : "dateDatum",
+        |        "type" : "date",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : true,
+        |          "description" : "dateDatum",
+        |          "securityLevel" : 3,
+        |          "id" : "0e8109ba-1000-4b7d-8a4c-b01bae07027f"
+        |        }
+        |      }, {
+        |        "name" : "decimalDatum",
+        |        "type" : "decimal(38,18)",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : true,
+        |          "description" : "decimalDatum",
+        |          "securityLevel" : 2,
+        |          "id" : "9712c383-22d1-44a6-9ca2-0087af4857f1"
+        |        }
+        |      }, {
+        |        "name" : "doubleDatum",
+        |        "type" : "double",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : true,
+        |          "description" : "doubleDatum",
+        |          "securityLevel" : 8,
+        |          "id" : "31541ea3-5b74-4753-857c-770bd601c35b"
+        |        }
+        |      }, {
+        |        "name" : "integerDatum",
+        |        "type" : "integer",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : true,
+        |          "description" : "integerDatum",
+        |          "securityLevel" : 10,
+        |          "id" : "a66f3bbe-d1c6-44c7-b096-a4be59fdcd78"
+        |        }
+        |      }, {
+        |        "name" : "longDatum",
+        |        "type" : "long",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : false,
+        |          "description" : "longDatum",
+        |          "securityLevel" : 0,
+        |          "id" : "1c0eec1d-17cd-45da-8744-7a9ef5b8b086"
+        |        }
+        |      }, {
+        |        "name" : "stringDatum",
+        |        "type" : "string",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : false,
+        |          "description" : "stringDatum",
+        |          "securityLevel" : 0,
+        |          "id" : "9712c383-22d1-44a6-9ca2-0087af4857f1"
+        |        }
+        |      }, {
+        |        "name" : "timeDatum",
+        |        "type" : "string",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : true,
+        |          "description" : "timeDatum",
+        |          "securityLevel" : 8,
+        |          "id" : "eb17a18e-4664-4016-8beb-cd2a492d4f20"
+        |        }
+        |      }, {
+        |        "name" : "timestampDatum",
+        |        "type" : "timestamp",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "nullable" : true,
+        |          "internal" : false,
+        |          "private" : true,
+        |          "description" : "timestampDatum",
+        |          "securityLevel" : 7,
+        |          "id" : "8e42c8f0-22a8-40db-9798-6dd533c1de36"
+        |        }
+        |      } ]
+        |    },
+        |    "nullable" : true,
+        |    "metadata" : {
+        |      "nullable" : true,
+        |      "internal" : false,
+        |      "description" : "testrow",
+        |      "primaryKey" : true,
+        |      "id" : "",
+        |      "position" : 1
+        |    }
+        |  }, {
+        |    "name" : "_filename",
+        |    "type" : "string",
+        |    "nullable" : false,
+        |    "metadata" : {
+        |      "internal" : true
+        |    }
+        |  }, {
+        |    "name" : "_index",
+        |    "type" : "integer",
+        |    "nullable" : true,
+        |    "metadata" : {
+        |      "internal" : true
+        |    }
+        |  } ]
+        |}""".stripMargin
+
+        assert(df.schema.prettyJson == expectedSchema)
+
+        val expected = TestUtils.getKnownDataset
+          .drop(col("nullDatum"))
+
+        val internal = df.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+        val actual = df.drop(internal:_*).select("testRow.*")
+
+        assert(TestUtils.datasetEquality(expected, actual))
+      }
+    }
+  }
+
+  test("XMLExtract: end-to-end with dynamic text input") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    spark.sql(s"""
+    SELECT 'b' AS notValue, '${targetFileGlob}' AS value
+    """).createOrReplaceTempView(inputView)
+
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "TextExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${inputView}",
+          "outputView": "${outputView}",
+          "multiLine": true
+        },
+        {
+          "type": "XMLExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${outputView}",
+          "inputField": "value",
+          "outputView": "${outputView}",
+          "schemaURI": "${getClass.getResource("/conf/schema/").toString}/knownDatasetXML.json"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+
+        val expected = TestUtils.getKnownDataset
+          .drop(col("nullDatum"))
+
+        val internal = df.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+        val actual = df.drop(internal:_*).select("testRow.*")
+
+        assert(TestUtils.datasetEquality(expected, actual))
+      }
+    }
+  }
+
 
   test("XMLExtract: Caching") {
     implicit val spark = session
@@ -128,6 +366,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         schema=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
+        inputField=None,
         authentication=None,
         params=Map.empty,
         persist=false,
@@ -148,6 +387,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         schema=Right(Nil),
         outputView=outputView,
         input=Right(targetFile),
+        inputField=None,
         authentication=None,
         params=Map.empty,
         persist=true,
@@ -168,7 +408,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
 
     val schema =
       BooleanColumn(
-        id="1",
+        None,
         name="booleanDatum",
         description=None,
         nullable=true,
@@ -190,6 +430,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           schema=Right(Nil),
           outputView=outputView,
           input=Right(emptyWildcardDirectory),
+          inputField=None,
           authentication=None,
           params=Map.empty,
           persist=false,
@@ -200,8 +441,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown0.getMessage.contains("No files matched '"))
-    assert(thrown0.getMessage.contains("*.xml.gz' and no schema has been provided to create an empty dataframe."))
+    assert(thrown0.getMessage.contains("*.xml.gz' does not exist and no schema has been provided to create an empty dataframe."))
 
     // try without providing column metadata
     val thrown1 = intercept[Exception with DetailException] {
@@ -213,6 +453,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
           schema=Right(Nil),
           outputView=outputView,
           input=Right(emptyDirectory),
+          inputField=None,
           authentication=None,
           params=Map.empty,
           persist=false,
@@ -223,7 +464,6 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown1.getMessage.contains("Input '"))
     assert(thrown1.getMessage.contains("empty.xml' does not contain any fields and no schema has been provided to create an empty dataframe."))
 
     // try with column
@@ -235,6 +475,7 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
         schema=Right(schema),
         outputView=outputView,
         input=Right(emptyDirectory),
+        inputField=None,
         authentication=None,
         params=Map.empty,
         persist=false,
@@ -252,108 +493,6 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
 
     assert(TestUtils.datasetEquality(expected, actual))
   }
-
-  test("XMLExtract: .zip single record") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-    val dataset = extract.XMLExtractStage.execute(
-      extract.XMLExtractStage(
-        plugin=new extract.XMLExtract,
-        name=outputView,
-        description=None,
-        schema=Right(Nil),
-        outputView=outputView,
-        input=Right(zipSingleRecord),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil,
-        contiguousIndex=true,
-        xsd=None
-      )
-    ).get
-
-    // test that the filename is correctly populated
-    assert(dataset.filter($"_filename".contains(zipSingleRecord)).count != 0)
-    assert(dataset.schema.fieldNames.contains("body"))
-  }
-
-  test("XMLExtract: .zip multiple record") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-    val dataset = extract.XMLExtractStage.execute(
-      extract.XMLExtractStage(
-        plugin=new extract.XMLExtract,
-        name=outputView,
-        description=None,
-        schema=Right(Nil),
-        outputView=outputView,
-        input=Right(zipMultipleRecord),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil,
-        contiguousIndex=true,
-        xsd=None
-      )
-    ).get
-
-    // test that the filename is correctly populated
-    assert(dataset.filter($"_filename".contains(zipMultipleRecord)).count != 0)
-    assert(dataset.schema.fieldNames.contains("body"))
-    assert(dataset.count == 2)
-
-  }
-
-  test("XMLExtract: Dataframe") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-    // temporarily remove the delimiter so all the data is loaded as a single line
-    spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", s"${0x0 : Char}")
-
-    val textFile = spark.sparkContext.textFile(targetFileGlob)
-    textFile.toDF.createOrReplaceTempView(inputView)
-
-    val dataset = extract.XMLExtractStage.execute(
-      extract.XMLExtractStage(
-        plugin=new extract.XMLExtract,
-        name=outputView,
-        description=None,
-        schema=Right(Nil),
-        outputView=outputView,
-        input=Left(inputView),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil,
-        contiguousIndex=true,
-        xsd=None
-      )
-    ).get
-
-    val expected = TestUtils.getKnownDataset
-      .withColumn("decimalDatum", col("decimalDatum").cast("double"))
-      .drop($"nullDatum")
-
-    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
-    val actual = dataset.drop(internal:_*)
-
-    assert(TestUtils.datasetEquality(expected, actual))
-
-  }
-
 
   test("XMLExtract: xsd validation positive") {
     implicit val spark = session
@@ -453,5 +592,5 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
       case Left(err) => assert(err.toString.contains("""The prefix "xs" for element "xs:element" is not bound."""))
       case Right((pipeline, _)) => fail("should throw error")
     }
-  }  
+  }
 }

@@ -48,8 +48,8 @@ class JDBCExtract extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, predicates, numPartitions, fetchsize, customSchema, partitionColumn, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(jdbcURL), Right(driver), Right(tableName), Right(predicates), Right(numPartitions), Right(fetchsize), Right(customSchema), Right(partitionColumn), Right(partitionBy), Right(invalidKeys)) =>
+    (name, description, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, predicates, numPartitions, fetchsize, customSchema, partitionColumn, partitionBy, authentication, invalidKeys) match {
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(jdbcURL), Right(driver), Right(tableName), Right(predicates), Right(numPartitions), Right(fetchsize), Right(customSchema), Right(partitionColumn), Right(partitionBy), Right(authentication), Right(invalidKeys)) =>
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
         val stage = JDBCExtractStage(
@@ -71,25 +71,23 @@ class JDBCExtract extends PipelineStagePlugin {
           persist=persist
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        customSchema.foreach { stage.stageDetail.put("customSchema", _) }
+        fetchsize.foreach { fetchsize => stage.stageDetail.put("fetchsize", java.lang.Integer.valueOf(fetchsize)) }
+        partitionColumn.foreach { stage.stageDetail.put("partitionColumn", _) }
         stage.stageDetail.put("driver", driver.getClass.toString)
         stage.stageDetail.put("jdbcURL", JDBCUtils.maskPassword(jdbcURL))
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("tableName", tableName)
-        for (partitionColumn <- partitionColumn) {
-          stage.stageDetail.put("partitionColumn", partitionColumn)
-        }
         predicates match {
           case Nil =>
           case predicates => stage.stageDetail.put("predicates", predicates.asJava)
         }
-        for (fetchsize <- fetchsize) {
-          stage.stageDetail.put("fetchsize", java.lang.Integer.valueOf(fetchsize))
-        }
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, predicates, numPartitions, fetchsize, customSchema, partitionColumn, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, predicates, numPartitions, fetchsize, customSchema, partitionColumn, partitionBy, authentication, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -132,13 +130,8 @@ object JDBCExtractStage {
       connectionProperties.put(key, value)
     }
 
-    for (numPartitions <- stage.numPartitions) {
-      connectionProperties.put("numPartitions", numPartitions.toString)
-    }
-
-    for (fetchsize <- stage.fetchsize) {
-      connectionProperties.put("fetchsize", fetchsize.toString)
-    }
+    stage.numPartitions.foreach { numPartitions => connectionProperties.put("numPartitions", numPartitions.toString) }
+    stage.fetchsize.foreach { fetchsize => connectionProperties.put("fetchsize", fetchsize.toString) }
 
     for (partitionColumn <- stage.partitionColumn) {
       connectionProperties.put("partitionColumn", partitionColumn)

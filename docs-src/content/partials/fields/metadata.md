@@ -1,1 +1,1 @@
-Metadata to attach to the column after `TypingTransform`.<br><br>These values are limited to the basic JSON types `string`, `double`, `long` and `array`.<br><br>With array types the values must be all of the same type (i.e. `[true, false]` works but `[true, 0]` will not) and can only be values of basic types (`string`, `double`, `long`).
+Metadata to attach to the column.<br><br>Basic JSON types `string`, `double`, `long`, `object` and `array` are supported.<br><br>With array types the values must be all of the same type (i.e. `[true, false]` works but `[true, 0]` will not).

@@ -102,7 +102,7 @@ object API {
       * constructing the initial hash for lineage as well as a general
       * reference.
       */
-    def id(): String
+    def id(): Option[String]
 
     /** The name of the column, should match the source.
       */
@@ -146,42 +146,43 @@ object API {
         case None => new MetadataBuilder()
       }
 
-      for (desc <- col.description) {
-        metadataBuilder.putString("description", desc)
-      }
+      for (id <- col.id) metadataBuilder.putString("id", id)
+      for (desc <- col.description) metadataBuilder.putString("description", desc)
+
       metadataBuilder.putBoolean("nullable", col.nullable)
       metadataBuilder.putBoolean("internal", false)
 
       StructField(col.name, col.sparkDataType, col.nullable, metadataBuilder.build())
     }
+    
   }
 
-  case class StringColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], minLength: Option[Int], maxLength: Option[Int]) extends ExtractColumn {
+  case class StringColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], minLength: Option[Int], maxLength: Option[Int]) extends ExtractColumn {
     val sparkDataType: DataType = StringType
   }
 
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class DateColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String], strict: Boolean) extends ExtractColumn {
+  case class DateColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String], strict: Boolean) extends ExtractColumn {
     val sparkDataType: DataType = DateType
   }
 
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class TimeColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String]) extends ExtractColumn {
+  case class TimeColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = StringType
   }
 
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class TimestampColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], timezoneId: String, formatters: List[String], time: Option[LocalTime], metadata: Option[String], strict: Boolean) extends ExtractColumn {
+  case class TimestampColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], timezoneId: String, formatters: List[String], time: Option[LocalTime], metadata: Option[String], strict: Boolean) extends ExtractColumn {
     val sparkDataType: DataType = TimestampType
   }
 
-  case class BinaryColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], encoding: EncodingType, metadata: Option[String]) extends ExtractColumn {
+  case class BinaryColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], encoding: EncodingType, metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = BinaryType
   }
 
@@ -195,25 +196,34 @@ object API {
   /** true / false values are lists of strings that are considered equivalent
     * to true or false e.g. "Y", "yes", "N", "no".
     */
-  case class BooleanColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], trueValues: List[String], falseValues: List[String], metadata: Option[String]) extends ExtractColumn {
+  case class BooleanColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], trueValues: List[String], falseValues: List[String], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = BooleanType
   }
 
-  case class IntegerColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean = true, nullableValues: List[String], metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
+  case class IntegerColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean = true, nullableValues: List[String], metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
     val sparkDataType: DataType = IntegerType
   }
 
-  case class LongColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
+  case class LongColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
     val sparkDataType: DataType = LongType
   }
 
-  case class DoubleColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
+  case class DoubleColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
     val sparkDataType: DataType = DoubleType
   }
 
-  case class DecimalColumn(id: String, name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], precision: Int, scale: Int, metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
+  case class DecimalColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], precision: Int, scale: Int, metadata: Option[String], formatters: Option[List[String]]) extends ExtractColumn {
     val sparkDataType: DataType = DecimalType(precision, scale)
   }
+
+  case class StructColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], fields: List[ExtractColumn], metadata: Option[String]) extends ExtractColumn {
+    val sparkDataType: DataType = StructType(fields.map { child => ExtractColumn.toStructField(child) }.toSeq)
+  }    
+
+
+  case class ArrayColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], elementType: ExtractColumn, metadata: Option[String]) extends ExtractColumn {
+    val sparkDataType: DataType = ArrayType(ExtractColumn.toStructField(elementType).dataType, false)
+  }      
 
   sealed trait MetadataFormat
   object MetadataFormat {
@@ -287,52 +297,88 @@ object API {
   }
 
 
-  sealed trait FailModeType {
+  sealed trait FailMode {
     def sparkString(): String
   }
-  case object FailModeTypePermissive extends FailModeType { val sparkString = "permissive" }
-  case object FailModeTypeFailFast extends FailModeType { val sparkString = "failfast" }
+  object FailMode {
+    case object Permissive extends FailMode { val sparkString = "permissive" }
+    case object FailFast extends FailMode { val sparkString = "failfast" }
+  }
 
 
   sealed trait OutputModeType {
     def sparkString(): String
   }
-  case object OutputModeTypeAppend extends OutputModeType { val sparkString = "append" }
-  case object OutputModeTypeComplete extends OutputModeType { val sparkString = "complete" }
-  case object OutputModeTypeUpdate extends OutputModeType { val sparkString = "update" }
+  object OutputModeType {
+    case object Append extends OutputModeType { val sparkString = "append" }
+    case object Complete extends OutputModeType { val sparkString = "complete" }
+    case object Update extends OutputModeType { val sparkString = "update" }
+  }
 
-  sealed trait IsolationLevelType {
+  sealed trait IsolationLevel {
     def sparkString(): String
   }
-  case object IsolationLevelNone extends IsolationLevelType { val sparkString = "NONE" }
-  case object IsolationLevelReadCommitted extends IsolationLevelType { val sparkString = "READ_COMMITTED" }
-  case object IsolationLevelReadUncommitted extends IsolationLevelType { val sparkString = "READ_UNCOMMITTED" }
-  case object IsolationLevelRepeatableRead extends IsolationLevelType { val sparkString = "REPEATABLE_READ" }
-  case object IsolationLevelSerializable extends IsolationLevelType { val sparkString = "SERIALIZABLE" }
+  object IsolationLevel {
+    case object None extends IsolationLevel { val sparkString = "NONE" }
+    case object ReadCommitted extends IsolationLevel { val sparkString = "READ_COMMITTED" }
+    case object ReadUncommitted extends IsolationLevel { val sparkString = "READ_UNCOMMITTED" }
+    case object RepeatableRead extends IsolationLevel { val sparkString = "REPEATABLE_READ" }
+    case object Serializable extends IsolationLevel { val sparkString = "SERIALIZABLE" }
+  }
 
   sealed trait ResponseType {
     def sparkString(): String
   }
-  case object IntegerResponse extends ResponseType { val sparkString = "integer" }
-  case object DoubleResponse extends ResponseType { val sparkString = "double" }
-  case object StringResponse extends ResponseType { val sparkString = "string" }
+  object ResponseType {
+    case object IntegerResponse extends ResponseType { val sparkString = "integer" }
+    case object DoubleResponse extends ResponseType { val sparkString = "double" }
+    case object StringResponse extends ResponseType { val sparkString = "string" }
+  }
 
-  sealed trait Authentication
+  sealed trait Authentication {
+    def method(): String
+  }
   object Authentication {
     /**
       In the Amazon case, we support encryption options using IAM access only as in order
       to provide access to a KMS key that would need to be done via a role and SSE-S3 should work if
       enable on the bucket as the default. Therefor unless a use case appears for adding encryption
       options to the access key method we will only support encryption options when using IAM for now.
+
+      for arc we are using this dependency resolution order if authentication is not provided:
+
      */
-    case class AmazonAccessKey(accessKeyID: String, secretAccessKey: String, endpoint: Option[String], ssl: Option[Boolean]) extends Authentication
-    case class AmazonIAM(encryptionType: Option[AmazonS3EncryptionType], keyArn: Option[String], customKey: Option[String]) extends Authentication
-    case class AzureSharedKey(accountName: String, signature: String) extends Authentication
-    case class AzureSharedAccessSignature(accountName: String, container: String, token: String) extends Authentication
-    case class AzureDataLakeStorageToken(clientID: String, refreshToken: String) extends Authentication
-    case class AzureDataLakeStorageGen2AccountKey(accountName: String, accessKey: String) extends Authentication
-    case class AzureDataLakeStorageGen2OAuth(clientID: String, secret: String, directoryId: String) extends Authentication
-    case class GoogleCloudStorageKeyFile(projectID: String, keyFilePath: String) extends Authentication
+    case class AmazonAccessKey(bucket: Option[String], accessKeyID: String, secretAccessKey: String, endpoint: Option[String], ssl: Option[Boolean]) extends Authentication {
+      def method = "AmazonAccessKey"
+    }
+    case class AmazonAnonymous(bucket: Option[String]) extends Authentication {
+      def method = "AmazonAnonymous"
+    }
+    case class AmazonEnvironmentVariable(bucket: Option[String]) extends Authentication {
+      def method = "AmazonEnvironmentVariable"
+    }
+    case class AmazonIAM(bucket: Option[String], encryptionType: Option[AmazonS3EncryptionType], keyArn: Option[String], customKey: Option[String]) extends Authentication {
+      def method = "AmazonIAM"
+    }
+
+    case class AzureSharedKey(accountName: String, signature: String) extends Authentication{
+      def method = "AzureSharedKey"
+    }
+    case class AzureSharedAccessSignature(accountName: String, container: String, token: String) extends Authentication{
+      def method = "AzureSharedAccessSignature"
+    }
+    case class AzureDataLakeStorageToken(clientID: String, refreshToken: String) extends Authentication{
+      def method = "AzureDataLakeStorageToken"
+    }
+    case class AzureDataLakeStorageGen2AccountKey(accountName: String, accessKey: String) extends Authentication{
+      def method = "AzureDataLakeStorageGen2AccountKey"
+    }
+    case class AzureDataLakeStorageGen2OAuth(clientID: String, secret: String, directoryId: String) extends Authentication{
+      def method = "AzureDataLakeStorageGen2OAuth"
+    }
+    case class GoogleCloudStorageKeyFile(projectID: String, keyFilePath: String) extends Authentication{
+      def method = "GoogleCloudStorageKeyFile"
+    }
   }
 
   sealed trait AmazonS3EncryptionType

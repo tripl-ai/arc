@@ -50,7 +50,7 @@ object ArcPipeline {
             if (!arcContext.ipynb) {
               throw new Exception(s"Support for IPython Notebook Configuration Files (.ipynb) for configuration '${uri.toString}' has been disabled by policy.")
             }
-            (uri.toString, readIPYNB(uri.toString, etlConfRaw))
+            (uri.toString, readIPYNB(Some(uri.toString), etlConfRaw))
           } else {
             (uri.toString, etlConfRaw)
           }

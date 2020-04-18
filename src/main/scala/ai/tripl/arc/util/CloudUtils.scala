@@ -29,9 +29,17 @@ object CloudUtils {
     hc.set("fs.s3a.aws.credentials.provider", defaultAWSProvidersOverride)
 
     authentication match {
-      case Some(API.Authentication.AmazonAccessKey(accessKeyID, secretAccessKey, endpoint, ssl)) => {
-        hc.set("fs.s3a.access.key", accessKeyID)
-        hc.set("fs.s3a.secret.key", secretAccessKey)
+      case Some(API.Authentication.AmazonAccessKey(bucket, accessKeyID, secretAccessKey, endpoint, ssl)) => {
+        val (accessKey, secretKey) = bucket match {
+          case Some(bucket) => {
+            hc.set(s"fs.s3a.$bucket.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+            (s"fs.s3a.$bucket.access.key", s"fs.s3a.$bucket.secret.key")
+          }
+          case None => ("fs.s3a.access.key", "fs.s3a.secret.key")
+        }
+
+        hc.set(accessKey, accessKeyID)
+        hc.set(secretKey, secretAccessKey)
 
         endpoint match {
           case Some(ep) => hc.set("fs.s3a.endpoint", ep)
@@ -42,15 +50,15 @@ object CloudUtils {
           case Some(s) => hc.set("fs.s3a.connection.ssl.enabled", s.toString)
           case None =>
         }
-
-        logger.debug()
-          .message("hadoopConfiguration.set()")
-          .field("fs.s3a.access.key", accessKeyID)
-          .field("fs.s3a.secret.key", secretAccessKey)
-          .log()
       }
-      case Some(API.Authentication.AmazonIAM(encType, kmsId, customKey)) => {
-
+      case Some(API.Authentication.AmazonAnonymous(bucket)) => {
+        bucket.foreach { bucket => hc.set(s"fs.s3a.$bucket.aws.credentials.provider", "org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider")}
+      }
+      case Some(API.Authentication.AmazonEnvironmentVariable(bucket)) => {
+        bucket.foreach { bucket => hc.set(s"fs.s3a.$bucket.aws.credentials.provider", "com.amazonaws.auth.EnvironmentVariableCredentialsProvider")}
+      }      
+      case Some(API.Authentication.AmazonIAM(bucket, encType, kmsId, customKey)) => {
+        bucket.foreach { bucket => hc.set(s"fs.s3a.$bucket.aws.credentials.provider", "com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider")}
         var algorithm = "None"
         var key = "None"
 
@@ -78,12 +86,6 @@ object CloudUtils {
             }
           case None => // already unset option above
         }
-
-        logger.debug()
-          .message("hadoopConfiguration.set()")
-          .field("fs.s3a.server-side-encryption-algorithm", algorithm)
-          .field("fs.s3a.server-side-encryption.key", key)
-          .log()
       }
       case Some(API.Authentication.AzureSharedKey(accountName, signature)) => {
         hc.set(s"fs.azure.account.key.${accountName}.blob.core.windows.net", signature)

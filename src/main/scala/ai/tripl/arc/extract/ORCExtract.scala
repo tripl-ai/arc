@@ -62,14 +62,13 @@ class ORCExtract extends PipelineStagePlugin {
           watermark=watermark
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        basePath.foreach { stage.stageDetail.put("basePath", _) }
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
         stage.stageDetail.put("inputURI", parsedGlob)
         stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        for (basePath <- basePath) {
-          stage.stageDetail.put("basePath", basePath)
-        }
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         for (watermark <- watermark) {
           val watermarkMap = new java.util.HashMap[String, Object]()
           watermarkMap.put("eventTime", watermark.eventTime)

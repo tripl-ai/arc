@@ -20,14 +20,14 @@ pygmentsUseClasses=true
 	repo_url = "https://github.com/tripl-ai/arc"
 
 	image = "triplai/arc"
-	version = "2.9.0"
+	version = "2.10.0"
 	arc_jupyter_image= "triplai/arc-jupyter"
-	arc_jupyter_version = "2.0.4"
+	arc_jupyter_version = "2.2.0"
 	spark_version = "2.4.5"
 	scala_version = "2.12"
 	hadoop_version = "2.9.2"
-	arc_image_version = "1.1.0"
-	arc_jupyter_image_version = "1.1.0"
+	arc_image_version = "1.0.0"
+	arc_jupyter_image_version = "1.0.0"
 
 	logo = "images/logo.png"
 	favicon = ""
@@ -88,8 +88,8 @@ pygmentsUseClasses=true
 	weight = 60
 
 [[menu.main]]
-	name   = "Metadata"
-	url    = "metadata/"
+	name   = "Schema"
+	url    = "schema/"
 	weight = 70
 
 [[menu.main]]
@@ -98,18 +98,18 @@ pygmentsUseClasses=true
 	weight = 80
 
 [[menu.main]]
-	name   = "Plugins"
-	url    = "plugins/"
-	weight = 85
+	name   = "Security"
+	url    = "security/"
+	weight = 85	
 
 [[menu.main]]
-	name   = "Partials"
-	url    = "partials/"
+	name   = "Plugins"
+	url    = "plugins/"
 	weight = 90
 
 [[menu.main]]
-	name   = "Patterns"
-	url    = "patterns/"
+	name   = "Common Solutions"
+	url    = "solutions/"
 	weight = 95
 
 #[[menu.main]]

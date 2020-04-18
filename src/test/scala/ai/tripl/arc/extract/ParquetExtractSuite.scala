@@ -97,7 +97,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
@@ -189,7 +189,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
 
     val schema =
       BooleanColumn(
-        id="1",
+        id=None,
         name="booleanDatum",
         description=None,
         nullable=true,
@@ -284,7 +284,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(

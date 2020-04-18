@@ -112,7 +112,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
@@ -257,7 +257,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
 
     val schema =
       BooleanColumn(
-        id="1",
+        None,
         name="booleanDatum",
         description=None,
         nullable=true,
@@ -536,7 +536,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
 
     val schema =
       BooleanColumn(
-        id="1",
+        id=None,
         name="booleanDatum",
         description=None,
         nullable=true,
@@ -548,7 +548,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         metadata=None
       ) ::
       IntegerColumn(
-        id="2",
+        id=None,
         name="integerDatum",
         description=None,
         nullable=true,
@@ -594,7 +594,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(

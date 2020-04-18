@@ -18,7 +18,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test trimming
     {
-      val col = DoubleColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("42.2222"), trim=true, nullableValues="" :: Nil, metadata=None, formatters = None)
+      val col = DoubleColumn(None, name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("42.2222"), trim=true, nullableValues="" :: Nil, metadata=None, formatters = None)
 
       // value is null -> nullReplacementValue
       {
@@ -90,7 +90,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITH nullReplacementValue
     {
-      val col = DoubleColumn(id="1", name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("42.2222"), trim=false, nullableValues="" :: Nil, metadata=None, formatters = None)
+      val col = DoubleColumn(None, name="name", description=Some("description"), nullable=true, nullReplacementValue=Some("42.2222"), trim=false, nullableValues="" :: Nil, metadata=None, formatters = None)
 
       // value.isNull
       {
@@ -128,7 +128,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
 
     // Test null input WITHOUT nullReplacementValue
     {
-      val col = DoubleColumn(id="1", name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, metadata=None, formatters = None)
+      val col = DoubleColumn(None, name="name", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, metadata=None, formatters = None)
 
       // value.isNull
       {
@@ -166,7 +166,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
     }
     // Test other miscellaneous input types
     {
-      val col = DoubleColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = None)
+      val col = DoubleColumn(None, name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = None)
 
       // value contains non number/s or characters
       {
@@ -233,7 +233,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
 
     //test formatter change negative suffix
     {
-      val col = DoubleColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0.###;#,##0.###-")))
+      val col = DoubleColumn(None, name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0.###;#,##0.###-")))
 
       // value contains negative number
       {
@@ -250,7 +250,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
 
     //test multiple formatter
     {
-      val col = DoubleColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0.###;#,##0.###-", "#,##0.###;(#,##0.###)")))
+      val col = DoubleColumn(None, name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0.###;#,##0.###-", "#,##0.###;(#,##0.###)")))
 
       // value contains negative number
       {
@@ -267,7 +267,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
 
     //test formatter in error message
     {
-      val col = DoubleColumn(id = "1", name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0.###;#,##0.###-")))
+      val col = DoubleColumn(None, name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = Option(List("#,##0.###;#,##0.###-")))
 
       // value contains negative number
       {

@@ -8,7 +8,7 @@
   ],
   "inputView": "customer",
   "outputView": "customer",
-  "schemaURI": "hdfs://datalake/metadata/customer.json",
+  "schemaURI": "hdfs://datalake/schema/customer.json",
   "failMode": "failfast"
   "numPartitions": 1,
   "partitionBy": [

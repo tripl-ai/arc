@@ -40,8 +40,8 @@ class MetadataFilterTransform extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(inputView), Right(outputView), Right(persist), Right(invalidKeys), Right(numPartitions), Right(partitionBy)) =>
+    (name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, authentication, partitionBy) match {
+      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(inputView), Right(outputView), Right(persist), Right(invalidKeys), Right(numPartitions), Right(authentication), Right(partitionBy)) =>
 
         val stage = MetadataFilterTransformStage(
           plugin=this,
@@ -58,17 +58,19 @@ class MetadataFilterTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("inputURI", parsedURI.toString)
         stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("sql", inputSQL)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
-        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, authentication, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

@@ -4,6 +4,7 @@ import java.net.URI
 import scala.collection.JavaConverters._
 
 import org.apache.spark.sql._
+import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types._
 
 import org.apache.hadoop.fs.FileSystem
@@ -16,6 +17,7 @@ import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.Utils
+import ai.tripl.arc.util.SerializableConfiguration
 
 class TextLoad extends PipelineStagePlugin {
 
@@ -30,7 +32,7 @@ class TextLoad extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = getValue[String]("inputView")
-    val outputURI = getValue[String]("outputURI") |> parseURI("outputURI") _
+    val outputURI = getOptionalValue[String]("outputURI") |> parseOptionURI("outputURI") _
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
@@ -38,12 +40,16 @@ class TextLoad extends PipelineStagePlugin {
     val prefix = getValue[String]("prefix", default = Some(""))
     val separator = getValue[String]("separator", default = Some(""))
     val suffix = getValue[String]("suffix", default = Some(""))
+    val singleFileNumPartitions = getValue[Int]("singleFileNumPartitions", default = Some(4096))
+    val validOutputURI = (outputURI, singleFile) match {
+      case (Right(None), Right(singleFile)) if (singleFile == false) => Left(ConfigError("outputURI", None, "Missing required attribute 'outputURI' when not in 'singleFile' mode.") :: Nil)
+      case _ => Right("")
+    }
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(singleFile), Right(prefix), Right(separator), Right(suffix), Right(invalidKeys)) =>
-
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, singleFileNumPartitions, validOutputURI, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(singleFile), Right(prefix), Right(separator), Right(suffix), Right(singleFileNumPartitions), Right(validOutputURI), Right(invalidKeys)) =>
         val stage = TextLoadStage(
           plugin=this,
           name=name,
@@ -57,17 +63,24 @@ class TextLoad extends PipelineStagePlugin {
           singleFile=singleFile,
           prefix=prefix,
           separator=separator,
-          suffix=suffix
+          suffix=suffix,
+          singleFileNumPartitions=singleFileNumPartitions
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
+        outputURI.foreach { outputURI => stage.stageDetail.put("outputURI", outputURI.toString) }
         stage.stageDetail.put("inputView", inputView)
-        stage.stageDetail.put("outputURI", outputURI.toString)
-        stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("prefix", prefix)
+        stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
+        stage.stageDetail.put("separator", separator)
+        stage.stageDetail.put("singleFile", java.lang.Boolean.valueOf(singleFile))
+        stage.stageDetail.put("suffix", suffix)
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, singleFileNumPartitions, validOutputURI, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -80,7 +93,7 @@ case class TextLoadStage(
     name: String,
     description: Option[String],
     inputView: String,
-    outputURI: URI,
+    outputURI: Option[URI],
     numPartitions: Option[Int],
     authentication: Option[Authentication],
     saveMode: SaveMode,
@@ -88,7 +101,8 @@ case class TextLoadStage(
     singleFile: Boolean,
     prefix: String,
     separator: String,
-    suffix: String
+    suffix: String,
+    singleFileNumPartitions: Int
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
@@ -100,90 +114,127 @@ object TextLoadStage {
 
   def execute(stage: TextLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    val signature = "TextLoad requires input [value: string] or [value: string, filename: string] signature when in singleFile mode."
+    val signature = "TextLoad requires input [value: string], [value: string, filename: string] or [value: string, filename: string, index: integer] signature when in singleFile mode."
+
+    val stageOutputURI = stage.outputURI
+    val stagePrefix = stage.prefix
+    val stageSeparator = stage.separator
+    val stageSuffix = stage.suffix
+    val stageSaveMode = stage.saveMode
 
     val df = spark.table(stage.inputView)
-
-    if (!df.isStreaming) {
-      stage.numPartitions match {
-        case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
-        case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
-      }
-    }
 
     // set write permissions
     CloudUtils.setHadoopConfiguration(stage.authentication)
 
     try {
       if (stage.singleFile) {
-        if (df.schema.length == 0 || df.schema.length > 2 || (df.schema.length == 1 && df.schema.fields(0).dataType != StringType) || (df.schema.length == 2 && df.schema.forall { f => !Seq("filename","value").contains(f.name) || f.dataType != StringType } )) {
+        if (!(
+            (df.schema.length == 1 && df.schema.fields(0).dataType == StringType) ||
+            (df.schema.length == 2 && df.schema.fields.map { field => (field.name, field.dataType) }.forall { field => validValueFilename.contains(field) }) ||
+            (df.schema.length == 3 && df.schema.fields.map { field => (field.name, field.dataType) }.forall { field => validValueFilenameIndex.contains(field) })
+          )) {
           throw new Exception(s"""${signature} Got [${df.schema.map(f => s"""${f.name}: ${f.dataType.simpleString}""").mkString(", ")}].""")
-        }        
+        }
 
-        val fs = FileSystem.get(spark.sparkContext.hadoopConfiguration)
+        val hasFilename = df.schema.length == 2 || df.schema.length == 3
+        val hasIndex = df.schema.length == 3
 
-        // group rows by target filename
-        val groupedRows = if (df.schema.length == 2) {
-          df.collect.groupBy { row => new URI(s"""${stage.outputURI}/${row.getString(row.fieldIndex("filename"))}""") }
+        // broadcast hadoop conf to all executors so they can open file system objects directly
+        val broadcastHadoopConf = spark.sparkContext.broadcast(new SerializableConfiguration(spark.sparkContext.hadoopConfiguration))
+
+        // repartition so that there is a 1:1 mapping of partition:filename
+        val repartitionedDF = if (hasFilename) {
+          df.repartition(stage.singleFileNumPartitions, col("filename"))
         } else {
-          df.collect.groupBy { _ => stage.outputURI}
+          df.repartition(1)
         }
 
-
-        // first test for any invalid rules 
-        groupedRows.foreach { case (outputURI, _) => 
-          val path = new Path(outputURI)
-          if (fs.exists(path)) {
-            stage.saveMode match {
-              case SaveMode.ErrorIfExists => {
-                throw new Exception(s"File '${path.toString}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
-              }
-              case _ => 
-            }
-          }
+        if (!hasFilename && stageOutputURI.isEmpty) {
+          throw new Exception("TextLoad requires 'outputURI' to be set if in 'singleFile' mode and no 'filename' column exists.")
         }
 
-        // write the records for each group sequentially
-        groupedRows.foreach { case (outputURI, rowGroup) => 
-          val path = new Path(outputURI)
+        val outputFileAccumulator = spark.sparkContext.collectionAccumulator[String]
 
-          // create the outputStream for that file
-          val outputStream = if (fs.exists(path)) {
-            stage.saveMode match {
-              case SaveMode.Overwrite => {
-                Option(fs.create(path, true))
-          
-              }
-              case SaveMode.Append => {
-                Option(fs.append(path))
-              }
-              case _ => None
+        repartitionedDF.foreachPartition { partition: Iterator[Row] =>
+          if (partition.hasNext) {
+            val hadoopConf = broadcastHadoopConf.value.value
+
+            // buffer so first row can be accessed
+            val bufferedPartition = partition.buffered
+
+            val firstRow = bufferedPartition.head
+            val valueIndex = if (hasFilename) {
+              firstRow.fieldIndex("value")
+            } else {
+              0
             }
-          } else {
-            Option(fs.create(path))
-          }
-            
-          // write bytes to the rowgroup to the outputStream
-          outputStream match {
-            case Some(os) => {
-              os.writeBytes(
-                rowGroup
-                  .map { row => 
-                    if (df.schema.length == 1) {
-                      row.getString(0) 
-                    } else {
-                      row.getString(row.fieldIndex("value")) 
-                    }
+            val indexIndex = if (hasIndex) {
+              firstRow.fieldIndex("index")
+            } else {
+              0
+            }
+
+            val path = if (hasFilename) {
+              new Path(new URI(firstRow.getString(firstRow.fieldIndex("filename"))))
+            } else {
+              new Path(stageOutputURI.get)
+            }
+
+            val fs = path.getFileSystem(hadoopConf)
+
+            // create the outputStream for that file
+            val outputStream = if (fs.exists(path)) {
+              stageSaveMode match {
+                case SaveMode.ErrorIfExists => {
+                  throw new Exception(s"File '${path.toString}' already exists and 'saveMode' equals 'ErrorIfExists' so cannot continue.")
+                }
+                case SaveMode.Overwrite => {
+                  Option(fs.create(path, true))
+
+                }
+                case SaveMode.Append => {
+                  Option(fs.append(path))
+                }
+                case _ => None
+              }
+            } else {
+              Option(fs.create(path))
+            }
+
+            // write bytes of the partition to the outputStream
+            outputStream match {
+              case Some(os) => {
+                os.writeBytes(stagePrefix)
+
+                // if has index sort
+                val iterator = if (hasIndex) {
+                  bufferedPartition.toSeq.sortBy { row => row.getInt(indexIndex) }.toIterator
+                } else {
+                  bufferedPartition
+                }
+
+                // use a while loop to add separator only when hasNext
+                while (iterator.hasNext) {
+                  os.writeBytes(iterator.next.getString(valueIndex))
+                  if (iterator.hasNext) {
+                    os.writeBytes(stageSeparator)
                   }
-                  .mkString(stage.prefix, stage.separator, stage.suffix)
-              )
-              os.close
-            }
-            case None =>
-          }          
-        }       
+                }
+                os.writeBytes(stageSuffix)
+                os.close
 
-        fs.close
+                outputFileAccumulator.add(path.toString)
+              }
+              case None =>
+            }
+
+            fs.close
+          }
+        }
+
+        stage.stageDetail.put("outputFiles", outputFileAccumulator.value.asScala.toSet.toSeq.asJava)
+
       } else {
         if (df.schema.length != 1 || df.schema.fields(0).dataType != StringType) {
           throw new Exception(s"""TextLoad supports only a single text column but the input view has ${df.schema.length} columns.""") with DetailException {
@@ -193,8 +244,8 @@ object TextLoadStage {
 
         // spark does not allow partitionBy when only single column dataframe
         stage.numPartitions match {
-          case Some(n) => df.repartition(n).write.mode(stage.saveMode).text(stage.outputURI.toString)
-          case None => df.write.mode(stage.saveMode).text(stage.outputURI.toString)
+          case Some(n) => df.repartition(n).write.mode(stage.saveMode).text(stage.outputURI.get.toString)
+          case None => df.write.mode(stage.saveMode).text(stage.outputURI.get.toString)
         }
       }
     } catch {
@@ -205,4 +256,7 @@ object TextLoadStage {
 
     Option(df)
   }
+
+  val validValueFilename = Array(("value", StringType), ("filename", StringType))
+  val validValueFilenameIndex = Array(("value", StringType), ("filename", StringType), ("index", IntegerType))
 }

@@ -26,5 +26,4 @@ object UDF {
 
     logData
   }
-
 }

@@ -16,6 +16,8 @@
     "country"
   ],
   "persist": false,
-  "schemaURI": "hdfs://datalake/metadata/customer.json",
-  "schemaView": "customer_schema"
+  "schemaURI": "hdfs://datalake/schema/customer.json",
+  "schemaView": "customer_schema",
+  "inputView": "customer_xml",
+  "inputField": "xml"
 }

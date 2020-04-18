@@ -41,7 +41,7 @@ class TypingTransform extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val authentication = readAuthentication("authentication")
-    val extractColumns = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
+    val extractColumns = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ |> checkSimpleColumnTypes("schemaURI", "TypingTransform") _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
@@ -52,8 +52,8 @@ class TypingTransform extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, inputView, outputView, persist, failMode, numPartitions, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(outputView), Right(persist), Right(failMode), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) =>
+    (name, description, extractColumns, schemaView, inputView, outputView, persist, failMode, numPartitions, partitionBy, invalidKeys, authentication) match {
+      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(outputView), Right(persist), Right(failMode), Right(numPartitions), Right(partitionBy), Right(invalidKeys), Right(authentication)) =>
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
         val stage = TypingTransformStage(
@@ -70,11 +70,13 @@ class TypingTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("failMode", failMode.sparkString)
         stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -94,7 +96,7 @@ case class TypingTransformStage(
     outputView: String,
     params: Map[String, String],
     persist: Boolean,
-    failMode: FailModeType,
+    failMode: FailMode,
     numPartitions: Option[Int],
     partitionBy: List[String]
   ) extends PipelineStage {
@@ -118,7 +120,7 @@ object TypingTransformStage {
         }
       }
       case Left(view) => {
-        val parseResult: ai.tripl.arc.util.MetadataSchema.ParseResult = ai.tripl.arc.util.MetadataSchema.parseDataFrameMetadata(spark.table(view))
+        val parseResult: ai.tripl.arc.util.ArcSchema.ParseResult = ai.tripl.arc.util.ArcSchema.parseArcSchemaDataFrame(spark.table(view))
         parseResult match {
           case Right(cols) => cols
           case Left(errors) => throw new Exception(s"""Schema view '${view}' to cannot be parsed as it has errors: ${errors.mkString(", ")}.""") with DetailException {
@@ -205,7 +207,7 @@ object Typing {
     * We must use the DataFrame map and not RDD as RDD operations break the
     * logical plan which is required for lineage.
     */
-  private def performTyping(df: DataFrame, cols: List[ExtractColumn], typedSchema: StructType, failMode: FailModeType, valueAccumulator: LongAccumulator, errorAccumulator: LongAccumulator)( implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Dataset[TypedRow] = {
+  private def performTyping(df: DataFrame, cols: List[ExtractColumn], typedSchema: StructType, failMode: FailMode, valueAccumulator: LongAccumulator, errorAccumulator: LongAccumulator)( implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Dataset[TypedRow] = {
     val incomingSchema = df.schema.zipWithIndex
 
     /** Create a dynamic RowEncoder from the provided schema. We use the phantom
@@ -233,7 +235,7 @@ object Typing {
                 case (Some(v), Some(err)) => (v :: valuesAccum, err :: errorsAccum)
                 case (Some(v), None) => (v :: valuesAccum, errorsAccum)
                 case (None, Some(err)) => {
-                  if (col.nullable || failMode == FailModeTypeFailFast) {
+                  if (col.nullable || failMode == FailMode.FailFast) {
                     (null :: valuesAccum, err :: errorsAccum)
                   } else {
                     // this exception is to override the default spark non-nullable error which is not intuitive: 
@@ -255,7 +257,7 @@ object Typing {
             }
         }
 
-        if (failMode == FailModeTypeFailFast && allErrors.length != 0) {
+        if (failMode == FailMode.FailFast && allErrors.length != 0) {
           throw new Exception(s"""TypingTransform with failMode equal to '${failMode.sparkString}' cannot continue due to row with error(s): [${allErrors.map(_.toString).mkString(", ")}].""")
         }
 
@@ -272,7 +274,7 @@ object Typing {
     }
   }
 
-  def typeDataFrame(untypedDataframe: DataFrame, cols: List[ExtractColumn], failMode: FailModeType, valueAccumulator: LongAccumulator, errorAccumulator: LongAccumulator)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
+  def typeDataFrame(untypedDataframe: DataFrame, cols: List[ExtractColumn], failMode: FailMode, valueAccumulator: LongAccumulator, errorAccumulator: LongAccumulator)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
     val schema = Extract.toStructType(cols)
     val internalFields = untypedDataframe.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).toList
 
@@ -322,16 +324,18 @@ object Typing {
         col.nullReplacementValue match {
             case Some(nullReplacementValue) => {
               col match {
-                case c:BinaryColumn => BinaryTypeable.typeValue(c, nullReplacementValue)
-                case c:BooleanColumn => BooleanTypeable.typeValue(c, nullReplacementValue)
-                case c:DateColumn => DateTypeable.typeValue(c, nullReplacementValue)
-                case c:DecimalColumn => DecimalTypeable.typeValue(c, nullReplacementValue)
-                case c:DoubleColumn => DoubleTypeable.typeValue(c, nullReplacementValue)
-                case c:TimeColumn => TimeTypeable.typeValue(c, nullReplacementValue)
-                case c:IntegerColumn => IntegerTypeable.typeValue(c, nullReplacementValue)
-                case c:LongColumn => LongTypeable.typeValue(c, nullReplacementValue)
-                case c:StringColumn => StringTypeable.typeValue(c, nullReplacementValue)
-                case c:TimestampColumn => TimestampTypeable.typeValue(c, nullReplacementValue)
+                case c: BinaryColumn => BinaryTypeable.typeValue(c, nullReplacementValue)
+                case c: BooleanColumn => BooleanTypeable.typeValue(c, nullReplacementValue)
+                case c: DateColumn => DateTypeable.typeValue(c, nullReplacementValue)
+                case c: DecimalColumn => DecimalTypeable.typeValue(c, nullReplacementValue)
+                case c: DoubleColumn => DoubleTypeable.typeValue(c, nullReplacementValue)
+                case c: TimeColumn => TimeTypeable.typeValue(c, nullReplacementValue)
+                case c: IntegerColumn => IntegerTypeable.typeValue(c, nullReplacementValue)
+                case c: LongColumn => LongTypeable.typeValue(c, nullReplacementValue)
+                case c: StringColumn => StringTypeable.typeValue(c, nullReplacementValue)
+                case c: TimestampColumn => TimestampTypeable.typeValue(c, nullReplacementValue)
+                case c: StructColumn => throw new Exception("TypingTransform does not support 'StructColumn' type.")
+                case c: ArrayColumn => throw new Exception("TypingTransform does not support 'ArrayColumn' type.")
               }
             }
             case None => {
@@ -345,16 +349,18 @@ object Typing {
     } else {
       // else take string value and try to convert to column type
       col match {
-        case c:BinaryColumn => BinaryTypeable.typeValue(c, valueToType)
-        case c:BooleanColumn => BooleanTypeable.typeValue(c, valueToType)
-        case c:DateColumn => DateTypeable.typeValue(c, valueToType)
-        case c:DecimalColumn => DecimalTypeable.typeValue(c, valueToType)
-        case c:DoubleColumn => DoubleTypeable.typeValue(c, valueToType)
-        case c:IntegerColumn => IntegerTypeable.typeValue(c, valueToType)
-        case c:LongColumn => LongTypeable.typeValue(c, valueToType)
-        case c:StringColumn => StringTypeable.typeValue(c, valueToType)
-        case c:TimeColumn => TimeTypeable.typeValue(c, valueToType)
-        case c:TimestampColumn => TimestampTypeable.typeValue(c, valueToType)
+        case c: BinaryColumn => BinaryTypeable.typeValue(c, valueToType)
+        case c: BooleanColumn => BooleanTypeable.typeValue(c, valueToType)
+        case c: DateColumn => DateTypeable.typeValue(c, valueToType)
+        case c: DecimalColumn => DecimalTypeable.typeValue(c, valueToType)
+        case c: DoubleColumn => DoubleTypeable.typeValue(c, valueToType)
+        case c: IntegerColumn => IntegerTypeable.typeValue(c, valueToType)
+        case c: LongColumn => LongTypeable.typeValue(c, valueToType)
+        case c: StringColumn => StringTypeable.typeValue(c, valueToType)
+        case c: TimeColumn => TimeTypeable.typeValue(c, valueToType)
+        case c: TimestampColumn => TimestampTypeable.typeValue(c, valueToType)
+        case c: StructColumn => throw new Exception("TypingTransform does not support 'StructColumn' type.")
+        case c: ArrayColumn => throw new Exception("TypingTransform does not support 'ArrayColumn' type.")        
       }
     }
   }

@@ -6,6 +6,7 @@ import java.sql.DriverManager
 
 import scala.collection.JavaConverters._
 import scala.util.Properties._
+import scala.util.{Try,Success,Failure}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 
@@ -24,8 +25,7 @@ import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.ControlUtils._
 import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.SQLUtils
-import ai.tripl.arc.util.MetadataSchema
-
+import ai.tripl.arc.util.ArcSchema
 
 import Error._
 
@@ -52,6 +52,10 @@ object ConfigUtils {
         }
         Right(etlConfString)
       }
+      case "http" | "https" => {
+        val etlConfString = CloudUtils.getTextBlob(uri)
+        Right(etlConfString)
+      }
       // databricks file system
       case "dbfs" => {
         val etlConfString = CloudUtils.getTextBlob(uri)
@@ -61,7 +65,9 @@ object ConfigUtils {
       // for local master throw error as some providers (Amazon EMR) redirect s3:// to use the s3a:// driver transparently
       case "s3" | "s3n" if isLocalMaster =>
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
-      case "s3" | "s3n" | "s3a" => {
+      case "s3" | "s3a" => {
+
+        val s3aBucket = uri.getAuthority
         val s3aAccessKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.access.key").orElse(envOrNone("ETL_CONF_S3A_ACCESS_KEY"))
         val s3aSecretKey: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.secret.key").orElse(envOrNone("ETL_CONF_S3A_SECRET_KEY"))
         val s3aEndpoint: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.s3a.endpoint").orElse(envOrNone("ETL_CONF_S3A_ENDPOINT"))
@@ -88,16 +94,16 @@ object ConfigUtils {
               }
               case None => None
             }
-            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(accessKey, secretKey, s3aEndpoint, connectionSSLEnabled)))
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(Option(s3aBucket), accessKey, secretKey, s3aEndpoint, connectionSSLEnabled)))
           }
           case (None, _, _, _, Some(AmazonS3EncryptionType.SSE_S3), None, None) =>
-            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aEncType, s3aKmsId, None)))
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(Option(s3aBucket), s3aEncType, s3aKmsId, None)))
           case (None, _, _, _, Some(AmazonS3EncryptionType.SSE_KMS), None, None) =>
-            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aEncType, s3aKmsId, None)))
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(Option(s3aBucket), s3aEncType, s3aKmsId, None)))
           case (None, _, _, _, Some(AmazonS3EncryptionType.SSE_C), None, None) =>
-            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(s3aEncType, None, s3aCustomKey)))   
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(Option(s3aBucket), s3aEncType, None, s3aCustomKey)))
           case _ =>
-            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(None, None, None)))
+            CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonIAM(Option(s3aBucket), None, None, None)))
         }
 
         val etlConfString = CloudUtils.getTextBlob(uri)
@@ -182,7 +188,7 @@ object ConfigUtils {
   }
 
   // read an ipython notebook and convert to arc standard job string
-  def readIPYNB(uri: String, notebook: String): String = {
+  def readIPYNB(uri: Option[String], notebook: String): String = {
     val objectMapper = new ObjectMapper
     val jsonTree = objectMapper.readTree(notebook)
 
@@ -214,7 +220,7 @@ object ConfigUtils {
         }.map { case (cell, _) =>
           cell.split("\n").drop(1).mkString("\n")
         }
-      
+
       // calculate the lifecycle plugins
       val lifecycles = sources
         .filter { case (cell, _) =>
@@ -222,7 +228,7 @@ object ConfigUtils {
         }.map { case (cell, _) =>
           cell.split("\n").drop(1).mkString("\n")
         }
-              
+
         // calculate the arc stages
         val stages = sources
         .filter { case (cell, _) =>
@@ -242,13 +248,15 @@ object ConfigUtils {
               command
             }
             case b: String if (b.toLowerCase.startsWith("%sql")) => {
-              val args = parseArgs(behavior)
+              val args = parseArgs(behavior).map {
+                case (k,v) => (k, v.stripPrefix(""""""").stripSuffix(""""""").trim)
+              }
               val sqlParams = args.get("sqlParams") match {
                 case Some(sqlParams) => {
-                  parseArgs(sqlParams.replace(",", " ")).map{ 
+                  parseArgs(sqlParams.replace(",", " ")).map{
                     case (k, v) => {
                       if (v.trim().startsWith("${")) {
-                        s""""${k}": ${v}""" 
+                        s""""${k}": ${v}"""
                       } else {
                         s""""${k}": "${v}""""
                       }
@@ -256,7 +264,7 @@ object ConfigUtils {
                   }.mkString(",")
                 }
                 case None => ""
-              }    
+              }
 
               if (behavior.toLowerCase.startsWith("%sqlvalidate")) {
                 s"""{
@@ -267,7 +275,7 @@ object ConfigUtils {
                 |  "sql": \"\"\"${command}\"\"\",
                 |  "sqlParams": {${sqlParams}},
                 |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "numRows", "truncate", "persist", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
-                |}""".stripMargin  
+                |}""".stripMargin
               } else {
                 s"""{
                 |  "type": "SQLTransform",
@@ -279,10 +287,10 @@ object ConfigUtils {
                 |  "persist": ${args.getOrElse("persist", "false")},
                 |  "sqlParams": {${sqlParams}},
                 |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "outputView", "numRows", "truncate", "persist", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
-                |}""".stripMargin 
+                |}""".stripMargin
               }
             }
-            case _ => cell                
+            case _ => cell
           }
         }
 
@@ -316,7 +324,7 @@ object ConfigUtils {
     }
 
     args
-  }  
+  }
 
   def readMap(path: String, c: Config): Map[String, String] = {
     if (c.hasPath(path)) {
@@ -368,6 +376,16 @@ object ConfigUtils {
     } yield k
   }
 
+  def hasPath(path: String)(implicit c: Config): Either[Errors, ConfigValue] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, ConfigValue] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    if (!c.hasPath(path)) {
+      err(None, s"""Missing required attribute '$path'.""")
+    } else {
+      Right(c.getValue(path))
+    }
+  }
+
   def parseGlob(path: String)(glob: String)(implicit spark: SparkSession, c: Config): Either[Errors, String] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
@@ -378,14 +396,14 @@ object ConfigUtils {
       val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
       if (isLocalMaster && (glob.trim.startsWith("s3://") | glob.trim.startsWith("s3n://"))) {
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
-      }      
+      }
       Right(glob)
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
   }
 
-  def readAuthentication(path: String)(implicit c: Config): Either[Errors, Option[Authentication]] = {
+  def readAuthentication(path: String, uri: Option[String] = None)(implicit c: Config): Either[Errors, Option[Authentication]] = {
 
     def err(lineNumber: Option[Int], msg: String): Either[Errors, Option[Authentication]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
@@ -469,6 +487,7 @@ object ConfigUtils {
               Right(Some(Authentication.AzureDataLakeStorageGen2OAuth(clientID, secret, directoryID)))
             }
             case Some("AmazonAccessKey") => {
+              val s3aBucket = getS3Bucket(uri)
               val accessKeyID = authentication.get("accessKeyID") match {
                 case Some(v) => v
                 case None => throw new Exception(s"Authentication method 'AmazonAccessKey' requires 'accessKeyID' parameter.")
@@ -497,22 +516,31 @@ object ConfigUtils {
                 }
                 case None => None
               }
-              Right(Some(Authentication.AmazonAccessKey(accessKeyID, secretAccessKey, endpoint, sslEnabled)))
+              Right(Some(Authentication.AmazonAccessKey(s3aBucket, accessKeyID, secretAccessKey, endpoint, sslEnabled)))
+            }
+            case Some("AmazonAnonymous") => {
+              val s3aBucket = getS3Bucket(uri)
+              Right(Some(Authentication.AmazonAnonymous(s3aBucket)))
+            }
+            case Some("AmazonEnvironmentVariable") => {
+              val s3aBucket = getS3Bucket(uri)
+              Right(Some(Authentication.AmazonEnvironmentVariable(s3aBucket)))
             }
             case Some("AmazonIAM") => {
+              val s3aBucket = getS3Bucket(uri)
               val encType = authentication.get("encryptionAlgorithm").flatMap( AmazonS3EncryptionType.fromString(_) )
               val kmsId = authentication.get("kmsArn")
               val customKey = authentication.get("customKey")
 
               (encType, kmsId, customKey) match {
                 case (None, None, None) =>
-                  Right(Some(Authentication.AmazonIAM(None, None, None)))
+                  Right(Some(Authentication.AmazonIAM(s3aBucket, None, None, None)))
                 case (Some(AmazonS3EncryptionType.SSE_S3), None, None) =>
-                  Right(Some(Authentication.AmazonIAM(encType, kmsId, None)))
+                  Right(Some(Authentication.AmazonIAM(s3aBucket, encType, kmsId, None)))
                 case (Some(AmazonS3EncryptionType.SSE_KMS), Some(arn), None) =>
-                  Right(Some(Authentication.AmazonIAM(encType, kmsId, None)))
+                  Right(Some(Authentication.AmazonIAM(s3aBucket, encType, kmsId, None)))
                 case (Some(AmazonS3EncryptionType.SSE_C), None, Some(k)) =>
-                  Right(Some(Authentication.AmazonIAM(encType, None, customKey)))
+                  Right(Some(Authentication.AmazonIAM(s3aBucket, encType, None, customKey)))
                 case _ =>
                   throw new Exception(s"Invalid authentication options for AmazonIAM method. See docs for allowed settings.")
               }
@@ -538,6 +566,8 @@ object ConfigUtils {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), s"Unable to read config value: ${e.getMessage}")
     }
   }
+
+  def getS3Bucket(uri: Option[String]): Option[String] = uri.map { new URI(_).getAuthority }
 
   def readWatermark(path: String)(implicit c: Config): Either[Errors, Option[Watermark]] = {
 
@@ -572,8 +602,29 @@ object ConfigUtils {
       val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
       if (isLocalMaster && (uri.trim.startsWith("s3://") | uri.trim.startsWith("s3n://"))) {
         throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
-      }              
+      }
       Right(u)
+    } catch {
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
+    }
+  }
+
+  def parseOptionURI(path: String)(uri: Option[String])(implicit spark: SparkSession, c: Config): Either[Errors, Option[URI]] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, Option[URI]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    try {
+      uri match {
+        case Some(uri) => {
+          // try to parse uri
+          val u = new URI(uri)
+          val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
+          if (isLocalMaster && (uri.trim.startsWith("s3://") | uri.trim.startsWith("s3n://"))) {
+            throw new Exception("s3:// and s3n:// are no longer supported. Please use s3a:// instead.")
+          }
+          Right(Some(u))
+        }
+        case None => Right(None)
+      }
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }
@@ -583,14 +634,39 @@ object ConfigUtils {
     val schema = textContentForURI(uriKey, authentication)(uri).rightFlatMap(text => Right(Option(text)))
 
     schema.rightFlatMap { sch =>
-      val cols = sch.map{ s => MetadataSchema.parseJsonMetadata(s) }.getOrElse(Right(Nil))
+      val cols = sch.map{ s => ArcSchema.parseArcSchema(s) }.getOrElse(Right(Nil))
 
       cols match {
-        case Left(errs) => Left(errs.map( e => ConfigError("metadata error", None, Error.pipelineSimpleErrorMsg(e.errors)) ))
+        case Left(errs) => Left(errs.map( e => ConfigError("schema error", None, Error.pipelineSimpleErrorMsg(e.errors)) ))
         case Right(extractColumns) => Right(extractColumns)
       }
     }
   }
+
+  def checkSimpleColumnTypes(path: String, stageType: String)(extractColumns: List[ExtractColumn])(implicit c: Config): Either[Errors, List[ExtractColumn]] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, ExtractColumn] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    val cols = extractColumns.map { extractColumn =>
+      extractColumn match {
+        case col: StructColumn => err(Some(c.getValue(path).origin.lineNumber()), s"""${stageType} does not support complex types like column '${col.name}' of type struct.""")
+        case col: ArrayColumn => err(Some(c.getValue(path).origin.lineNumber()), s"""${stageType} does not support complex types like column '${col.name}' of type array.""")
+        case col => Right(col)
+      }
+    }
+
+    val (schema, errors) = cols.foldLeft[(List[ExtractColumn], List[ConfigError])]( (Nil, Nil) ) { case ( (columns, errs), metaOrError ) =>
+      metaOrError match {
+        case Right(c) => (c :: columns, errs)
+        case Left(metaErrors) => (columns, metaErrors ::: errs)
+      }
+    }
+
+    errors match {
+      case Nil => Right(schema.reverse)
+      case _ => Left(errors.reverse)
+    }
+  }
+
 
   def textContentForURI(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, String] = {
     uri.getScheme match {
@@ -641,17 +717,17 @@ object ConfigUtils {
 
   def parseOutputModeType(path: String)(delim: String)(implicit c: Config): Either[Errors, OutputModeType] = {
     delim.toLowerCase.trim match {
-      case "append" => Right(OutputModeTypeAppend)
-      case "complete" => Right(OutputModeTypeComplete)
-      case "update" => Right(OutputModeTypeUpdate)
+      case "append" => Right(OutputModeType.Append)
+      case "complete" => Right(OutputModeType.Complete)
+      case "update" => Right(OutputModeType.Update)
       case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
 
-  def parseFailMode(path: String)(delim: String)(implicit c: Config): Either[Errors, FailModeType] = {
+  def parseFailMode(path: String)(delim: String)(implicit c: Config): Either[Errors, FailMode] = {
     delim.toLowerCase.trim match {
-      case "permissive" => Right(FailModeTypePermissive)
-      case "failfast" => Right(FailModeTypeFailFast)
+      case "permissive" => Right(FailMode.Permissive)
+      case "failfast" => Right(FailMode.FailFast)
       case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
@@ -721,4 +797,14 @@ object ConfigUtils {
       Right(sql)
     }
   }
+
+  def doubleMinMax(path: String, min: Option[Double], max: Option[Double])(value: java.lang.Double)(implicit c: com.typesafe.config.Config): Either[Errors, Double] = {
+    (value, min, max) match {
+      case (v: java.lang.Double, Some(min), None) if (v < min) => Left(ConfigError(path, None, s"'${path}' ${v} below minimal allowed value ${min}.") :: Nil)
+      case (v: java.lang.Double, Some(min), Some(max)) if (v < min || v > max) => Left(ConfigError(path, None, s"'${path}' ${v} must be between ${min} and ${max}.") :: Nil)
+      case (v: java.lang.Double, None, Some(max)) if (v > max) => Left(ConfigError(path, None, s"'${path}' ${v} above maximum allowed value ${max}.") :: Nil)
+      case (v: java.lang.Double, _, _) => Right(v)
+    }
+  }
+
 }

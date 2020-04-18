@@ -75,16 +75,16 @@ class TensorFlowServingTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        stage.stageDetail.put("inputView", inputView)
-        stage.stageDetail.put("inputField", inputField)
-        stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("uri", uri.toString)
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
+        signatureName.foreach { stage.stageDetail.put("signatureName", _)}
         stage.stageDetail.put("batchSize", java.lang.Integer.valueOf(batchSize))
+        stage.stageDetail.put("inputField", inputField)
+        stage.stageDetail.put("inputView", inputView)
+        stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("responseType", responseType.sparkString)
-        for (signatureName <- signatureName) {
-          stage.stageDetail.put("signatureName", signatureName)
-        }
-        stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("uri", uri.toString)
 
         Right(stage)
       case _ =>
@@ -97,9 +97,9 @@ class TensorFlowServingTransform extends PipelineStagePlugin {
 
   def parseResponseType(path: String)(delim: String)(implicit c: Config): Either[Errors, ResponseType] = {
     delim.toLowerCase.trim match {
-      case "integer" => Right(IntegerResponse)
-      case "double" => Right(DoubleResponse)
-      case "object" => Right(StringResponse)
+      case "integer" => Right(ResponseType.IntegerResponse)
+      case "double" => Right(ResponseType.DoubleResponse)
+      case "object" => Right(ResponseType.StringResponse)
       case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
@@ -148,8 +148,8 @@ object TensorFlowServingTransformStage {
     }
 
     val tensorFlowResponseSchema = stage.responseType match {
-      case IntegerResponse => StructType(df.schema.fields.toList ::: List(new StructField("result", IntegerType, true)))
-      case DoubleResponse => StructType(df.schema.fields.toList ::: List(new StructField("result", DoubleType, true)))
+      case ResponseType.IntegerResponse => StructType(df.schema.fields.toList ::: List(new StructField("result", IntegerType, true)))
+      case ResponseType.DoubleResponse => StructType(df.schema.fields.toList ::: List(new StructField("result", DoubleType, true)))
       case _ => StructType(df.schema.fields.toList ::: List(new StructField("result", StringType, true)))
     }
 
@@ -237,8 +237,8 @@ object TensorFlowServingTransformStage {
           // try to unpack result
           groupedRow.zipWithIndex.map { case (row, index) => {
             val result = stageResponseType match {
-              case IntegerResponse => Seq(response(index).asInt)
-              case DoubleResponse => Seq(response(index).asDouble)
+              case ResponseType.IntegerResponse => Seq(response(index).asInt)
+              case ResponseType.DoubleResponse => Seq(response(index).asDouble)
               case _ => Seq(response(index).asText)
             }
 

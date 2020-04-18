@@ -14,7 +14,7 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-
+import ai.tripl.arc.config._
 import ai.tripl.arc.util._
 import ai.tripl.arc.util.ControlUtils._
 
@@ -22,6 +22,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _
 
+  val inputView = "inputView"
   val outputView = "outputView"
   val targetFile = getClass.getResource("/conf/simple.conf").toString
   val targetDirectory = s"""${getClass.getResource("/conf").toString}/*.conf"""
@@ -47,6 +48,76 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     session.stop
   }
 
+  test("TextExtract: end-to-end") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "TextExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${targetFile}",
+          "outputView": "${outputView}",
+          "multiLine": true
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+        assert(df.count == 1)
+      }
+    }
+  }  
+
+  test("TextExtract: end-to-end inputView") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    spark.sql(s"""
+    SELECT 'b' AS notValue, '${targetFile}' AS value
+    """).createOrReplaceTempView(inputView)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "TextExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${inputView}",
+          "outputView": "${outputView}",
+          "multiLine": true
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+        assert(df.count == 1)
+      }
+    }
+  }  
+
   test("TextExtract: multiLine false") {
     implicit val spark = session
     import spark.implicits._
@@ -60,7 +131,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
         description=None,
         schema=Right(List.empty),
         outputView=outputView,
-        input=targetFile,
+        input=Right(targetFile),
         authentication=None,
         persist=false,
         numPartitions=None,
@@ -89,7 +160,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
         description=None,
         schema=Right(List.empty),
         outputView=outputView,
-        input=targetFile,
+        input=Right(targetFile),
         authentication=None,
         persist=false,
         numPartitions=None,
@@ -120,7 +191,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
           description=None,
           schema=Right(List.empty),
           outputView=outputView,
-          input=emptyDirectory,
+          input=Right(emptyDirectory),
           authentication=None,
           persist=false,
           numPartitions=None,
@@ -170,7 +241,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
       }
     ]
     """
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(jsonSchema)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(jsonSchema)
 
     val dataset = extract.TextExtractStage.execute(
       extract.TextExtractStage(
@@ -179,7 +250,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
         outputView=outputView,
-        input=targetDirectory,
+        input=Right(targetDirectory),
         authentication=None,
         persist=false,
         numPartitions=None,

@@ -45,6 +45,22 @@
         font-weight: normal;
         font-style: normal;
       }
+
+      @font-face {
+        font-family: 'clipboard';
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot'); 
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot') 
+            format('embedded-opentype'),
+            url('https://arc.tripl.ai/fonts/clipboard.ttf') 
+              format('truetype'),
+            url('https://arc.tripl.ai/fonts/clipboard.woff') 
+              format('woff'),
+            url('https://arc.tripl.ai/fonts/clipboard.svg') 
+              format('svg');
+        font-weight: normal;
+        font-style: normal;
+        font-display: block;
+      }
     </style>
 
     <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
@@ -139,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.9.0</span></strong>
+          <span class="version">2.10.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -293,9 +309,9 @@
 
 
 
-<a  title="Metadata" href="https://arc.tripl.ai/metadata/">
+<a  title="Schema" href="https://arc.tripl.ai/schema/">
 	
-	Metadata
+	Schema
 </a>
 
 
@@ -329,6 +345,24 @@
 
 
 
+<a  title="Security" href="https://arc.tripl.ai/security/">
+	
+	Security
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="Plugins" href="https://arc.tripl.ai/plugins/">
 	
 	Plugins
@@ -347,27 +381,9 @@
 
 
 
-<a  title="Partials" href="https://arc.tripl.ai/partials/">
+<a  title="Common Solutions" href="https://arc.tripl.ai/solutions/">
 	
-	Partials
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Patterns" href="https://arc.tripl.ai/patterns/">
-	
-	Patterns
+	Common Solutions
 </a>
 
 
@@ -487,7 +503,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -752,7 +768,7 @@
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1121,7 +1137,7 @@
 </p>
 </div>
 
-<p>The <code>MetadataFilterTransform</code> stage transforms the incoming dataset by filtering columns using the embedded column <a href="../metadata/">metadata</a>.</p>
+<p>The <code>MetadataFilterTransform</code> stage transforms the incoming dataset by filtering columns using the embedded column <a href="../schema/">metadata</a>.</p>
 
 <p>Underneath Arc will register a table called <code>metadata</code> which contains the metadata of the <code>inputView</code>. This allows complex SQL statements to be executed which returns which columns to retain from the <code>inputView</code> in the <code>outputView</code>. The available columns in the <code>metadata</code> table are:</p>
 
@@ -1231,7 +1247,7 @@ WHERE metadata.pii = (
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1422,7 +1438,7 @@ WHERE metadata.pii = (
   <span class="p">],</span>
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h4 id="complete-6">Complete</h4>
@@ -1437,7 +1453,7 @@ WHERE metadata.pii = (
   <span class="p">],</span>
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;failMode&#34;</span><span class="p">:</span> <span class="s2">&#34;failfast&#34;</span>
   <span class="s2">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
   <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -1504,7 +1520,7 @@ WHERE metadata.pii = (
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -1578,7 +1594,7 @@ WHERE metadata.pii = (
 
 <h5 id="since-2-1-0-supports-streaming-true">Since: 2.1.0 - Supports Streaming: True</h5>
 
-<p>The <code>SimilarityJoinTransform</code> stage uses <a href="https://en.wikipedia.org/wiki/Approximate_string_matching">Approximate String Matching</a> (a.k.a. Fuzzy Matching) to find similar records between two datasets. It is possible to pass the same datasets into both the <code>leftView</code> and <code>rightView</code> to find duplicates (in which case the <code>threshold</code> value should be high to avoid a potentially very large cross-product resultset).</p>
+<p>The <code>SimilarityJoinTransform</code> stage uses <a href="https://en.wikipedia.org/wiki/Approximate_string_matching">Approximate String Matching</a> (a.k.a. Fuzzy Matching) to find similar records between two datasets. It is possible to pass the same dataset into both side of the comparison to find duplicates (ie. both <code>leftView</code> and <code>rightView</code>) to find duplicates (in which case the <code>threshold</code> value should be high (close to <code>1.0</code>) to avoid a potentially very large cross-product resultset).</p>
 
 <h3 id="parameters-8">Parameters</h3>
 
@@ -1842,7 +1858,7 @@ WHERE metadata.pii = (
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -2119,7 +2135,7 @@ FROM ${inputView}
 
 <h5 id="since-1-0-0-supports-streaming-true-4">Since: 1.0.0 - Supports Streaming: True</h5>
 
-<p>The <code>TypingTransform</code> stage transforms the incoming dataset with based on metadata defined in the <a href="../metadata/">metadata</a> format.</p>
+<p>The <code>TypingTransform</code> stage transforms the incoming dataset with based on a schema defined in the <a href="../schema/">schema</a> format.</p>
 
 <p>The logical process that is applied to perform the typing on a field-by-field basis is shown below.</p>
 
@@ -2182,7 +2198,7 @@ FROM ${inputView}
 <td>authentication</td>
 <td>Map[String, String]</td>
 <td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../partials/#authentication">authentication</a> documentation.</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
 </tr>
 
 <tr>
@@ -2233,7 +2249,7 @@ FROM ${inputView}
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_untyped&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
@@ -2248,7 +2264,7 @@ FROM ${inputView}
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
-  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/metadata/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_untyped&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
@@ -2273,7 +2289,7 @@ FROM ${inputView}
 +-------------------------+---------------------+
 </code></pre>
 
-<p>In this case the goal is  to safely convert the values from strings like <code>&quot;2018-09-26 07:17:43&quot;</code> to a proper <code>timestamp</code> object so that we can ensure the timestamp is valid (e.g. not on a date that does not exist e.g. the 30 day of February) and can easily perform date operations such as subtracting 1 week. To do so a <a href="../metadata/">metadata</a> file could be constructed to look like:</p>
+<p>In this case the goal is  to safely convert the values from strings like <code>&quot;2018-09-26 07:17:43&quot;</code> to a proper <code>timestamp</code> object so that we can ensure the timestamp is valid (e.g. not on a date that does not exist e.g. the 30 day of February) and can easily perform date operations such as subtracting 1 week. To do so a <a href="../schema/">schema</a> file could be constructed to look like:</p>
 
 <pre><code class="language-json">[
   {
@@ -2325,7 +2341,7 @@ FROM ${inputView}
 
 <ul>
 <li>Because the conversion happened successfully for both values on the first two rows there are no errors for those rows.</li>
-<li>On the third row the value <code>'2018-02-30 01:16:40'</code> cannot be converted as the 30th day of February is not a valid date and the value is set to <code>null</code>. If the <code>nullable</code> in the <a href="../metadata/">metadata</a> for field <code>startTime</code> was set to <code>false</code> the job would fail as it would be unable to continue.</li>
+<li>On the third row the value <code>'2018-02-30 01:16:40'</code> cannot be converted as the 30th day of February is not a valid date and the value is set to <code>null</code>. If the <code>nullable</code> in the <a href="../schema/">schema</a> for field <code>startTime</code> was set to <code>false</code> the job would fail as it would be unable to continue.</li>
 <li>On the forth row both rows are invalid as the <code>formatter</code> and <code>date</code> values are both wrong.</li>
 </ul>
 
@@ -2333,7 +2349,7 @@ FROM ${inputView}
 
 <h3 id="logical-flow">Logical Flow</h3>
 
-<p>The sequence that these fields are converted from <code>string</code> fields to <code>typed</code> fields is per this flow chart. Each value and its typing metadata is passed into this logical process. For each row the <code>values</code> are returned as standard table columns and the returned <code>error</code> values are groupd into a field called <code>_errors</code> on a row-by-row basis. Patterns for consuming the <code>_errors</code> array is are demonstrated in the <a href="validate/#sqlvalidate">SQLValidate</a> stage.</p>
+<p>The sequence that these fields are converted from <code>string</code> fields to <code>typed</code> fields is per this flow chart. Each value and its typing schema is passed into this logical process. For each row the <code>values</code> are returned as standard table columns and the returned <code>error</code> values are groupd into a field called <code>_errors</code> on a row-by-row basis. Patterns for consuming the <code>_errors</code> array is are demonstrated in the <a href="validate/#sqlvalidate">SQLValidate</a> stage.</p>
 
 <p><img src="https://arc.tripl.ai/img/typing_flow.png" alt="Logical Flow for Data Typing" title="Logical Flow for Data Typing" /></p>
 
@@ -2454,10 +2470,30 @@ FROM ${inputView}
       }
     </script>
 
+    <script>
+      document.querySelectorAll('pre > code').forEach(function (codeBlock) {
+        var button = document.createElement('div');
+        button.className = 'copy-code-button';
+        button.role = 'img';
+        button.alt = 'copy-code-button';
+
+        button.addEventListener('click', function () {
+            clipboard.writeText(codeBlock.innerText).then(function () {
+                button.blur();
+            }, function (error) {
+              console.log(`cannot copy to clipboard ${error}`)
+            });
+        });        
+
+        codeBlock.insertBefore(button, codeBlock.firstChild);
+      });
+    </script>
+
     
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard-polyfill/2.7.0/clipboard-polyfill.promise.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
   </body>
 </html>

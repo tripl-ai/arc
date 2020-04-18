@@ -21,7 +21,7 @@
         "production",
         "test"
       ],
-      "inputURI": "hdfs://datalake/metadata/green_tripdata.json",
+      "inputURI": "hdfs://datalake/schema/green_tripdata.json",
       "inputView": "green_tripdata0_raw",
       "outputView": "green_tripdata0",
       "persist": true

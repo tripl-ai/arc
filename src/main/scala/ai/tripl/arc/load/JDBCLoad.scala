@@ -73,18 +73,20 @@ class JDBCLoad extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("inputView", inputView)
-        stage.stageDetail.put("jdbcURL", JDBCUtils.maskPassword(jdbcURL))
-        stage.stageDetail.put("tableName", tableName)
+
+        createTableColumnTypes.foreach { stage.stageDetail.put("createTableColumnTypes", _) }
+        createTableOptions.foreach { stage.stageDetail.put("createTableOptions", _) }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("batchsize", java.lang.Integer.valueOf(batchsize))
         stage.stageDetail.put("driver", driver.getClass.toString)
+        stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("isolationLevel", isolationLevel.sparkString)
+        stage.stageDetail.put("jdbcURL", JDBCUtils.maskPassword(jdbcURL))
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
+        stage.stageDetail.put("tableName", tableName)
         stage.stageDetail.put("tablock", java.lang.Boolean.valueOf(tablock))
         stage.stageDetail.put("truncate", java.lang.Boolean.valueOf(truncate))
-        stage.stageDetail.put("createTableOptions", createTableOptions)
-        stage.stageDetail.put("createTableColumnTypes", createTableColumnTypes)
 
         Right(stage)
       case _ =>
@@ -95,13 +97,13 @@ class JDBCLoad extends PipelineStagePlugin {
     }
   }
 
-  def parseIsolationLevel(path: String)(quote: String)(implicit c: Config): Either[Errors, IsolationLevelType] = {
+  def parseIsolationLevel(path: String)(quote: String)(implicit c: Config): Either[Errors, IsolationLevel] = {
     quote.toLowerCase.trim match {
-      case "none" => Right(IsolationLevelNone)
-      case "read_committed" => Right(IsolationLevelReadCommitted)
-      case "read_uncommitted" => Right(IsolationLevelReadUncommitted)
-      case "repeatable_read" => Right(IsolationLevelRepeatableRead)
-      case "serializable" => Right(IsolationLevelSerializable)
+      case "none" => Right(IsolationLevel.None)
+      case "read_committed" => Right(IsolationLevel.ReadCommitted)
+      case "read_uncommitted" => Right(IsolationLevel.ReadUncommitted)
+      case "repeatable_read" => Right(IsolationLevel.RepeatableRead)
+      case "serializable" => Right(IsolationLevel.Serializable)
       case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
@@ -116,7 +118,7 @@ case class JDBCLoadStage(
     tableName: String,
     partitionBy: List[String],
     numPartitions: Option[Int],
-    isolationLevel: IsolationLevelType,
+    isolationLevel: IsolationLevel,
     batchsize: Int,
     truncate: Boolean,
     createTableOptions: Option[String],
@@ -139,13 +141,6 @@ object JDBCLoadStage {
   def execute(stage: JDBCLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val df = spark.table(stage.inputView)
-
-    if (!df.isStreaming) {
-      stage.numPartitions match {
-        case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
-        case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
-      }
-    }
 
     // force cache the table so that when write verification is performed any upstream calculations are not executed twice
     if (!df.isStreaming && !spark.catalog.isCached(stage.inputView)) {

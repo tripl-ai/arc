@@ -56,10 +56,11 @@ class HTTPLoad extends PipelineStagePlugin {
           params=params
         )
 
+        stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
         stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("outputURI", outputURI.toString)
-        stage.stageDetail.put("headers", HTTPUtils.maskHeaders("Authorization" :: Nil)(stage.headers).asJava)
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("validStatusCodes", validStatusCodes.asJava)
 
         Right(stage)
       case _ =>

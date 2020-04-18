@@ -33,25 +33,25 @@ object ConfigReader {
         if (c.hasPath(path)) {
             val value = read
             if (!validValues.isEmpty) {
-            if (validValues.contains(value)) {
-                Right(value)
+                if (validValues.contains(value)) {
+                    Right(value)
+                } else {
+                    err(Some(c.getValue(path).origin.lineNumber()), s"""Invalid value. Valid values are ${validValues.map(value => s"'${value.toString}'").mkString("[",",","]")}.""")
+                }
             } else {
-                err(Some(c.getValue(path).origin.lineNumber()), s"""Invalid value. Valid values are ${validValues.map(value => s"'${value.toString}'").mkString("[",",","]")}.""")
-            }
-            } else {
-            Right(read)
+                Right(read)
             }
         } else {
             default match {
             case Some(value) => {
                 if (!validValues.isEmpty) {
-                if (validValues.contains(value)) {
+                    if (validValues.contains(value)) {
+                        Right(value)
+                    } else {
+                        err(None, s"""Invalid default value '$value'. Valid values are ${validValues.map(value => s"'${value.toString}'").mkString("[",",","]")}.""")
+                    }
+                } else {
                     Right(value)
-                } else {
-                    err(None, s"""Invalid default value '$value'. Valid values are ${validValues.map(value => s"'${value.toString}'").mkString("[",",","]")}.""")
-                }
-                } else {
-                Right(value)
                 }
             }
             case None => err(None, s"""Missing required attribute '$path'.""")

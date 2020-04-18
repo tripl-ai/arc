@@ -62,14 +62,16 @@ class BytesExtract extends PipelineStagePlugin {
           failMode=failMode
         )
 
-        stage.stageDetail.put("failMode", stage.failMode.sparkString)
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         input match {
           case Left(inputView) => stage.stageDetail.put("inputView", inputView)
-          case Right(parsedGlob) =>stage.stageDetail.put("inputURI", parsedGlob)
+          case Right(parsedGlob) => stage.stageDetail.put("inputURI", parsedGlob)
         }
+        stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
+        stage.stageDetail.put("failMode", stage.failMode.sparkString)
         stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(stage.persist))
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(stage.persist))
 
         Right(stage)
       case _ =>
@@ -92,7 +94,7 @@ case class BytesExtractStage(
     persist: Boolean,
     numPartitions: Option[Int],
     contiguousIndex: Boolean,
-    failMode: FailModeType
+    failMode: FailMode
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
@@ -104,20 +106,20 @@ object BytesExtractStage {
 
   def execute(stage: BytesExtractStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    val signature = "BytesExtract requires pathView to be dataset with [value: string] signature."
+    val signature = "BytesExtract requires 'inputView' to be dataset with [value: string] signature."
 
     CloudUtils.setHadoopConfiguration(stage.authentication)
 
     val df = try {
       stage.input match {
         case Left(view) => {
-          val pathView = spark.table(view)
-          val schema = pathView.schema
+          val inputView = spark.table(view)
+          val schema = inputView.schema
 
           val fieldIndex = try {
             schema.fieldIndex("value")
           } catch {
-            case e: Exception => throw new Exception(s"""${signature} inputView has: [${pathView.schema.map(_.name).mkString(", ")}].""") with DetailException {
+            case e: Exception => throw new Exception(s"""${signature} inputView has: [${inputView.schema.map(_.name).mkString(", ")}].""") with DetailException {
               override val detail = stage.stageDetail
             }
           }
@@ -129,7 +131,7 @@ object BytesExtractStage {
             }
           }
 
-          val path = pathView.select(col("value")).collect().map( _.getString(0) ).mkString(",")
+          val path = inputView.select(col("value")).collect().map( _.getString(0) ).mkString(",")
           spark.read.format("bytes").load(path)
         }
         case Right(glob) => {
@@ -141,7 +143,7 @@ object BytesExtractStage {
       }
     } catch {
       case e: InvalidInputException =>
-        if (stage.failMode == FailModeTypeFailFast) {
+        if (stage.failMode == FailMode.FailFast) {
           throw new Exception("BytesExtract has found no files and failMode is set to 'failfast' so cannot continue.") with DetailException {
             override val detail = stage.stageDetail
           }

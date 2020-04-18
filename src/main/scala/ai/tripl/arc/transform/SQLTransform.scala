@@ -32,7 +32,6 @@ class SQLTransform extends PipelineStagePlugin {
     // requires 'inputURI' or 'sql'
     val isInputURI = c.hasPath("inputURI")
     val source = if (isInputURI) "inputURI" else "sql"
-
     val parsedURI = if (isInputURI) getValue[String]("inputURI") |> parseURI("inputURI") _ else Right(new URI(""))
     val inputSQL = if (isInputURI) parsedURI |> textContentForURI("inputURI", authentication) _ else Right("")
     val inlineSQL = if (!isInputURI) getValue[String]("sql") |> verifyInlineSQLPolicy("sql") _ else Right("")
@@ -46,34 +45,34 @@ class SQLTransform extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, parsedURI, inlineSQL, sql, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(inlineSQL), Right(sql), Right(validSQL), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys)) =>
+    (name, description, parsedURI, inlineSQL, sql, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys, authentication) match {
+      case (Right(name), Right(description), Right(parsedURI), Right(inlineSQL), Right(sql), Right(validSQL), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(invalidKeys), Right(authentication)) =>
 
-        if (validSQL.toLowerCase() contains "now") {
-          logger.warn()
-            .field("event", "validateConfig")
-            .field("name", name)
-            .field("type", "SQLTransform")
-            .field("message", "sql contains NOW() function which may produce non-deterministic results")
-            .log()
+        val lowerValidSQL = validSQL.toLowerCase
+
+        Seq("now()", "current_date()", "current_timestamp()").foreach { nonDeterministic => 
+          if (lowerValidSQL contains nonDeterministic) {
+            logger.warn()
+              .field("event", "validateConfig")
+              .field("name", name)
+              .field("type", "SQLTransform")
+              .field("message", s"sql contains ${nonDeterministic.toUpperCase} function which may produce non-deterministic result")
+              .log()
+          }
         }
 
-        if (validSQL.toLowerCase() contains "current_date") {
-          logger.warn()
-            .field("event", "validateConfig")
-            .field("name", name)
-            .field("type", "SQLTransform")
-            .field("message", "sql contains CURRENT_DATE() function which may produce non-deterministic results")
-            .log()
-        }
-
-        if (validSQL.toLowerCase() contains "current_timestamp") {
-          logger.warn()
-            .field("event", "validateConfig")
-            .field("name", name)
-            .field("type", "SQLTransform")
-            .field("message", "sql contains CURRENT_TIMESTAMP() function which may produce non-deterministic results")
-            .log()
+        // warn for deprecated UDFs
+        arcContext.udfPlugins.foreach { plugin =>
+          plugin.deprecations.foreach { deprecation =>
+            if (lowerValidSQL contains s"${deprecation.function}(") {
+              logger.warn()
+                .field("event", "validateConfig")
+                .field("name", name)
+                .field("type", "SQLTransform")
+                .field("message", s"sql contains deprecated function '${deprecation.function}' which will be removed in future Arc version. Use `${deprecation.replaceFunction}` instead.")
+                .log()
+            }            
+          }
         }
 
         val uri = if (isInputURI) Option(parsedURI) else None
@@ -92,16 +91,18 @@ class SQLTransform extends PipelineStagePlugin {
           partitionBy=partitionBy
         )
 
-        if (uri.isDefined) stage.stageDetail.put("inputURI", parsedURI.toString)
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("sql", sql)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
-        stage.stageDetail.put("params", params.asJava)
+        uri.foreach { uri => stage.stageDetail.put("inputURI", uri.toString) }
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, parsedURI, inlineSQL, sql, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, inlineSQL, sql, validSQL, outputView, persist, numPartitions, partitionBy, invalidKeys, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

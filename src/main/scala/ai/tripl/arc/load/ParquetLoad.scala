@@ -53,11 +53,13 @@ class ParquetLoad extends PipelineStagePlugin {
           params=params
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("outputURI", outputURI.toString)
+        stage.stageDetail.put("params", params.asJava)
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("saveMode", saveMode.toString.toLowerCase)
-        stage.stageDetail.put("params", params.asJava)
 
         Right(stage)
       case _ =>
@@ -93,13 +95,6 @@ object ParquetLoadStage {
   def execute(stage: ParquetLoadStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val df = spark.table(stage.inputView)
-
-    if (!df.isStreaming) {
-      stage.numPartitions match {
-        case Some(partitions) => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(partitions))
-        case None => stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(df.rdd.getNumPartitions))
-      }
-    }
 
     // set write permissions
     CloudUtils.setHadoopConfiguration(stage.authentication)

@@ -103,3 +103,45 @@ font-style:italic;
 .hljs-strong {
 font-weight:700;
 }
+
+code {
+	position: relative;
+}
+
+.copy-code-button {
+	color: #909090;
+	position: absolute;
+	right: 0;
+	margin-top: 3px;
+	margin-right: 3px;
+	width: 14px;
+
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'clipboard' !important;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;	
+}
+
+.copy-code-button:hover {
+	color: #484848;
+	cursor: pointer;
+}
+
+.copy-code-button:focus {
+	/* Avoid an ugly focus outline on click in Chrome,
+		 but darken the button for accessibility.
+		 See https://stackoverflow.com/a/25298082/1481479 */
+	outline: 0;
+}
+
+.copy-code-button:before {
+  content: "\e900";
+}
+

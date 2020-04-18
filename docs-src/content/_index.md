@@ -16,9 +16,7 @@ Arc is an **opinionated** framework for defining **predictable**, **repeatable**
 
 ![Notebook](/img/arc-starter.png)
 
-Arc has an interactive [Jupyter Notebook](https://jupyter.org/) extension to help with rapid development of jobs. Start by cloning [https://github.com/tripl-ai/arc-starter](https://github.com/tripl-ai/arc-starter) and running through the [tutorial](https://arc.tripl.ai/tutorial/).
-
-This extension is available at [https://github.com/tripl-ai/arc-jupyter](https://github.com/tripl-ai/arc-jupyter).
+Arc has an interactive [Jupyter Notebook](https://jupyter.org/) extension to help with rapid development of data pipelines. Start by cloning [https://github.com/tripl-ai/arc-starter](https://github.com/tripl-ai/arc-starter) and running through the [tutorial](https://arc.tripl.ai/tutorial/).
 
 ## Principles
 
@@ -52,26 +50,6 @@ SQL first (based on the Mobile First UX principle) is an approach where, if poss
 
 Currently the [HIVE](https://cwiki.apache.org/confluence/display/Hive/LanguageManual) dialect of SQL is supported as [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) uses the same SQL dialect and has a lot of the same [functions](https://spark.apache.org/docs/latest/api/sql/index.html) that would be expected from other SQL dialects. This could change in the future.
 
-## Example pipeline
-
-### Logic
-
-This is an example of a fairly standard pipeline:
-
-1. First load a set of CSV files from an input directory. Separator is a comma and the file does not have a header.
-
-2. Convert the data to the correct datatypes using metadata defined in a separate JSON.
-
-3. Execute a SQL statement that will perform custom validation to ensure the data conversion in the previous step resulted in an acceptable data conversion error rate.
-
-4. Calculate some aggregates using a SQL Transformation substituting the `${year}` variable with the value `2016`.
-
-5. Write out the aggreate resultset to a Parquet target.
-
-
-### Implementation
-
-{{< readfile file="/resources/docs_resources/MainExample" highlight="json" >}}
 
 ## Contributing
 

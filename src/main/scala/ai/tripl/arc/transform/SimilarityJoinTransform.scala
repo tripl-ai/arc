@@ -19,6 +19,7 @@ import ai.tripl.arc.config.Error._
 import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.Utils
 import ai.tripl.arc.util.DetailException
+import ai.tripl.arc.util.EitherUtils._
 
 class SimilarityJoinTransform extends PipelineStagePlugin {
 
@@ -40,7 +41,7 @@ class SimilarityJoinTransform extends PipelineStagePlugin {
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val shingleLength = getValue[Int]("shingleLength", default = Some(3))
     val numHashTables = getValue[Int]("numHashTables", default = Some(5))
-    val threshold = getValue[java.lang.Double]("threshold", default = Some(0.8))
+    val threshold = getValue[java.lang.Double]("threshold", default = Some(0.8)) |> doubleMinMax("threshold", Some(0), Some(1)) _
     val caseSensitive = getValue[java.lang.Boolean]("caseSensitive", default = Some(false))
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")
@@ -69,17 +70,18 @@ class SimilarityJoinTransform extends PipelineStagePlugin {
           params=params
         )
 
-        stage.stageDetail.put("leftView", leftView)
-        stage.stageDetail.put("leftFields", leftFields.asJava)
-        stage.stageDetail.put("rightView", rightView)
-        stage.stageDetail.put("rightFields", rightFields.asJava)
-        stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        stage.stageDetail.put("shingleLength", java.lang.Integer.valueOf(shingleLength))
-        stage.stageDetail.put("numHashTables", java.lang.Integer.valueOf(numHashTables))
-        stage.stageDetail.put("threshold", java.lang.Double.valueOf(threshold))
+        numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("caseSensitive", java.lang.Boolean.valueOf(caseSensitive))
+        stage.stageDetail.put("leftFields", leftFields.asJava)
+        stage.stageDetail.put("leftView", leftView)
+        stage.stageDetail.put("numHashTables", java.lang.Integer.valueOf(numHashTables))
+        stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
+        stage.stageDetail.put("rightFields", rightFields.asJava)
+        stage.stageDetail.put("rightView", rightView)
+        stage.stageDetail.put("shingleLength", java.lang.Integer.valueOf(shingleLength))
+        stage.stageDetail.put("threshold", java.lang.Double.valueOf(threshold))
 
         Right(stage)
       case _ =>
@@ -144,7 +146,7 @@ object SimilarityJoinTransformStage {
       .setNumHashTables(stage.numHashTables)
 
     // the lshmodel cannot process empty vectors
-    val notEmptyVector = udf({v: SparseVector => v.numNonzeros > 0}, DataTypes.BooleanType)
+    val notEmptyVector = udf({v: SparseVector => v.numNonzeros > 0})
 
     val leftView = spark.table(stage.leftView)
     val rightView = spark.table(stage.rightView)

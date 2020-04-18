@@ -4,18 +4,18 @@ weight: 15
 type: blog
 ---
 
-This tutorial works through a real-world example using the [New York City Taxi dataset](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml) which has been used many times (see: [Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance](http://toddwschneider.com/posts/analyzing-1-1-billion-nyc-taxi-and-uber-trips-with-a-vengeance/) and [A Billion Taxi Rides in Redshift](http://tech.marksblogg.com/billion-nyc-taxi-rides-redshift.html)) due to its 1 billion+ record count and public data available via the [Registry of Open Data on AWS](https://registry.opendata.aws/nyc-tlc-trip-records-pds/).
+This tutorial works through a real-world example using the excellent [New York City Taxi dataset](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml) which has been used many times (see: [Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance](http://toddwschneider.com/posts/analyzing-1-1-billion-nyc-taxi-and-uber-trips-with-a-vengeance/) and [A Billion Taxi Rides in Redshift](http://tech.marksblogg.com/billion-nyc-taxi-rides-redshift.html)) due to its 1 billion+ record count and public data available via the [Registry of Open Data on AWS](https://registry.opendata.aws/nyc-tlc-trip-records-pds/).
 
 It is a great dataset as it has a lot of the attributes of real-world data that need to be considered:
 
-- [Schema Evolution](https://en.wikipedia.org/wiki/Schema_evolution) where fields are added/changed/removed over time or data is normalized as patterns emerge.
-- How to reliably apply data typing to an untyped source - in this case the [Comma-Separated Values](https://en.wikipedia.org/wiki/Comma-separated_values) format.
-- How to build a repeatable and reproducible process which will scale by adding more compute - the small example is ~40 million records and the large 1+ billion records.
+- [Schema Evolution](https://en.wikipedia.org/wiki/Schema_evolution) where fields are added/changed/removed over time or data is normalized as patterns emerge - such as the removal of GPS co-ordinates in the later datasets due to privacy concerns.
+- How to reliably apply data typing to an untyped source - in this case a [Comma-Separated Values](https://en.wikipedia.org/wiki/Comma-separated_values) format which does not preserve data type information.
+- How to build a repeatable and reproducible process which will scale by adding more compute not human effort - the small example is ~40 million records and the large well over 1 billion records.
 - How reusable components can be composed to [extract data](/extract/#delimitedextract) with [data types](/transform/#typingtransform), apply rules to ensure [data quality](/validate/#sqlvalidate), enrich the data by executing [SQL statements](/transform/#sqltransform), apply [machine learning transformations](/transform/#mltransform) and [load the data](/load) to one or more targets.
 
 ## Get arc-starter
 
-The easiest way to build an Arc job is by using [arc-starter](https://github.com/tripl-ai/arc-starter) which is an interactive development environment using the [Jupyter Notebooks](https://jupyter.org/) ecosystem. This tutorial assumes you have cloned this repository.
+The easiest way to build an Arc job is by cloning [arc-starter](https://github.com/tripl-ai/arc-starter) which is an interactive development environment based on [Jupyter Notebooks](https://jupyter.org/). This tutorial assumes you have cloned this repository.
 
 ![arc-starter](/img/arc-starter.png)
 
@@ -30,7 +30,7 @@ To start `arc-juptyer` run:
 ./develop.sh
 ```
 
-This script runs a `docker run` command where the only option that needs to be configured is the `-Xmx4096m` to set the memory available to Spark. This value needs to be less than or equal to the amount of memory allocated to Docker.
+This script runs a `docker run` command where the only option that needs to be configured is the `-Xmx4096m` to set the memory available to Spark. This value needs to be less than or equal to the amount of memory allocated to Docker (see [here](https://docs.docker.com/docker-for-mac/#resources) for MacOS).
 
 ```bash
 docker run \
@@ -66,25 +66,34 @@ The first stage we are going to add is a `DelimitedExtract` stage because the so
 }
 ```
 
-By executing this stage (`SHIFT-ENTER`) you should be able to see a result set. If you scroll to the very right of the result set you should be able to see two additional columns which is added by Arc to help trace data lineage to assist debugging.
-
-- `_filename`: which records the input file source for all file based imports.
-- `_index`: which records the input file row number for all file based imports. As Spark is a distributed system calculating a true row level `_index` is somewhat computationally expensive. To reduce the load the import option `"contiguousIndex": false` option can be provided to produce a monotonically increasing identifier from which `_index` can be derived later if required.
-
-The other thing to note is the use of `"persist": true` which instructs Arc to store the the dataset read from the external Amazon s3 bucket into memory. This means that any subsequent stage that references `green_tripdata0_raw` does not need to re-download the file.
-
-## Typing Data
-
-At this stage we have a stage which will tell Spark where to read one or more `.csv` files and produce a table that looks like this which has all `string` typed fields.
+By executing this stage (`SHIFT-ENTER`) you should be able to see a result set. 
 
 |VendorID|lpep_pickup_datetime|Lpep_dropoff_datetime|Store_and_fwd_flag|RateCodeID|Pickup_longitude|Pickup_latitude|Dropoff_longitude|Dropoff_latitude|Passenger_count|Trip_distance|Fare_amount|Extra|MTA_tax|Tip_amount|Tolls_amount|Ehail_fee|Total_amount|Payment_type|Trip_type|_filename|_index|
 |--------|--------------------|---------------------|------------------|----------|----------------|---------------|-----------------|----------------|---------------|-------------|-----------|-----|-------|----------|------------|---------|------------|------------|---------|---------|---------|
 |2|2013-09-01 00:02:00|2013-09-01 00:54:51|N|1|-73.952407836914062|40.810726165771484|-73.983940124511719|40.676284790039063|5|14.35|50.5|0.5|0.5|10.3|0|null|61.8|1|null|s3a://nyc-tlc/trip%20data/green_tripdata_2013-08.csv|1
 |2|2013-09-01 00:02:34|2013-09-01 00:20:59|N|1|-73.963020324707031|40.711833953857422|-73.966644287109375|40.681690216064453|1|3.24|15|0.5|0.5|0|0|null|16|2|null|s3a://nyc-tlc/trip%20data/green_tripdata_2013-08.csv|2
 
-To make this data more useful for querying (for example doing aggregation by time period) we need to **safely** apply data typing.
+If you scroll to the very right of the result set you should be able to see two additional columns which is added by Arc to help trace data lineage to assist debugging.
 
-Add a new stage to apply a `TypingTransformation` to the data extracted in the first stage named `green_tripdata0_raw` which will parse the data and produce an output dataset called `green_tripdata0` with correctly typed data. To do this we have to tell Arc how to parse the `string` data back into their original data types (like `timestamp` or `integer`). To do this transformation we need some way to pass in the description of how to parse the data and that is described in the `metadata` file passed in using the `schemaURI` key and described in the next step.
+- `_filename`: which records the input file source for all file based imports.
+- `_index`: which records the input file row number for all file based imports. As Spark is a distributed system calculating a true row level `_index` is computationally expensive. To reduce the load the import option `"contiguousIndex": false` option can be provided to produce a monotonically increasing identifier from which `_index` can be derived later if required.
+
+The other thing to note is the use of `"persist": true` which instructs Arc to store the the dataset read from the external Amazon s3 bucket into memory. This means that any subsequent stage that references `green_tripdata0_raw` does not need to re-download the file.
+
+## Typing Data
+
+{{< note title="Data Typing" >}}
+Data Typing is the process of converting a `text` (or `string`) value to a specific representation such as a `Timestamp` or `Decimal`.
+
+For example, trying to calculate the day of the week of the text `2016-04-09` would require very complex logic however if we first convert to a `Date` type we know:
+
+- the date is actually a valid date (where `2016-02-30` would fail)
+- we can use a function like `day_of_week(date)` to get the day of the week which has been tested to be correct
+{{</note>}}
+
+To make this data produced above more useful for analysis (for example doing aggregation by time period or summing dollars) we need to **safely** apply data typing.
+
+Add a new stage to apply a `TypingTransformation` to the data extracted in the first stage named `green_tripdata0_raw`. `TypingTransform` parses tabular text data to and, in this case, will produce an output dataset called `green_tripdata0`. To do this we have to tell Arc how to parse the `string` data back into their original data types (like `timestamp` or `integer`). To do this transformation we need some way to pass in the rules of how to parse the data and that is described in the `schema` file passed in using the `schemaURI`.
 
 ```json
 {
@@ -99,23 +108,17 @@ Add a new stage to apply a `TypingTransformation` to the data extracted in the f
 
 ## Specifying Data Typing Rules
 
-The [metadata format](/metadata/) provides the information needed to parse an untyped (`string`) dataset into a typed dataset. Where a traditional database will fail when a data conversion fails (for example `CAST('abc' AS INT)`) Spark defaults to returning `NULL` which makes safely and precisely parsing data using only Spark SQL very difficult.
+The [schema](/schema/) provides the rules needed to parse an untyped (`string`) dataset into a typed dataset. Where a traditional database will fail when a data conversion fails (for example `CAST('abc' AS INT)` would fail) Spark defaults to returning `NULL` which makes safely and precisely parsing data using only Spark SQL very difficult.
 
-{{< note title="Metadata Order" >}}
-This format does not use input field names and will only try to convert data by its column index - meaning that the order of the fields in the metadata file must match the input dataset.
-{{</note>}}
-
-Here is the top of of the `/home/jovyan/examples/tutorial/0/green_tripdata0.json` file which provides the detailed metadata of how to convert `string` values back into their correct data types. The description fields have come from the [official data dictionary](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml).
+Here is the top of of the `/home/jovyan/examples/tutorial/0/green_tripdata0.json` file which provides and example of how the rules defining how to convert `string` values back into their correct data types are represented. This file was manually created based on the [official data dictionary](http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml) - but frequently you will find determining this information is extremely difficult.
 
 ```json
 [
   {
-    "id": "f457e562-5c7a-4215-a754-ab749509f3fb",
     "name": "vendor_id",
     "description": "A code indicating the TPEP provider that provided the record.",
     "trim": true,
     "nullable": true,
-    "primaryKey": false,
     "type": "integer",
     "nullableValues": [
       "",
@@ -123,29 +126,10 @@ Here is the top of of the `/home/jovyan/examples/tutorial/0/green_tripdata0.json
     ]
   },
   {
-    "id": "d61934ed-e32e-406b-bd18-8d6b7296a8c0",
     "name": "lpep_pickup_datetime",
     "description": "The date and time when the meter was engaged.",
     "trim": true,
     "nullable": true,
-    "primaryKey": false,
-    "type": "timestamp",
-    "formatters": [
-      "uuuu-MM-dd HH:mm:ss"
-    ],
-    "timezoneId": "America/New_York",
-    "nullableValues": [
-      "",
-      "null"
-    ]
-  },
-  {
-    "id": "d61934ed-e32e-406b-bd18-8d6b7296a8c0",
-    "name": "lpep_dropoff_datetime",
-    "description": "The date and time when the meter was disengaged.",
-    "trim": true,
-    "nullable": true,
-    "primaryKey": false,
     "type": "timestamp",
     "formatters": [
       "uuuu-MM-dd HH:mm:ss"
@@ -159,39 +143,23 @@ Here is the top of of the `/home/jovyan/examples/tutorial/0/green_tripdata0.json
   ...
 ```
 
-Picking one of the more interesting fields, `lpep_pickup_datetime`, a [timestamp](/metadata/#timestamp) field, we can highlight a few details:
+Picking one of the more interesting fields, `lpep_pickup_datetime`, we can highlight a few details:
 
-- the `id` value is a unique identifier for this field (in this case a `string` formatted `uuid`). This field can be used to help track changes in the business *intent* of the field, for example if the field changed name from `lpep_pickup_datetime` to just `pickup_datetime` in a subsequent schema it is still the same field as the *intent* has not changed, just the name so the same `id` value should be the same.
-- the `formatters` key specifies an `array` rather than a simple `string`. This is because real world data often has multiple date/datetime formats used in a single column. By defining an `array` Arc will try to apply each of the formats specified in sequence and only fail if *none* of the formatters can be successfully applied.
-- a mandatory `timezoneId` must be specified. This is because if you work with datetime enough you will find that the only way to reliably work with dates and times across systems is to convert them all to [Coordinated Universal Time](https://en.wikipedia.org/wiki/Coordinated_Universal_Time) (UTC) so they can be placed as instantaneous point on a universally continuous timeline. Additionally `timezoneId` is specified at a column level meaning that it is possible to have multiple timezones for different columns in the same dataset.
+- this is a [timestamp](/schema/#timestamp) field which means it must be generated from a valid combination of date and time.
+- the `formatters` key specifies an `array` rather than a simple `string`. This is because real world data often has multiple date/datetime formats used in a single column. By allowing an `array` Arc will try to apply each of the formats specified in sequence and only fail if *none* of the formatters can be successfully applied.
+- a mandatory `timezoneId` must be specified. This is required as the only way to reliably work with dates and times across systems is to convert them all to [Coordinated Universal Time](https://en.wikipedia.org/wiki/Coordinated_Universal_Time) (UTC) so they can be placed as point on a universally continuous timeline. Additionally `timezoneId` is specified at a column level meaning that it is possible to have multiple timezones for different columns in the same dataset.
 - the `nullableValues` key also specifies an `array` which allows you to specify multiple values which will be converted to a true `null` when loading. If these values are present and the `nullable` key is set to `true` then the job will fail with a clear error message.
-- the description field is saved with the data some formats like when using [ORCLoad](/load/#orcload), [ParquetLoad](/load/#parquetload) or [DeltaLakeLoad](/load/#deltalakeload) into the underlying metadata and will be restored automatically if those files are re-injested by Arc.
+- the `description` field is saved with the data some formats like when using [ORCLoad](/load/#orcload), [ParquetLoad](/load/#parquetload) or [DeltaLakeLoad](/load/#deltalakeload) into the underlying metadata and will be restored automatically if those files are re-injested by Arc.
 
-```json
-  {
-    "id": "d61934ed-e32e-406b-bd18-8d6b7296a8c0",
-    "name": "lpep_pickup_datetime",
-    "description": "The date and time when the meter was engaged.",
-    "trim": true,
-    "nullable": true,
-    "primaryKey": false,
-    "type": "timestamp",
-    "formatters": [
-      "uuuu-MM-dd HH:mm:ss"
-    ],
-    "timezoneId": "America/New_York",
-    "nullableValues": [
-      "",
-      "null"
-    ]
-  }
-```
+{{< note title="Schema Order" >}}
+This format does not use input field names and will only try to convert data by its column index - meaning that the order of the fields in the schema file must match the input dataset.
+{{</note>}}
 
 So what happens if this conversion fails?
 
 ## Data Typing Validation
 
-The `TypingTransformation` adds an addition field to each row called `_errors` which holds an `array` of data conversion failures - if any exist - so that each row can be parsed entirely and multiple issues collected. If a data conversion issue exists then the field `name` and a human readable message will be pushed into that array and the value will be set to `null` for that field:
+Similar to the `DelimitedExtract`, `TypingTransformation` adds an addition field to each row called `_errors` which holds an `array` of data conversion failures - if any exist - so that all the errors in the entire dataset can be determined before deciding how to respond. If a data conversion issue exists then the field `name` and a human readable message will be pushed into that array and the value will be set to `null` for that field:
 
 For example:
 
@@ -206,7 +174,7 @@ For example:
 +-------------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
-If you have specified that the field cannot be `null` via `"nullable": false` then the job will fail at this point with an appropriate error message as logically it cannot continue.
+If you have specified that the field cannot be `null` via `"nullable": false` then the job will fail at this point with an appropriate error message as logically as it cannot continue.
 
 If the job has been configured like above with all fields `"nullable": true` then the `TypingTransform` stage will complete but we will not be actually enforcing that no errors have occured. To add the ability to stop the job based on whether errors occured we can add a `SQLValidate` stage:
 
@@ -233,7 +201,7 @@ FROM (
 The summary of what happens in this SQL statement is:
 
 - sum up the number of rows in the `green_tripdata0` dataset where the `SIZE` of the `_errors` array for each row is greater than 0.  If the errors array is not empty (`SIZE(_errors) > 0`) then there must have been at least one error on that row.
-- check that that sum of errors all errors for all rows `SUM(error) = 0` as a predicate so that the first field will return `true` if `SUM(error) = 0` or `false` if `SUM(error) != 0`
+- check that that sum of errors all errors for all rows `SUM(error)` equals `0` so that the first field will return `true` if `SUM(error) = 0` or `false` if `SUM(error) != 0`
 - as doing a count is visiting all rows anyway we can emit statistics so the output will be a `json` object that will be added to the logs. In this case we are logging a row count (`COUNT(error)`) and a count of rows with at least 1 error (`SUM(error)`) which will return something like `{"count":7623,"errors":0}`.
 
 {{< note title="Data Caching" >}}
@@ -248,7 +216,7 @@ The final step is to do something with the data. This could be any of the [Load]
 - it perfoms atomic commits meaning that when used with storage like Amazon S3 it will not leave partial/corrupt datasets if Spark shuts down unexpectedly.
 - it uses [Apache Parquet](https://parquet.apache.org/) which is a compressed columnar data format meaning that when it is read by subsequent Spark jobs you can only read the columns that are required vastly reducing the amount of data moved across a network and that has to be processed.
 - it retains full data types and metadata so that you don't have to keep converting text to correctly typed data before use.
-- it supports data partitioning and pushdown which can further reduce the amount of data required to be processed.
+- it supports data partitioning and pushdown which can further reduce the amount of data required to be read from expensive sources like Amazon S3.
 
 Here is the stage we will add which writes the `green_tripdata0` dataset to a `DeltaLake` dataset on disk. It will also be partitioned by `vendor_id` so that if you were doing analysis on only one of the vendors then Spark could easily read only that data and ignore the other vendors. Here we are explicitly naming the output `.delta` to help future users understand its format.
 
@@ -268,7 +236,7 @@ Here is the stage we will add which writes the `green_tripdata0` dataset to a `D
 
 ## Execute It
 
-At this stage we have a job which will extract data, apply data types to one `.csv` file and execute a `SQLValidate` stage to ensure that the data could be converted successfully then write the data out for future use. The Arc framework is packaged as a [Docker](https://www.docker.com/) container so that you can run the same job on your local machine or a massive compute cluster without having to think about how to deploy dependencies. The default Docker image contains the dependencies files for connecting to most `JDBC` databases and cloud services.
+At this stage we have a job which will extract data, apply data types to one `.csv` file and execute a `SQLValidate` stage to ensure that the data could be converted successfully then write the data out for future use. The Arc framework is packaged as a [Docker](https://www.docker.com/) image so that you can run the same job on your local machine or a massive compute cluster without having to think about how to deploy dependencies. The default Docker image contains the dependencies files for connecting to most `JDBC` databases and cloud services.
 
 To run the job that is included with the `arc-starter` repository (this file is also saved as `run.sh`):
 
@@ -288,7 +256,7 @@ bin/spark-submit \
 --etl.config.uri=file:///home/jovyan/examples/tutorial/0/nyctaxi.ipynb
 ```
 
-As the job runs you will see `json` formatted logs generated and printed to screen. These can easily be sent to a [log management](https://en.wikipedia.org/wiki/Log_management) solution for log aggregation/analysis/alerts. The important thing is that our job ran and we can see our message `{"count":7623,"errors":0}` formatted as numbers so that it can be easily addressed (`event.message.count`) and summed/compared day-by-day for monitoring.
+As the job runs you will see `json` formatted logs generated and printed to screen. These can easily be sent to a [log management](https://en.wikipedia.org/wiki/Log_management) solution for log aggregation/analysis/alerts. The important thing is that our job ran and we can see our message `{"count":7623,"errors":0}` formatted as numbers so that it can be easily addressed (`event.message.count`) and compared day-by-day for monitoring.
 
 ```json
 {
@@ -300,7 +268,7 @@ As the job runs you will see `json` formatted logs generated and printed to scre
   "thread_name": "main",
   "class": "ai.tripl.arc.ARC$",
   "logger_name": "local-1574152663175",
-  "timestamp": "2019-11-19 08:38:37.533+0000",
+  "timestamp": "2019-11-16 08:38:37.533+0000",
   "environment": "production",
   "streaming": "false",
   "applicationId": "local-1574152663175",
@@ -314,7 +282,7 @@ Congratulations you have run your first Arc job!
 
 ## Viewing the Metadata
 
-Arc allows users to define and store metadata (that is data which describes columns) attached the dataset. This data can be simple things like the `description` field shown below or [more complex metadata](/metadata). By storing the metadata with the actual dataset you can safely write out the data using enriched formats like [ParquetLoad](/load/#parquetload) or [DeltaLakeLoad](/load/#deltalakeload) and when those files are read in the future they will have that metadata still attached and in sync.
+Arc allows users to define and store metadata (that is data which describes columns) attached the dataset. This data can be simple things like the `description` field shown below or [more complex metadata](/schema). By storing the metadata with the actual dataset you can safely write out the data using enriched formats like [ParquetLoad](/load/#parquetload) or [DeltaLakeLoad](/load/#deltalakeload) and when those files are read in the future they will have that metadata still attached and in sync.
 
 Numerous stages have been added to explicitly operate against the metadata:
 
@@ -568,7 +536,7 @@ Now we have created three correctly typed and validated datasets in memory (`gre
 
 The real complexity with schema evolution comes defining clear rules with how to deal with fields which are added and removed over time. In the case of `green_tripdata` the main change over time is the change from giving specific pickup and dropoff co-ordinates (`pickup_longitude`, `pickup_latitude`, `dropoff_longitude`, `dropoff_latitude`) in the early datasets (`green_tripdata0` and `green_tripdata1`) to only providing more generalised (and much more private) `pickup_location_id` and `dropoff_location_id` geographic regions in `green_tripdata2`.
 
-The easiest way to deal with this is to use [SQL](https://en.wikipedia.org/wiki/SQL) to manually define the rules for each dataset before unioning the data together via `UNION ALL`. Here the query explicitly deals with the lack of `pickup_longitude` data in `green_tripdata2` by setting a `NULL` value but retaining the column so the `UNION` still works. The alternative, depending on use of this data, would be to remove the `pickup_longitude` column from the earlier datasets.
+The recommended way to deal with this is to use [SQL](https://en.wikipedia.org/wiki/SQL) to manually define the rules for each dataset before unioning the data together via `UNION ALL`. Here the query explicitly deals with the lack of `pickup_longitude` data in `green_tripdata2` by setting a `NULL` value but retaining the column so the `UNION` still works. The alternative, depending on use of this data, would be to remove the `pickup_longitude` column from the later datasets.
 
 ```sql
 %sql name="combine green_tripdata_*" environments=production,test outputView=trips
@@ -662,9 +630,9 @@ A runnable snapshot of this job is available:  `examples/tutorial/1/nyctaxi.ipyn
 
 ## Don't Repeat Yourself
 
-A common principle in software development is [Don't Repeat Yourself](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)(aka DRY) which in a Data Engineering context loosely means that logic should not repeated in multiple places to avoid inconsistencies.
+A common principle in software development is [Don't Repeat Yourself](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) (aka DRY) which in a Data Engineering context loosely means that logic should not repeated in multiple places to avoid inconsistencies.
 
-In the job above we have defined the same logic to `%sqlvalidate` that there are no errors after applying datatypes multiple times but have coded it each time for each version of `green_tripdata`. If, for example, the business rules changed in that we were prepared to accept a `5%` data typing error rate we would have to change the logic in multiple places which could easily be incorrectly applied or missed. A safer way to implement this is to externalise the logic and refer to it when needed.
+In the job above we have defined the same logic to `%sqlvalidate` that there are no errors after applying datatypes multiple times but have coded it each time for each version of `green_tripdata`. If the business rules changed in that we were prepared to accept a five percent data typing error rate we would have to change the logic in multiple places which could easily be incorrectly applied or missed. A safer way to implement this is to externalise the logic and refer to it when needed.
 
 First make a SQL statement that accepts the parameter `${inputView}` to pass in the dataset to verify. Save this file in `examples/tutorial/1/sqlvalidate_errors.sql`
 
@@ -754,7 +722,7 @@ Use the patterns above to add the `yellow_tripdata` datasets to the Arc job.
 
 ## Data Quality Reporting
 
-Another use for the `SQLValidate` stage is find data which does not comply with your user-defined data quality rules.
+A secondary use for the `SQLValidate` stage is find data which does not comply with your user-defined data quality rules.
 
 For example, when thinking about how taxis operate we intuitively know that:
 
@@ -893,29 +861,8 @@ As the business problem is better understood it is common to see [normalization 
 
 The main culprit of non-normalized data is the `yellow_tripdata0` dataset so add a `SQLTransform` stage which will do a `LEFT JOIN` to the new reference data then a `SQLValidate` stage to check that all of our refrence table lookups were successful (foreign key integrity). The use of a `LEFT JOIN` over an `INNER JOIN` is that we don't want to filter out data from `yellow_tripdata0` that doesn't have a lookup value.
 
-```json
-{
-  "type": "SQLTransform",
-  "name": "perform lookups for yellow_tripdata0 reference tables",
-  "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_JOB_URL}"/yellow_tripdata0_enrich.sql",
-  "outputView": "yellow_tripdata0_enriched",
-  "persist": false
-}
-```
-
-```json
-{
-  "type": "SQLValidate",
-  "name": "ensure that yellow_tripdata0 reference table lookups were successful",
-  "environments": ["production", "test"],
-  "inputURI": ${ETL_CONF_JOB_URL}"/yellow_tripdata0_enrich_validate.sql"
-}
-```
-
-Where `yellow_tripdata0_enrich.sql` does the `LEFT JOIN`s to the `vendor_id` and `payment_type_id` reference datasets:
-
 ```sql
+%sql name="look up reference data" outputView=yellow_tripdata0_enriched environments=production,test
 SELECT
   yellow_tripdata0.vendor_name
   ,vendor_id.vendor_id
@@ -952,6 +899,7 @@ LEFT JOIN payment_type_id ON LOWER(yellow_tripdata0.payment_type) = payment_type
 ... and then `SQLValidate` verifies that there are no missing values. This query will also collect up the distinct list of missing values so they can be logged and added manually added to the lookup table if required.
 
 ```sql
+%sqlvalidate name="ensure all foreign keys exist" environments=production,test
 SELECT
   SUM(null_vendor_id) = 0 AND SUM(null_payment_type_id) = 0 AS valid
   ,TO_JSON(

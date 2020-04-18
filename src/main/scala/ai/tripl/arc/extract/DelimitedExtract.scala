@@ -79,22 +79,21 @@ class DelimitedExtract extends PipelineStagePlugin {
           watermark=watermark
         )
 
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        inputField.foreach { stage.stageDetail.put("inputField", _) }
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
         stage.stageDetail.put("outputView", outputView)
+        stage.stageDetail.put("params", params.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        val options: Map[String, String] = stage.basePath match {
+        val options = stage.basePath match {
           case Some(basePath) => Delimited.toSparkOptions(stage.settings) + ("basePath" -> basePath)
           case None => Delimited.toSparkOptions(stage.settings)
         }
+        stage.stageDetail.put("options", options.asJava)
         input match {
           case Left(inputView) => stage.stageDetail.put("inputView", inputView)
-          case Right(parsedGlob) =>stage.stageDetail.put("inputURI", parsedGlob)
+          case Right(parsedGlob) => stage.stageDetail.put("inputURI", parsedGlob)
         }
-        stage.stageDetail.put("options", options.asJava)
-        for (inputField <- inputField) {
-          stage.stageDetail.put("inputField", inputField)
-        }
-        stage.stageDetail.put("params", params.asJava)
         for (watermark <- watermark) {
           val watermarkMap = new java.util.HashMap[String, Object]()
           watermarkMap.put("eventTime", watermark.eventTime)

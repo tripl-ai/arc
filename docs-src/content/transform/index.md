@@ -181,7 +181,7 @@ The `MetadataFilterTransform` is currently in experimental state whilst the requ
 This means this API is likely to change.
 {{</note>}}
 
-The `MetadataFilterTransform` stage transforms the incoming dataset by filtering columns using the embedded column [metadata](../metadata/).
+The `MetadataFilterTransform` stage transforms the incoming dataset by filtering columns using the embedded column [metadata](../schema/).
 
 Underneath Arc will register a table called `metadata` which contains the metadata of the `inputView`. This allows complex SQL statements to be executed which returns which columns to retain from the `inputView` in the `outputView`. The available columns in the `metadata` table are:
 
@@ -307,7 +307,7 @@ The `MLTransform` stage transforms the incoming dataset with a pretrained Spark 
 ## SimilarityJoinTransform
 ##### Since: 2.1.0 - Supports Streaming: True
 
-The `SimilarityJoinTransform` stage uses [Approximate String Matching](https://en.wikipedia.org/wiki/Approximate_string_matching) (a.k.a. Fuzzy Matching) to find similar records between two datasets. It is possible to pass the same datasets into both the `leftView` and `rightView` to find duplicates (in which case the `threshold` value should be high to avoid a potentially very large cross-product resultset).
+The `SimilarityJoinTransform` stage uses [Approximate String Matching](https://en.wikipedia.org/wiki/Approximate_string_matching) (a.k.a. Fuzzy Matching) to find similar records between two datasets. It is possible to pass the same dataset into both side of the comparison to find duplicates (ie. both `leftView` and `rightView`) to find duplicates (in which case the `threshold` value should be high (close to `1.0`) to avoid a potentially very large cross-product resultset).
 
 ### Parameters
 
@@ -449,7 +449,7 @@ https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving
 ## TypingTransform
 ##### Since: 1.0.0 - Supports Streaming: True
 
-The `TypingTransform` stage transforms the incoming dataset with based on metadata defined in the [metadata](../metadata/) format.
+The `TypingTransform` stage transforms the incoming dataset with based on a schema defined in the [schema](../schema/) format.
 
 The logical process that is applied to perform the typing on a field-by-field basis is shown below.
 
@@ -492,7 +492,7 @@ A demonstration of how the `TypingTransform` behaves. Assuming you have read an 
 +-------------------------+---------------------+
 ```
 
-In this case the goal is  to safely convert the values from strings like `"2018-09-26 07:17:43"` to a proper `timestamp` object so that we can ensure the timestamp is valid (e.g. not on a date that does not exist e.g. the 30 day of February) and can easily perform date operations such as subtracting 1 week. To do so a [metadata](../metadata/) file could be constructed to look like:
+In this case the goal is  to safely convert the values from strings like `"2018-09-26 07:17:43"` to a proper `timestamp` object so that we can ensure the timestamp is valid (e.g. not on a date that does not exist e.g. the 30 day of February) and can easily perform date operations such as subtracting 1 week. To do so a [schema](../schema/) file could be constructed to look like:
 
 ```json
 [
@@ -545,13 +545,13 @@ Here is the output of the `TypingTransformation` when applied to the input datas
 ```
 
 - Because the conversion happened successfully for both values on the first two rows there are no errors for those rows.
-- On the third row the value `'2018-02-30 01:16:40'` cannot be converted as the 30th day of February is not a valid date and the value is set to `null`. If the `nullable` in the [metadata](../metadata/) for field `startTime` was set to `false` the job would fail as it would be unable to continue.
+- On the third row the value `'2018-02-30 01:16:40'` cannot be converted as the 30th day of February is not a valid date and the value is set to `null`. If the `nullable` in the [schema](../schema/) for field `startTime` was set to `false` the job would fail as it would be unable to continue.
 - On the forth row both rows are invalid as the `formatter` and `date` values are both wrong.
 
 The [SQLValidate](../validate/#sqlvalidate) stage is a good way to use this data to enforce data quality constraints.
 
 ### Logical Flow
 
-The sequence that these fields are converted from `string` fields to `typed` fields is per this flow chart. Each value and its typing metadata is passed into this logical process. For each row the `values` are returned as standard table columns and the returned `error` values are groupd into a field called `_errors` on a row-by-row basis. Patterns for consuming the `_errors` array is are demonstrated in the [SQLValidate](validate/#sqlvalidate) stage.
+The sequence that these fields are converted from `string` fields to `typed` fields is per this flow chart. Each value and its typing schema is passed into this logical process. For each row the `values` are returned as standard table columns and the returned `error` values are groupd into a field called `_errors` on a row-by-row basis. Patterns for consuming the `_errors` array is are demonstrated in the [SQLValidate](validate/#sqlvalidate) stage.
 
 ![Logical Flow for Data Typing](/img/typing_flow.png "Logical Flow for Data Typing")

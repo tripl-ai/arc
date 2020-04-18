@@ -71,7 +71,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val mlConf = sqlConf.replaceAll("hdfs://datalake/ml/", getClass.getResource("/conf/ml/").toString)
 
       // replace meta directory with config so that the examples read correctly but have resource to validate
-      val metaConf = mlConf.replaceAll("hdfs://datalake/metadata/", getClass.getResource("/conf/metadata/").toString)
+      val metaConf = mlConf.replaceAll("hdfs://datalake/schema/", getClass.getResource("/conf/schema/").toString)
 
       // replace job directory with config so that the examples read correctly but have resource to validate
       val xmlConf = metaConf.replaceAll("hdfs://datalake/xml/", getClass.getResource("/conf/xml/").toString)      
@@ -553,7 +553,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val auth = ConfigUtils.readAuthentication("authentication")
 
     auth match {
-      case Right(Some(Authentication.AmazonIAM(encType, arn, customKey))) => {
+      case Right(Some(Authentication.AmazonIAM(None, encType, arn, customKey))) => {
         assert(encType == Some(AmazonS3EncryptionType.SSE_KMS))
         assert(arn == Some("586E7EA1-845F-41D5-A2F6-9B72A4A76243"))
         assert(customKey == None)
@@ -593,5 +593,17 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       }
     }
   }
+
+  // this test verifies ipynb for inline sql
+  test("Test read .ipynb tutorial") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false,commandLineArguments=Map[String,String]("ETL_CONF_DATA_URL" -> "", "ETL_CONF_JOB_URL" -> ""))
+
+    val targetFile = getClass.getResource("/conf/nyctaxi.ipynb").toString
+    val file = spark.read.option("wholetext", true).text(targetFile)
+    val conf = ConfigUtils.readIPYNB(None, file.first.getString(0))
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+  }  
 
 }

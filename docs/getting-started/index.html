@@ -45,6 +45,22 @@
         font-weight: normal;
         font-style: normal;
       }
+
+      @font-face {
+        font-family: 'clipboard';
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot'); 
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot') 
+            format('embedded-opentype'),
+            url('https://arc.tripl.ai/fonts/clipboard.ttf') 
+              format('truetype'),
+            url('https://arc.tripl.ai/fonts/clipboard.woff') 
+              format('woff'),
+            url('https://arc.tripl.ai/fonts/clipboard.svg') 
+              format('svg');
+        font-weight: normal;
+        font-style: normal;
+        font-display: block;
+      }
     </style>
 
     <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
@@ -139,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.9.0</span></strong>
+          <span class="version">2.10.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -293,9 +309,9 @@
 
 
 
-<a  title="Metadata" href="https://arc.tripl.ai/metadata/">
+<a  title="Schema" href="https://arc.tripl.ai/schema/">
 	
-	Metadata
+	Schema
 </a>
 
 
@@ -329,6 +345,24 @@
 
 
 
+<a  title="Security" href="https://arc.tripl.ai/security/">
+	
+	Security
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="Plugins" href="https://arc.tripl.ai/plugins/">
 	
 	Plugins
@@ -347,27 +381,9 @@
 
 
 
-<a  title="Partials" href="https://arc.tripl.ai/partials/">
+<a  title="Common Solutions" href="https://arc.tripl.ai/solutions/">
 	
-	Partials
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Patterns" href="https://arc.tripl.ai/patterns/">
-	
-	Patterns
+	Common Solutions
 </a>
 
 
@@ -421,22 +437,40 @@
 
 			
 
-<h2 id="notebook">Notebook</h2>
-
-<p>Arc provides an interactive development experience via a <a href="https://github.com/tripl-ai/arc-jupyter">custom</a> <a href="https://jupyter.org/">Jupyter Notebooks</a> extension. This has been bundled and is available as a Docker image: <a href="https://hub.docker.com/r/triplai/arc-jupyter">https://hub.docker.com/r/triplai/arc-jupyter</a></p>
-
-<p><img src="https://arc.tripl.ai/img/arc-starter.png" alt="Notebook" /></p>
-
 <h2 id="get-started">Get Started</h2>
 
-<p>To quickly get started with a real-world example with real data you can clone the <a href="https://github.com/tripl-ai/arc-starter">Arc Starter</a> project which has included job definitions and includes a limited set of data for you to quickly try Arc:</p>
+<p>To quickly get started with a real-world example you can clone the <a href="https://github.com/tripl-ai/arc-starter">Arc Starter</a> project which has included job definitions and includes a limited <a href="https://registry.opendata.aws/nyc-tlc-trip-records-pds/">set of data</a> for you to quickly try Arc in a <a href="https://github.com/tripl-ai/arc-jupyter">custom</a> <a href="https://jupyter.org/">Jupyter Notebooks</a> environment.</p>
 
 <pre><code class="language-bash">git clone https://github.com/tripl-ai/arc-starter.git
 cd arc-starter
 ./develop.sh
 </code></pre>
 
+<p>The example is within the <code>examples/0/</code> directory.</p>
+
 <p>To work through a complete example try completing the <a href="https://arc.tripl.ai/tutorial">tutorial</a>.</p>
+
+<h2 id="notebook">Notebook</h2>
+
+<p>Arc provides an interactive development experience via a <a href="https://github.com/tripl-ai/arc-jupyter">custom</a> <a href="https://jupyter.org/">Jupyter Notebooks</a> extension. This has been bundled and is available as a Docker image: <a href="https://hub.docker.com/r/triplai/arc-jupyter">https://hub.docker.com/r/triplai/arc-jupyter</a></p>
+
+<pre><code class="language-bash">docker run \
+--name arc-jupyter \
+--rm \
+-e JAVA_OPTS=&quot;-Xmx4096m&quot; \
+-p 4040:4040 \
+-p 8888:8888 \
+triplai/arc-jupyter:arc-jupyter_2.2.0_scala_2.12_1.0.0 \
+start-notebook.sh \
+--NotebookApp.password='' \
+--NotebookApp.token=''
+</code></pre>
+
+<p><img src="https://arc.tripl.ai/img/arc-starter.png" alt="Notebook" /></p>
+
+<h2 id="examples">Examples</h2>
+
+<p>Example data processing pipelines are available in the <a href="https://github.com/tripl-ai/arc-starter/tree/master/examples">Arc Starter</a> project in the <a href="https://github.com/tripl-ai/arc-starter/tree/master/examples">examples</a> directory.</p>
 
 
 			<aside class="copyright" role="note">
@@ -539,10 +573,30 @@ cd arc-starter
       }
     </script>
 
+    <script>
+      document.querySelectorAll('pre > code').forEach(function (codeBlock) {
+        var button = document.createElement('div');
+        button.className = 'copy-code-button';
+        button.role = 'img';
+        button.alt = 'copy-code-button';
+
+        button.addEventListener('click', function () {
+            clipboard.writeText(codeBlock.innerText).then(function () {
+                button.blur();
+            }, function (error) {
+              console.log(`cannot copy to clipboard ${error}`)
+            });
+        });        
+
+        codeBlock.insertBefore(button, codeBlock.firstChild);
+      });
+    </script>
+
     
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard-polyfill/2.7.0/clipboard-polyfill.promise.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
   </body>
 </html>

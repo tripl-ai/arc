@@ -31,7 +31,7 @@
   </url>
   
   <url>
-    <loc>https://arc.tripl.ai/metadata/</loc>
+    <loc>https://arc.tripl.ai/schema/</loc>
   </url>
   
   <url>
@@ -39,20 +39,268 @@
   </url>
   
   <url>
-    <loc>https://arc.tripl.ai/plugins/</loc>
-  </url>
-  
-  <url>
-    <loc>https://arc.tripl.ai/partials/</loc>
+    <loc>https://arc.tripl.ai/security/</loc>
     <lastmod>2016-03-09T00:11:02+01:00</lastmod>
   </url>
   
   <url>
-    <loc>https://arc.tripl.ai/patterns/</loc>
+    <loc>https://arc.tripl.ai/plugins/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/solutions/</loc>
   </url>
   
   <url>
     <loc>https://arc.tripl.ai/license/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/acks/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/authentication/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/basepath/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/batchsize/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/bootstrapservers/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/bulkload/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/contiguousindex/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/createtablecolumntypes/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/createtableoptions/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/customdelimiter/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/cypherparams/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/dateformatters/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/delimiter/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/description/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/environments/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/falsevalues/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/fetchsize/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/fieldname/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/groupid/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/headers/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/hostname/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/id/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/inputfields/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/inputuri/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/inputview/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/isolationlevel/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/jdbcurl/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/metadata/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/modelname/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/namespacename/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/nullreplacementvalue/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/nullable/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/nullablevalues/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/numpartitions/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/numberformatters/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/outputfields/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/outputgraph/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/outputview/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/params/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/partitionby/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/payloads/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/persist/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/port/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/predicates/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/rowtag/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/savemode/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/schemauri/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/schemaview/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/sharedaccesssignaturekey/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/sharedaccesssignaturekeyname/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/signaturename/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/sql/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/sqlparams/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/stagename/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/tablename/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/topic/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/trim/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/truevalues/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/truncate/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/type/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/validstatuscodes/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/watermark/</loc>
   </url>
   
   <url>
@@ -62,6 +310,11 @@
   
   <url>
     <loc>https://arc.tripl.ai/categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/</loc>
     <priority>0</priority>
   </url>
   

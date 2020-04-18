@@ -18,7 +18,7 @@ object ExtractUtils {
         }
       }
       case Left(view) => {
-        val parseResult: ai.tripl.arc.util.MetadataSchema.ParseResult = ai.tripl.arc.util.MetadataSchema.parseDataFrameMetadata(spark.table(view))(logger)
+        val parseResult: ai.tripl.arc.util.ArcSchema.ParseResult = ai.tripl.arc.util.ArcSchema.parseArcSchemaDataFrame(spark.table(view))(logger)
         parseResult match {
           case Right(cols) => Option(Extract.toStructType(cols))
           case Left(errors) => throw new Exception(s"""Schema view '${view}' to cannot be parsed as it has errors: ${errors.mkString(", ")}.""")

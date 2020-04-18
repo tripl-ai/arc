@@ -45,6 +45,22 @@
         font-weight: normal;
         font-style: normal;
       }
+
+      @font-face {
+        font-family: 'clipboard';
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot'); 
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot') 
+            format('embedded-opentype'),
+            url('https://arc.tripl.ai/fonts/clipboard.ttf') 
+              format('truetype'),
+            url('https://arc.tripl.ai/fonts/clipboard.woff') 
+              format('woff'),
+            url('https://arc.tripl.ai/fonts/clipboard.svg') 
+              format('svg');
+        font-weight: normal;
+        font-style: normal;
+        font-display: block;
+      }
     </style>
 
     <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
@@ -139,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.9.0</span></strong>
+          <span class="version">2.10.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -293,9 +309,9 @@
 
 
 
-<a  title="Metadata" href="https://arc.tripl.ai/metadata/">
+<a  title="Schema" href="https://arc.tripl.ai/schema/">
 	
-	Metadata
+	Schema
 </a>
 
 
@@ -329,6 +345,24 @@
 
 
 
+<a  title="Security" href="https://arc.tripl.ai/security/">
+	
+	Security
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="Plugins" href="https://arc.tripl.ai/plugins/">
 	
 	Plugins
@@ -347,27 +381,9 @@
 
 
 
-<a  title="Partials" href="https://arc.tripl.ai/partials/">
+<a  title="Common Solutions" href="https://arc.tripl.ai/solutions/">
 	
-	Partials
-</a>
-
-
-
-  
-</li>
-
-
-
-<li>
-  
-    
-
-
-
-<a  title="Patterns" href="https://arc.tripl.ai/patterns/">
-	
-	Patterns
+	Common Solutions
 </a>
 
 
@@ -421,20 +437,20 @@
 
 			
 
-<p>This tutorial works through a real-world example using the <a href="http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml">New York City Taxi dataset</a> which has been used many times (see: <a href="http://toddwschneider.com/posts/analyzing-1-1-billion-nyc-taxi-and-uber-trips-with-a-vengeance/">Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance</a> and <a href="http://tech.marksblogg.com/billion-nyc-taxi-rides-redshift.html">A Billion Taxi Rides in Redshift</a>) due to its 1 billion+ record count and public data available via the <a href="https://registry.opendata.aws/nyc-tlc-trip-records-pds/">Registry of Open Data on AWS</a>.</p>
+<p>This tutorial works through a real-world example using the excellent <a href="http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml">New York City Taxi dataset</a> which has been used many times (see: <a href="http://toddwschneider.com/posts/analyzing-1-1-billion-nyc-taxi-and-uber-trips-with-a-vengeance/">Analyzing 1.1 Billion NYC Taxi and Uber Trips, with a Vengeance</a> and <a href="http://tech.marksblogg.com/billion-nyc-taxi-rides-redshift.html">A Billion Taxi Rides in Redshift</a>) due to its 1 billion+ record count and public data available via the <a href="https://registry.opendata.aws/nyc-tlc-trip-records-pds/">Registry of Open Data on AWS</a>.</p>
 
 <p>It is a great dataset as it has a lot of the attributes of real-world data that need to be considered:</p>
 
 <ul>
-<li><a href="https://en.wikipedia.org/wiki/Schema_evolution">Schema Evolution</a> where fields are added/changed/removed over time or data is normalized as patterns emerge.</li>
-<li>How to reliably apply data typing to an untyped source - in this case the <a href="https://en.wikipedia.org/wiki/Comma-separated_values">Comma-Separated Values</a> format.</li>
-<li>How to build a repeatable and reproducible process which will scale by adding more compute - the small example is ~40 million records and the large 1+ billion records.</li>
+<li><a href="https://en.wikipedia.org/wiki/Schema_evolution">Schema Evolution</a> where fields are added/changed/removed over time or data is normalized as patterns emerge - such as the removal of GPS co-ordinates in the later datasets due to privacy concerns.</li>
+<li>How to reliably apply data typing to an untyped source - in this case a <a href="https://en.wikipedia.org/wiki/Comma-separated_values">Comma-Separated Values</a> format which does not preserve data type information.</li>
+<li>How to build a repeatable and reproducible process which will scale by adding more compute not human effort - the small example is ~40 million records and the large well over 1 billion records.</li>
 <li>How reusable components can be composed to <a href="https://arc.tripl.ai/extract/#delimitedextract">extract data</a> with <a href="https://arc.tripl.ai/transform/#typingtransform">data types</a>, apply rules to ensure <a href="https://arc.tripl.ai/validate/#sqlvalidate">data quality</a>, enrich the data by executing <a href="https://arc.tripl.ai/transform/#sqltransform">SQL statements</a>, apply <a href="https://arc.tripl.ai/transform/#mltransform">machine learning transformations</a> and <a href="https://arc.tripl.ai/load">load the data</a> to one or more targets.</li>
 </ul>
 
 <h2 id="get-arc-starter">Get arc-starter</h2>
 
-<p>The easiest way to build an Arc job is by using <a href="https://github.com/tripl-ai/arc-starter">arc-starter</a> which is an interactive development environment using the <a href="https://jupyter.org/">Jupyter Notebooks</a> ecosystem. This tutorial assumes you have cloned this repository.</p>
+<p>The easiest way to build an Arc job is by cloning <a href="https://github.com/tripl-ai/arc-starter">arc-starter</a> which is an interactive development environment based on <a href="https://jupyter.org/">Jupyter Notebooks</a>. This tutorial assumes you have cloned this repository.</p>
 
 <p><img src="https://arc.tripl.ai/img/arc-starter.png" alt="arc-starter" /></p>
 
@@ -447,7 +463,7 @@ cd arc-starter
 <pre><code class="language-bash">./develop.sh
 </code></pre>
 
-<p>This script runs a <code>docker run</code> command where the only option that needs to be configured is the <code>-Xmx4096m</code> to set the memory available to Spark. This value needs to be less than or equal to the amount of memory allocated to Docker.</p>
+<p>This script runs a <code>docker run</code> command where the only option that needs to be configured is the <code>-Xmx4096m</code> to set the memory available to Spark. This value needs to be less than or equal to the amount of memory allocated to Docker (see <a href="https://docs.docker.com/docker-for-mac/#resources">here</a> for MacOS).</p>
 
 <pre><code class="language-bash">docker run \
 --name arc-jupyter \
@@ -456,7 +472,7 @@ cd arc-starter
 -e JAVA_OPTS=&quot;-Xmx4096m&quot; \
 -p 4040:4040 \
 -p 8888:8888 \
-triplai/arc-jupyter:arc-jupyter_2.0.4_scala_2.12_1.1.0 \
+triplai/arc-jupyter:arc-jupyter_2.2.0_scala_2.12_1.0.0 \
 start-notebook.sh \
 --NotebookApp.password='' \
 --NotebookApp.token=''
@@ -481,18 +497,7 @@ start-notebook.sh \
 }
 </code></pre>
 
-<p>By executing this stage (<code>SHIFT-ENTER</code>) you should be able to see a result set. If you scroll to the very right of the result set you should be able to see two additional columns which is added by Arc to help trace data lineage to assist debugging.</p>
-
-<ul>
-<li><code>_filename</code>: which records the input file source for all file based imports.</li>
-<li><code>_index</code>: which records the input file row number for all file based imports. As Spark is a distributed system calculating a true row level <code>_index</code> is somewhat computationally expensive. To reduce the load the import option <code>&quot;contiguousIndex&quot;: false</code> option can be provided to produce a monotonically increasing identifier from which <code>_index</code> can be derived later if required.</li>
-</ul>
-
-<p>The other thing to note is the use of <code>&quot;persist&quot;: true</code> which instructs Arc to store the the dataset read from the external Amazon s3 bucket into memory. This means that any subsequent stage that references <code>green_tripdata0_raw</code> does not need to re-download the file.</p>
-
-<h2 id="typing-data">Typing Data</h2>
-
-<p>At this stage we have a stage which will tell Spark where to read one or more <code>.csv</code> files and produce a table that looks like this which has all <code>string</code> typed fields.</p>
+<p>By executing this stage (<code>SHIFT-ENTER</code>) you should be able to see a result set.</p>
 
 <table>
 <thead>
@@ -575,9 +580,33 @@ start-notebook.sh \
 </tbody>
 </table>
 
-<p>To make this data more useful for querying (for example doing aggregation by time period) we need to <strong>safely</strong> apply data typing.</p>
+<p>If you scroll to the very right of the result set you should be able to see two additional columns which is added by Arc to help trace data lineage to assist debugging.</p>
 
-<p>Add a new stage to apply a <code>TypingTransformation</code> to the data extracted in the first stage named <code>green_tripdata0_raw</code> which will parse the data and produce an output dataset called <code>green_tripdata0</code> with correctly typed data. To do this we have to tell Arc how to parse the <code>string</code> data back into their original data types (like <code>timestamp</code> or <code>integer</code>). To do this transformation we need some way to pass in the description of how to parse the data and that is described in the <code>metadata</code> file passed in using the <code>schemaURI</code> key and described in the next step.</p>
+<ul>
+<li><code>_filename</code>: which records the input file source for all file based imports.</li>
+<li><code>_index</code>: which records the input file row number for all file based imports. As Spark is a distributed system calculating a true row level <code>_index</code> is computationally expensive. To reduce the load the import option <code>&quot;contiguousIndex&quot;: false</code> option can be provided to produce a monotonically increasing identifier from which <code>_index</code> can be derived later if required.</li>
+</ul>
+
+<p>The other thing to note is the use of <code>&quot;persist&quot;: true</code> which instructs Arc to store the the dataset read from the external Amazon s3 bucket into memory. This means that any subsequent stage that references <code>green_tripdata0_raw</code> does not need to re-download the file.</p>
+
+<h2 id="typing-data">Typing Data</h2>
+
+<div class="admonition note">
+<p class="admonition-title">Data Typing</p>
+<p><p>Data Typing is the process of converting a <code>text</code> (or <code>string</code>) value to a specific representation such as a <code>Timestamp</code> or <code>Decimal</code>.</p>
+
+<p>For example, trying to calculate the day of the week of the text <code>2016-04-09</code> would require very complex logic however if we first convert to a <code>Date</code> type we know:</p>
+
+<ul>
+<li>the date is actually a valid date (where <code>2016-02-30</code> would fail)</li>
+<li>we can use a function like <code>day_of_week(date)</code> to get the day of the week which has been tested to be correct</li>
+</ul>
+</p>
+</div>
+
+<p>To make this data produced above more useful for analysis (for example doing aggregation by time period or summing dollars) we need to <strong>safely</strong> apply data typing.</p>
+
+<p>Add a new stage to apply a <code>TypingTransformation</code> to the data extracted in the first stage named <code>green_tripdata0_raw</code>. <code>TypingTransform</code> parses tabular text data to and, in this case, will produce an output dataset called <code>green_tripdata0</code>. To do this we have to tell Arc how to parse the <code>string</code> data back into their original data types (like <code>timestamp</code> or <code>integer</code>). To do this transformation we need some way to pass in the rules of how to parse the data and that is described in the <code>schema</code> file passed in using the <code>schemaURI</code>.</p>
 
 <pre><code class="language-json">{
   &quot;type&quot;: &quot;TypingTransform&quot;,
@@ -591,23 +620,16 @@ start-notebook.sh \
 
 <h2 id="specifying-data-typing-rules">Specifying Data Typing Rules</h2>
 
-<p>The <a href="https://arc.tripl.ai/metadata/">metadata format</a> provides the information needed to parse an untyped (<code>string</code>) dataset into a typed dataset. Where a traditional database will fail when a data conversion fails (for example <code>CAST('abc' AS INT)</code>) Spark defaults to returning <code>NULL</code> which makes safely and precisely parsing data using only Spark SQL very difficult.</p>
+<p>The <a href="https://arc.tripl.ai/schema/">schema</a> provides the rules needed to parse an untyped (<code>string</code>) dataset into a typed dataset. Where a traditional database will fail when a data conversion fails (for example <code>CAST('abc' AS INT)</code> would fail) Spark defaults to returning <code>NULL</code> which makes safely and precisely parsing data using only Spark SQL very difficult.</p>
 
-<div class="admonition note">
-<p class="admonition-title">Metadata Order</p>
-<p>This format does not use input field names and will only try to convert data by its column index - meaning that the order of the fields in the metadata file must match the input dataset.</p>
-</div>
-
-<p>Here is the top of of the <code>/home/jovyan/examples/tutorial/0/green_tripdata0.json</code> file which provides the detailed metadata of how to convert <code>string</code> values back into their correct data types. The description fields have come from the <a href="http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml">official data dictionary</a>.</p>
+<p>Here is the top of of the <code>/home/jovyan/examples/tutorial/0/green_tripdata0.json</code> file which provides and example of how the rules defining how to convert <code>string</code> values back into their correct data types are represented. This file was manually created based on the <a href="http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml">official data dictionary</a> - but frequently you will find determining this information is extremely difficult.</p>
 
 <pre><code class="language-json">[
   {
-    &quot;id&quot;: &quot;f457e562-5c7a-4215-a754-ab749509f3fb&quot;,
     &quot;name&quot;: &quot;vendor_id&quot;,
     &quot;description&quot;: &quot;A code indicating the TPEP provider that provided the record.&quot;,
     &quot;trim&quot;: true,
     &quot;nullable&quot;: true,
-    &quot;primaryKey&quot;: false,
     &quot;type&quot;: &quot;integer&quot;,
     &quot;nullableValues&quot;: [
       &quot;&quot;,
@@ -615,29 +637,10 @@ start-notebook.sh \
     ]
   },
   {
-    &quot;id&quot;: &quot;d61934ed-e32e-406b-bd18-8d6b7296a8c0&quot;,
     &quot;name&quot;: &quot;lpep_pickup_datetime&quot;,
     &quot;description&quot;: &quot;The date and time when the meter was engaged.&quot;,
     &quot;trim&quot;: true,
     &quot;nullable&quot;: true,
-    &quot;primaryKey&quot;: false,
-    &quot;type&quot;: &quot;timestamp&quot;,
-    &quot;formatters&quot;: [
-      &quot;uuuu-MM-dd HH:mm:ss&quot;
-    ],
-    &quot;timezoneId&quot;: &quot;America/New_York&quot;,
-    &quot;nullableValues&quot;: [
-      &quot;&quot;,
-      &quot;null&quot;
-    ]
-  },
-  {
-    &quot;id&quot;: &quot;d61934ed-e32e-406b-bd18-8d6b7296a8c0&quot;,
-    &quot;name&quot;: &quot;lpep_dropoff_datetime&quot;,
-    &quot;description&quot;: &quot;The date and time when the meter was disengaged.&quot;,
-    &quot;trim&quot;: true,
-    &quot;nullable&quot;: true,
-    &quot;primaryKey&quot;: false,
     &quot;type&quot;: &quot;timestamp&quot;,
     &quot;formatters&quot;: [
       &quot;uuuu-MM-dd HH:mm:ss&quot;
@@ -651,40 +654,26 @@ start-notebook.sh \
   ...
 </code></pre>
 
-<p>Picking one of the more interesting fields, <code>lpep_pickup_datetime</code>, a <a href="https://arc.tripl.ai/metadata/#timestamp">timestamp</a> field, we can highlight a few details:</p>
+<p>Picking one of the more interesting fields, <code>lpep_pickup_datetime</code>, we can highlight a few details:</p>
 
 <ul>
-<li>the <code>id</code> value is a unique identifier for this field (in this case a <code>string</code> formatted <code>uuid</code>). This field can be used to help track changes in the business <em>intent</em> of the field, for example if the field changed name from <code>lpep_pickup_datetime</code> to just <code>pickup_datetime</code> in a subsequent schema it is still the same field as the <em>intent</em> has not changed, just the name so the same <code>id</code> value should be the same.</li>
-<li>the <code>formatters</code> key specifies an <code>array</code> rather than a simple <code>string</code>. This is because real world data often has multiple date/datetime formats used in a single column. By defining an <code>array</code> Arc will try to apply each of the formats specified in sequence and only fail if <em>none</em> of the formatters can be successfully applied.</li>
-<li>a mandatory <code>timezoneId</code> must be specified. This is because if you work with datetime enough you will find that the only way to reliably work with dates and times across systems is to convert them all to <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">Coordinated Universal Time</a> (UTC) so they can be placed as instantaneous point on a universally continuous timeline. Additionally <code>timezoneId</code> is specified at a column level meaning that it is possible to have multiple timezones for different columns in the same dataset.</li>
+<li>this is a <a href="https://arc.tripl.ai/schema/#timestamp">timestamp</a> field which means it must be generated from a valid combination of date and time.</li>
+<li>the <code>formatters</code> key specifies an <code>array</code> rather than a simple <code>string</code>. This is because real world data often has multiple date/datetime formats used in a single column. By allowing an <code>array</code> Arc will try to apply each of the formats specified in sequence and only fail if <em>none</em> of the formatters can be successfully applied.</li>
+<li>a mandatory <code>timezoneId</code> must be specified. This is required as the only way to reliably work with dates and times across systems is to convert them all to <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">Coordinated Universal Time</a> (UTC) so they can be placed as point on a universally continuous timeline. Additionally <code>timezoneId</code> is specified at a column level meaning that it is possible to have multiple timezones for different columns in the same dataset.</li>
 <li>the <code>nullableValues</code> key also specifies an <code>array</code> which allows you to specify multiple values which will be converted to a true <code>null</code> when loading. If these values are present and the <code>nullable</code> key is set to <code>true</code> then the job will fail with a clear error message.</li>
-<li>the description field is saved with the data some formats like when using <a href="https://arc.tripl.ai/load/#orcload">ORCLoad</a>, <a href="https://arc.tripl.ai/load/#parquetload">ParquetLoad</a> or <a href="https://arc.tripl.ai/load/#deltalakeload">DeltaLakeLoad</a> into the underlying metadata and will be restored automatically if those files are re-injested by Arc.</li>
+<li>the <code>description</code> field is saved with the data some formats like when using <a href="https://arc.tripl.ai/load/#orcload">ORCLoad</a>, <a href="https://arc.tripl.ai/load/#parquetload">ParquetLoad</a> or <a href="https://arc.tripl.ai/load/#deltalakeload">DeltaLakeLoad</a> into the underlying metadata and will be restored automatically if those files are re-injested by Arc.</li>
 </ul>
 
-<pre><code class="language-json">  {
-    &quot;id&quot;: &quot;d61934ed-e32e-406b-bd18-8d6b7296a8c0&quot;,
-    &quot;name&quot;: &quot;lpep_pickup_datetime&quot;,
-    &quot;description&quot;: &quot;The date and time when the meter was engaged.&quot;,
-    &quot;trim&quot;: true,
-    &quot;nullable&quot;: true,
-    &quot;primaryKey&quot;: false,
-    &quot;type&quot;: &quot;timestamp&quot;,
-    &quot;formatters&quot;: [
-      &quot;uuuu-MM-dd HH:mm:ss&quot;
-    ],
-    &quot;timezoneId&quot;: &quot;America/New_York&quot;,
-    &quot;nullableValues&quot;: [
-      &quot;&quot;,
-      &quot;null&quot;
-    ]
-  }
-</code></pre>
+<div class="admonition note">
+<p class="admonition-title">Schema Order</p>
+<p>This format does not use input field names and will only try to convert data by its column index - meaning that the order of the fields in the schema file must match the input dataset.</p>
+</div>
 
 <p>So what happens if this conversion fails?</p>
 
 <h2 id="data-typing-validation">Data Typing Validation</h2>
 
-<p>The <code>TypingTransformation</code> adds an addition field to each row called <code>_errors</code> which holds an <code>array</code> of data conversion failures - if any exist - so that each row can be parsed entirely and multiple issues collected. If a data conversion issue exists then the field <code>name</code> and a human readable message will be pushed into that array and the value will be set to <code>null</code> for that field:</p>
+<p>Similar to the <code>DelimitedExtract</code>, <code>TypingTransformation</code> adds an addition field to each row called <code>_errors</code> which holds an <code>array</code> of data conversion failures - if any exist - so that all the errors in the entire dataset can be determined before deciding how to respond. If a data conversion issue exists then the field <code>name</code> and a human readable message will be pushed into that array and the value will be set to <code>null</code> for that field:</p>
 
 <p>For example:</p>
 
@@ -698,7 +687,7 @@ start-notebook.sh \
 +-------------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 </code></pre>
 
-<p>If you have specified that the field cannot be <code>null</code> via <code>&quot;nullable&quot;: false</code> then the job will fail at this point with an appropriate error message as logically it cannot continue.</p>
+<p>If you have specified that the field cannot be <code>null</code> via <code>&quot;nullable&quot;: false</code> then the job will fail at this point with an appropriate error message as logically as it cannot continue.</p>
 
 <p>If the job has been configured like above with all fields <code>&quot;nullable&quot;: true</code> then the <code>TypingTransform</code> stage will complete but we will not be actually enforcing that no errors have occured. To add the ability to stop the job based on whether errors occured we can add a <code>SQLValidate</code> stage:</p>
 
@@ -725,7 +714,7 @@ FROM (
 
 <ul>
 <li>sum up the number of rows in the <code>green_tripdata0</code> dataset where the <code>SIZE</code> of the <code>_errors</code> array for each row is greater than 0.  If the errors array is not empty (<code>SIZE(_errors) &gt; 0</code>) then there must have been at least one error on that row.</li>
-<li>check that that sum of errors all errors for all rows <code>SUM(error) = 0</code> as a predicate so that the first field will return <code>true</code> if <code>SUM(error) = 0</code> or <code>false</code> if <code>SUM(error) != 0</code></li>
+<li>check that that sum of errors all errors for all rows <code>SUM(error)</code> equals <code>0</code> so that the first field will return <code>true</code> if <code>SUM(error) = 0</code> or <code>false</code> if <code>SUM(error) != 0</code></li>
 <li>as doing a count is visiting all rows anyway we can emit statistics so the output will be a <code>json</code> object that will be added to the logs. In this case we are logging a row count (<code>COUNT(error)</code>) and a count of rows with at least 1 error (<code>SUM(error)</code>) which will return something like <code>{&quot;count&quot;:7623,&quot;errors&quot;:0}</code>.</li>
 </ul>
 
@@ -743,7 +732,7 @@ FROM (
 <li>it perfoms atomic commits meaning that when used with storage like Amazon S3 it will not leave partial/corrupt datasets if Spark shuts down unexpectedly.</li>
 <li>it uses <a href="https://parquet.apache.org/">Apache Parquet</a> which is a compressed columnar data format meaning that when it is read by subsequent Spark jobs you can only read the columns that are required vastly reducing the amount of data moved across a network and that has to be processed.</li>
 <li>it retains full data types and metadata so that you don&rsquo;t have to keep converting text to correctly typed data before use.</li>
-<li>it supports data partitioning and pushdown which can further reduce the amount of data required to be processed.</li>
+<li>it supports data partitioning and pushdown which can further reduce the amount of data required to be read from expensive sources like Amazon S3.</li>
 </ul>
 
 <p>Here is the stage we will add which writes the <code>green_tripdata0</code> dataset to a <code>DeltaLake</code> dataset on disk. It will also be partitioned by <code>vendor_id</code> so that if you were doing analysis on only one of the vendors then Spark could easily read only that data and ignore the other vendors. Here we are explicitly naming the output <code>.delta</code> to help future users understand its format.</p>
@@ -763,7 +752,7 @@ FROM (
 
 <h2 id="execute-it">Execute It</h2>
 
-<p>At this stage we have a job which will extract data, apply data types to one <code>.csv</code> file and execute a <code>SQLValidate</code> stage to ensure that the data could be converted successfully then write the data out for future use. The Arc framework is packaged as a <a href="https://www.docker.com/">Docker</a> container so that you can run the same job on your local machine or a massive compute cluster without having to think about how to deploy dependencies. The default Docker image contains the dependencies files for connecting to most <code>JDBC</code> databases and cloud services.</p>
+<p>At this stage we have a job which will extract data, apply data types to one <code>.csv</code> file and execute a <code>SQLValidate</code> stage to ensure that the data could be converted successfully then write the data out for future use. The Arc framework is packaged as a <a href="https://www.docker.com/">Docker</a> image so that you can run the same job on your local machine or a massive compute cluster without having to think about how to deploy dependencies. The default Docker image contains the dependencies files for connecting to most <code>JDBC</code> databases and cloud services.</p>
 
 <p>To run the job that is included with the <code>arc-starter</code> repository (this file is also saved as <code>run.sh</code>):</p>
 
@@ -772,7 +761,7 @@ FROM (
 -v $(pwd)/examples:/home/jovyan/examples:Z \
 -e &quot;ETL_CONF_ENV=production&quot; \
 -p 4040:4040 \
-triplai/arc:arc_2.9.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.1.0 \
+triplai/arc:arc_2.10.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.0.0 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory=4G \
@@ -782,7 +771,7 @@ bin/spark-submit \
 --etl.config.uri=file:///home/jovyan/examples/tutorial/0/nyctaxi.ipynb
 </code></pre>
 
-<p>As the job runs you will see <code>json</code> formatted logs generated and printed to screen. These can easily be sent to a <a href="https://en.wikipedia.org/wiki/Log_management">log management</a> solution for log aggregation/analysis/alerts. The important thing is that our job ran and we can see our message <code>{&quot;count&quot;:7623,&quot;errors&quot;:0}</code> formatted as numbers so that it can be easily addressed (<code>event.message.count</code>) and summed/compared day-by-day for monitoring.</p>
+<p>As the job runs you will see <code>json</code> formatted logs generated and printed to screen. These can easily be sent to a <a href="https://en.wikipedia.org/wiki/Log_management">log management</a> solution for log aggregation/analysis/alerts. The important thing is that our job ran and we can see our message <code>{&quot;count&quot;:7623,&quot;errors&quot;:0}</code> formatted as numbers so that it can be easily addressed (<code>event.message.count</code>) and compared day-by-day for monitoring.</p>
 
 <pre><code class="language-json">{
   &quot;event&quot;: &quot;exit&quot;,
@@ -793,7 +782,7 @@ bin/spark-submit \
   &quot;thread_name&quot;: &quot;main&quot;,
   &quot;class&quot;: &quot;ai.tripl.arc.ARC$&quot;,
   &quot;logger_name&quot;: &quot;local-1574152663175&quot;,
-  &quot;timestamp&quot;: &quot;2019-11-19 08:38:37.533+0000&quot;,
+  &quot;timestamp&quot;: &quot;2019-11-16 08:38:37.533+0000&quot;,
   &quot;environment&quot;: &quot;production&quot;,
   &quot;streaming&quot;: &quot;false&quot;,
   &quot;applicationId&quot;: &quot;local-1574152663175&quot;,
@@ -807,7 +796,7 @@ bin/spark-submit \
 
 <h2 id="viewing-the-metadata">Viewing the Metadata</h2>
 
-<p>Arc allows users to define and store metadata (that is data which describes columns) attached the dataset. This data can be simple things like the <code>description</code> field shown below or <a href="https://arc.tripl.ai/metadata">more complex metadata</a>. By storing the metadata with the actual dataset you can safely write out the data using enriched formats like <a href="https://arc.tripl.ai/load/#parquetload">ParquetLoad</a> or <a href="https://arc.tripl.ai/load/#deltalakeload">DeltaLakeLoad</a> and when those files are read in the future they will have that metadata still attached and in sync.</p>
+<p>Arc allows users to define and store metadata (that is data which describes columns) attached the dataset. This data can be simple things like the <code>description</code> field shown below or <a href="https://arc.tripl.ai/schema">more complex metadata</a>. By storing the metadata with the actual dataset you can safely write out the data using enriched formats like <a href="https://arc.tripl.ai/load/#parquetload">ParquetLoad</a> or <a href="https://arc.tripl.ai/load/#deltalakeload">DeltaLakeLoad</a> and when those files are read in the future they will have that metadata still attached and in sync.</p>
 
 <p>Numerous stages have been added to explicitly operate against the metadata:</p>
 
@@ -1048,7 +1037,7 @@ FROM (
 
 <p>The real complexity with schema evolution comes defining clear rules with how to deal with fields which are added and removed over time. In the case of <code>green_tripdata</code> the main change over time is the change from giving specific pickup and dropoff co-ordinates (<code>pickup_longitude</code>, <code>pickup_latitude</code>, <code>dropoff_longitude</code>, <code>dropoff_latitude</code>) in the early datasets (<code>green_tripdata0</code> and <code>green_tripdata1</code>) to only providing more generalised (and much more private) <code>pickup_location_id</code> and <code>dropoff_location_id</code> geographic regions in <code>green_tripdata2</code>.</p>
 
-<p>The easiest way to deal with this is to use <a href="https://en.wikipedia.org/wiki/SQL">SQL</a> to manually define the rules for each dataset before unioning the data together via <code>UNION ALL</code>. Here the query explicitly deals with the lack of <code>pickup_longitude</code> data in <code>green_tripdata2</code> by setting a <code>NULL</code> value but retaining the column so the <code>UNION</code> still works. The alternative, depending on use of this data, would be to remove the <code>pickup_longitude</code> column from the earlier datasets.</p>
+<p>The recommended way to deal with this is to use <a href="https://en.wikipedia.org/wiki/SQL">SQL</a> to manually define the rules for each dataset before unioning the data together via <code>UNION ALL</code>. Here the query explicitly deals with the lack of <code>pickup_longitude</code> data in <code>green_tripdata2</code> by setting a <code>NULL</code> value but retaining the column so the <code>UNION</code> still works. The alternative, depending on use of this data, would be to remove the <code>pickup_longitude</code> column from the later datasets.</p>
 
 <pre><code class="language-sql">%sql name=&quot;combine green_tripdata_*&quot; environments=production,test outputView=trips
 -- first schema 2013-08 to 2014-12
@@ -1141,9 +1130,9 @@ FROM green_tripdata2
 
 <h2 id="don-t-repeat-yourself">Don&rsquo;t Repeat Yourself</h2>
 
-<p>A common principle in software development is <a href="https://en.wikipedia.org/wiki/Don%27t_repeat_yourself">Don&rsquo;t Repeat Yourself</a>(aka DRY) which in a Data Engineering context loosely means that logic should not repeated in multiple places to avoid inconsistencies.</p>
+<p>A common principle in software development is <a href="https://en.wikipedia.org/wiki/Don%27t_repeat_yourself">Don&rsquo;t Repeat Yourself</a> (aka DRY) which in a Data Engineering context loosely means that logic should not repeated in multiple places to avoid inconsistencies.</p>
 
-<p>In the job above we have defined the same logic to <code>%sqlvalidate</code> that there are no errors after applying datatypes multiple times but have coded it each time for each version of <code>green_tripdata</code>. If, for example, the business rules changed in that we were prepared to accept a <code>5%</code> data typing error rate we would have to change the logic in multiple places which could easily be incorrectly applied or missed. A safer way to implement this is to externalise the logic and refer to it when needed.</p>
+<p>In the job above we have defined the same logic to <code>%sqlvalidate</code> that there are no errors after applying datatypes multiple times but have coded it each time for each version of <code>green_tripdata</code>. If the business rules changed in that we were prepared to accept a five percent data typing error rate we would have to change the logic in multiple places which could easily be incorrectly applied or missed. A safer way to implement this is to externalise the logic and refer to it when needed.</p>
 
 <p>First make a SQL statement that accepts the parameter <code>${inputView}</code> to pass in the dataset to verify. Save this file in <code>examples/tutorial/1/sqlvalidate_errors.sql</code></p>
 
@@ -1324,7 +1313,7 @@ FROM (
 
 <h2 id="data-quality-reporting">Data Quality Reporting</h2>
 
-<p>Another use for the <code>SQLValidate</code> stage is find data which does not comply with your user-defined data quality rules.</p>
+<p>A secondary use for the <code>SQLValidate</code> stage is find data which does not comply with your user-defined data quality rules.</p>
 
 <p>For example, when thinking about how taxis operate we intuitively know that:</p>
 
@@ -1458,27 +1447,8 @@ FROM (
 
 <p>The main culprit of non-normalized data is the <code>yellow_tripdata0</code> dataset so add a <code>SQLTransform</code> stage which will do a <code>LEFT JOIN</code> to the new reference data then a <code>SQLValidate</code> stage to check that all of our refrence table lookups were successful (foreign key integrity). The use of a <code>LEFT JOIN</code> over an <code>INNER JOIN</code> is that we don&rsquo;t want to filter out data from <code>yellow_tripdata0</code> that doesn&rsquo;t have a lookup value.</p>
 
-<pre><code class="language-json">{
-  &quot;type&quot;: &quot;SQLTransform&quot;,
-  &quot;name&quot;: &quot;perform lookups for yellow_tripdata0 reference tables&quot;,
-  &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-  &quot;inputURI&quot;: ${ETL_CONF_JOB_URL}&quot;/yellow_tripdata0_enrich.sql&quot;,
-  &quot;outputView&quot;: &quot;yellow_tripdata0_enriched&quot;,
-  &quot;persist&quot;: false
-}
-</code></pre>
-
-<pre><code class="language-json">{
-  &quot;type&quot;: &quot;SQLValidate&quot;,
-  &quot;name&quot;: &quot;ensure that yellow_tripdata0 reference table lookups were successful&quot;,
-  &quot;environments&quot;: [&quot;production&quot;, &quot;test&quot;],
-  &quot;inputURI&quot;: ${ETL_CONF_JOB_URL}&quot;/yellow_tripdata0_enrich_validate.sql&quot;
-}
-</code></pre>
-
-<p>Where <code>yellow_tripdata0_enrich.sql</code> does the <code>LEFT JOIN</code>s to the <code>vendor_id</code> and <code>payment_type_id</code> reference datasets:</p>
-
-<pre><code class="language-sql">SELECT
+<pre><code class="language-sql">%sql name=&quot;look up reference data&quot; outputView=yellow_tripdata0_enriched environments=production,test
+SELECT
   yellow_tripdata0.vendor_name
   ,vendor_id.vendor_id
   ,trip_pickup_datetime AS pickup_datetime
@@ -1513,7 +1483,8 @@ LEFT JOIN payment_type_id ON LOWER(yellow_tripdata0.payment_type) = payment_type
 
 <p>&hellip; and then <code>SQLValidate</code> verifies that there are no missing values. This query will also collect up the distinct list of missing values so they can be logged and added manually added to the lookup table if required.</p>
 
-<pre><code class="language-sql">SELECT
+<pre><code class="language-sql">%sqlvalidate name=&quot;ensure all foreign keys exist&quot; environments=production,test
+SELECT
   SUM(null_vendor_id) = 0 AND SUM(null_payment_type_id) = 0 AS valid
   ,TO_JSON(
     NAMED_STRUCT(
@@ -1757,10 +1728,30 @@ AND dropoff_latitude IS NOT NULL
       }
     </script>
 
+    <script>
+      document.querySelectorAll('pre > code').forEach(function (codeBlock) {
+        var button = document.createElement('div');
+        button.className = 'copy-code-button';
+        button.role = 'img';
+        button.alt = 'copy-code-button';
+
+        button.addEventListener('click', function () {
+            clipboard.writeText(codeBlock.innerText).then(function () {
+                button.blur();
+            }, function (error) {
+              console.log(`cannot copy to clipboard ${error}`)
+            });
+        });        
+
+        codeBlock.insertBefore(button, codeBlock.firstChild);
+      });
+    </script>
+
     
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard-polyfill/2.7.0/clipboard-polyfill.promise.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
   </body>
 </html>

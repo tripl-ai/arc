@@ -459,7 +459,7 @@ The `TextLoad` writes an input `DataFrame` to a target text file.
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
-|singleFile|Boolean|false|Write to a single text file instead of a directory containing one or more partitions. Accepts datasets with either `[value: string]` or `[value: string, filename: string]` schema. If `filename` is supplied this component will write to multiple files by prepending `outputURI`. Warning: this will pull the entire dataset to memory on the driver process so will not work for large datasets unless the driver has a sufficiently large memory allocation.|
+|singleFile|Boolean|false|Write in single file mode instead of a directory containing one or more partitions. Accepts datasets with either `[value: string]`, `[value: string, filename: string]` or `[value: string, filename: string, index: integer]` schema. If `filename` is supplied this component will write to one or more files. If `index` is supplied this component will order the records in each `filename` by `index` before writing.|
 |prefix|String|false|A string to append before the row data when in `singleFile` mode.|
 |separator|String|false|A separator string to append between the row data when in `singleFile` mode. Most common use will be `\n` which will insert newlines.|
 |suffix|String|false|A string to append after the row data when in `singleFile` mode.|
@@ -491,8 +491,38 @@ The `XMLLoad` writes an input `DataFrame` to a target XML file.
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
+|singleFile|Boolean|false|Write in single file mode instead of a directory containing one or more partitions. Accepts datasets with either `[value: string]`, `[value: string, filename: string]` or `[value: string, filename: string, index: integer]` schema. If `filename` is supplied this component will write to one or more files. If `index` is supplied this component will order the records in each `filename` by `index` before writing.|
+|prefix|String|false|A string to append before the row data when in `singleFile` mode. Useful for specifying the encoding `<?xml version="1.0" encoding="UTF-8"?>`.|
 
 ### Examples
+
+The XML writer uses reserved keywords to be able to set attributes as well as values. The `_VALUE` value is reserved to define values when attributes which are prefixed with an underscore (`_`) exist:
+
+```sql
+SELECT
+  NAMED_STRUCT(
+    '_VALUE', NAMED_STRUCT(
+      'child0', 0,
+      'child1', NAMED_STRUCT(
+        'nested0', 0,
+        'nested1', 'nestedvalue'
+      )
+    ),
+    '_attributeName', 'attributeValue'
+  ) AS Document
+```
+
+Results in:
+
+```xml
+<Document attributeName="attributeValue">
+  <child0>1</child0>
+  <child1>
+    <nested0>1</nested0>
+    <nested1>nestedvalue</nested1>
+  </child1>
+</Document>
+```
 
 #### Minimal
 {{< readfile file="/resources/docs_resources/XMLLoadMin" highlight="json" >}}

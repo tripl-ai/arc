@@ -57,14 +57,13 @@ class ImageExtract extends PipelineStagePlugin {
           watermark=watermark
         )
 
-        for (basePath <- basePath) {
-          stage.stageDetail.put("basePath", basePath)
-        }
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
+        basePath.foreach { stage.stageDetail.put("basePath", _) }
         stage.stageDetail.put("dropInvalid", java.lang.Boolean.valueOf(dropInvalid))
         stage.stageDetail.put("inputURI", parsedGlob)
         stage.stageDetail.put("outputView", outputView)
-        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("params", params.asJava)
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         for (watermark <- watermark) {
           val watermarkMap = new java.util.HashMap[String, Object]()
           watermarkMap.put("eventTime", watermark.eventTime)

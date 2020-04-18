@@ -87,7 +87,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter="",
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     ).get
 
@@ -133,7 +133,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter="",
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     ).get
 

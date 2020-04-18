@@ -95,7 +95,7 @@ class MetadataExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
     import spark.implicits._
 
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
     val df = MetadataUtils.setMetadata(TestUtils.getKnownDataset, Extract.toStructType(schema.right.get))
     df.createOrReplaceTempView(inputView)
 

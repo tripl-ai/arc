@@ -1,9 +1,15 @@
 package ai.tripl.arc.util
 
+import scala.collection.mutable.Map
+import scala.util.{Try, Success, Failure}
+
 import com.fasterxml.jackson.databind._
 import com.fasterxml.jackson.databind.node._
 
 import org.apache.spark.sql._
+import org.apache.spark.sql.catalyst.encoders.{ExpressionEncoder, RowEncoder}
+import org.apache.spark.sql.catalyst.expressions.{UnsafeProjection}
+import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
@@ -31,19 +37,54 @@ object MetadataUtils {
     output
   }
 
-  // attach metadata by column name name to input dataframe
-  // only attach metadata if the column with same name exists
-  def setMetadata(input: DataFrame, schema: StructType): DataFrame = {
-    // needs to be var not val as we are mutating by overriding columns with metadata attached
-    var output = input
+  // a map of full field name strings/metadata
+  // a.b.c.d -> metadata
+  def getFieldMetadataMap(schema: StructType, parentElement: Option[String] = None, fieldMap: Map[String, Metadata] = scala.collection.mutable.Map[String, Metadata]()): Map[String, Metadata] = {
+    schema.foreach { field =>
+      val key = s"""${parentElement.getOrElse("")}${if (parentElement.isDefined) "." else ""}${field.name}"""
+      field.dataType match {
+        case structType: StructType => getFieldMetadataMap(structType, Option(key), fieldMap)
+        case _ => fieldMap += (key -> field.metadata)
+      }
+    }
+    fieldMap
+  }
 
-    schema.foreach(field => {
-      if (output.columns.contains(field.name)) {
-        output = output.withColumn(field.name, col(field.name).as(field.name, field.metadata))
+  // if the field exists in the incoming fieldMetadataMap override the field's metadata
+  def upsertMetadata(structType: StructType, fieldMetadataMap: Map[String, Metadata], parentElement: Option[String] = None): StructType = {
+    StructType(structType.map { field =>
+      val key = s"""${parentElement.getOrElse("")}${if (parentElement.isDefined) "." else ""}${field.name}"""
+      field.dataType match {
+        case structType: StructType => StructField(field.name, upsertMetadata(structType, fieldMetadataMap, Option(key)), field.nullable, field.metadata)
+        case _ => StructField(field.name, field.dataType, field.nullable, fieldMetadataMap.getOrElse(key, field.metadata) )
       }
     })
+  }
 
-    output
+  // attach metadata by column name name to input dataframe
+  // only attach metadata if the column with same name exists
+  def setMetadata(input: DataFrame, incomingSchema: StructType)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
+
+    // todo: make a consistent method for replacing metadata which supports streaming
+    if (input.isStreaming) {
+      // needs to be var not val as we are mutating by overriding columns with metadata attached
+      var output = input
+
+      incomingSchema.foreach(field => {
+        if (output.columns.contains(field.name)) {
+          output = output.withColumn(field.name, col(field.name).as(field.name, field.metadata))
+        }
+      })
+
+      output      
+    } else {
+      // create a new schema merging the input dataframe's schema with the incomingSchema 
+      // if the incomingSchema has a metadata field set then override the field metadata in the input dataframe 
+      val outputSchema = upsertMetadata(input.schema, getFieldMetadataMap(incomingSchema))
+
+      // replace the schema
+      spark.createDataFrame(input.rdd, outputSchema)
+    }
   }
 
   // a helper function to speed up the creation of a metadata formatted file

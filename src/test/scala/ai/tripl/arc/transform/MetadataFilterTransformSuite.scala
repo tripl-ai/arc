@@ -65,7 +65,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     df.createOrReplaceTempView(inputView)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     // apply metadata
     transform.TypingTransformStage.execute(
@@ -78,7 +78,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )
@@ -122,7 +122,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     df.createOrReplaceTempView(inputView)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
@@ -134,7 +134,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )
@@ -174,7 +174,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     df.createOrReplaceTempView(inputView)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
@@ -186,7 +186,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )
@@ -242,7 +242,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     input.createOrReplaceTempView(inputView)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
@@ -254,7 +254,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )

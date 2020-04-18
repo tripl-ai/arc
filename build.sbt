@@ -35,14 +35,12 @@ scalacOptions := Seq(
   "-explaintypes",
   "-target:jvm-1.8",
   "-unchecked",
-  "-feature"
+  "-feature",
 
-  //"-Ywarn-dead-code",
-  //"-Ywarn-extra-implicit",
-  //"-Ywarn-inaccessible",
-  //"-Ywarn-infer-any",
-  //"-Ywarn-unused:privates",
-  //"-Ywarn-unused:imports"
+  "-Ywarn-dead-code",
+  "-Ywarn-inaccessible",
+  "-Ywarn-infer-any"
+  // "-Ywarn-unused"
 )
 
 javacOptions += "-Xlint:unchecked"

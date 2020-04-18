@@ -4,7 +4,7 @@ weight: 60
 type: blog
 ---
 
-`*Validate` stages are used to perform validation and basic workflow controls..
+`*Validate` stages are used to perform validation and basic workflow controls.
 
 ## EqualityValidate
 ##### Since: 1.0.0 - Supports Streaming: False
@@ -96,7 +96,7 @@ For example it can be used to perform automated extract validation against file 
 
 `SQLValidate` will try to convert the message from a JSON string which can be manually created in the SQL statement so that logging is easier to parse by log aggregation tools.
 
-See [patterns](../patterns/) for more examples.
+See [patterns](../solutions/) for more examples.
 
 ### Parameters
 
@@ -143,7 +143,12 @@ With a `JSON` message (preferred):
 ```sql
 SELECT
     (SUM(errors) / COUNT(errors)) < ${record_error_tolerance_percentage}
-    ,TO_JSON(NAMED_STRUCT('error', SUM(errors)/ COUNT(errors), 'threshold', ${record_error_tolerance_percentage}))
+    ,TO_JSON(
+        NAMED_STRUCT(
+            'error', SUM(errors)/ COUNT(errors)
+            ,'threshold', ${record_error_tolerance_percentage}
+        )
+    )
 FROM (
     SELECT
         CASE WHEN SIZE(_errors) > 0 THEN 1 ELSE 0 END AS errors

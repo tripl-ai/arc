@@ -104,7 +104,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(inputView)
@@ -132,7 +132,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter=delimiter,
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     ).get
 
@@ -154,7 +154,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(inputView)
@@ -181,7 +181,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter=delimiter,
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     ).get
 
@@ -198,7 +198,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     requests = 0
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(inputView)
@@ -225,7 +225,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter=delimiter,
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     ).get
 
@@ -243,7 +243,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     requests = 0
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(inputView)
@@ -270,7 +270,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter=delimiter,
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     ).get
 
@@ -308,7 +308,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter=delimiter,
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     ).get
 
@@ -342,7 +342,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           delimiter=delimiter,
           numPartitions=None,
           partitionBy=Nil,
-          failMode=FailModeTypeFailFast
+          failMode=FailMode.FailFast
         )
       ).get.count
     }
@@ -376,7 +376,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           delimiter=delimiter,
           numPartitions=None,
           partitionBy=Nil,
-          failMode=FailModeTypeFailFast
+          failMode=FailMode.FailFast
         )
       ).get.count
     }
@@ -390,7 +390,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(inputView)
@@ -417,7 +417,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter=delimiter,
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     ).get
 
@@ -435,7 +435,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(inputView)
@@ -463,7 +463,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           delimiter=delimiter,
           numPartitions=None,
           partitionBy=Nil,
-          failMode=FailModeTypeFailFast
+          failMode=FailMode.FailFast
         )
       ).get
     }
@@ -476,7 +476,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(inputView)
@@ -504,7 +504,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           delimiter=delimiter,
           numPartitions=None,
           partitionBy=Nil,
-          failMode=FailModeTypeFailFast
+          failMode=FailMode.FailFast
         )
       ).get
     }
@@ -517,7 +517,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val cols = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(inputView)
@@ -547,7 +547,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
           delimiter=delimiter,
           numPartitions=None,
           partitionBy=Nil,
-          failMode=FailModeTypeFailFast
+          failMode=FailMode.FailFast
         )
       ).get
     }
@@ -592,7 +592,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter=delimiter,
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypeFailFast
+        failMode=FailMode.FailFast
       )
     ).get
 
@@ -612,7 +612,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("HTTPTransform: FailModeTypePermissive") {
+  test("HTTPTransform: FailMode.Permissive") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
@@ -637,7 +637,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
         delimiter=delimiter,
         numPartitions=None,
         partitionBy=Nil,
-        failMode=FailModeTypePermissive
+        failMode=FailMode.Permissive
       )
     ).get
 

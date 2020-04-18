@@ -51,7 +51,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     // recreate test dataset
     FileUtils.deleteQuietly(new java.io.File(targetFile))
     // Delimited does not support writing NullType
-    TestUtils.getKnownDataset.repartition(1).drop($"nullDatum").write.csv(targetFile)
+    TestUtils.getKnownDataset.repartition(1).drop(col("nullDatum")).write.csv(targetFile)
   }
 
   after {
@@ -89,9 +89,9 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     )
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
-    val dataset = transform.TypingTransformStage.execute(
+    val actual = transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
         name="dataset",
@@ -101,29 +101,19 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )
     ).get
 
-    // add errors array to schema using udf
-    val errorStructType: StructType =
-      StructType(
-        StructField("field", StringType, false) ::
-        StructField("message", StringType, false) :: Nil
-      )
-    val addErrors = org.apache.spark.sql.functions.udf(() => new Array(0), ArrayType(errorStructType) )
-
     val expected = TestUtils.getKnownDataset
       .drop($"nullDatum")
-      .withColumn("_errors", addErrors())
 
-    val actual = dataset
-
-    assert(TestUtils.datasetEquality(expected, actual.drop("_filename").drop("_index")))
-    assert(actual.filter($"_filename".contains(targetFile)).count == 2)
-    assert(actual.filter($"_index".isNotNull).count == 2)
+    assert(TestUtils.datasetEquality(expected, actual.drop("_filename").drop("_index").drop("_errors")))
+    assert(actual.filter(col("_filename").contains(targetFile)).count == 2)
+    assert(actual.filter(col("_index").isNotNull).count == 2)
+    assert(actual.filter("SIZE(_errors) = 0").count == 2)
 
     // test metadata
     val booleanDatumMetadata = actual.schema.fields(actual.schema.fieldIndex("booleanDatum")).metadata
@@ -141,6 +131,122 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     assert(booleanDatumMetadata.getStringArray("stringArrayMeta").deep == Array("string0", "string1").deep)
   }
 
+  test("TypingTransform: end-to-end") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    // load csv
+    extract.DelimitedExtractStage.execute(
+      extract.DelimitedExtractStage(
+        plugin=new extract.DelimitedExtract,
+        name=inputView,
+        description=None,
+        schema=Right(Nil),
+        outputView=inputView,
+        input=Right(targetFile),
+        settings=new Delimited(header=false, sep=Delimiter.Comma),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        basePath=None,
+        inputField=None,
+        watermark=None
+      )
+    )
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "TypingTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "schemaURI": "${getClass.getResource("/conf/schema/").toString}/knownDataset.json",
+          "inputView": "${inputView}",
+          "outputView": "${outputView}"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+        df.createOrReplaceTempView("output")
+        assert(spark.sql("""
+        SELECT
+            SUM(errors) = 0
+        FROM (
+            SELECT
+                CASE WHEN SIZE(_errors) > 0 THEN 1 ELSE 0 END AS errors
+            FROM output
+        ) valid
+        """).first.getBoolean(0) == true)
+      }
+    }
+  }  
+
+  test("TypingTransform: end-to-end complex type failure") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    // load csv
+    extract.DelimitedExtractStage.execute(
+      extract.DelimitedExtractStage(
+        plugin=new extract.DelimitedExtract,
+        name=inputView,
+        description=None,
+        schema=Right(Nil),
+        outputView=inputView,
+        input=Right(targetFile),
+        settings=new Delimited(header=false, sep=Delimiter.Comma),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        basePath=None,
+        inputField=None,
+        watermark=None
+      )
+    )
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "TypingTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "schemaURI": "${getClass.getResource("/conf/schema/").toString}/schema_complex.json",
+          "inputView": "${inputView}",
+          "outputView": "${outputView}"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => assert(err.toString.contains("TypingTransform does not support complex types like column 'group' of type struct."))
+      case Right((pipeline, _)) => fail("should fail")
+    }
+  }   
+
   test("TypingTransform: failMode - failfast") {
     implicit val spark = session
     import spark.implicits._
@@ -155,7 +261,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     extractDataset.createOrReplaceTempView(inputView)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
 
     // try without providing column metadata
@@ -170,7 +276,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          failMode=FailModeTypeFailFast,
+          failMode=FailMode.FailFast,
           numPartitions=None,
           partitionBy=Nil
         )
@@ -209,7 +315,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     ]
     """
 
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(meta)
 
     val thrown0 = intercept[Exception with DetailException] {
       val dataset = transform.TypingTransformStage.execute(
@@ -222,7 +328,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           params=Map.empty,
           persist=false,
-          failMode=FailModeTypePermissive,
+          failMode=FailMode.Permissive,
           numPartitions=None,
           partitionBy=Nil
         )
@@ -266,51 +372,10 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     ]
     """
 
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(meta)
     schema match {
       case Left(stageError) => {
         assert(stageError == StageError(0, "booleanDatum",2,List(ConfigError("booleanArrayMeta", Some(20), "Metadata attribute 'booleanArrayMeta' cannot contain arrays of different types."))) :: Nil)
-      }
-      case Right(_) => assert(false)
-    }
-  }
-
-  test("TypingTransform: metadata bad type object") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-    val meta = """
-    [
-      {
-        "id": "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
-        "name": "booleanDatum",
-        "description": "booleanDatum",
-        "type": "boolean",
-        "trim": false,
-        "nullable": false,
-        "nullableValues": [
-            "",
-            "null"
-        ],
-        "trueValues": [
-            "true"
-        ],
-        "falseValues": [
-            "false"
-        ],
-        "metadata": {
-            "booleanArrayMeta": {"derp": true}
-        }
-      }
-    ]
-    """
-
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(meta)
-    schema match {
-      case Left(stageError) => {
-        assert(stageError == StageError(0, "booleanDatum",2,List(ConfigError("booleanArrayMeta", Some(20), "Metadata attribute 'booleanArrayMeta' cannot contain nested `objects`."))) :: Nil)
       }
       case Right(_) => assert(false)
     }
@@ -348,7 +413,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     ]
     """
 
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(meta)
     schema match {
       case Left(_) => assert(false)
       case Right(_) => assert(true)
@@ -387,7 +452,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     ]
     """
 
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(meta)
     schema match {
       case Left(stageError) => {
         assert(stageError == StageError(0, "booleanDatum",2,List(ConfigError("booleanDatum",Some(21),"Metadata attribute 'booleanDatum' cannot be the same name as column."))) :: Nil)
@@ -429,7 +494,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     ]
     """
 
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(meta)
     schema match {
       case Left(stageError) => {
         assert(stageError == StageError(0, "booleanDatum",2,List(ConfigError("badArray", Some(20),"Metadata attribute 'badArray' cannot contain `number` arrays of different types (all values must be `integers` or all values must be `doubles`)."))) :: Nil)
@@ -437,6 +502,47 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
       case Right(_) => assert(false)
     }
   }
+
+  test("TypingTransform: metadata nested object") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val meta = """
+    [
+      {
+        "id": "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
+        "name": "booleanDatum",
+        "description": "booleanDatum",
+        "type": "boolean",
+        "trim": false,
+        "nullable": false,
+        "nullableValues": [
+            "",
+            "null"
+        ],
+        "trueValues": [
+            "true"
+        ],
+        "falseValues": [
+            "false"
+        ],
+        "metadata": {
+          "test": {
+            "abc": {
+              "def": true
+            }
+          }
+        }
+      }
+    ]
+    """
+
+    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+
+    assert(ExtractColumn.toStructField(schema.right.get(0)).metadata.json == """{"nullable":false,"test":{"abc":{"def":true}},"internal":false,"description":"booleanDatum","id":"982cbf60-7ba7-4e50-a09b-d8624a5c49e6"}""")
+  }  
 
   test("TypingTransform: Execute with Structured Streaming" ) {
     implicit val spark = session
@@ -465,7 +571,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     input.createOrReplaceTempView(inputView)
 
     // parse json schema to List[ExtractColumn]
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(TestUtils.getKnownDatasetMetadataJson)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
     val dataset = transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
@@ -477,7 +583,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )
@@ -523,7 +629,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
       }
     ]
     """
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(meta)
 
     val inputDataFrame = Seq((""),(" "), ("  ")).toDF("stringDatum")
     inputDataFrame.createOrReplaceTempView(inputView)
@@ -538,7 +644,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         params=Map.empty,
         persist=false,
-        failMode=FailModeTypePermissive,
+        failMode=FailMode.Permissive,
         numPartitions=None,
         partitionBy=Nil
       )
@@ -551,7 +657,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     assert(values(2).isNullAt(0) == true)
   }
 
-  test("BinaryTyping: config") {
+  test("TypingTransform: binary type") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
@@ -577,10 +683,10 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     ]
     """
 
-    val schema = ai.tripl.arc.util.MetadataSchema.parseJsonMetadata(meta)
+    val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(meta)
     schema match {
       case Left(_) => assert(false)
-      case Right(stage) => assert(stage == List(BinaryColumn("982cbf60-7ba7-4e50-a09b-d8624a5c49e6","binaryDatum",Some("binaryDatum"),false,None,false,List("", "null"),EncodingTypeBase64,Some("{}"))))
+      case Right(stage) => assert(stage == List(BinaryColumn(Some("982cbf60-7ba7-4e50-a09b-d8624a5c49e6"),"binaryDatum",Some("binaryDatum"),false,None,false,List("", "null"),EncodingTypeBase64,Some("{}"))))
     }
   }
 }
