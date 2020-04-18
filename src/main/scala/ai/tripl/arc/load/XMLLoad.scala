@@ -41,18 +41,22 @@ class XMLLoad extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = getValue[String]("inputView")
-    val outputURI = getValue[String]("outputURI") |> parseURI("outputURI") _
+    val outputURI = getOptionalValue[String]("outputURI") |> parseOptionURI("outputURI") _
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
     val singleFile = getValue[java.lang.Boolean]("singleFile", default = Some(false))
     val prefix = getValue[String]("prefix", default = Some(""))
+    val validOutputURI = (outputURI, singleFile) match {
+      case (Right(None), Right(singleFile)) if (singleFile == false) => Left(ConfigError("outputURI", None, "Missing required attribute 'outputURI' when not in 'singleFile' mode.") :: Nil)
+      case _ => Right("")
+    }
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, singleFile, prefix, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(partitionBy), Right(singleFile), Right(prefix), Right(invalidKeys)) =>
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, singleFile, prefix, validOutputURI, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(partitionBy), Right(singleFile), Right(prefix), Right(validOutputURI), Right(invalidKeys)) =>
 
         val stage = XMLLoadStage(
           plugin=this,
@@ -77,12 +81,12 @@ class XMLLoad extends PipelineStagePlugin {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, singleFile, prefix, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, partitionBy, singleFile, prefix, validOutputURI, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
     }
-  }  
+  }
 }
 
 object XMLLoad {
@@ -212,7 +216,7 @@ case class XMLLoadStage(
     name: String,
     description: Option[String],
     inputView: String,
-    outputURI: URI,
+    outputURI: Option[URI],
     partitionBy: List[String],
     numPartitions: Option[Int],
     authentication: Option[Authentication],
@@ -271,6 +275,10 @@ object XMLLoadStage {
 
         val hasFilename = df.schema.length == 2
 
+        if (!hasFilename && stageOutputURI.isEmpty) {
+          throw new Exception("XMLLoad requires 'outputURI' to be set if in 'singleFile' mode and no 'filename' column exists.")
+        }
+
         // broadcast hadoop conf to all executors so they can open file system objects directly
         val broadcastHadoopConf = spark.sparkContext.broadcast(new SerializableConfiguration(spark.sparkContext.hadoopConfiguration))
 
@@ -299,12 +307,12 @@ object XMLLoadStage {
             val valueSchema = StructType(Seq(firstRow.schema.fields(valueIndex)))
 
             val path = if (hasFilename) {
-              new Path(new URI(s"""${stageOutputURI}/${firstRow.getString(firstRow.fieldIndex("filename"))}"""))
+              new Path(new URI(firstRow.getString(firstRow.fieldIndex("filename"))))
             } else {
-              new Path(stageOutputURI)
+              new Path(stageOutputURI.get)
             }
 
-            val fs = path.getFileSystem(hadoopConf)            
+            val fs = path.getFileSystem(hadoopConf)
 
             // create the outputStream for that file
             val outputStream = if (fs.exists(path)) {
@@ -368,16 +376,16 @@ object XMLLoadStage {
         stage.partitionBy match {
           case Nil => {
             stage.numPartitions match {
-              case Some(n) => df.repartition(n).write.format("com.databricks.spark.xml").mode(stage.saveMode).save(stage.outputURI.toString)
-              case None => df.write.format("com.databricks.spark.xml").mode(stage.saveMode).save(stage.outputURI.toString)
+              case Some(n) => df.repartition(n).write.format("com.databricks.spark.xml").mode(stage.saveMode).save(stage.outputURI.get.toString)
+              case None => df.write.format("com.databricks.spark.xml").mode(stage.saveMode).save(stage.outputURI.get.toString)
             }
           }
           case partitionBy => {
             // create a column array for repartitioning
             val partitionCols = partitionBy.map(col => df(col))
             stage.numPartitions match {
-              case Some(n) => df.repartition(n, partitionCols:_*).write.format("com.databricks.spark.xml").partitionBy(partitionBy:_*).mode(stage.saveMode).save(stage.outputURI.toString)
-              case None => df.repartition(partitionCols:_*).write.format("com.databricks.spark.xml").partitionBy(partitionBy:_*).mode(stage.saveMode).save(stage.outputURI.toString)
+              case Some(n) => df.repartition(n, partitionCols:_*).write.format("com.databricks.spark.xml").partitionBy(partitionBy:_*).mode(stage.saveMode).save(stage.outputURI.get.toString)
+              case None => df.repartition(partitionCols:_*).write.format("com.databricks.spark.xml").partitionBy(partitionBy:_*).mode(stage.saveMode).save(stage.outputURI.get.toString)
             }
           }
         }

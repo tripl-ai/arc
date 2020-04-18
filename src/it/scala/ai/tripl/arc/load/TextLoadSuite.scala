@@ -27,9 +27,9 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
   val minioAccessKey = "AKIAIOSFODNN7EXAMPLE"
   val minioSecretKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 
-  val targetSingleFileWildcard = s"s3a://${bucketName}/singlepart*.txt"  
-  val targetSingleFile0 = "singlepart0.txt"  
-  val targetSingleFile1 = "singlepart1.txt"  
+  val targetSingleFileWildcard = s"s3a://${bucketName}/singlepart*.txt"
+  val targetSingleFile0 = "singlepart0.txt"
+  val targetSingleFile1 = "singlepart1.txt"
   val targetSingleFile2 = "singlepart2.txt"
 
   before {
@@ -62,8 +62,8 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
       (targetSingleFile0, "a"),
       (targetSingleFile0, "b"),
       (targetSingleFile0, "c"),
-      (targetSingleFile1, "d"), 
-      (targetSingleFile1, "e"), 
+      (targetSingleFile1, "d"),
+      (targetSingleFile1, "e"),
       (targetSingleFile2, "f")
     ).toDF("filename", "value")
     dataset.createOrReplaceTempView(outputView)
@@ -87,7 +87,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
             "accessKeyID": "${minioAccessKey}",
             "secretAccessKey": "${minioSecretKey}",
             "endpoint": "${minioHostPort}"
-          }    
+          }
         }
       ]
     }"""
@@ -102,8 +102,8 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
       actual.persist
       assert(actual.where(s"_filename LIKE '%${targetSingleFile0}'").collect.map(_.getString(0)).mkString("|") == "a|b|c")
       assert(actual.where(s"_filename LIKE '%${targetSingleFile1}'").collect.map(_.getString(0)).mkString("|") == "d|e")
-      assert(actual.where(s"_filename LIKE '%${targetSingleFile2}'").collect.map(_.getString(0)).mkString("|") == "f")      
+      assert(actual.where(s"_filename LIKE '%${targetSingleFile2}'").collect.map(_.getString(0)).mkString("|") == "f")
     }
-  }  
+  }
 
 }

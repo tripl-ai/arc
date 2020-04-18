@@ -32,7 +32,7 @@ class TextLoad extends PipelineStagePlugin {
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = getValue[String]("inputView")
-    val outputURI = getValue[String]("outputURI") |> parseURI("outputURI") _
+    val outputURI = getOptionalValue[String]("outputURI") |> parseOptionURI("outputURI") _
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val authentication = readAuthentication("authentication")
     val saveMode = getValue[String]("saveMode", default = Some("Overwrite"), validValues = "Append" :: "ErrorIfExists" :: "Ignore" :: "Overwrite" :: Nil) |> parseSaveMode("saveMode") _
@@ -40,12 +40,15 @@ class TextLoad extends PipelineStagePlugin {
     val prefix = getValue[String]("prefix", default = Some(""))
     val separator = getValue[String]("separator", default = Some(""))
     val suffix = getValue[String]("suffix", default = Some(""))
+    val validOutputURI = (outputURI, singleFile) match {
+      case (Right(None), Right(singleFile)) if (singleFile == false) => Left(ConfigError("outputURI", None, "Missing required attribute 'outputURI' when not in 'singleFile' mode.") :: Nil)
+      case _ => Right("")
+    }
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(singleFile), Right(prefix), Right(separator), Right(suffix), Right(invalidKeys)) =>
-
+    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, validOutputURI, invalidKeys) match {
+      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(singleFile), Right(prefix), Right(separator), Right(suffix), Right(validOutputURI), Right(invalidKeys)) =>
         val stage = TextLoadStage(
           plugin=this,
           name=name,
@@ -69,7 +72,7 @@ class TextLoad extends PipelineStagePlugin {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, validOutputURI, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -82,7 +85,7 @@ case class TextLoadStage(
     name: String,
     description: Option[String],
     inputView: String,
-    outputURI: URI,
+    outputURI: Option[URI],
     numPartitions: Option[Int],
     authentication: Option[Authentication],
     saveMode: SaveMode,
@@ -145,9 +148,13 @@ object TextLoadStage {
           df.repartition(1)
         }
 
+        if (!hasFilename && stageOutputURI.isEmpty) {
+          throw new Exception("TextLoad requires 'outputURI' to be set if in 'singleFile' mode and no 'filename' column exists.")
+        }
+
         val outputFileAccumulator = spark.sparkContext.collectionAccumulator[String]
 
-        repartitionedDF.foreachPartition { partition: Iterator[Row] => 
+        repartitionedDF.foreachPartition { partition: Iterator[Row] =>
           if (partition.hasNext) {
             val hadoopConf = broadcastHadoopConf.value.value
 
@@ -164,12 +171,12 @@ object TextLoadStage {
               firstRow.fieldIndex("index")
             } else {
               0
-            } 
-            
+            }
+
             val path = if (hasFilename) {
-              new Path(new URI(s"""${stageOutputURI}/${firstRow.getString(firstRow.fieldIndex("filename"))}"""))
+              new Path(new URI(firstRow.getString(firstRow.fieldIndex("filename"))))
             } else {
-              new Path(stageOutputURI)
+              new Path(stageOutputURI.get)
             }
 
             val fs = path.getFileSystem(hadoopConf)
@@ -182,7 +189,7 @@ object TextLoadStage {
                 }
                 case SaveMode.Overwrite => {
                   Option(fs.create(path, true))
-            
+
                 }
                 case SaveMode.Append => {
                   Option(fs.append(path))
@@ -218,9 +225,9 @@ object TextLoadStage {
                 outputFileAccumulator.add(path.toString)
               }
               case None =>
-            }   
-            
-            fs.close 
+            }
+
+            fs.close
           }
         }
 
@@ -235,8 +242,8 @@ object TextLoadStage {
 
         // spark does not allow partitionBy when only single column dataframe
         stage.numPartitions match {
-          case Some(n) => df.repartition(n).write.mode(stage.saveMode).text(stage.outputURI.toString)
-          case None => df.write.mode(stage.saveMode).text(stage.outputURI.toString)
+          case Some(n) => df.repartition(n).write.mode(stage.saveMode).text(stage.outputURI.get.toString)
+          case None => df.write.mode(stage.saveMode).text(stage.outputURI.get.toString)
         }
       }
     } catch {
@@ -249,5 +256,5 @@ object TextLoadStage {
   }
 
   val validValueFilename = Array(("value", StringType), ("filename", StringType))
-  val validValueFilenameIndex = Array(("value", StringType), ("filename", StringType), ("index", IntegerType))        
+  val validValueFilenameIndex = Array(("value", StringType), ("filename", StringType), ("index", IntegerType))
 }
