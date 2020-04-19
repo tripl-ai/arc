@@ -812,31 +812,46 @@ local:///opt/spark/jars/arc.jar \
       }
     </script>
 
-    <script>
-      document.querySelectorAll('pre > code').forEach(function (codeBlock) {
-        var button = document.createElement('div');
-        button.className = 'copy-code-button';
-        button.role = 'img';
-        button.alt = 'copy-code-button';
-
-        button.addEventListener('click', function () {
-            clipboard.writeText(codeBlock.innerText).then(function () {
-                button.blur();
-            }, function (error) {
-              console.log(`cannot copy to clipboard ${error}`)
-            });
-        });        
-
-        codeBlock.insertBefore(button, codeBlock.firstChild);
-      });
-    </script>
-
     
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard-polyfill/2.7.0/clipboard-polyfill.promise.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
+
+    <script>
+      window.onload = function (){
+        function addCopyButtons(clipboard) {
+          document.querySelectorAll('pre > code').forEach(function (codeBlock) {
+            var button = document.createElement('button');
+            button.className = 'copy-code-button';
+
+            button.addEventListener('click', function (e) {
+              clipboard.writeText(codeBlock.innerText).then(function () {
+                button.blur();
+              }, function (error) {
+                console.log(`cannot copy to clipboard ${error}`)
+              });
+            });        
+
+            codeBlock.insertBefore(button, codeBlock.firstChild);
+          });
+        }
+
+      if (navigator && navigator.clipboard) {
+        addCopyButtons(navigator.clipboard);
+      } else {
+        var script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/clipboard-polyfill/2.7.0/clipboard-polyfill.promise.js';
+        script.integrity = 'sha256-waClS2re9NUbXRsryKoof+F9qc1gjjIhc2eT7ZbIv94=';
+        script.crossOrigin = 'anonymous';
+        script.onload = function() {
+          addCopyButtons(clipboard);
+        };
+
+        document.body.appendChild(script);
+      }
+    }
+    </script>    
   </body>
 </html>
 
