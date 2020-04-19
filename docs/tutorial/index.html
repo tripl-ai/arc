@@ -468,12 +468,15 @@ cd arc-starter
 <pre><code class="language-bash">docker run \
 --name arc-jupyter \
 --rm \
--v $(pwd)/examples:/home/jovyan/examples:Z \
+--volume $(pwd)/examples:/home/jovyan/examples:Z \
 -e JAVA_OPTS=&quot;-Xmx4096m&quot; \
--p 4040:4040 \
--p 8888:8888 \
+--entrypoint='' \
+--publish 4040:4040 \
+--publish 8888:8888 \
 triplai/arc-jupyter:arc-jupyter_2.2.0_scala_2.12_1.0.0 \
-start-notebook.sh \
+jupyter notebook \
+--ip=0.0.0.0 \
+--no-browser \
 --NotebookApp.password='' \
 --NotebookApp.token=''
 </code></pre>
@@ -758,14 +761,15 @@ FROM (
 
 <pre><code class="language-bash">docker run \
 --rm \
--v $(pwd)/examples:/home/jovyan/examples:Z \
--e &quot;ETL_CONF_ENV=production&quot; \
--p 4040:4040 \
+--volume $(pwd)/examples:/home/jovyan/examples:Z \
+--env &quot;ETL_CONF_ENV=production&quot; \
+--entrypoint='' \
+--publish 4040:4040 \
 triplai/arc:arc_2.10.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.0.0 \
 bin/spark-submit \
 --master local[*] \
---driver-memory=4G \
---driver-java-options=&quot;-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap&quot; \
+--driver-memory 4g \
+--driver-java-options &quot;-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap&quot; \
 --class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///home/jovyan/examples/tutorial/0/nyctaxi.ipynb

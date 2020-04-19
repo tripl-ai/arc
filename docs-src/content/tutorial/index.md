@@ -36,12 +36,15 @@ This script runs a `docker run` command where the only option that needs to be c
 docker run \
 --name arc-jupyter \
 --rm \
--v $(pwd)/examples:/home/jovyan/examples:Z \
+--volume $(pwd)/examples:/home/jovyan/examples:Z \
 -e JAVA_OPTS="-Xmx4096m" \
--p 4040:4040 \
--p 8888:8888 \
+--entrypoint='' \
+--publish 4040:4040 \
+--publish 8888:8888 \
 {{% arc_jupyter_docker_image %}} \
-start-notebook.sh \
+jupyter notebook \
+--ip=0.0.0.0 \
+--no-browser \
 --NotebookApp.password='' \
 --NotebookApp.token=''
 ```
@@ -243,14 +246,15 @@ To run the job that is included with the `arc-starter` repository (this file is 
 ```bash
 docker run \
 --rm \
--v $(pwd)/examples:/home/jovyan/examples:Z \
--e "ETL_CONF_ENV=production" \
--p 4040:4040 \
+--volume $(pwd)/examples:/home/jovyan/examples:Z \
+--env "ETL_CONF_ENV=production" \
+--entrypoint='' \
+--publish 4040:4040 \
 {{% docker_image %}} \
 bin/spark-submit \
 --master local[*] \
---driver-memory=4G \
---driver-java-options="-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
+--driver-memory 4g \
+--driver-java-options "-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
 --class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///home/jovyan/examples/tutorial/0/nyctaxi.ipynb
