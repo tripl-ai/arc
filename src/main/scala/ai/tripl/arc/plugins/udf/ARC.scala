@@ -6,17 +6,23 @@ import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.XMLStreamWriter
 
 import scala.collection.JavaConverters._
+import scala.io.Source
 
 import com.fasterxml.jackson.databind._
+
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.util.log.logger.Logger
 import ai.tripl.arc.api.API.ARCContext
 import ai.tripl.arc.util.Utils
 
+import ai.tripl.arc.util.SerializableConfiguration
 import com.databricks.spark.xml.util._
 import com.sun.xml.txw2.output.IndentingXMLStreamWriter
 
@@ -31,6 +37,7 @@ class ARC extends ai.tripl.arc.plugins.UDFPlugin {
     spark.sqlContext.udf.register("get_json_double_array", ARCPlugin.getJSONDoubleArray _ )
     spark.sqlContext.udf.register("get_json_integer_array", ARCPlugin.getJSONIntArray _ )
     spark.sqlContext.udf.register("get_json_long_array", ARCPlugin.getJSONLongArray _ )
+    spark.sqlContext.udf.register("get_uri", ARCPlugin.getURI _ )    
     spark.sqlContext.udf.register("random", ARCPlugin.getRandom _ )
     spark.sqlContext.udf.register("to_xml", ARCPlugin.toXML _ )
     spark.sqlContext.udf.register("struct_keys", ARCPlugin.structKeys _ )
@@ -99,6 +106,15 @@ object ARCPlugin {
 
   def structKeys(input: Row): Array[String] = {
     input.schema.fieldNames
+  }
+
+  // get byte array content of uri
+  def getURI(uri: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[Byte] = {
+    val hadoopConf = arcContext.serializableConfiguration.get.value
+    val path = new Path(uri)
+    val fs = path.getFileSystem(hadoopConf)
+    val fileStatus = fs.getFileStatus(path)
+    Source.fromInputStream(fs.open(path)).map(_.toByte).toArray
   }
 
 }

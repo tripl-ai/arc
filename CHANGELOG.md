@@ -1,5 +1,9 @@
 # Change Log
 
+## 2.10.1
+
+- add the `get_uri` user defined function which returns the contents of a URI as an `Array[Byte]` which can be used with `decode` to convert to text.
+
 ## 2.10.0
 
 - make `id` an optional field when specifying an Arc Schema.

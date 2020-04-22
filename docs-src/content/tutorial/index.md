@@ -255,6 +255,10 @@ bin/spark-submit \
 --master local[*] \
 --driver-memory 4g \
 --driver-java-options "-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
+--conf spark.authenticate=true \
+--conf spark.authenticate.secret=$(openssl rand -hex 64) \
+--conf spark.io.encryption.enabled=true \
+--conf spark.network.crypto.enabled=true \
 --class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///home/jovyan/examples/tutorial/0/nyctaxi.ipynb

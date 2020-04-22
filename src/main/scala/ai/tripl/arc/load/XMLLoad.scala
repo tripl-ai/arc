@@ -281,9 +281,6 @@ object XMLLoadStage {
           throw new Exception("XMLLoad requires 'outputURI' to be set if in 'singleFile' mode and no 'filename' column exists.")
         }
 
-        // broadcast hadoop conf to all executors so they can open file system objects directly
-        val broadcastHadoopConf = spark.sparkContext.broadcast(new SerializableConfiguration(spark.sparkContext.hadoopConfiguration))
-
         // repartition so that there is a 1:1 mapping of partition:filename
         val repartitionedDF = if (hasFilename) {
           df.repartition(stage.singleFileNumPartitions, col("filename"))
@@ -295,7 +292,7 @@ object XMLLoadStage {
 
         repartitionedDF.foreachPartition { partition: Iterator[Row] =>
           if (partition.hasNext) {
-            val hadoopConf = broadcastHadoopConf.value.value
+            val hadoopConf = arcContext.serializableConfiguration.get.value
 
             // buffer so first row can be accessed
             val bufferedPartition = partition.buffered

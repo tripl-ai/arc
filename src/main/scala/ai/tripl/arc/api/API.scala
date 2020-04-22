@@ -8,6 +8,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.types.MetadataBuilder
 import org.apache.spark.storage.StorageLevel
 
+import ai.tripl.arc.util.SerializableConfiguration
 import ai.tripl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin, UDFPlugin}
 
 /** The API defines the model for a pipline. It is made up of stages,
@@ -89,7 +90,12 @@ object API {
     /** a map of objects which can be attached to the context for plugins
       * try to avoid using this as it is hacky
       */
-    userData: collection.mutable.Map[String, Object]
+    userData: collection.mutable.Map[String, Object],
+
+    
+    /** a serialized hadoop configuration object so that executors can access it directly
+    */ 
+    var serializableConfiguration: Option[SerializableConfiguration] = None
   )
 
   /** ExtractColumns are used to define schemas for typing transforms

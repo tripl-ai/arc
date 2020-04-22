@@ -39,7 +39,7 @@ object ArcPipeline {
 
     val etlConfString = uri match {
       case Left(str) => Right(str)
-      case Right(uri) => getConfigString(uri, arcContext)
+      case Right(uri) => getConfigString(uri)(spark, logger, arcContext)
     }
 
     etlConfString.rightFlatMap { etlConfRaw =>
