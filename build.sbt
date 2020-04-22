@@ -27,6 +27,8 @@ lazy val root = (project in file(".")).
     updateOptions := updateOptions.value.withGigahorse(false)
   )
 
+resolvers += Resolver.mavenLocal
+
 fork in run := true  
 
 scalacOptions := Seq(
