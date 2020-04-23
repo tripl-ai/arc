@@ -110,7 +110,7 @@ object ARCPlugin {
 
   // get byte array content of uri
   def getURI(uri: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[Byte] = {
-    val hadoopConf = arcContext.serializableConfiguration.get.value
+    val hadoopConf = arcContext.serializableConfiguration.value
     val path = new Path(uri)
     val fs = path.getFileSystem(hadoopConf)
     val fileStatus = fs.getFileStatus(path)

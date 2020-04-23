@@ -292,7 +292,7 @@ object XMLLoadStage {
 
         repartitionedDF.foreachPartition { partition: Iterator[Row] =>
           if (partition.hasNext) {
-            val hadoopConf = arcContext.serializableConfiguration.get.value
+            val hadoopConf = arcContext.serializableConfiguration.value
 
             // buffer so first row can be accessed
             val bufferedPartition = partition.buffered

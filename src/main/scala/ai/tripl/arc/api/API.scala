@@ -92,10 +92,10 @@ object API {
       */
     userData: collection.mutable.Map[String, Object],
 
-    
     /** a serialized hadoop configuration object so that executors can access it directly
     */ 
-    var serializableConfiguration: Option[SerializableConfiguration] = None
+    var serializableConfiguration: SerializableConfiguration
+
   )
 
   /** ExtractColumns are used to define schemas for typing transforms

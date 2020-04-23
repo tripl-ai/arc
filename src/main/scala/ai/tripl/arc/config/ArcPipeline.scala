@@ -130,6 +130,7 @@ object ArcPipeline {
                 activeLifecyclePlugins=activeLifecyclePluginInstances,
                 pipelineStagePlugins=arcContext.pipelineStagePlugins,
                 udfPlugins=arcContext.udfPlugins,
+                serializableConfiguration=arcContext.serializableConfiguration,
                 userData=arcContext.userData
               )
 
