@@ -10,6 +10,7 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.spark.sql._
 
 import ai.tripl.arc.api._
+import ai.tripl.arc.api.API._
 
 object CloudUtils {
 
@@ -18,7 +19,9 @@ object CloudUtils {
   // org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider to support anonymous credentials
   val defaultAWSProvidersOverride = "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider,com.amazonaws.auth.EnvironmentVariableCredentialsProvider,com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider,org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider"
 
-  def setHadoopConfiguration(authentication: Option[API.Authentication])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger) = {
+  //TODO: set serializableConfiguration
+
+  def setHadoopConfiguration(authentication: Option[API.Authentication])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
     import spark.sparkContext.{hadoopConfiguration => hc}
 
     // clear s3a settings
