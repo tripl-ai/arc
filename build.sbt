@@ -28,6 +28,7 @@ lazy val root = (project in file(".")).
   )
 
 resolvers += Resolver.mavenLocal
+publishM2Configuration := publishM2Configuration.value.withOverwrite(true)
 
 fork in run := true  
 
