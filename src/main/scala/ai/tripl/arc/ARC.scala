@@ -3,6 +3,7 @@ package ai.tripl.arc
 import ai.tripl.arc.udf.UDF
 import ai.tripl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin, UDFPlugin}
 import ai.tripl.arc.util.CloudUtils
+import ai.tripl.arc.util.SerializableConfiguration
 
 object ARC {
 
@@ -222,6 +223,7 @@ object ARC {
       activeLifecyclePlugins=Nil,
       pipelineStagePlugins=ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList,
       udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList,
+      serializableConfiguration=new SerializableConfiguration(spark.sparkContext.hadoopConfiguration),
       userData=collection.mutable.Map.empty
     )
 
@@ -235,7 +237,7 @@ object ARC {
         .field("event", "enter")
         .field("config", sparkConf)
         .field("sparkVersion", spark.version)
-        .field("frameworkVersion", frameworkVersion)
+        .field("arcVersion", frameworkVersion)
         .field("hadoopVersion", org.apache.hadoop.util.VersionInfo.getVersion)
         .field("scalaVersion", scala.util.Properties.versionNumberString)
         .field("javaVersion", System.getProperty("java.runtime.version"))
@@ -265,7 +267,7 @@ object ARC {
         logger.error()
           .field("event", "exit")
           .field("sparkVersion", spark.version)
-          .field("frameworkVersion", frameworkVersion)
+          .field("arcVersion", frameworkVersion)
           .field("hadoopVersion", org.apache.hadoop.util.VersionInfo.getVersion)
           .field("scalaVersion", scala.util.Properties.versionNumberString)
           .field("javaVersion", System.getProperty("java.runtime.version"))

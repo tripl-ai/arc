@@ -43,7 +43,7 @@ object TestUtils {
         logger
     }
 
-    def getARCContext(isStreaming: Boolean, environment: String = "test", commandLineArguments: Map[String,String] = Map[String,String](), ipynb: Boolean = true, inlineSQL: Boolean = true): ARCContext = {
+    def getARCContext(isStreaming: Boolean, environment: String = "test", commandLineArguments: Map[String,String] = Map[String,String](), ipynb: Boolean = true, inlineSQL: Boolean = true)(implicit spark: SparkSession): ARCContext = {
       val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
 
       ARCContext(
@@ -64,6 +64,7 @@ object TestUtils {
         activeLifecyclePlugins=Nil,
         pipelineStagePlugins=ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList,
         udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList,
+        serializableConfiguration=Option(new SerializableConfiguration(spark.sparkContext.hadoopConfiguration)),
         userData=collection.mutable.Map.empty
       )
     }

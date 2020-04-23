@@ -78,6 +78,16 @@ Similar to [get_json_object](https://spark.apache.org/docs/latest/api/sql/index.
 SELECT get_json_long_array('[2147483648, 2147483649]', '$')
 ```
 
+#### get_uri
+##### Since: 2.11.0
+
+`get_uri` returns the contents of a URI as an `Array[Byte]`. If reading text this function can be wrapped with the inbuilt [decode](https://spark.apache.org/docs/latest/api/sql/index.html#decode) Spark SQL function to convert from `Array[Byte]` to `string` like: `DECODE(GET_URI('s3a://bucket/file.txt'), 'UTF-8'). Prior to Arc 3.x this will not allow authentication to be modified from the standard inbuilt permissions (like AmazonIAM).
+
+```sql
+SELECT
+  get_uri('s3a://bucket/file.txt') AS content
+```
+
 #### to_xml
 ##### Since: 2.10.0
 

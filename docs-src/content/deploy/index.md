@@ -8,7 +8,7 @@ Arc has been packaged as a [Docker](https://hub.docker.com/u/triplai) image to s
 
 The [deploy](https://github.com/tripl-ai/deploy) repository has examples of how to run Arc jobs on common cloud environments.
 
-## Local
+## Arc Local
 
 An example command to start a job from the [Arc Starter](https://github.com/tripl-ai/arc-starter) base directory:
 
@@ -24,6 +24,10 @@ bin/spark-submit \
 --master local[*] \
 --driver-memory 4g \
 --driver-java-options "-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
+--conf spark.authenticate=true \
+--conf spark.authenticate.secret=$(openssl rand -hex 64) \
+--conf spark.io.encryption.enabled=true \
+--conf spark.network.crypto.enabled=true \
 --class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///home/jovyan/examples/tutorial/0/nyctaxi.ipynb
@@ -37,7 +41,7 @@ This example is included to demonstrate:
 
 - `etl.config.uri` is a reserved JVM property which describes to Arc which job to execute. See below for all the properties that can be passed to Arc.
 
-## Kubernetes
+## Arc on Kubernetes
 
 Arc is built using the offical [Spark Kubernetes](https://spark.apache.org/docs/latest/running-on-kubernetes) image [build process](https://spark.apache.org/docs/latest/running-on-kubernetes.html#docker-images) which allows Arc to be easily deployed to a Kubernetes cluster.
 

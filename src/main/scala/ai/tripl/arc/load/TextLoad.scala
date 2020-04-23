@@ -140,9 +140,6 @@ object TextLoadStage {
         val hasFilename = df.schema.length == 2 || df.schema.length == 3
         val hasIndex = df.schema.length == 3
 
-        // broadcast hadoop conf to all executors so they can open file system objects directly
-        val broadcastHadoopConf = spark.sparkContext.broadcast(new SerializableConfiguration(spark.sparkContext.hadoopConfiguration))
-
         // repartition so that there is a 1:1 mapping of partition:filename
         val repartitionedDF = if (hasFilename) {
           df.repartition(stage.singleFileNumPartitions, col("filename"))
@@ -158,7 +155,7 @@ object TextLoadStage {
 
         repartitionedDF.foreachPartition { partition: Iterator[Row] =>
           if (partition.hasNext) {
-            val hadoopConf = broadcastHadoopConf.value.value
+            val hadoopConf = arcContext.serializableConfiguration.value
 
             // buffer so first row can be accessed
             val bufferedPartition = partition.buffered

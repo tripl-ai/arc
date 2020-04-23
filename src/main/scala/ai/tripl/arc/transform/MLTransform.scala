@@ -80,7 +80,7 @@ class MLTransform extends PipelineStagePlugin {
     }
   }
 
-  def getModel(path: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: com.typesafe.config.Config): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = {
+  def getModel(path: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: com.typesafe.config.Config, arcContext: ARCContext): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, Either[PipelineModel, CrossValidatorModel]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     authentication.right.map(auth => CloudUtils.setHadoopConfiguration(auth))

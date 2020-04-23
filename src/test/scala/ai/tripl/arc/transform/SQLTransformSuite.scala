@@ -78,6 +78,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,
+        authentication=None,
         params=Map.empty,
         numPartitions=None,
         partitionBy=Nil
@@ -175,6 +176,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,
+        authentication=None,
         params=Map.empty,
         numPartitions=None,
         partitionBy=Nil
@@ -192,6 +194,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=true,
         sqlParams=Map.empty,
+        authentication=None,
         params=Map.empty,
         numPartitions=None,
         partitionBy=Nil
@@ -219,6 +222,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map("sql_boolean_param" -> "FALSE"),
+        authentication=None,
         params=Map.empty,
         numPartitions=None,
         partitionBy=Nil
@@ -249,6 +253,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
           outputView=outputView,
           persist=false,
           sqlParams=Map("sql_string_param" -> "test"),
+          authentication=None,
           params=Map.empty,
           numPartitions=None,
           partitionBy=Nil
@@ -257,48 +262,6 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     }
     assert(thrown0.getMessage === "No replacement value found in parameters: [sql_string_param] for placeholders: [${sql_boolean}].")
   }
-
-  // test("SQLTransform: partitionPushdown") {
-  //   implicit val spark = session
-  //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = ARCContext(jobId=None, jobName=None, environment="test", environmentId=None, configUri=None, isStreaming=false, ignoreEnvironments=false, lifecyclePlugins=Nil, disableDependencyValidation=false)
-
-  //   extract.ParquetExtract.extract(
-  //     extract.ParquetExtract(
-  //       name=inputView,
-  //       description=None,
-  //       cols=Right(Nil),
-  //       outputView=outputView,
-  //       input=targetFile,
-  //       authentication=None,
-  //       params=Map.empty,
-  //       persist=false,
-  //       numPartitions=None,
-  //       partitionBy=Nil,
-  //       basePath=None,
-  //       contiguousIndex=true
-  //     )
-  //   )
-
-  //   val transformed = transform.SQLTransform.transform(
-  //     SQLTransform(
-  //       name="SQLTransform",
-  //       description=None,
-  //       inputURI=new URI(targetFile),
-  //       sql=s"SELECT * FROM ${outputView} WHERE dateDatum = TO_DATE('2016-12-19')",
-  //       outputView=outputView,
-  //       persist=false,
-  //       sqlParams=Map.empty,
-  //       params=Map.empty,
-  //       numPartitions=None,
-  //       partitionBy=Nil
-  //     )
-  //   ).get
-
-  //   val partitionFilters = QueryExecutionUtils.getPartitionFilters(transformed.queryExecution.executedPlan).toArray.mkString(",")
-  //   assert(partitionFilters.contains("dateDatum"))
-  //   assert(partitionFilters.contains("isnotnull(dateDatum"))
-  // }
 
   test("SQLTransform: predicatePushdown") {
     implicit val spark = session
@@ -315,6 +278,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map("sql_boolean_param" -> "FALSE"),
+        authentication=None,
         params=Map.empty,
         numPartitions=None,
         partitionBy=Nil
@@ -398,6 +362,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         persist=false,
         sqlParams=Map.empty,
+        authentication=None,
         params=Map.empty,
         numPartitions=None,
         partitionBy=Nil

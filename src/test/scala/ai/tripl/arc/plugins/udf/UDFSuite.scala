@@ -8,6 +8,10 @@ import org.apache.spark.sql._
 import ai.tripl.arc.util.log.LoggerFactory
 import ai.tripl.arc.util.TestUtils
 
+import ai.tripl.arc.api._
+import ai.tripl.arc.api.API._
+import ai.tripl.arc.config._
+import ai.tripl.arc.util._
 import ai.tripl.arc.udf.UDF
 
 class UDFSuite extends FunSuite with BeforeAndAfter {
@@ -142,7 +146,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.first.getSeq[String](0) == Seq("key0", "key1"))
   }
 
-  test("struct_contains true") {
+  test("struct_contains: true") {
     implicit val spark = session
 
     val df = spark.sql("""
@@ -161,7 +165,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.first.getBoolean(0) == true)
   }
 
-  test("struct_contains false") {
+  test("struct_contains: false") {
     implicit val spark = session
 
     val df = spark.sql("""
@@ -177,6 +181,70 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
       )
     """)
     assert(df.first.getBoolean(0) == false)
+  }
+
+  test("get_uri: batch") {
+    implicit val spark = session
+
+    val targetFile = getClass.getResource("/conf/simple.conf").toString
+    val df = spark.sql(s"SELECT DECODE(GET_URI('${targetFile}'), 'UTF-8') AS simpleConf")
+
+    val expected = spark.read.option("wholetext", true).text(targetFile).first.getString(0)
+    val actual = df.first.getString(0)
+
+    assert(actual == expected)
+  }  
+
+  test("get_uri: streaming") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
+
+    val targetFile = getClass.getResource("/conf/simple.conf").toString
+    val expected = spark.read.option("wholetext", true).text(targetFile).first.getString(0)
+
+    val readStream = spark
+      .readStream
+      .format("rate")
+      .option("rowsPerSecond", "5")
+      .load
+
+    readStream.createOrReplaceTempView("readstream")
+
+    val dataset = transform.SQLTransformStage.execute(
+      transform.SQLTransformStage(
+        plugin=new transform.SQLTransform,
+        name="SQLTransform",
+        description=None,
+        inputURI=None,
+        sql=s"SELECT DECODE(GET_URI('${targetFile}'), 'UTF-8') AS simpleConf FROM readstream",
+        outputView="outputView",
+        persist=false,
+        sqlParams=Map.empty,
+        authentication=None,
+        params=Map.empty,
+        numPartitions=None,
+        partitionBy=Nil
+      )
+    ).get
+
+    val writeStream = dataset
+      .writeStream
+      .queryName("transformed")
+      .format("memory")
+      .start
+
+    val df = spark.table("transformed")
+
+    try {
+      Thread.sleep(2000)
+      assert(df.count > 0)
+
+      val actual = df.first.getString(0)
+      assert(actual == expected)
+    } finally {
+      writeStream.stop
+    }
   }
 
 }

@@ -5,6 +5,23 @@ weight: 85
 type: blog
 ---
 
+## Encryption
+
+### Arc Local
+
+Spark [natively supports](https://spark.apache.org/docs/latest/security.html) many different types of encryption. When running as a single master from the `Dockerfile` (as per [Arc Starter](https://github.com/tripl-ai/arc-starter)) then set these options to ensure temporary data spilled to disk and any network traffic will be encrypted with a randomly generated key for each execution:
+
+```bash
+--conf spark.authenticate=true \
+--conf spark.authenticate.secret=$(openssl rand -hex 64) \
+--conf spark.io.encryption.enabled=true \
+--conf spark.network.crypto.enabled=true \
+```
+
+### Arc Jupyter
+
+The [Arc Local](#arclocal) encrpytion options are also set in [Arc Jupyter](https://github.com/tripl-ai/arc-jupyter) and have a secure random secret generated for each notebook session and cannot be overridden by setting custom configurations.
+
 ## Authentication
 
 The `authentication` object defines the authentication parameters for connecting to a remote service (e.g. HDFS, Blob Storage, etc.). To define these the `authentication` key can be supplied for different providers:
@@ -19,12 +36,12 @@ The `authentication` object defines the authentication parameters for connecting
 }
 ```
 
-It is strongly discouraged to use simple authentication like above and in favor of mechaisms like `AmazonIAM` which do not risk exposing secrets by accident.
+It is strongly discouraged to use simple authentication like above and in favor of mechaisms like `AmazonIAM` which do not risk exposing secrets.
 
 {{< note title="Authentication Scope" >}}
 Currently these options are defined at a global level meaning that if an `authentication` object is supplied for one stage it will apply to all stages after that.
 
-This approach is being reworked to be more targeted 'scope', i.e. to specific bucket or similar.
+Amazon Web Services `s3a` access is an exception which has `stage` level scoping of permissions which override globals.
 {{</note>}}
 
 ### Parameters
@@ -100,6 +117,8 @@ This approach is being reworked to be more targeted 'scope', i.e. to specific bu
 
 ## Amazon Web Services
 
+### Authentication
+
 When running on Amazon Web Services Arc will try to resolve permissions in this order. These can ben overridden for a specific stage by specifying a [authentication](../security/#authentication) method.
 
 - `SimpleAWSCredentialsProvider`: access key and secret
@@ -107,3 +126,28 @@ When running on Amazon Web Services Arc will try to resolve permissions in this 
 - `InstanceProfileCredentialsProvider`: IAM Role attached to the EC2 instance
 - `ContainerCredentialsProvider`: IAM Role attached to the container in case of ECS and EKS
 - `AnonymousAWSCredentialsProvider`: try to access without credentials - useful for accessing the [Registry of Open Data on AWS](https://registry.opendata.aws/).
+
+### Encryption-at-Rest
+
+[Amazon S3](https://aws.amazon.com/s3/) supports full encryption for data-at-rest via the [Amazon Key Management Service](https://aws.amazon.com/kms/). When used with Amazon [Identity and Access Management](https://aws.amazon.com/iam/) it provides a mechanism for securely storing data and providing access control that works seamlessly with Arc.
+
+A policy like this will work:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kms:Decrypt",
+        "s3:GetObject"
+      ],
+      "Resource": [
+        "arn:aws:kms:example-region-1:123456789012:key/example-key-id",
+        "arn:aws:s3:::example-bucket-name/*"
+      ]
+    }
+  ]
+}
+```
