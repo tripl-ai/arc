@@ -20,8 +20,6 @@ object CloudUtils {
   // org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider to support anonymous credentials
   val defaultAWSProvidersOverride = "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider,com.amazonaws.auth.EnvironmentVariableCredentialsProvider,com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider,org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider"
 
-  //TODO: set serializableConfiguration
-
   def setHadoopConfiguration(authentication: Option[API.Authentication])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
     import spark.sparkContext.{hadoopConfiguration => hc}
 
@@ -144,6 +142,8 @@ object CloudUtils {
       }
       case None =>
     }
+
+    arcContext.serializableConfiguration = new SerializableConfiguration(spark.sparkContext.hadoopConfiguration)
   }
 
   // using a string filePath so that invalid paths can be used for local files
