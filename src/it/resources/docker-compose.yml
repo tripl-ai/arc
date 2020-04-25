@@ -12,7 +12,7 @@ networks:
 services:
   sbt:
     container_name: sbt
-    image: mozilla/sbt:8u212_1.2.8 
+    image: mozilla/sbt:8u232_1.3.8
     networks:
       - arc-integration     
     command: tail -f /dev/null
@@ -30,7 +30,7 @@ services:
     build: tensorflow_serving/.
 
   postgres:
-    image: postgres:10.4-alpine-init
+    image: postgres:12.2-alpine-init
     networks:
       - arc-integration  
     ports:
@@ -41,7 +41,7 @@ services:
       POSTGRES_PASSWORD: "SecretPass!2018"
 
   sqlserver:
-    image: microsoft/mssql-server-linux:2017-CU9
+    image: mcr.microsoft.com/mssql/server:2019-latest
     networks:
       - arc-integration    
     environment:
@@ -68,14 +68,3 @@ services:
     environment:
       MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
       MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-
-  sbt:
-    container_name: sbt
-    image: mozilla/sbt:8u212_1.2.8 
-    networks:
-      - arc-integration     
-    command: tail -f /dev/null
-    volumes:
-      - ${PWD}:/app  
-      - /tmp/pgp:/pgp
-    working_dir: /app

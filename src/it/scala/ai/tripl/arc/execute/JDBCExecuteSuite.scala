@@ -58,7 +58,6 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-
     val transaction = s"""
     |SET XACT_ABORT ON;
     |
@@ -104,7 +103,6 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
 
     val transaction = s"""
     |SET XACT_ABORT ON;

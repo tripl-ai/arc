@@ -14,6 +14,7 @@ import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.QueryExecutionUtils
 import ai.tripl.arc.util.Utils
+import ai.tripl.arc.util.CloudUtils
 
 class SQLTransform extends PipelineStagePlugin {
 
@@ -86,6 +87,7 @@ class SQLTransform extends PipelineStagePlugin {
           outputView=outputView,
           params=params,
           sqlParams=sqlParams,
+          authentication=authentication,
           persist=persist,
           numPartitions=numPartitions,
           partitionBy=partitionBy
@@ -119,6 +121,7 @@ case class SQLTransformStage(
     outputView: String,
     params: Map[String, String],
     sqlParams: Map[String, String],
+    authentication: Option[Authentication],
     persist: Boolean,
     numPartitions: Option[Int],
     partitionBy: List[String]
@@ -132,6 +135,8 @@ case class SQLTransformStage(
 object SQLTransformStage {
 
   def execute(stage: SQLTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+
+    CloudUtils.setHadoopConfiguration(stage.authentication)
 
     val stmt = SQLUtils.injectParameters(stage.sql, stage.sqlParams, false)
     stage.stageDetail.put("sql", stmt)

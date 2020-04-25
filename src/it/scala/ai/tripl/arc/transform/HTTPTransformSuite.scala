@@ -28,7 +28,6 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   val outputView = "outputView"
   val uri = s"http://tensorflow_serving:9001/v1/models/simple/versions/1:predict"
   var logger: ai.tripl.arc.util.log.logger.Logger = _
-  implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
   before {
     implicit val spark = SparkSession
@@ -39,6 +38,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
                   .getOrCreate()
     spark.sparkContext.setLogLevel("INFO")
     implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")

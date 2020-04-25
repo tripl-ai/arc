@@ -31,7 +31,7 @@ import Error._
 
 object ConfigUtils {
 
-  def getConfigString(uri: URI, arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], String] = {
+  def getConfigString(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[Error], String] = {
 
     val isLocalMaster = spark.sparkContext.master.toLowerCase.startsWith("local")
 
@@ -630,7 +630,7 @@ object ConfigUtils {
     }
   }
 
-  def getExtractColumns(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, List[ExtractColumn]] = {
+  def getExtractColumns(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config, arcContext: ARCContext): Either[Errors, List[ExtractColumn]] = {
     val schema = textContentForURI(uriKey, authentication)(uri).rightFlatMap(text => Right(Option(text)))
 
     schema.rightFlatMap { sch =>
@@ -668,7 +668,7 @@ object ConfigUtils {
   }
 
 
-  def textContentForURI(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config): Either[Errors, String] = {
+  def textContentForURI(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config, arcContext: ARCContext): Either[Errors, String] = {
     uri.getScheme match {
       case "classpath" =>
         val path = s"/${uri.getHost}${uri.getPath}"

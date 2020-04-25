@@ -27,6 +27,9 @@ lazy val root = (project in file(".")).
     updateOptions := updateOptions.value.withGigahorse(false)
   )
 
+resolvers += Resolver.mavenLocal
+publishM2Configuration := publishM2Configuration.value.withOverwrite(true)
+
 fork in run := true  
 
 scalacOptions := Seq(

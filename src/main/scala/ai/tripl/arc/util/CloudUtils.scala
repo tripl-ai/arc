@@ -10,6 +10,7 @@ import org.apache.http.impl.client.HttpClients
 import org.apache.spark.sql._
 
 import ai.tripl.arc.api._
+import ai.tripl.arc.api.API.ARCContext
 
 object CloudUtils {
 
