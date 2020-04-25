@@ -122,9 +122,8 @@ The deploy repository has examples of how to run Arc jobs on common cloud enviro
       <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
       
       <guid>https://arc.tripl.ai/security/</guid>
-      <description>Authentication The authentication object defines the authentication parameters for connecting to a remote service (e.g. HDFS, Blob Storage, etc.). To define these the authentication key can be supplied for different providers:
-{ &amp;quot;authentication&amp;quot;: { &amp;quot;method&amp;quot;: &amp;quot;AmazonAccessKey&amp;quot;, &amp;quot;accessKeyID&amp;quot;: &amp;quot;AKIAIOSFODNN7EXAMPLE&amp;quot;, &amp;quot;secretAccessKey&amp;quot;: &amp;quot;wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY&amp;quot;, } }  It is strongly discouraged to use simple authentication like above and in favor of mechaisms like AmazonIAM which do not risk exposing secrets by accident.
-Authentication Scope</description>
+      <description>Encryption Arc Local Spark natively supports many different types of encryption. When running as a single master from the Dockerfile (as per Arc Starter) then set these options to ensure temporary data spilled to disk and any network traffic will be encrypted with a randomly generated key for each execution:
+--conf spark.authenticate=true \ --conf spark.authenticate.secret=$(openssl rand -hex 64) \ --conf spark.io.encryption.enabled=true \ --conf spark.network.crypto.enabled=true \  Arc Jupyter The Arc Local encrpytion options are also set in Arc Jupyter and have a secure random secret generated for each notebook session and cannot be overridden by setting custom configurations.</description>
     </item>
     
     <item>

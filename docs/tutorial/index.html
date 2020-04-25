@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.10.0</span></strong>
+          <span class="version">2.10.1</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -473,7 +473,7 @@ cd arc-starter
 --entrypoint='' \
 --publish 4040:4040 \
 --publish 8888:8888 \
-triplai/arc-jupyter:arc-jupyter_2.2.0_scala_2.12_1.0.0 \
+triplai/arc-jupyter:arc-jupyter_2.3.0_scala_2.12_1.0.0 \
 jupyter notebook \
 --ip=0.0.0.0 \
 --no-browser \
@@ -765,11 +765,15 @@ FROM (
 --env &quot;ETL_CONF_ENV=production&quot; \
 --entrypoint='' \
 --publish 4040:4040 \
-triplai/arc:arc_2.10.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.0.0 \
+triplai/arc:arc_2.10.1_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.0.0 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory 4g \
 --driver-java-options &quot;-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap&quot; \
+--conf spark.authenticate=true \
+--conf spark.authenticate.secret=$(openssl rand -hex 64) \
+--conf spark.io.encryption.enabled=true \
+--conf spark.network.crypto.enabled=true \
 --class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///home/jovyan/examples/tutorial/0/nyctaxi.ipynb
