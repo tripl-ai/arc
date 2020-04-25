@@ -30,7 +30,7 @@ services:
     build: tensorflow_serving/.
 
   postgres:
-    image: postgres:10.4-alpine-init
+    image: postgres:12.2-alpine-init
     networks:
       - arc-integration  
     ports:
