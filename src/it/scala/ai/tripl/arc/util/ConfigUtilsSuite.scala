@@ -169,4 +169,23 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }  
   }
 
+  test("ConfigUtilsSuite: Test https remote job config") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val expected = spark.sql("SELECT '1' AS value")
+    expected.createOrReplaceTempView("inputView")
+
+    val pipelineEither = ArcPipeline.parseConfig(Right(new URI("https://raw.githubusercontent.com/tripl-ai/arc/master/src/test/resources/conf/job/active_customers.json")), arcContext)
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val actual = ARC.run(pipeline).get
+
+        assert(expected.first.getString(0) == actual.first.getString(0))
+      } 
+    }  
+  }  
+
 }
