@@ -19,6 +19,10 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
   var session: SparkSession = _
   var logger: ai.tripl.arc.util.log.logger.Logger = _
 
+  val targetFile = getClass.getResource("/binary/akc_breed_info.csv").toString
+  val targetBinaryFile = getClass.getResource("/binary/puppy.jpg").toString
+  var expected: String = _
+
   before {
     implicit val spark = SparkSession
                   .builder()
@@ -35,6 +39,8 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
     val arcContext = TestUtils.getARCContext(isStreaming=false)
 
+    expected = spark.read.option("wholetext", true).text(targetFile).first.getString(0)
+
     // register udf
     UDF.registerUDFs()(spark, logger, arcContext)
   }
@@ -43,7 +49,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  test("jsonPath") {
+  test("UDFSuite: jsonPath") {
     implicit val spark = session
 
     val df = spark.sql("""
@@ -54,7 +60,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.schema.fields(0).dataType.toString == "ArrayType(LongType,false)")
   }
 
-  test("get_json_double_array") {
+  test("UDFSuite: get_json_double_array") {
     implicit val spark = session
 
     val df = spark.sql("""
@@ -65,7 +71,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.schema.fields(0).dataType.toString == "ArrayType(DoubleType,false)")
   }
 
-  test("get_json_integer_array") {
+  test("UDFSuite: get_json_integer_array") {
     implicit val spark = session
 
     val df = spark.sql("""
@@ -76,7 +82,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.schema.fields(0).dataType.toString == "ArrayType(IntegerType,false)")
   }
 
-  test("get_json_long_array") {
+  test("UDFSuite: get_json_long_array") {
     implicit val spark = session
 
     val df = spark.sql("""
@@ -87,7 +93,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.schema.fields(0).dataType.toString == "ArrayType(LongType,false)")
   }
 
-  test("random") {
+  test("UDFSuite: random") {
     implicit val spark = session
 
     val df = spark.sql("""
@@ -99,7 +105,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.schema.fields(0).dataType.toString == "DoubleType")
   }
 
-  test("to_xml") {
+  test("UDFSuite: to_xml") {
     implicit val spark = session
 
     val df = spark.sql("""
@@ -130,7 +136,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     |</Document>""".stripMargin)
   }
 
-  test("struct_keys") {
+  test("UDFSuite: struct_keys") {
     implicit val spark = session
 
     val df = spark.sql("""
@@ -146,7 +152,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.first.getSeq[String](0) == Seq("key0", "key1"))
   }
 
-  test("struct_contains: true") {
+  test("UDFSuite: struct_contains: true") {
     implicit val spark = session
 
     val df = spark.sql("""
@@ -165,7 +171,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.first.getBoolean(0) == true)
   }
 
-  test("struct_contains: false") {
+  test("UDFSuite: struct_contains: false") {
     implicit val spark = session
 
     val df = spark.sql("""
@@ -183,19 +189,22 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.first.getBoolean(0) == false)
   }
 
-  test("get_uri: batch") {
+  test("UDFSuite: get_uri: batch") {
     implicit val spark = session
+    for (extension <- Seq("", ".gz", ".gzip", ".bz2", ".bzip2", ".lz4")) {
+      val df = spark.sql(s"SELECT DECODE(GET_URI('${targetFile}${extension}'), 'UTF-8')")
+      assert(df.first.getString(0) == expected)
+    }
+  }
 
-    val targetFile = getClass.getResource("/conf/simple.conf").toString
-    val df = spark.sql(s"SELECT DECODE(GET_URI('${targetFile}'), 'UTF-8') AS simpleConf")
+  test("UDFSuite: get_uri: batch binary") {
+    implicit val spark = session
+    val df = spark.sql(s"SELECT GET_URI('${targetBinaryFile}')")
+    val expected = spark.sqlContext.sparkContext.binaryFiles(targetBinaryFile).map { case (_, portableDataStream) => portableDataStream.toArray }.collect.head
+    assert(df.first.getAs[Array[Byte]](0).deep == expected.deep)
+  }
 
-    val expected = spark.read.option("wholetext", true).text(targetFile).first.getString(0)
-    val actual = df.first.getString(0)
-
-    assert(actual == expected)
-  }  
-
-  test("get_uri: streaming") {
+  test("UDFSuite: get_uri: streaming") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)

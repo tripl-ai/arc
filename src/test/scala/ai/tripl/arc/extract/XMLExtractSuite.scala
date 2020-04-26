@@ -25,8 +25,6 @@ class XMLExtractSuite extends FunSuite with BeforeAndAfter {
   val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.xml"
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.xml"
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.xml.gz"
-  val zipSingleRecord = getClass.getResource("/note.xml.zip").toString
-  val zipMultipleRecord =  getClass.getResource("/notes.xml.zip").toString
   val inputView = "dataset"
   val outputView = "dataset"
 
