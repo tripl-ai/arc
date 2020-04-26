@@ -1,5 +1,12 @@
 # Change Log
 
+## 2.10.2
+
+- fix `get_uri` ability to read compressed file formats `.gzip`, `.bzip2`, `.lz4`.
+- add `get_uri` ability to read from `http` and `https` sources.
+
+**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
+
 ## 2.10.1
 
 - add the `get_uri` user defined function which returns the contents of a URI as an `Array[Byte]` which can be used with `decode` to convert to text.
@@ -20,8 +27,6 @@
 - **BREAKING** remove `DataFramePrinter` lifecycle plugin as it presents too much risk of data leakage.
 - **BREAKING** Amazon Web Services `authentication` methods will now limit their scope to specific buckets rather than global.
 - **BREAKING** remove ability to read `.zip` files.
-
-**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
 
 ## 2.9.0
 

@@ -2,15 +2,16 @@ package ai.tripl.arc.util
 
 import java.net.URI
 
-import scala.io.Source
-
 import org.apache.http.client.methods.{HttpGet}
 import org.apache.http.impl.client.HttpClients
+
+import org.apache.commons.io.IOUtils
 
 import org.apache.spark.sql._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API.ARCContext
+import ai.tripl.arc.util.ControlUtils.using
 
 object CloudUtils {
 
@@ -31,35 +32,29 @@ object CloudUtils {
 
     authentication match {
       case Some(API.Authentication.AmazonAccessKey(bucket, accessKeyID, secretAccessKey, endpoint, ssl)) => {
-        val (accessKey, secretKey) = bucket match {
+        bucket match {
           case Some(bucket) => {
-            hc.set(s"fs.s3a.$bucket.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
-            (s"fs.s3a.$bucket.access.key", s"fs.s3a.$bucket.secret.key")
+            hc.set(s"fs.s3a.bucket.$bucket.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+            hc.set(s"fs.s3a.bucket.$bucket.access.key", accessKeyID)
+            hc.set(s"fs.s3a.bucket.$bucket.secret.key", secretAccessKey)
+            endpoint.foreach { endpoint => hc.set(s"fs.s3a.bucket.$bucket.endpoint", endpoint) }
           }
-          case None => ("fs.s3a.access.key", "fs.s3a.secret.key")
+          case None => {
+            hc.set(s"fs.s3a.access.key", accessKeyID)
+            hc.set(s"fs.s3a.secret.key", secretAccessKey)
+            endpoint.foreach { endpoint => hc.set(s"fs.s3a.endpoint", endpoint) }            
+          }
         }
-
-        hc.set(accessKey, accessKeyID)
-        hc.set(secretKey, secretAccessKey)
-
-        endpoint match {
-          case Some(ep) => hc.set("fs.s3a.endpoint", ep)
-          case None =>
-        }
-
-        ssl match {
-          case Some(s) => hc.set("fs.s3a.connection.ssl.enabled", s.toString)
-          case None =>
-        }
+        ssl.foreach { ssl => hc.set(s"fs.s3a.connection.ssl.enabled", ssl.toString) }
       }
       case Some(API.Authentication.AmazonAnonymous(bucket)) => {
-        bucket.foreach { bucket => hc.set(s"fs.s3a.$bucket.aws.credentials.provider", "org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider")}
+        bucket.foreach { bucket => hc.set(s"fs.s3a.bucket.$bucket.aws.credentials.provider", "org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider")}
       }
       case Some(API.Authentication.AmazonEnvironmentVariable(bucket)) => {
-        bucket.foreach { bucket => hc.set(s"fs.s3a.$bucket.aws.credentials.provider", "com.amazonaws.auth.EnvironmentVariableCredentialsProvider")}
+        bucket.foreach { bucket => hc.set(s"fs.s3a.bucket.$bucket.aws.credentials.provider", "com.amazonaws.auth.EnvironmentVariableCredentialsProvider")}
       }      
       case Some(API.Authentication.AmazonIAM(bucket, encType, kmsId, customKey)) => {
-        bucket.foreach { bucket => hc.set(s"fs.s3a.$bucket.aws.credentials.provider", "com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider")}
+        bucket.foreach { bucket => hc.set(s"fs.s3a.bucket.$bucket.aws.credentials.provider", "com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider")}
         var algorithm = "None"
         var key = "None"
 
@@ -156,21 +151,19 @@ object CloudUtils {
     uri.getScheme match {
       case "http" | "https" => {
         val client = HttpClients.createDefault
-        val httpGet = new HttpGet(uri);
+        using(client) { client =>
+          val httpGet = new HttpGet(uri);
+          val response = client.execute(httpGet);
 
-        val response = client.execute(httpGet);
-
-        val statusCode = response.getStatusLine.getStatusCode
-        val reasonPhrase = response.getStatusLine.getReasonPhrase
-        val payload = Source.fromInputStream(response.getEntity.getContent).mkString
-
-        client.close
-
-        if (response.getStatusLine.getStatusCode != 200) {
-          throw new Exception(s"""Expected StatusCode = 200 when GET '${uri}' but server responded with ${statusCode} (${reasonPhrase}).""")
+          using(response) { response =>
+            val statusCode = response.getStatusLine.getStatusCode
+            val reasonPhrase = response.getStatusLine.getReasonPhrase
+            if (statusCode != 200) {
+              throw new Exception(s"""Expected StatusCode = 200 when GET '${uri}' but server responded with ${statusCode} (${reasonPhrase}).""")
+            }
+            IOUtils.toByteArray(response.getEntity.getContent).map(_.toChar).mkString
+          }
         }
-
-        payload
       }
       case _ => {
         val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
