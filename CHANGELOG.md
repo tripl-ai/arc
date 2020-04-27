@@ -1,5 +1,10 @@
 # Change Log
 
+## 2.10.3
+
+- add ability to define the Arc [schema](https://arc.tripl.ai/schema/) with a `schema` key (`{"schema": [...]}`) so that common attributes can be defined using [Human-Optimized Config Object Notation](https://en.wikipedia.org/wiki/HOCON) (HOCON) functionality.
+- remove mandatory requirement to supply `trim`, `nullReplacementValue` and `nullableValues` for [schema](https://arc.tripl.ai/schema/) that don't logically use them. This will not break existing configurations.
+
 ## 2.10.2
 
 - fix `get_uri` ability to read compressed file formats `.gzip`, `.bzip2`, `.lz4`.
