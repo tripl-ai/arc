@@ -388,34 +388,56 @@ object Typing {
 
       def typeValue(col: StringColumn, value: String): (Option[String], Option[TypingError]) = {
         val valueLength = value.length
-        (col.minLength, col.maxLength) match {
-          case (None, None) => {
+        val minLength = col.minLength.map { minLength => valueLength > minLength }.getOrElse(true)
+        val maxLength = col.maxLength.map { maxLength => valueLength < maxLength }.getOrElse(true)
+        val regexMatch = col.regex.map { regex => regex.pattern.matcher(value).matches }.getOrElse(true)
+
+        (minLength, maxLength, regexMatch) match {
+          case (true, true, true) => {
             Option(value) -> None
           }
-          case (Some(minLength), None) if (valueLength > minLength) => {
-            Option(value) -> None
+          case (false, true, true) => {
+            col.minLength match {
+              case Some(minLength) => None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength)."""))
+              case _ => throw new Exception("invalid state. please raise issue.")
+            }
           }
-          case (Some(minLength), None) if (valueLength < minLength) => {
-            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength)."""))
+          case (true, false, true) => {
+            col.maxLength match {
+              case Some(maxLength) => None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is greater than maxLength ($maxLength)."""))
+              case _ => throw new Exception("invalid state. please raise issue.")
+            }            
           }
-          case (None, Some(maxLength)) if (valueLength < maxLength) => {
-            Option(value) -> None
-          }
-          case (None, Some(maxLength)) if (valueLength > maxLength) => {
-            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is greater than maxLength ($maxLength)."""))
-          }
-          case (Some(minLength), Some(maxLength)) if (valueLength > minLength && valueLength < maxLength) => {
-            Option(value) -> None
-          }
-          case (Some(minLength), Some(maxLength)) if (valueLength < minLength && valueLength < maxLength) => {
-            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength)."""))
-          }
-          case (Some(minLength), Some(maxLength)) if (valueLength > minLength && valueLength > maxLength) => {
-            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is greater than maxLength ($maxLength)."""))
-          }
-          case (Some(minLength), Some(maxLength)) if (valueLength < minLength && valueLength > maxLength) => {
-            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength) and is greater than maxLength ($maxLength)."""))
-          }
+          case (true, true, false) => {
+            col.regex match {
+              case Some(regex) => None -> Some(TypingError.forCol(col, s"""String '$value' does not match regex '${regex.pattern.toString}'."""))
+              case _ => throw new Exception("invalid state. please raise issue.")
+            }             
+          }   
+          case (false, false, true) => {
+            (col.minLength, col.maxLength) match {
+              case (Some(minLength), Some(maxLength)) => None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength) and is greater than maxLength ($maxLength)."""))
+              case _ => throw new Exception("invalid state. please raise issue.")
+            }             
+          }           
+          case (false, true, false) => {
+            (col.minLength, col.regex) match {
+              case (Some(minLength), Some(regex)) => None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength) and does not match regex '${regex.pattern.toString}'."""))
+              case _ => throw new Exception("invalid state. please raise issue.")
+            }             
+          }   
+          case (true, false, false) => {
+            (col.maxLength, col.regex) match {
+              case (Some(maxLength), Some(regex)) => None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is greater than maxLength ($maxLength) and does not match regex '${regex.pattern.toString}'."""))
+              case _ => throw new Exception("invalid state. please raise issue.")
+            }            
+          }            
+          case (false, false, false) => {
+            (col.minLength, col.maxLength, col.regex) match {
+              case (Some(minLength), Some(maxLength), Some(regex)) => None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength), is greater than maxLength ($maxLength) and does not match regex '${regex.pattern.toString}'."""))
+              case _ => throw new Exception("invalid state. please raise issue.")
+            }               
+          }                       
         }
       }
 
