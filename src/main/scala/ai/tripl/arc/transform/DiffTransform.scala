@@ -93,8 +93,8 @@ object DiffTransformStage {
 
     // do a full join on a calculated hash of all values in row on each dataset
     // trying to calculate the hash value inside the joinWith method produced an inconsistent result
-    val leftHashDF = inputLeftDF.withColumn("_hash", sha2(to_json(struct(inputLeftDF.columns.map(col):_*)),512))
-    val rightHashDF = inputRightDF.withColumn("_hash", sha2(to_json(struct(inputRightDF.columns.map(col):_*)),512))
+    val leftHashDF = inputLeftDF.withColumn("_hash", hash(inputLeftDF.columns.map(col _):_*))
+    val rightHashDF = inputRightDF.withColumn("_hash", hash(inputRightDF.columns.map(col _):_*))
     val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF("_hash") === rightHashDF("_hash"), "full")
 
     if (stage.persist && !transformedDF.isStreaming) {
