@@ -4,6 +4,7 @@
 
 - add ability to define the Arc [schema](https://arc.tripl.ai/schema/) with a `schema` key (`{"schema": [...]}`) so that common attributes can be defined using [Human-Optimized Config Object Notation](https://en.wikipedia.org/wiki/HOCON) (HOCON) functionality.
 - remove mandatory requirement to supply `trim`, `nullReplacementValue` and `nullableValues` for [schema](https://arc.tripl.ai/schema/) that don't logically use them. This will not break existing configurations.
+- change `DiffTransform` and `EqualityValidate` to use inbuilt Spark `hash` function rather than `sha2(to_json(struct()))`.
 
 ## 2.10.2
 
