@@ -42,7 +42,8 @@ class ARC extends ai.tripl.arc.plugins.UDFPlugin {
     spark.sqlContext.udf.register("get_json_double_array", ARCPlugin.getJSONDoubleArray _ )
     spark.sqlContext.udf.register("get_json_integer_array", ARCPlugin.getJSONIntArray _ )
     spark.sqlContext.udf.register("get_json_long_array", ARCPlugin.getJSONLongArray _ )
-    spark.sqlContext.udf.register("get_uri", ARCPlugin.getURI _ )    
+    spark.sqlContext.udf.register("get_uri", ARCPlugin.getURI _ )
+    spark.sqlContext.udf.register("get_uri_delay", ARCPlugin.getURIDelay _ )
     spark.sqlContext.udf.register("random", ARCPlugin.getRandom _ )
     spark.sqlContext.udf.register("to_xml", ARCPlugin.toXML _ )
     spark.sqlContext.udf.register("struct_keys", ARCPlugin.structKeys _ )
@@ -115,6 +116,10 @@ object ARCPlugin {
 
   // get byte array content of uri
   def getURI(uri: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[Byte] = {
+    getURIDelay(uri, 0L)
+  }
+
+  def getURIDelay(uri: String, delay: Long)(implicit spark: SparkSession, arcContext: ARCContext): Array[Byte] = {
 
     val (glob, inputStream) = uri match {
       case uri: String if (uri.startsWith("http") || uri.startsWith("https")) => {
@@ -160,6 +165,8 @@ object ARCPlugin {
       case u: String if u.endsWith(".lz4") => new net.jpountz.lz4.LZ4FrameInputStream(inputStream)
       case _ => inputStream
     }
+
+    Thread.sleep(delay)
 
     IOUtils.toByteArray(compressionHandler)
   }
