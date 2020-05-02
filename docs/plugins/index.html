@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.10.2</span></strong>
+          <span class="version">2.11.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -399,6 +399,24 @@
 
 
 
+<a  title="Change Log" href="https://arc.tripl.ai/changelog/">
+	
+	Change Log
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="License" href="https://arc.tripl.ai/license/">
 	
 	License
@@ -433,7 +451,9 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Plugins </h1>
+			
+				<h1>Plugins</h1>
+			
 
 			
 
@@ -558,12 +578,20 @@
 
 <h4 id="get-uri">get_uri</h4>
 
-<h5 id="since-2-11-0">Since: 2.11.0</h5>
+<h5 id="since-2-10-1">Since: 2.10.1</h5>
 
 <p><code>get_uri</code> returns the contents of a URI as an <code>Array[Byte]</code>. If reading text this function can be wrapped with the inbuilt <a href="https://spark.apache.org/docs/latest/api/sql/index.html#decode">decode</a> Spark SQL function to convert from <code>Array[Byte]</code> to <code>string</code> like: <code>DECODE(GET_URI('s3a://bucket/file.txt'), 'UTF-8')</code>. Prior to Arc 3.x this will not allow authentication to be modified from the standard inbuilt permissions (like <code>AmazonIAM</code>).</p>
 
-<pre><code class="language-sql">SELECT
-  get_uri('s3a://bucket/file.txt') AS content
+<pre><code class="language-sql">SELECT get_uri('s3a://bucket/file.txt') AS content
+</code></pre>
+
+<h4 id="get-uri-delay">get_uri_delay</h4>
+
+<h5 id="since-2-10-3">Since: 2.10.3</h5>
+
+<p><code>get_uri_delay</code> returns the contents of a URI as an <code>Array[Byte]</code> and is like <code>get_uri</code> but accepts a second argument which is <code>delay</code> in milliseconds. If reading text this function can be wrapped with the inbuilt <a href="https://spark.apache.org/docs/latest/api/sql/index.html#decode">decode</a> Spark SQL function to convert from <code>Array[Byte]</code> to <code>string</code> like: <code>DECODE(GET_URI('s3a://bucket/file.txt'), 'UTF-8')</code>. Prior to Arc 3.x this will not allow authentication to be modified from the standard inbuilt permissions (like <code>AmazonIAM</code>).</p>
+
+<pre><code class="language-sql">SELECT get_uri_delay('s3a://bucket/file.txt', 3000) AS content
 </code></pre>
 
 <h4 id="to-xml">to_xml</h4>

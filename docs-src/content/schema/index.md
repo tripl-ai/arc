@@ -59,10 +59,8 @@ An `array` defines a schema for a repeated list of elements. It requires the spe
   "name" : "customer_phone_numbers",
   "description" : "Customer Phone Numbers",
   "type" : "array",
-  "trim" : true,
   "metadata": {},
   "elementType": {
-    "id" : "9712c383-22d1-44a6-9ca2-0087af4857f1",
     "name" : "phone_number",
     "description" : "Phone Number",
     "type" : "string",
@@ -157,7 +155,6 @@ This means that if users will be executing SQL statements which have conditional
 
 ```json
 {
-  "id" : "0e8109ba-1000-4b7d-8a4c-b01bae07027f",
   "name" : "birth_date",
   "description" : "Customer Birth Date",
   "type" : "date",

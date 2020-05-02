@@ -1,9 +1,9 @@
 # Change Log
 
-## 2.10.3
+## 2.11.0
 
 - add ability to define the Arc [schema](https://arc.tripl.ai/schema/) with a `schema` key (`{"schema": [...]}`) so that common attributes can be defined using [Human-Optimized Config Object Notation](https://en.wikipedia.org/wiki/HOCON) (HOCON) functionality.
-- add ability to define `regex` when parsing string columsn to perform validation.
+- add ability to define `regex` when parsing string columns to perform validation.
 - remove mandatory requirement to supply `trim`, `nullReplacementValue` and `nullableValues` for [schema](https://arc.tripl.ai/schema/) that don't logically use them. This will not break existing configurations.
 - change `DiffTransform` and `EqualityValidate` to use inbuilt Spark `hash` function rather than `sha2(to_json(struct()))`.
 - add `get_uri_delay` which is the same as `get_uri` but adds a delay in milliseconds to reduce DDOS liklihood.
