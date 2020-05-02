@@ -321,7 +321,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"String '${value}' (27 characters) is less than minLength (50) and is greater than maxLength (10)."))
+            assert(err === TypingError("name", s"String '${value}' (27 characters) is less than minLength (50). String '${value}' (27 characters) is greater than maxLength (10)."))
           }
           case (_,_) => assert(false)
         }
@@ -355,7 +355,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"String '${value}' (27 characters) is less than minLength (50) and does not match regex '[a-z]*'."))
+            assert(err === TypingError("name", s"String '${value}' (27 characters) is less than minLength (50). String '${value}' does not match regex '[a-z]*'."))
           }
           case (_,_) => assert(false)
         }
@@ -372,7 +372,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"String '${value}' (27 characters) is greater than maxLength (10) and does not match regex '[a-z]*'."))
+            assert(err === TypingError("name", s"String '${value}' (27 characters) is greater than maxLength (10). String '${value}' does not match regex '[a-z]*'."))
           }
           case (_,_) => assert(false)
         }
@@ -389,7 +389,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)
-            assert(err === TypingError("name", s"String '${value}' (27 characters) is less than minLength (50), is greater than maxLength (10) and does not match regex '[a-z]*'."))
+            assert(err === TypingError("name", s"String '${value}' (27 characters) is less than minLength (50). String '${value}' (27 characters) is greater than maxLength (10). String '${value}' does not match regex '[a-z]*'."))
           }
           case (_,_) => assert(false)
         }

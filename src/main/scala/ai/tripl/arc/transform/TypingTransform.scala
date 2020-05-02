@@ -386,58 +386,77 @@ object Typing {
 
     object StringTypeable extends Typeable[StringColumn, String] {
 
-      def typeValue(col: StringColumn, value: String): (Option[String], Option[TypingError]) = {
-        val valueLength = value.length
-        val minLength = col.minLength.map { minLength => valueLength > minLength }.getOrElse(true)
-        val maxLength = col.maxLength.map { maxLength => valueLength < maxLength }.getOrElse(true)
-        val regexMatch = col.regex.map { regex => regex.pattern.matcher(value).matches }.getOrElse(true)
+      import scala.collection.mutable.HashMap
+      import scala.util.matching.Regex
 
-        (minLength, maxLength, regexMatch) match {
-          case (true, true, true) => {
-            Option(value) -> None
+      case class ValidationResult(valid: Boolean, errorMessage: Option[String] = None)
+
+      sealed trait Validator {
+        def validate(value: String): ValidationResult
+      }
+
+      case class MinLengthValidator(minLength: Int) extends Validator {
+        def validate(value: String): ValidationResult = {
+          if (value.length < minLength) {
+            val errorMsg = s"String '$value' (${value.length} characters) is less than minLength ($minLength)."
+            ValidationResult(false, Option(errorMsg))
+          } else {
+            ValidationResult(true)
           }
-          case (false, true, true) => {
-            col.minLength match {
-              case Some(minLength) => None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength)."""))
-              case _ => throw new Exception("invalid state. please raise issue.")
-            }
+        }
+      }
+
+      case class MaxLengthValidator(maxLength: Int) extends Validator {
+        def validate(value: String): ValidationResult = {
+          if (value.length > maxLength) {
+            val errorMsg = s"String '$value' (${value.length} characters) is greater than maxLength ($maxLength)."
+            ValidationResult(false, Option(errorMsg))
+          } else {
+            ValidationResult(true)
           }
-          case (true, false, true) => {
-            col.maxLength match {
-              case Some(maxLength) => None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is greater than maxLength ($maxLength)."""))
-              case _ => throw new Exception("invalid state. please raise issue.")
-            }            
+        }
+      }
+
+      case class RegexValidator(regex: Regex) extends Validator {
+        def validate(value: String): ValidationResult = {
+          if (regex.pattern.matcher(value).matches) {
+            ValidationResult(true)
+          } else {
+            val errorMsg = s"String '$value' does not match regex '${regex.pattern.toString}'."
+            ValidationResult(false, Option(errorMsg))
           }
-          case (true, true, false) => {
-            col.regex match {
-              case Some(regex) => None -> Some(TypingError.forCol(col, s"""String '$value' does not match regex '${regex.pattern.toString}'."""))
-              case _ => throw new Exception("invalid state. please raise issue.")
-            }             
-          }   
-          case (false, false, true) => {
-            (col.minLength, col.maxLength) match {
-              case (Some(minLength), Some(maxLength)) => None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength) and is greater than maxLength ($maxLength)."""))
-              case _ => throw new Exception("invalid state. please raise issue.")
-            }             
-          }           
-          case (false, true, false) => {
-            (col.minLength, col.regex) match {
-              case (Some(minLength), Some(regex)) => None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength) and does not match regex '${regex.pattern.toString}'."""))
-              case _ => throw new Exception("invalid state. please raise issue.")
-            }             
-          }   
-          case (true, false, false) => {
-            (col.maxLength, col.regex) match {
-              case (Some(maxLength), Some(regex)) => None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is greater than maxLength ($maxLength) and does not match regex '${regex.pattern.toString}'."""))
-              case _ => throw new Exception("invalid state. please raise issue.")
-            }            
-          }            
-          case (false, false, false) => {
-            (col.minLength, col.maxLength, col.regex) match {
-              case (Some(minLength), Some(maxLength), Some(regex)) => None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength), is greater than maxLength ($maxLength) and does not match regex '${regex.pattern.toString}'."""))
-              case _ => throw new Exception("invalid state. please raise issue.")
-            }               
-          }                       
+        }
+      }
+
+      private val validatorMemo: HashMap[StringColumn, Seq[Validator]] = HashMap[StringColumn, Seq[Validator]]()
+
+      def colValidators(col: StringColumn): Seq[Validator] = {
+        validatorMemo.getOrElseUpdate(col, {
+          val minLength = col.minLength.map(MinLengthValidator(_) :: Nil).getOrElse(Nil)
+          val maxLength = col.maxLength.map(MaxLengthValidator(_) :: Nil).getOrElse(Nil)
+          val regexMatch = col.regex.map(RegexValidator(_) :: Nil).getOrElse(Nil)
+
+          minLength ::: maxLength ::: regexMatch ::: Nil
+        })
+      }
+
+      def typeValue(col: StringColumn, value: String): (Option[String], Option[TypingError]) = {
+
+        val validationResult = colValidators(col).foldLeft(ValidationResult(true)){ (acc, v) =>
+          val res = v.validate(value)
+          val valid = acc.valid && res.valid
+          val errorMsg = (acc.errorMessage, res.errorMessage) match {
+            case (Some(e1), Some(e2)) => Option(e1 + " " + e2)
+            case (Some(e1), None) => Option(e1)
+            case (None, Some(e2)) => Option(e2)
+            case (None, None) => None
+          }
+          ValidationResult(valid, errorMsg)
+        }
+
+        validationResult match {
+          case ValidationResult(true, _) => Option(value) -> None
+          case ValidationResult(false, errorMsgs) => None -> errorMsgs.map(TypingError.forCol(col, _))
         }
       }
 
