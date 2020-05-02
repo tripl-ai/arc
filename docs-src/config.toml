@@ -112,6 +112,11 @@ pygmentsUseClasses=true
 	url    = "solutions/"
 	weight = 95
 
+[[menu.main]]
+	name   = "Change Log"
+	url    = "changelog/"
+	weight = 97
+
 #[[menu.main]]
 #	name   = "Contributing"
 #	url    = "contributing/"
