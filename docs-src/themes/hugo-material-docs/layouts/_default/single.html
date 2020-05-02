@@ -24,7 +24,9 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>{{ .Title }} {{ if .IsDraft }} (Draft){{ end }}</h1>
+			{{with .Title }}
+				<h1>{{ . }}</h1>
+			{{ end }}
 
 			{{ .Content }}
 

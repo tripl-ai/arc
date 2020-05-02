@@ -2,6 +2,8 @@ package ai.tripl.arc.api
 
 import java.time.LocalTime
 
+import scala.util.matching.Regex
+
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import org.apache.spark.sql.types._
@@ -163,7 +165,7 @@ object API {
     
   }
 
-  case class StringColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], minLength: Option[Int], maxLength: Option[Int]) extends ExtractColumn {
+  case class StringColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], minLength: Option[Int], maxLength: Option[Int], regex: Option[Regex]) extends ExtractColumn {
     val sparkDataType: DataType = StringType
   }
 

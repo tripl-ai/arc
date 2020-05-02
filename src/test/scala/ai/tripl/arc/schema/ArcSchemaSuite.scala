@@ -73,7 +73,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     ArcSchema.parseArcSchema(arcSchema) match {
       case Left(err) => fail(err.toString)
       case Right(extractColumns) =>
-        val structType = ExtractUtils.getSchema(Right(extractColumns))(spark, logger)
+        val structType = ExtractUtils.getSchema(Right(extractColumns))
         assert(structType.isDefined)
     }
   }
@@ -212,8 +212,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
           }
         }        
       ]
-    },    
-
+    }    
     ]"""
 
     ArcSchema.parseArcSchema(arcSchema) match {
@@ -284,7 +283,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     ArcSchema.parseArcSchema(arcSchema) match {
       case Left(err) => fail(err.toString)
       case Right(extractColumns) =>
-        val structType = ExtractUtils.getSchema(Right(extractColumns))(spark, logger)
+        val structType = ExtractUtils.getSchema(Right(extractColumns))
         assert(structType.isDefined)
     }
   }  
@@ -364,7 +363,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     ArcSchema.parseArcSchema(arcSchema) match {
       case Left(err) => fail(err.toString)
       case Right(extractColumns) =>
-        val structType = ExtractUtils.getSchema(Right(extractColumns))(spark, logger)
+        val structType = ExtractUtils.getSchema(Right(extractColumns))
         assert(structType.isDefined)
     }
   }  
@@ -404,7 +403,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     ArcSchema.parseArcSchema(arcSchema) match {
       case Left(err) => fail(err.toString)
       case Right(extractColumns) =>
-        val structType = ExtractUtils.getSchema(Right(extractColumns))(spark, logger)
+        val structType = ExtractUtils.getSchema(Right(extractColumns))
         assert(structType.isDefined)
     }
   }
@@ -512,7 +511,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     ArcSchema.parseArcSchema(arcSchema) match {
       case Left(err) => fail(err.toString)
       case Right(extractColumns) =>
-        val structType = ExtractUtils.getSchema(Right(extractColumns))(spark, logger)
+        val structType = ExtractUtils.getSchema(Right(extractColumns))
         assert(structType.isDefined)
     }
   }
@@ -559,5 +558,153 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
       case Right(extractColumns) => fail("should fail")
     }
   }  
+
+  test("Schema with schema key") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val arcSchema = """{
+      "schema": [
+        {
+          "id": "",
+          "name": "first_name",
+          "description": "Customer First Name",
+          "type": "string",
+          "trim": true,
+          "nullable": true,
+          "nullableValues": [
+            "",
+            "null"
+          ],
+          "metadata": {
+            "primaryKey": true,
+            "position": 1
+          }
+        }
+      ]
+    }"""
+
+    ArcSchema.parseArcSchema(arcSchema) match {
+      case Left(err) => fail(err.toString)
+      case Right(extractColumns) =>
+        val structType = ExtractUtils.getSchema(Right(extractColumns))
+        assert(structType.isDefined)
+    }
+  } 
+
+  test("Schema without schema key") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val arcSchema = """{
+      "notschema": [
+        {
+          "id": "",
+          "name": "first_name",
+          "description": "Customer First Name",
+          "type": "string",
+          "trim": true,
+          "nullable": true,
+          "nullableValues": [
+            "",
+            "null"
+          ],
+          "metadata": {
+            "primaryKey": true,
+            "position": 1
+          }
+        }
+      ]
+    }"""
+
+    val thrown0 = intercept[Exception] {
+      ArcSchema.parseArcSchema(arcSchema) 
+    }
+    assert(thrown0.getMessage === "does not appear to be an Arc schema. Must be either of type LIST or contain schema within 'schema' attribute.")
+  }   
+
+  test("Schema with schema key and substitution") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val arcSchema = """{
+      "common": {
+        "nested0": {
+          "name": "nested0",
+          "type": "string",
+          "trim": true,
+          "nullable": true,
+          "nullableValues": [
+            "",
+            "null"
+          ]
+        }
+      },
+      "schema": [
+        {
+          "name": "group",
+          "type": "struct",
+          "nullable": true,
+          "fields": [
+            ${common.nested0},
+            {
+              "name": "nested1",
+              "type": "string",
+              "trim": true,
+              "nullable": true,
+              "nullableValues": [
+                "",
+                "null"
+              ]
+            }
+          ]
+        }
+      ]
+    }"""
+
+    ArcSchema.parseArcSchema(arcSchema) match {
+      case Left(err) => fail(err.toString)
+      case Right(extractColumns) =>
+        val structType = ExtractUtils.getSchema(Right(extractColumns)).get
+        assert(structType.prettyJson ==
+        """{
+        |  "type" : "struct",
+        |  "fields" : [ {
+        |    "name" : "group",
+        |    "type" : {
+        |      "type" : "struct",
+        |      "fields" : [ {
+        |        "name" : "nested0",
+        |        "type" : "string",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "internal" : false,
+        |          "nullable" : true
+        |        }
+        |      }, {
+        |        "name" : "nested1",
+        |        "type" : "string",
+        |        "nullable" : true,
+        |        "metadata" : {
+        |          "internal" : false,
+        |          "nullable" : true
+        |        }
+        |      } ]
+        |    },
+        |    "nullable" : true,
+        |    "metadata" : {
+        |      "internal" : false,
+        |      "nullable" : true
+        |    }
+        |  } ]
+        |}""".stripMargin)
+    }
+  }   
 
 }

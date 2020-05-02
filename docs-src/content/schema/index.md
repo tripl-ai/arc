@@ -22,17 +22,12 @@ It is designed to:
 |name|String|true|{{< readfile file="/content/partials/fields/fieldName.md" markdown="true" >}}|
 |description|String|false|A description of the field which will be embedded in the dataset metadata (and persisted in formats like Parquet/ORC).|
 |type|String|true|{{< readfile file="/content/partials/fields/type.md" markdown="true" >}}|
-|trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
-|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
-|nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
-|nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 |metadata|Object|false|{{< readfile file="/content/partials/fields/metadata.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "9712c383-22d1-44a6-9ca2-0087af4857f1",
   "name" : "first_name",
   "description" : "Customer First Name",
   "type" : "string",
@@ -55,19 +50,17 @@ An `array` defines a schema for a repeated list of elements. It requires the spe
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |elementType|[schema](../schema/)|true|The [schema](../schema/) of the nested list of elements.|
+|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
   "name" : "customer_phone_numbers",
   "description" : "Customer Phone Numbers",
   "type" : "array",
-  "trim" : true,
   "metadata": {},
   "elementType": {
-    "id" : "9712c383-22d1-44a6-9ca2-0087af4857f1",
     "name" : "phone_number",
     "description" : "Phone Number",
     "type" : "string",
@@ -85,12 +78,15 @@ An `array` defines a schema for a repeated list of elements. It requires the spe
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |encoding|String|true|The binary-to-text encoding format of the value. Valid values `base64`, `hexadecimal`.|
+|trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
+|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
+|nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
+|nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
   "name" : "id",
   "description" : "GUID identifier",
   "type" : "binary",
@@ -113,12 +109,15 @@ An `array` defines a schema for a repeated list of elements. It requires the spe
 |-----------|------|----------|-------------|
 |trueValues|Array[String]|true|{{< readfile file="/content/partials/fields/trueValues.md" markdown="true" >}}|
 |falseValues|Array[String]|true|{{< readfile file="/content/partials/fields/falseValues.md" markdown="true" >}}|
+|trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
+|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
+|nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
+|nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
   "name" : "marketing_opt_in_flag",
   "description" : "Whether the customer has opted in to receive marketing communications.",
   "type" : "boolean",
@@ -147,12 +146,15 @@ This means that if users will be executing SQL statements which have conditional
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |formatters|Array[String]|true|{{< readfile file="/content/partials/fields/dateFormatters.md" markdown="true" >}}|
+|trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
+|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
+|nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
+|nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "0e8109ba-1000-4b7d-8a4c-b01bae07027f",
   "name" : "birth_date",
   "description" : "Customer Birth Date",
   "type" : "date",
@@ -176,12 +178,15 @@ This means that if users will be executing SQL statements which have conditional
 |precision|Integer|true|The total number of digits. e.g. 1234.567 has a precision of 7.|
 |scale|Integer|true|The number of digits in the fraction part. e.g. 1234.567 has a scale of 3.|
 |formatters|Array[String]|false|{{< readfile file="/content/partials/fields/numberFormatters.md" markdown="true" >}}<br><br>Default: `#,##0.###;-#,##0.###`|
+|trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
+|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
+|nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
+|nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "9712c383-22d1-44a6-9ca2-0087af4857f1",
   "name" : "account_balance",
   "description" : "The current account balance",
   "type" : "decimal",
@@ -210,12 +215,15 @@ A Decimal should be used whenever precision is required or for numbers which mus
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |formatters|Array[String]|false|{{< readfile file="/content/partials/fields/numberFormatters.md" markdown="true" >}}<br><br>Default: `#,##0.###;-#,##0.###`|
+|trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
+|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
+|nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
+|nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "31541ea3-5b74-4753-857c-770bd601c35b",
   "name" : "last_meter_reading",
   "description" : "The last reading from the customer power meter.",
   "type" : "double",
@@ -238,12 +246,15 @@ Use Integer when dealing with values up to ±2 billion (-2<sup>31</sup> to +2<su
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |formatters|Array[String]|false|{{< readfile file="/content/partials/fields/numberFormatters.md" markdown="true" >}}<br><br>Default: `#,##0;-#,##0`|
+|trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
+|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
+|nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
+|nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "a66f3bbe-d1c6-44c7-b096-a4be59fdcd78",
   "name" : "update_count",
   "description" : "Number of updates to this customer record.",
   "type" : "integer",
@@ -266,12 +277,15 @@ Use a Long Integer when dealing with values greater than ±2 billion (-2<sup>63<
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |formatters|Array[String]|false|{{< readfile file="/content/partials/fields/numberFormatters.md" markdown="true" >}}<br><br>Default: `#,##0;-#,##0`|
+|trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
+|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
+|nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
+|nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "1c0eec1d-17cd-45da-8744-7a9ef5b8b086",
   "name" : "transaction_num",
   "description" : "Global transaction sequence number.",
   "type" : "long",
@@ -293,12 +307,16 @@ Use a Long Integer when dealing with values greater than ±2 billion (-2<sup>63<
 |-----------|------|----------|-------------|
 |minLength|Integer|false|The minimum length of the string value.|
 |maxLength|Integer|false|The maximum length of the string value.|
+|regex|String|false|A [regular expression](https://en.wikipedia.org/wiki/Regular_expression) to validate the input value against e.g. `[a-z]*` would match a value made of only lowercase alphabet characters.|
+|trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
+|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
+|nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
+|nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "9712c383-22d1-44a6-9ca2-0087af4857f1",
   "name" : "first_name",
   "description" : "Customer First Name",
   "type" : "string",
@@ -321,44 +339,40 @@ A `struct` is a nested field similar to a `map` in most programming languages. I
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |fields|Array|true|A list of [schema](../schema/) fields.|
+|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
   "name" : "customer_name",
   "description" : "Customer Name",
   "type" : "struct",
-  "trim" : true,
+  "nullable" : true,
   "metadata": {
     "primaryKey" : true,
     "position": 1
   },
   "fields": [
     {
-      "id" : "9712c383-22d1-44a6-9ca2-0087af4857f1",
       "name" : "first_name",
       "description" : "Customer First Name",
       "type" : "string",
       "trim" : true,
       "nullable" : true,
       "nullableValues" : [ "", "null" ],
-      "primaryKey" : false,
       "metadata": {
         "primaryKey" : true,
         "position": 1
       }
     },
     {
-      "id" : "3f11973f-9448-4b3b-bb2a-bebdbf774ea4",
       "name" : "last_name",
       "description" : "Customer Last Name",
       "type" : "string",
       "trim" : true,
       "nullable" : true,
       "nullableValues" : [ "", "null" ],
-      "primaryKey" : false,
       "metadata": {
         "primaryKey" : true,
         "position": 1
@@ -379,12 +393,15 @@ Spark does not have an internal `TimeType` representation of time. This type can
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |formatters|Array[String]|true|{{< readfile file="/content/partials/fields/dateFormatters.md" markdown="true" >}}|
+|trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
+|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
+|nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
+|nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "0f5162ce-64ca-409d-abd1-f0b5bb5830de",
   "name" : "transaction_time",
   "description" : "Time of the database transaction",
   "type" : "time",
@@ -408,12 +425,15 @@ Spark does not have an internal `TimeType` representation of time. This type can
 |formatters|Array[String]|true|{{< readfile file="/content/partials/fields/dateFormatters.md" markdown="true" >}}<br><br>Custom formats `ssssssssss` and `sssssssssssss` have been added to support epoch time (i.e. 1527727035) and epoch millis time (i.e. 1527727035456) respectively. Both require `timezoneId` of `UTC`.|
 |timezoneId|String|true|The timezone of the incoming timestamp. This uses the [SimpleDateFormat](https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html#timezone) supported timezones. All timestamps are internally stored in [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time) to allow correctly sequenced events when dealing with events from multiple systems which may all run with different internal timezones.|
 |time|Map[String, Integer]|false|Use this capability if converting a Date label into a Timestamp for relative comparisons. Required fields are `hour`, `minute`, `second` and `nano` . These values can be agreed with source data suppliers to ensure intra-system data alignment. See below for example.|
+|trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
+|nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
+|nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
+|nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 
 ### Examples
 
 ```json
 {
-  "id" : "8e42c8f0-22a8-40db-9798-6dd533c1de36",
   "name" : "create_date",
   "description" : "Customer Creation Date",
   "type" : "timestamp",
@@ -442,7 +462,6 @@ For converting a `Date` label into a `Timestamp` supply the `time` key:
 
 ```json
 {
-  "id" : "8e42c8f0-22a8-40db-9798-6dd533c1de36",
   "name" : "create_date",
   "description" : "Customer Creation Date",
   "type" : "timestamp",

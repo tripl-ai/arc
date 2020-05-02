@@ -117,8 +117,8 @@ object EqualityValidateStage {
 
     // do a full join on a calculated hash of all values in row on each dataset
     // trying to calculate the hash value inside the joinWith method produced an inconsistent result
-    val leftHashDF = leftDF.withColumn("_hash", sha2(to_json(struct(leftDF.columns.map(col):_*)),512))
-    val rightHashDF = rightDF.withColumn("_hash", sha2(to_json(struct(rightDF.columns.map(col):_*)),512))
+    val leftHashDF = leftDF.withColumn("_hash", hash(leftDF.columns.map(col):_*))
+    val rightHashDF = rightDF.withColumn("_hash", hash(rightDF.columns.map(col):_*))
     val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF("_hash") === rightHashDF("_hash"), "full")
 
     val leftExceptRight = transformedDF.filter(col("_2").isNull)

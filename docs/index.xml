@@ -148,6 +148,15 @@ Database Inconsistency When writing data to targets like databases using the JDB
     </item>
     
     <item>
+      <title></title>
+      <link>https://arc.tripl.ai/changelog/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://arc.tripl.ai/changelog/</guid>
+      <description>Change Log 2.11.0  add ability to define the Arc schema with a schema key ({&amp;quot;schema&amp;quot;: [...]}) so that common attributes can be defined using Human-Optimized Config Object Notation (HOCON) functionality. add ability to define regex when parsing string columns to perform validation. remove mandatory requirement to supply trim, nullReplacementValue and nullableValues for schema that don&amp;rsquo;t logically use them. This will not break existing configurations. change DiffTransform and EqualityValidate to use inbuilt Spark hash function rather than sha2(to_json(struct())).</description>
+    </item>
+    
+    <item>
       <title>License</title>
       <link>https://arc.tripl.ai/license/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
