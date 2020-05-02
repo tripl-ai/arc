@@ -256,4 +256,12 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("UDFSuite: get_uri_delay: batch") {
+    implicit val spark = session
+    val startTime = System.currentTimeMillis()
+    val df = spark.sql(s"SELECT DECODE(GET_URI_DELAY('${targetFile}', 3000), 'UTF-8')")
+    assert(df.first.getString(0) == expected)
+    assert(System.currentTimeMillis() - startTime > 3000)
+  }
+
 }

@@ -87,6 +87,15 @@ SELECT get_json_long_array('[2147483648, 2147483649]', '$')
 SELECT get_uri('s3a://bucket/file.txt') AS content
 ```
 
+#### get_uri_delay
+##### Since: 2.10.3
+
+`get_uri_delay` returns the contents of a URI as an `Array[Byte]` and is like `get_uri` but accepts a second argument which is `delay` in milliseconds. If reading text this function can be wrapped with the inbuilt [decode](https://spark.apache.org/docs/latest/api/sql/index.html#decode) Spark SQL function to convert from `Array[Byte]` to `string` like: `DECODE(GET_URI('s3a://bucket/file.txt'), 'UTF-8')`. Prior to Arc 3.x this will not allow authentication to be modified from the standard inbuilt permissions (like `AmazonIAM`).
+
+```sql
+SELECT get_uri_delay('s3a://bucket/file.txt', 3000) AS content
+```
+
 #### to_xml
 ##### Since: 2.10.0
 

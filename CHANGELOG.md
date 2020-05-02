@@ -6,6 +6,7 @@
 - add ability to define `regex` when parsing string columsn to perform validation.
 - remove mandatory requirement to supply `trim`, `nullReplacementValue` and `nullableValues` for [schema](https://arc.tripl.ai/schema/) that don't logically use them. This will not break existing configurations.
 - change `DiffTransform` and `EqualityValidate` to use inbuilt Spark `hash` function rather than `sha2(to_json(struct()))`.
+- add `get_uri_delay` which is the same as `get_uri` but adds a delay in milliseconds to reduce DDOS liklihood.
 
 ## 2.10.2
 
