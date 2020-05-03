@@ -24,9 +24,7 @@
 
 	<article class="article">
 		<div class="wrapper">
-			{{with .Title }}
-				<h1>{{ . }}</h1>
-			{{ end }}
+			{{ if not (isset .Params "hide_header") }}{{ if (ne .Title "" ) }}<h1>{{ .Title }}</h1>{{ end }}{{ else }}{{ if eq .Params.hide_header false }}<h1>{{ .Title }}</h1>{{ end }}{{ end }}
 
 			{{ .Content }}
 
