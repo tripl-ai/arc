@@ -386,36 +386,77 @@ object Typing {
 
     object StringTypeable extends Typeable[StringColumn, String] {
 
+      import scala.collection.mutable.HashMap
+      import scala.util.matching.Regex
+
+      case class ValidationResult(valid: Boolean, errorMessage: Option[String] = None)
+
+      sealed trait Validator {
+        def validate(value: String): ValidationResult
+      }
+
+      case class MinLengthValidator(minLength: Int) extends Validator {
+        def validate(value: String): ValidationResult = {
+          if (value.length < minLength) {
+            val errorMsg = s"String '$value' (${value.length} characters) is less than minLength ($minLength)."
+            ValidationResult(false, Option(errorMsg))
+          } else {
+            ValidationResult(true)
+          }
+        }
+      }
+
+      case class MaxLengthValidator(maxLength: Int) extends Validator {
+        def validate(value: String): ValidationResult = {
+          if (value.length > maxLength) {
+            val errorMsg = s"String '$value' (${value.length} characters) is greater than maxLength ($maxLength)."
+            ValidationResult(false, Option(errorMsg))
+          } else {
+            ValidationResult(true)
+          }
+        }
+      }
+
+      case class RegexValidator(regex: Regex) extends Validator {
+        def validate(value: String): ValidationResult = {
+          if (regex.pattern.matcher(value).matches) {
+            ValidationResult(true)
+          } else {
+            val errorMsg = s"String '$value' does not match regex '${regex.pattern.toString}'."
+            ValidationResult(false, Option(errorMsg))
+          }
+        }
+      }
+
+      private val validatorMemo: HashMap[StringColumn, Seq[Validator]] = HashMap[StringColumn, Seq[Validator]]()
+
+      def colValidators(col: StringColumn): Seq[Validator] = {
+        validatorMemo.getOrElseUpdate(col, {
+          val minLength = col.minLength.map(MinLengthValidator(_) :: Nil).getOrElse(Nil)
+          val maxLength = col.maxLength.map(MaxLengthValidator(_) :: Nil).getOrElse(Nil)
+          val regexMatch = col.regex.map(RegexValidator(_) :: Nil).getOrElse(Nil)
+
+          minLength ::: maxLength ::: regexMatch ::: Nil
+        })
+      }
+
       def typeValue(col: StringColumn, value: String): (Option[String], Option[TypingError]) = {
-        val valueLength = value.length
-        (col.minLength, col.maxLength) match {
-          case (None, None) => {
-            Option(value) -> None
+
+        val validationResult = colValidators(col).foldLeft(ValidationResult(true)){ (acc, v) =>
+          val res = v.validate(value)
+          val valid = acc.valid && res.valid
+          val errorMsg = (acc.errorMessage, res.errorMessage) match {
+            case (Some(e1), Some(e2)) => Option(e1 + " " + e2)
+            case (Some(e1), None) => Option(e1)
+            case (None, Some(e2)) => Option(e2)
+            case (None, None) => None
           }
-          case (Some(minLength), None) if (valueLength > minLength) => {
-            Option(value) -> None
-          }
-          case (Some(minLength), None) if (valueLength < minLength) => {
-            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength)."""))
-          }
-          case (None, Some(maxLength)) if (valueLength < maxLength) => {
-            Option(value) -> None
-          }
-          case (None, Some(maxLength)) if (valueLength > maxLength) => {
-            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is greater than maxLength ($maxLength)."""))
-          }
-          case (Some(minLength), Some(maxLength)) if (valueLength > minLength && valueLength < maxLength) => {
-            Option(value) -> None
-          }
-          case (Some(minLength), Some(maxLength)) if (valueLength < minLength && valueLength < maxLength) => {
-            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength)."""))
-          }
-          case (Some(minLength), Some(maxLength)) if (valueLength > minLength && valueLength > maxLength) => {
-            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is greater than maxLength ($maxLength)."""))
-          }
-          case (Some(minLength), Some(maxLength)) if (valueLength < minLength && valueLength > maxLength) => {
-            None -> Some(TypingError.forCol(col, s"""String '$value' ($valueLength characters) is less than minLength ($minLength) and is greater than maxLength ($maxLength)."""))
-          }
+          ValidationResult(valid, errorMsg)
+        }
+
+        validationResult match {
+          case ValidationResult(true, _) => Option(value) -> None
+          case ValidationResult(false, errorMsgs) => None -> errorMsgs.map(TypingError.forCol(col, _))
         }
       }
 

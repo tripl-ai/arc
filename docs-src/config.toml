@@ -20,9 +20,9 @@ pygmentsUseClasses=true
 	repo_url = "https://github.com/tripl-ai/arc"
 
 	image = "triplai/arc"
-	version = "2.10.0"
+	version = "2.11.0"
 	arc_jupyter_image= "triplai/arc-jupyter"
-	arc_jupyter_version = "2.2.0"
+	arc_jupyter_version = "2.3.1"
 	spark_version = "2.4.5"
 	scala_version = "2.12"
 	hadoop_version = "2.9.2"
@@ -111,6 +111,11 @@ pygmentsUseClasses=true
 	name   = "Common Solutions"
 	url    = "solutions/"
 	weight = 95
+
+[[menu.main]]
+	name   = "Change Log"
+	url    = "changelog/"
+	weight = 97
 
 #[[menu.main]]
 #	name   = "Contributing"

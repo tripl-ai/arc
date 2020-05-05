@@ -4,6 +4,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 import scala.collection.JavaConverters._
+import scala.util.matching.Regex
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
@@ -29,7 +30,17 @@ object ArcSchema {
     val base = ConfigFactory.load()
 
     // typesafe config requires an object at the root level (not array)
-    val wrappedSource = s"""{"schema": $source}"""
+    val wrappedSource = try {
+      val etlConf = ConfigFactory.parseString(source, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+      // must have a schema at root
+      if (!etlConf.hasPath("schema")) {
+        throw new Exception("does not appear to be an Arc schema. Must be either of type LIST or contain schema within 'schema' attribute.")
+      }
+      source
+    } catch {
+      case e: com.typesafe.config.ConfigException if (e.getMessage.contains("has type LIST rather than object at file root")) =>
+        s"""{"schema": ${source}}"""
+    }
 
     // try to parse the config file
     val etlConf = ConfigFactory.parseString(wrappedSource, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
@@ -58,17 +69,13 @@ object ArcSchema {
     implicit var c = field
 
     // test keys
-    val baseKeys = "id" :: "name" :: "description" :: "type" :: "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "metadata" :: Nil
+    val baseKeys = "id" :: "name" :: "description" :: "type" :: "metadata" :: Nil
 
     // common attributes
     val id = ConfigReader.getOptionalValue[String]("id")
     val name = ConfigReader.getValue[String]("name")
     val description = ConfigReader.getOptionalValue[String]("description")
     val _type = ConfigReader.getValue[String]("type", validValues = "boolean" :: "date" :: "decimal" :: "double" :: "integer" :: "long" :: "string" :: "time" :: "timestamp" :: "binary" :: "struct" :: "array" :: Nil)
-    val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
-    val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
-    val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
-    val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
 
     (name, _type) match {
       case (Right(n), Right(t)) => {
@@ -99,7 +106,11 @@ object ArcSchema {
 
           case "binary" => {
             // test keys
-            val expectedKeys = "encoding":: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "encoding" :: baseKeys
+            val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
+            val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
+            val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
+            val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
             val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             val encoding = getValue[String]("encoding", validValues = "base64" :: "hexadecimal" :: Nil) |> parseEncoding("encoding") _
@@ -119,8 +130,12 @@ object ArcSchema {
 
           case "boolean" => {
             // test keys
-            val expectedKeys = "trueValues" :: "falseValues" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "trueValues" :: "falseValues" :: baseKeys
             val invalidKeys = checkValidKeys(c)(expectedKeys)
+            val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
+            val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
+            val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
+            val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
 
             val trueValues = ConfigReader.getValue[StringList]("trueValues")
             val falseValues = ConfigReader.getValue[StringList]("falseValues")
@@ -140,7 +155,11 @@ object ArcSchema {
 
           case "date" => {
             // test keys
-            val expectedKeys = "metadata" :: "formatters" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "formatters" :: baseKeys
+            val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
+            val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
+            val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
+            val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
             val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             val formatters = ConfigReader.getValue[StringList]("formatters") |> validateDateTimeFormatter("formatters") _
@@ -163,7 +182,11 @@ object ArcSchema {
 
           case "decimal" => {
             // test keys
-            val expectedKeys = "precision" :: "scale" :: "formatters" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "precision" :: "scale" :: "formatters" :: baseKeys
+            val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
+            val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
+            val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
+            val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
             val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             val precision = ConfigReader.getValue[Int]("precision")
@@ -185,7 +208,11 @@ object ArcSchema {
 
           case "double" => {
             // test keys
-            val expectedKeys = "formatters" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues"  :: "formatters" :: baseKeys
+            val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
+            val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
+            val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
+            val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
             val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             val formatters = ConfigReader.getOptionalValue[StringList]("formatters")
@@ -205,7 +232,11 @@ object ArcSchema {
 
           case "integer" => {
             // test keys
-            val expectedKeys = "formatters" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues"  :: "formatters" :: baseKeys
+            val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
+            val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
+            val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
+            val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
             val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             val formatters = ConfigReader.getOptionalValue[StringList]("formatters")
@@ -225,7 +256,11 @@ object ArcSchema {
 
           case "long" => {
             // test keys
-            val expectedKeys = "formatters" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues"  :: "formatters" :: baseKeys
+            val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
+            val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
+            val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
+            val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
             val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             val formatters = ConfigReader.getOptionalValue[StringList]("formatters")
@@ -245,18 +280,23 @@ object ArcSchema {
 
           case "string" => {
             // test keys
-            val expectedKeys = "minLength" :: "maxLength" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues"  :: "minLength" :: "maxLength" :: "regex" :: baseKeys
+            val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
+            val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
+            val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
+            val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
             val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             val minLength = ConfigReader.getOptionalValue[Int]("minLength")
             val maxLength = ConfigReader.getOptionalValue[Int]("maxLength")
+            val regex = ConfigReader.getOptionalValue[String]("regex") |> validateRegex("regex") _
 
-            (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength) match {
-              case (Right(id), Right(name), Right(description), Right(_type), Right(nullable), Right(nullReplacementValue), Right(trim), Right(nullableValues), Right(metadata), Right(minLength), Right(maxLength)) => {
-                Right(StringColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength))
+            (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength, regex) match {
+              case (Right(id), Right(name), Right(description), Right(_type), Right(nullable), Right(nullReplacementValue), Right(trim), Right(nullableValues), Right(metadata), Right(minLength), Right(maxLength), Right(regex)) => {
+                Right(StringColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength, regex))
               }
               case _ => {
-                val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength, invalidKeys).collect{ case Left(errs) => errs }.flatten
+                val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, minLength, maxLength, regex, invalidKeys).collect{ case Left(errs) => errs }.flatten
                 val metaName = stringOrDefault(name, "unnamed meta")
                 val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                 Left(err :: Nil)
@@ -266,7 +306,11 @@ object ArcSchema {
 
           case "time" => {
             // test keys
-            val expectedKeys = "formatters" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues"  :: "formatters" :: baseKeys
+            val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
+            val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
+            val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
+            val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
             val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             val formatters = ConfigReader.getValue[StringList]("formatters")
@@ -286,7 +330,11 @@ object ArcSchema {
 
           case "timestamp" => {
             // test keys
-            val expectedKeys = "formatters" :: "timezoneId" :: "time" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "formatters" :: "timezoneId" :: "time" :: baseKeys
+            val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
+            val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
+            val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
+            val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
             val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             val formatters = ConfigReader.getValue[StringList]("formatters") |> validateDateTimeFormatter("formatters") _
@@ -332,13 +380,18 @@ object ArcSchema {
 
           case "struct" => {
             // test keys
-            val expectedKeys = "fields" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "fields" :: baseKeys
+            val trim = Right(false)
+            val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
+            val nullReplacementValue = Right(None)
+            val nullableValues = Right(Nil)
+            val invalidKeys = checkValidKeys(c)(expectedKeys)
+
             val hasFields = hasPath("fields") |> valueTypeArray("fields", 1) _
             val fieldsConfig = if (hasFields.isRight) c.getConfigList("fields").asScala.toList else Nil
             val fields = fieldsConfig.zipWithIndex.map { case (field, idx) =>
               readField(field, idx, false)
             }
-            val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, hasFields, fields.forall { _.isRight}) match {
               case (Right(id), Right(name), Right(description), Right(_type), Right(nullable), Right(nullReplacementValue), Right(trim), Right(nullableValues), Right(metadata), Right(hasFields), true) => {
@@ -355,13 +408,17 @@ object ArcSchema {
           }
 
           case "array" => {
-
             // test keys
-            val expectedKeys = "elementType" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "elementType" :: baseKeys
+            val trim = Right(false)
+            val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
+            val nullReplacementValue = Right(None)
+            val nullableValues = Right(Nil)
+            val invalidKeys = checkValidKeys(c)(expectedKeys)
+
             val hasElementType = hasPath("elementType") |> valueTypeObject("elementType") _
             val elementType = if (hasElementType.isRight) Option(c.getConfig("elementType")) else None
-            val elementField = elementType.map { child => readField(child, 0, true) }.getOrElse(Right(StringColumn(None,"",None,true,None,true,Nil,None,None,None)))
-            val invalidKeys = checkValidKeys(c)(expectedKeys)
+            val elementField = elementType.map { child => readField(child, 0, true) }.getOrElse(Right(StringColumn(None,"",None,true,None,true,Nil,None,None,None,None)))
 
             (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, hasElementType, elementField) match {
               case (Right(id), Right(name), Right(description), Right(_type), Right(nullable), Right(nullReplacementValue), Right(trim), Right(nullableValues), Right(metadata), Right(hasElementType), Right(elementField)) => {
@@ -384,7 +441,7 @@ object ArcSchema {
         }
       }
       case _ => {
-        val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, _type).collect{ case Left(errs) => errs }.flatten
         val metaName = stringOrDefault(name, "unnamed meta")
         val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -393,7 +450,7 @@ object ArcSchema {
   }
 
   def validateMetadata(name: String, config: Config): List[Either[ConfigError, scala.Boolean]]  = {
-    config.entrySet.asScala.toList.map { 
+    config.entrySet.asScala.toList.map {
       node => {
         if (node.getKey == name) {
           List(Left(ConfigError(node.getKey, Some(config.getValue(node.getKey).origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot be the same name as column.")))
@@ -469,7 +526,7 @@ object ArcSchema {
       true
     }
   }
-  
+
   def valueTypeObject(path: String)(config: ConfigValue)(implicit c: Config): Either[Errors, Config] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, Config] = Left(ConfigError(path, lineNumber, msg) :: Nil)
       config.valueType match {
@@ -477,7 +534,7 @@ object ArcSchema {
         case _ => err(Some(c.getValue(path).origin.lineNumber()), s"""'${path}' must be of type object.""")
       }
   }
-  
+
   def valueTypeArray(path: String, minLength: Int)(config: ConfigValue)(implicit c: Config): Either[Errors, ConfigList] = {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, ConfigList] = Left(ConfigError(path, lineNumber, msg) :: Nil)
       config.valueType match {
@@ -491,6 +548,20 @@ object ArcSchema {
         }
         case _ => err(Some(c.getValue(path).origin.lineNumber()), s"""'${path}' must be of type list.""")
       }
+  }
+
+  def validateRegex(path: String)(regex: Option[String])(implicit c: Config): Either[Errors, Option[Regex]] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, Option[Regex]] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+
+    try {
+      // try to compile regex which will fail with bad characters
+      regex match {
+        case Some(regex) => Right(Option(new Regex(regex)))
+        case None => Right(None)
+      }
+    } catch {
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
+    }
   }
 
 }

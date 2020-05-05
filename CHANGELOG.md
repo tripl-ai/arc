@@ -1,5 +1,20 @@
 # Change Log
 
+## 2.11.0
+
+- add ability to define the Arc [schema](https://arc.tripl.ai/schema/) with a `schema` key (`{"schema": [...]}`) so that common attributes can be defined using [Human-Optimized Config Object Notation](https://en.wikipedia.org/wiki/HOCON) (HOCON) functionality.
+- add ability to define `regex` when parsing string columns to perform validation.
+- remove mandatory requirement to supply `trim`, `nullReplacementValue` and `nullableValues` for [schema](https://arc.tripl.ai/schema/) that don't logically use them. This will not break existing configurations.
+- change `DiffTransform` and `EqualityValidate` to use inbuilt Spark `hash` function rather than `sha2(to_json(struct()))`.
+- add `get_uri_delay` which is the same as `get_uri` but adds a delay in milliseconds to reduce DDOS liklihood.
+
+## 2.10.2
+
+- fix `get_uri` ability to read compressed file formats `.gzip`, `.bzip2`, `.lz4`.
+- add `get_uri` ability to read from `http` and `https` sources.
+
+**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
+
 ## 2.10.1
 
 - add the `get_uri` user defined function which returns the contents of a URI as an `Array[Byte]` which can be used with `decode` to convert to text.
@@ -20,8 +35,6 @@
 - **BREAKING** remove `DataFramePrinter` lifecycle plugin as it presents too much risk of data leakage.
 - **BREAKING** Amazon Web Services `authentication` methods will now limit their scope to specific buckets rather than global.
 - **BREAKING** remove ability to read `.zip` files.
-
-**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
 
 ## 2.9.0
 

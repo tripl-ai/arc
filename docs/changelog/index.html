@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+  
+  
+  
+  
+   <html class="no-js"> 
+
+  <head lang="en-us">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=10" />
+    <title>Change Log - Arc</title>
+    <meta name="generator" content="Hugo 0.51" />
+
+    
+    <meta name="description" content="Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.">
+    
+    <link rel="canonical" href="https://arc.tripl.ai/changelog/">
+    
+    <meta name="author" content="ai.tripl.arc">
+    
+
+    <meta property="og:url" content="https://arc.tripl.ai/changelog/">
+    <meta property="og:title" content="Arc">
+    <meta property="og:image" content="https://arc.tripl.ai/images/logo.png">
+    <meta name="apple-mobile-web-app-title" content="Arc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="shortcut icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://arc.tripl.ai/images/favicon.ico">
+
+    <style>
+      @font-face {
+        font-family: 'Icon';
+        src: url('https://arc.tripl.ai/fonts/icon.eot');
+        src: url('https://arc.tripl.ai/fonts/icon.eot')
+               format('embedded-opentype'),
+             url('https://arc.tripl.ai/fonts/icon.woff')
+               format('woff'),
+             url('https://arc.tripl.ai/fonts/icon.ttf')
+               format('truetype'),
+             url('https://arc.tripl.ai/fonts/icon.svg')
+               format('svg');
+        font-weight: normal;
+        font-style: normal;
+      }
+
+      @font-face {
+        font-family: 'clipboard';
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot'); 
+        src:  url('https://arc.tripl.ai/fonts/clipboard.eot') 
+            format('embedded-opentype'),
+            url('https://arc.tripl.ai/fonts/clipboard.ttf') 
+              format('truetype'),
+            url('https://arc.tripl.ai/fonts/clipboard.woff') 
+              format('woff'),
+            url('https://arc.tripl.ai/fonts/clipboard.svg') 
+              format('svg');
+        font-weight: normal;
+        font-style: normal;
+        font-display: block;
+      }
+    </style>
+
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/application.css">
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/temporary.css">
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/palettes.css">
+    <link rel="stylesheet" href="https://arc.tripl.ai/stylesheets/highlight/highlight.css">
+
+    
+    
+    
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Ubuntu:400,700|Ubuntu&#43;Mono">
+    <style>
+      body, input {
+        font-family: 'Ubuntu', Helvetica, Arial, sans-serif;
+      }
+      pre, code {
+        font-family: 'Ubuntu Mono', 'Courier New', 'Courier', monospace;
+      }
+    </style>
+
+    
+    <script src="https://arc.tripl.ai/javascripts/modernizr.js"></script>
+
+    
+
+  </head>
+  <body class="palette-primary-red palette-accent-red">
+
+
+
+	
+	
+
+
+<div class="backdrop">
+	<div class="backdrop-paper"></div>
+</div>
+
+<input class="toggle" type="checkbox" id="toggle-drawer">
+<input class="toggle" type="checkbox" id="toggle-search">
+<label class="toggle-button overlay" for="toggle-drawer"></label>
+
+<header class="header">
+	<nav aria-label="Header">
+  <div class="bar default">
+    <div class="button button-menu" role="button" aria-label="Menu">
+      <label class="toggle-button icon icon-menu" for="toggle-drawer">
+        <span></span>
+      </label>
+    </div>
+    <div class="stretch">
+      <div class="title">
+        Change Log
+      </div>
+    </div>
+
+    
+
+    
+    <div class="button button-github" role="button" aria-label="GitHub">
+      <a href="https://github.com/tripl-ai/arc" title="@https://github.com/tripl-ai/arc on GitHub" target="_blank" class="toggle-button icon icon-github"></a>
+    </div>
+    
+    
+        
+  </div>
+  <div class="bar search">
+    <div class="button button-close" role="button" aria-label="Close">
+      <label class="toggle-button icon icon-back" for="toggle-search"></label>
+    </div>
+    <div class="stretch">
+      <div class="field">
+        <input class="query" type="text" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck>
+      </div>
+    </div>
+    <div class="button button-reset" role="button" aria-label="Search">
+      <button class="toggle-button icon icon-close" id="reset-search"></button>
+    </div>
+  </div>
+</nav>
+</header>
+
+<main class="main">
+	<div class="drawer">
+		<nav aria-label="Navigation">
+  <a href="https://arc.tripl.ai/" class="project">
+    <div class="banner">
+      
+      <div class="logo">
+        <img src="https://arc.tripl.ai/images/logo.png">
+      </div>
+      
+      <div class="name">
+        <strong>Arc 
+          <span class="version">2.11.0</span></strong>
+        
+        <br> tripl-ai/arc 
+      </div>
+    </div>
+  </a>
+
+  <div class="scrollable">
+    <div class="wrapper">
+      
+
+      <div class="toc">
+        
+        <ul>
+          
+
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Getting started" href="https://arc.tripl.ai/getting-started/">
+	
+	Getting started
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Tutorial" href="https://arc.tripl.ai/tutorial/">
+	
+	Tutorial
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Extract" href="https://arc.tripl.ai/extract/">
+	
+	Extract
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Transform" href="https://arc.tripl.ai/transform/">
+	
+	Transform
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Load" href="https://arc.tripl.ai/load/">
+	
+	Load
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Execute" href="https://arc.tripl.ai/execute/">
+	
+	Execute
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Validate" href="https://arc.tripl.ai/validate/">
+	
+	Validate
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Schema" href="https://arc.tripl.ai/schema/">
+	
+	Schema
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Deploy" href="https://arc.tripl.ai/deploy/">
+	
+	Deploy
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Security" href="https://arc.tripl.ai/security/">
+	
+	Security
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Plugins" href="https://arc.tripl.ai/plugins/">
+	
+	Plugins
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="Common Solutions" href="https://arc.tripl.ai/solutions/">
+	
+	Common Solutions
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a class="current" title="Change Log" href="https://arc.tripl.ai/changelog/">
+	
+	Change Log
+</a>
+
+
+<ul id="scrollspy">
+</ul>
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
+<a  title="License" href="https://arc.tripl.ai/license/">
+	
+	License
+</a>
+
+
+
+  
+</li>
+
+
+        </ul>
+         
+        <hr>
+        <span class="section">The author</span>
+
+        <ul>
+           
+          <li>
+            <a href="https://github.com/tripl-ai" target="_blank" title="@tripl-ai on GitHub">
+              @tripl-ai on GitHub
+            </a>
+          </li>
+           
+        </ul>
+        
+      </div>
+    </div>
+  </div>
+</nav>
+	</div>
+
+	<article class="article">
+		<div class="wrapper">
+			
+
+			<h1 id="change-log">Change Log</h1>
+
+<h2 id="2-11-0">2.11.0</h2>
+
+<ul>
+<li>add ability to define the Arc <a href="https://arc.tripl.ai/schema/">schema</a> with a <code>schema</code> key (<code>{&quot;schema&quot;: [...]}</code>) so that common attributes can be defined using <a href="https://en.wikipedia.org/wiki/HOCON">Human-Optimized Config Object Notation</a> (HOCON) functionality.</li>
+<li>add ability to define <code>regex</code> when parsing string columns to perform validation.</li>
+<li>remove mandatory requirement to supply <code>trim</code>, <code>nullReplacementValue</code> and <code>nullableValues</code> for <a href="https://arc.tripl.ai/schema/">schema</a> that don&rsquo;t logically use them. This will not break existing configurations.</li>
+<li>change <code>DiffTransform</code> and <code>EqualityValidate</code> to use inbuilt Spark <code>hash</code> function rather than <code>sha2(to_json(struct()))</code>.</li>
+<li>add <code>get_uri_delay</code> which is the same as <code>get_uri</code> but adds a delay in milliseconds to reduce DDOS liklihood.</li>
+</ul>
+
+<h2 id="2-10-2">2.10.2</h2>
+
+<ul>
+<li>fix <code>get_uri</code> ability to read compressed file formats <code>.gzip</code>, <code>.bzip2</code>, <code>.lz4</code>.</li>
+<li>add <code>get_uri</code> ability to read from <code>http</code> and <code>https</code> sources.</li>
+</ul>
+
+<p><strong>NOTE</strong> This is likely the last release supporting <code>Scala 2.11</code> given the preview release of <code>Spark 3.0</code> which only supports <code>Scala 2.12</code>.</p>
+
+<h2 id="2-10-1">2.10.1</h2>
+
+<ul>
+<li>add the <code>get_uri</code> user defined function which returns the contents of a URI as an <code>Array[Byte]</code> which can be used with <code>decode</code> to convert to text.</li>
+<li>rename <code>frameworkVersion</code> to <code>arcVersion</code> in initiliasation logs for clarity.</li>
+</ul>
+
+<h2 id="2-10-0">2.10.0</h2>
+
+<ul>
+<li>make <code>id</code> an optional field when specifying an Arc Schema.</li>
+<li>make <code>TextLoad</code> <code>singleFile</code> mode load in parallel from the Spark <code>executor</code> processes rather than <code>driver</code> as they will have likely have more ram available.</li>
+<li>add option to supply <code>index</code> in addition to [<code>value</code>, <code>filename</code>] to ensure correct output ordering when in <code>singleFile</code> mode.</li>
+<li>add <code>singleFile</code> mode to <code>XMLLoad</code>.</li>
+<li>add <code>to_xml</code> UDF.</li>
+<li>add support for <code>struct</code> and <code>array</code> types in the schema definition file.</li>
+<li>add support for <code>TextExtract</code> to be suppiled an <code>inputView</code>.</li>
+<li>fix any deprecations preventing upgrade to Spark 3.0.</li>
+<li>deprecate of <code>get_json_double_array</code>, <code>get_json_integer_array</code>, <code>get_json_long_array</code> in favor of inbuilt <code>get_json_object</code>.</li>
+<li>ability to pass in config file via <code>http</code> or <code>https</code>.</li>
+<li><strong>BREAKING</strong> remove <code>DataFramePrinter</code> lifecycle plugin as it presents too much risk of data leakage.</li>
+<li><strong>BREAKING</strong> Amazon Web Services <code>authentication</code> methods will now limit their scope to specific buckets rather than global.</li>
+<li><strong>BREAKING</strong> remove ability to read <code>.zip</code> files.</li>
+</ul>
+
+<h2 id="2-9-0">2.9.0</h2>
+
+<ul>
+<li>fix defect with <code>JSONExtract</code> not using <code>basePath</code> correctly.</li>
+<li>add ability to export to multiple files by providing second <code>filename</code> column to <code>TextLoad</code> when set to <code>singleFile</code> mode but not create a directory like the standard Spark behavior.</li>
+<li>add ability to provide an <a href="https://en.wikipedia.org/wiki/XML_Schema_(W3C)">XML Schema Definition</a> (XSD) to <code>XMLExtract</code> to validate input file schemas.</li>
+<li>add <code>blas</code> and <code>lapack</code> implementation to <code>MLTransform</code> logs to help debug performance.</li>
+</ul>
+
+<h2 id="2-8-1">2.8.1</h2>
+
+<ul>
+<li>fix defect with <code>MetadataTransform</code> logic.</li>
+<li>add <code>contentLength</code> to <code>HTTPExtract</code> response and logs.</li>
+</ul>
+
+<h2 id="2-8-0">2.8.0</h2>
+
+<ul>
+<li>fix defect which reported job failure when running in YARN mode.</li>
+<li>fix defect relating to Amazon S3 protocol to use when running on <a href="https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-plan-file-systems.html">Amazon EMR</a></li>
+<li>added  <code>sql</code> attribute to <code>SQLTransform</code> and <code>SQLValidate</code> allowing inline SQL statements.</li>
+<li>added capability to replace the returned dataset via a <code>LifecyclePlugin</code> <code>after</code> hook.</li>
+<li>removed <code>tutorials</code> directory from main arc repo as it is available via <a href="https://github.com/tripl-ai/arc-starter">arc-starter</a>.</li>
+<li>bump to Spark <a href="https://spark.apache.org/releases/spark-release-2-4-5.html">2.4.5</a>.</li>
+</ul>
+
+<h2 id="2-7-0">2.7.0</h2>
+
+<ul>
+<li>added <code>ContainerCredentials</code> provider to resolver list allowing IAM roles to be accessed by Arc jobs running inside an Amazon ECS container (specified via <code>taskRoleArn</code> in ECS).</li>
+<li>added <code>AmazonAnonymous</code> mode to default provider list meaning users do not have to specify it manually.</li>
+<li>enhanced file based <code>*Extract</code> to throw richer error messages when files are not found.</li>
+</ul>
+
+<h2 id="2-6-0">2.6.0</h2>
+
+<ul>
+<li>provided ability for job configuration files to be retrieved via <code>AmazonIAM</code> (by default) in addition to the existing <code>AccessKey</code> and <code>AmazonAnonymous</code> methods.</li>
+</ul>
+
+<h2 id="2-5-0">2.5.0</h2>
+
+<ul>
+<li>enhanced <code>PipelineExecute</code> to allow execution of nested <a href="https://arc.tripl.ai/plugins/#lifecycle-plugins">Lifecycle Plugins</a>.</li>
+<li>changed Stack Trace logging to be opt-in when errors occur (default <code>false</code>) via parameters <code>ETL_CONF_ENABLE_STACKTRACE</code> and <code>etl.config.enableStackTrace</code>.</li>
+</ul>
+
+<h2 id="2-4-0">2.4.0</h2>
+
+<ul>
+<li>fixed defect in <code>DelimitedExtract</code> when running in streaming mode.</li>
+<li>added <code>MetadataExtract</code> stage which creates an Arc <code>metadata</code> dataframe from an input view.</li>
+<li>added <code>MetadataTransform</code> stage which attaches/overrides the metadata attached to an input view.</li>
+<li>added <code>MetadataValidate</code> stage which allows runtime rules to be aplied against an input view&rsquo;s metadata.</li>
+<li>added ability to include <code>%configplugins</code> when defined <a href="https://github.com/tripl-ai/arc-jupyter">arc-jupyter</a> notebook files (.ipynb).</li>
+<li>rewrote tutorial to point to public datasets rather than requiring user to download data first.</li>
+</ul>
+
+<h2 id="2-3-1">2.3.1</h2>
+
+<ul>
+<li>will now throw exceptions if trying to use the Amazon <code>s3://</code> or <code>s3n://</code> protocols instead of <code>s3a://</code> as they have been deprecated by the Hadoop project, are no longer suppored in Hadoop 3.0+ and do not behave predictably with the Arc Amazon <a href="https://arc.tripl.ai/partials/#authentication">Authentication</a> methods.</li>
+<li>will now throw clearer message when typing conversion fails on a non-nullable field (which means the job cannot logically proceed).</li>
+</ul>
+
+<h2 id="2-3-0">2.3.0</h2>
+
+<ul>
+<li>added <code>AmazonAnonymous</code> (for public buckets) and <code>AmazonIAM</code> (allowing users to specify encryption method) <a href="https://arc.tripl.ai/partials/#authentication">Authentication</a> methods.</li>
+<li>added initial support for <code>runStage</code> to <a href="https://arc.tripl.ai/plugins/#lifecycle-plugins">Lifecycle Plugins</a> to support early job exit with success when certain criteria are met.</li>
+</ul>
+
+<h2 id="2-2-0">2.2.0</h2>
+
+<ul>
+<li>add ability to execute <a href="https://github.com/tripl-ai/arc-jupyter">arc-jupyter</a> notebook files (.ipynb) directly without conversion to arc &lsquo;job&rsquo;.</li>
+<li>add <code>watermark</code> to <code>DelimitedExtract</code>, <code>ImageExtract</code>, <code>JSONExtract</code>, <code>ORCExtract</code>, <code>ParquetExtract</code> and <code>TextExtract</code> for structured streaming.</li>
+<li>performance and usability improvements for <code>SimilarityJoinTransform</code>. Can now cope with null inputs and performs caching to prevent recalculation of input data.</li>
+<li>fix issue where malformed job configuration files would not error and job would exit with success.</li>
+</ul>
+
+<h2 id="2-1-0">2.1.0</h2>
+
+<ul>
+<li>add <code>SimilarityJoinTransform</code> a stage which performs a <a href="https://en.wikipedia.org/wiki/Approximate_string_matching">fuzzy match</a> and can be used for dataset deduplication or approximate joins.</li>
+<li>add missing types <code>BooleanList</code>, <code>Double</code>, <code>DoubleList</code>, <code>LongList</code> to config reader.</li>
+</ul>
+
+<p><strong>BREAKING</strong></p>
+
+<ul>
+<li>change API for <code>LifecyclePlugin</code> to pass the stage index and the full job pipeline so that the current and other stages can be accessed in the plugin.</li>
+</ul>
+
+<h2 id="2-0-1">2.0.1</h2>
+
+<ul>
+<li>update to <a href="https://spark.apache.org/releases/spark-release-2-4-4.html">Spark 2.4.4</a>.</li>
+<li>update to Scala <code>2.12.9</code></li>
+</ul>
+
+<h2 id="2-0-0">2.0.0</h2>
+
+<p>Arc 2.0.0 is a major (breaking) change which has been done for multiple reasons:</p>
+
+<ul>
+<li>to support both <code>Scala 2.11</code> and <code>Scala 2.12</code> as they are not binary compatible and the Spark project is moving to <code>Scala 2.12</code>. Arc will be published for both <code>Scala 2.11</code> and <code>Scala 2.12</code>.</li>
+<li>to decouple stages/extensions reliant on third-party packages from the main repository so that Arc is not dependent on a library which does not yet support <code>Scala 2.12</code> (for example).</li>
+<li>to support first-class plugins by providing a better API to allow the same type-safety when reading the job configuration as the core Arc pipeline stages (in fact all the core stages have been rebuilt as included plugins). This extends to allowing version number specification in stage resolution.</li>
+</ul>
+
+<p><strong>BREAKING</strong></p>
+
+<p><strong>REMOVED</strong></p>
+
+<ul>
+<li>remove <code>AzureCosmosDBExtract</code> stage. This could be reimplemented as a <a href="https://tripl-ai.github.io/arc/extend/#lifecycle-plugins">Lifecycle Plugin</a>.</li>
+<li>remove <code>AzureEventHubsLoad</code> stage. This could be reimplemented as a <a href="https://tripl-ai.github.io/arc/extend/#lifecycle-plugins">Lifecycle Plugin</a>.</li>
+<li>remove <code>DatabricksDeltaExtract</code> and <code>DatabricksDeltaLoad</code> stages and replace with the open-source <a href="https://delta.io/">DeltaLake</a> versions (<code>DeltaLakeExtract</code> and <code>DeltaLakeLoad</code>) implemented <a href="https://github.com/tripl-ai/arc-deltalake-pipeline-plugin">https://github.com/tripl-ai/arc-deltalake-pipeline-plugin</a>.</li>
+<li>remove <code>DatabricksSQLDWLoad</code>. This could be reimplemented as a  <a href="https://tripl-ai.github.io/arc/extend/#lifecycle-plugins">Lifecycle Plugin</a>.</li>
+<li>remove <code>bulkload</code> mode from <code>JDBCLoad</code>. Any target specific JDBC behaviours could be implemented by a custom plugins if required.</li>
+<li>remove <code>user</code> and <code>password</code> from <code>JDBCExecute</code> for consistency. Move details to either <code>jdbcURL</code> or <code>params</code>.</li>
+<li>remove the <code>Dockerfile</code> and put it in separate repo: (<a href="https://github.com/tripl-ai/docker">https://github.com/tripl-ai/docker</a>)</li>
+</ul>
+
+<p><strong>CHANGES</strong></p>
+
+<ul>
+<li>changed <code>inputURI</code> field for <code>TypingTransform</code> to <code>schemaURI</code> to allow addition of <code>schemaView</code>.</li>
+<li>add <code>CypherTransform</code> and <code>GraphTransform</code> stages to support the <a href="https://github.com/opencypher/morpheus">https://github.com/opencypher/morpheus</a> project (<a href="https://github.com/tripl-ai/arc-graph-pipeline-plugin">https://github.com/tripl-ai/arc-graph-pipeline-plugin</a>).</li>
+<li>add <code>MongoDBExtract</code> and <code>MongoDBLoad</code> stages (<a href="https://github.com/tripl-ai/arc-mongodb-pipeline-plugin">https://github.com/tripl-ai/arc-mongodb-pipeline-plugin</a>).</li>
+<li>move <code>ElasticsearchExtract</code> and <code>ElasticsearchLoad</code> to their own repository <a href="https://github.com/tripl-ai/arc-elasticsearch-pipeline-plugin">https://github.com/tripl-ai/arc-elasticsearch-pipeline-plugin</a>.</li>
+<li>move <code>KafkaExtract</code>, <code>KafkaLoad</code> and <code>KafkaCommitExecute</code> to their own repository <a href="https://github.com/tripl-ai/arc-kafka-pipeline-plugin">https://github.com/tripl-ai/arc-kafka-pipeline-plugin</a>.</li>
+</ul>
+
+<h2 id="1-15-0">1.15.0</h2>
+
+<ul>
+<li>added <code>uriField</code> and <code>bodyField</code> to <code>HTTPExtract</code> allowing dynamic data to be generated and <code>POST</code>ed to endpoints when using an <code>inputView</code>.</li>
+</ul>
+
+<h2 id="1-14-0">1.14.0</h2>
+
+<ul>
+<li>changed all dependencies to <code>intransitive()</code>. All tests pass however this may cause issues. Please raise issue if found.</li>
+<li>removed reliance on <code>/lib</code> libraries.</li>
+<li>added <code>endpoint</code> and <code>sslEnabled</code> variables to <code>AmazonAccessKey</code> authentication options to help connect to <code>Minio</code> or <code>Ceph Object Store</code>.</li>
+</ul>
+
+<h2 id="1-13-3">1.13.3</h2>
+
+<ul>
+<li>Arc now available on Maven.</li>
+<li>added configuration flag <code>ETL_CONF_DISABLE_DEPENDENCY_VALIDATION</code> and <code>etl.config.disableDependencyValidation</code> to disable config dependency graph validation in case of dependency resolution defects.</li>
+</ul>
+
+<h2 id="1-13-2">1.13.2</h2>
+
+<ul>
+<li><strong>FIX</strong> issue where using SQL Common Table Expressions (CTE - <code>WITH</code> statements) would break the config dependency graph validation.</li>
+</ul>
+
+<h2 id="1-13-1">1.13.1</h2>
+
+<ul>
+<li>added ability to add custom key/value tags to all log messages via <code>ETL_CONF_TAGS</code> or <code>etl.config.tags</code>.</li>
+</ul>
+
+<h2 id="1-13-0">1.13.0</h2>
+
+<ul>
+<li><strong>BREAKING</strong> added <code>environments</code> key to <a href="https://tripl-ai.github.io/arc/extend/#dynamic-configuration-plugins">Dynamic Configuration Plugins</a> and <a href="https://tripl-ai.github.io/arc/extend/#lifecycle-plugins">Lifecycle Plugins</a> so they can be enabled/disabled depending on the deloyment environment.</li>
+<li><strong>BREAKING</strong> <a href="https://tripl-ai.github.io/arc/extend/#lifecycle-plugins">Lifecycle Plugins</a> now require explicit declaration like <a href="https://tripl-ai.github.io/arc/extend/#dynamic-configuration-plugins">Dynamic Configuration Plugins</a> by use of the <code>config.lifecycle</code> attribute.</li>
+<li><strong>FIX</strong> fixed issue <a href="https://issues.apache.org/jira/browse/SPARK-26995">https://issues.apache.org/jira/browse/SPARK-26995</a> to Dockerfile.</li>
+<li><strong>FIX</strong> error reading <code>Elasticsearch*</code> configuration parameters due to escaping by Typesafe Config.</li>
+<li>added <code>AzureCosmosDBExtract</code> stage.</li>
+<li>added ability to pass <code>params</code> to <a href="https://tripl-ai.github.io/arc/extend/#lifecycle-plugins">Lifecycle Plugins</a>.</li>
+<li>rewrote tutorial to use <a href="https://github.com/tripl-ai/arc-starter">arc-starter</a>.</li>
+<li>added <code>failMode</code> to <code>BytesExtract</code> to allow pipeline to continue if missing binary files.</li>
+<li>added <code>DataFramePrinterLifecyclePlugin</code> to base image.</li>
+<li><code>ARC.run()</code> now returns the final <code>Option[DataFrame]</code> facilitating better <a href="https://github.com/tripl-ai/arc-starter">integrations</a>.</li>
+</ul>
+
+<h2 id="1-12-2">1.12.2</h2>
+
+<ul>
+<li><strong>FIX</strong> defect where <code>sqlParams</code> in <code>SQLTransform</code> stage would throw exception.</li>
+</ul>
+
+<h2 id="1-12-1">1.12.1</h2>
+
+<ul>
+<li><strong>FIX</strong> defect where job config files would not resolve internal subsittution values.</li>
+</ul>
+
+<h2 id="1-12-0">1.12.0</h2>
+
+<ul>
+<li>bump to Spark <a href="https://spark.apache.org/releases/spark-release-2-4-3.html">2.4.3</a>.</li>
+<li>bump to OpenJDK <code>8.212.04-r0</code> in <code>Dockerfile</code>.</li>
+</ul>
+
+<h2 id="1-11-1">1.11.1</h2>
+
+<ul>
+<li><strong>FIX</strong> error reading text file during config stage.</li>
+<li>added support for <code>AzureDataLakeStorageGen2AccountKey</code> and <code>AzureDataLakeStorageGen2OAuth</code> authentication methods.</li>
+</ul>
+
+<h2 id="1-11-0">1.11.0</h2>
+
+<ul>
+<li><strong>BREAKING</strong> <code>key</code> and <code>value</code> fields extracted as <code>binary</code> type from <code>KafkaExtract</code> to be consistent with Spark Streaming schema and is easier to generalise.</li>
+<li>added support for writing <code>binary</code> key/value to Kafka using <code>KafkaLoad</code>.</li>
+<li>added <code>inputView</code>, <code>inputField</code> and <code>avroSchemaURI</code> to allow parsing of <code>avro</code> binary data which does not have an embedded schema for reading from sources like like <code>KafkaExtract</code> with a <a href="https://www.confluent.io/confluent-schema-registry/">Kafka Schema Registry</a>.</li>
+</ul>
+
+<h2 id="1-10-0">1.10.0</h2>
+
+<ul>
+<li>added <code>basePath</code> to relevant <code>*Extract</code> do aid with partition discovery.</li>
+<li>added check to ensure no parameters are remaining after <code>sqlParams</code> string replacement (i.e. missing <code>sqlParams</code>).</li>
+<li>added <code>failMode</code> to <code>HTTPTransform</code> with default <code>failfast</code> (unchanged behaviour).</li>
+<li>added streaming mode support to <code>HTTPLoad</code>.</li>
+<li>added <code>binary</code> <code>metadata</code> type to allow decoding <code>base64</code> and <code>hexadecimal</code> encodings.</li>
+<li><strong>CHORE</strong> bumped some JAR versions up to latest.</li>
+</ul>
+
+<h2 id="1-9-0">1.9.0</h2>
+
+<ul>
+<li><strong>FIX</strong> fixed command line arguments which contain equals sign not being parsed correctly</li>
+<li>added <code>DatabricksSQLDWLoad</code> stage for bulk loading Azure SQLDW when executing in the <a href="https://databricks.com/product/databricks-runtime">Databricks Runtime</a> environment.</li>
+<li>added <code>ElasticsearchExtract</code> and <code>ElasticsearchLoad</code> stages for connecting to <a href="https://www.elastic.co/products/elasticsearch">Elasticsearch</a> clusters.</li>
+<li>added additional checks for table dependencies when validating the job config.</li>
+<li>added <code>TextLoad</code> which supports both <code>singleFile</code> and standard partitioned output formats.</li>
+</ul>
+
+<h2 id="1-8-0">1.8.0</h2>
+
+<ul>
+<li>added ability to pass job substitution variables via the <code>spark-submit</code> command instead of only environment variables. See <a href="https://github.com/lightbend/config#uses-of-substitutions">Typesafe Config Substitutions</a> for additional information.</li>
+<li>added the <code>DatabricksDeltaExtract</code> and <code>DatabricksDeltaLoad</code> stages for when executing in the <a href="https://databricks.com/product/databricks-runtime">Databricks Runtime</a> environment.</li>
+</ul>
+
+<h2 id="1-7-1">1.7.1</h2>
+
+<ul>
+<li>added additional logging in <code>*Transform</code> to better track partition behaviour.</li>
+</ul>
+
+<h2 id="1-7-0">1.7.0</h2>
+
+<ul>
+<li>added <code>partitionBy</code> and <code>numPartitions</code> to relevant <code>*Transform</code> stages to allow finer control of parallelism.</li>
+<li>changed to only perform <code>HTTPExtract</code> split result when <code>batchSize</code> is greater than 1.</li>
+</ul>
+
+<h2 id="1-6-1">1.6.1</h2>
+
+<ul>
+<li><strong>FIX</strong> fixed exit process when executing within a <a href="https://databricks.com/product/databricks-runtime">Databricks Runtime</a> environment so the job reports success/failure correctly. <a href="https://docs.databricks.com/user-guide/jobs.html#jar-job-tips">Source</a>.</li>
+<li><strong>FIX</strong> changed log level for <code>DynamicConfiguration</code> return values to <code>DEBUG</code> to prevent spilling secrets unless opt-in.</li>
+</ul>
+
+<h2 id="1-6-0">1.6.0</h2>
+
+<ul>
+<li><strong>FIX</strong> fixed defect in <code>*Extract</code> where Arc would recalculate metadata columns (<code>_filename</code>, <code>_index</code> or <code>_monotonically_increasing_id</code>) if both <code>_index</code> or <code>_monotonically_increasing_id</code> missing ignoring <code>_filename</code> presence.</li>
+<li><strong>FIX</strong> <code>HTTPExtract</code>, <code>HTTPTransform</code> and <code>HTTPLoad</code> changed to fail fast and hit HTTP endpoint only once.</li>
+<li><strong>FIX</strong> <code>JDBCExecute</code> was not setting connection <code>params</code> if <code>user</code> or <code>password</code> were not provided.</li>
+<li>changed <code>DynamicConfiguration</code> plugins to be HOCON <code>object</code> rather than a <code>string</code> allowing parameters to be passed in.</li>
+<li>added <code>logger</code> object to <code>DynamicConfiguration</code> plugins.</li>
+<li>added <code>customDelimiter</code> attribute to <code>DelimitedExtract</code> and <code>DelimitedLoad</code> to be used in conjunction with <code>delimiter</code> equal to <code>Custom</code>.</li>
+<li>added optional <code>description</code> attribute to all stages.</li>
+<li>added <code>inputField</code> to <code>DelimitedExtract</code> and <code>JSONExtract</code> to simplify loading from sources like <code>HTTPExtract</code>.</li>
+<li>added <code>batchSize</code> and <code>delimiter</code> to <code>HTTPTransform</code> to allow batching to reduce cost of HTTP overhead.</li>
+<li>bump to Alpine 3.9 in <code>Dockerfile</code>.</li>
+</ul>
+
+<h2 id="1-5-0">1.5.0</h2>
+
+<ul>
+<li>changed <code>delimiter</code> for <code>DelimitedExtract</code> and <code>DelimitedLoad</code> from <code>DefaultHive</code> to <code>Comma</code>.</li>
+<li>renamed <code>BytesExtract</code> attribute <code>pathView</code> to <code>inputView</code> for consistency.</li>
+<li>renamed <code>JDBCExecute</code> attribute <code>url</code> to <code>jdbcURL</code> for consistency.</li>
+<li>added <code>authentication</code> to <code>PipelineExecute</code> to allow reading external pipelines from different sources.</li>
+<li>major rework of error messages when reading job and metadata config files.</li>
+<li>bump to OpenJDK 8.191.12-r0 in <code>Dockerfile</code>.</li>
+</ul>
+
+<h2 id="1-4-1">1.4.1</h2>
+
+<ul>
+<li>added <code>inputField</code> to both <code>TensorFlowServingTransform</code> and <code>HTTPTransform</code> to allow overriding default field <code>value</code>.</li>
+<li>added <code>ImageExtract</code> to read image files for machine learning etc.</li>
+<li>added the <code>minLength</code> and <code>maxLength</code> properties to the <code>string</code> metadata type.</li>
+</ul>
+
+<h2 id="1-4-0">1.4.0</h2>
+
+<ul>
+<li>bump to Spark <a href="https://spark.apache.org/releases/spark-release-2-4-0.html">2.4.0</a>.</li>
+<li>bump to OpenJDK 8.181.13-r0 in <code>Dockerfile</code>.</li>
+</ul>
+
+<h2 id="1-3-1">1.3.1</h2>
+
+<ul>
+<li>added additional tutorial job at <code>/tutorial/starter</code>.</li>
+</ul>
+
+<h2 id="1-3-0">1.3.0</h2>
+
+<ul>
+<li>added support for dynamic runtime configuration via <code>Dynamic Configuration Plugins</code>.</li>
+<li>added support for custom stages via <code>Pipeline Stage Plugins</code>.</li>
+<li>added support for Spark SQL extensions via custom <code>User Defined Functions</code> registration.</li>
+<li>added support for specifying custom <code>formatters</code> for <code>TypingTransform</code> of integer, long, double and decimal types.</li>
+<li>added <code>failMode</code> for <code>TypingTransform</code> to allow either <code>permissive</code> or <code>failfast</code> mode.</li>
+<li>added <code>inputView</code> capability to <code>HTTPExtract</code> stage.</li>
+</ul>
+
+<h2 id="1-2-1">1.2.1</h2>
+
+<ul>
+<li>bump to Spark <a href="https://spark.apache.org/releases/spark-release-2-3-2.html">2.3.2</a>.</li>
+</ul>
+
+<h2 id="1-2-0">1.2.0</h2>
+
+<ul>
+<li>added support for Spark <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html">Structured Streaming</a>.</li>
+<li>added <code>pathView</code> property for <code>BytesExtract</code> allowing a dataframe of file paths to be provided to dynamically load files.</li>
+<li>added <code>TextExtract</code> to read basic text files.</li>
+<li>added <code>RateExtract</code> which wraps the Spark <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#creating-streaming-dataframes-and-streaming-datasets">Structured Streaming</a> rate source for testing streaming jobs.</li>
+<li>added <code>ConsoleLoad</code> which wraps the Spark <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#output-sinks">Structured Streaming</a> console sink for testing streaming jobs.</li>
+<li>added ability for <code>JDBCLoad</code> to execute in Spark <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#output-sinks">Structured Streaming</a> mode.</li>
+</ul>
+
+<h2 id="1-1-0">1.1.0</h2>
+
+<ul>
+<li>fixed a bug in the <code>build.sbt</code> mergeStrategy which incorrectly excluded the <code>BinaryContentDataSource</code> registration when <code>assembly</code>.</li>
+<li>changed <code>TensorFlowServingTransform</code> to require a <code>responseType</code> argument.</li>
+</ul>
+
+<h2 id="1-0-9">1.0.9</h2>
+
+<ul>
+<li>added the ability to add column level <code>metadata</code>.</li>
+<li>added the <code>MetadataFilterTransform</code> stage - a stage which allows filtering of columns by their metadata.</li>
+<li>added the <code>PipelineExecute</code> stage - a stage which allows embeding other pipelines.</li>
+<li>added the <code>HTTPTransform</code> stage - a stage which calls an external API and adds result to Dataframe.</li>
+<li>added support for Google Cloud Storage - prefix: <code>gs://</code></li>
+<li>added support for Azure Data Lake Storage - prefix: <code>adl://</code></li>
+<li>added <code>partitionColumn</code> to <code>JDBCExtract</code> to support parallel extract.</li>
+<li>added <code>predicates</code> to <code>JDBCExtract</code> to allow manual partition definitions.</li>
+<li>changed <code>XMLExtract</code> to be able to support reading <code>.zip</code> files.</li>
+<li>changed <code>*Extract</code> to allow input <code>glob</code> patterns not just simple <code>URI</code>.</li>
+<li>changed <code>*Extract</code> to support the schema to be provided as <code>schemaView</code>.</li>
+<li>added <code>BytesExtract</code> to allow <code>Array[Bytes]</code> to be read into a dataframe for things like calling external Machine Learning models.</li>
+<li>refactored <code>TensorFlowServingTransform</code> to call the <code>REST</code> API (in batches) which is easier due to library conflicts creating <code>protobuf</code>.</li>
+<li>create the <code>UDF</code> registration mechanism allowing logical extension point for common functions missing from Spark core.</li>
+</ul>
+
+<h2 id="1-0-8">1.0.8</h2>
+
+<ul>
+<li>added the <code>KafkaLoad</code> stage - a stage which will write a dataset to a designated <code>topic</code> in Apache Kafka.</li>
+<li>added the <code>EXPERIMENTAL</code> <code>KafkaExtract</code> stage - a stage which will read from a designated <code>topic</code> in Apache Kafka and produce a dataset.</li>
+<li>added the <code>KafkaCommitExecute</code> stage - a stage which allows the commiting of the Kafka offsets to be deferred allowing quasi-transactional behaviour.</li>
+<li>added integration tests for <code>KafkaLoad</code> and <code>KafkaExtract</code>. more to come.</li>
+<li>added <code>partitionBy</code> to <code>*Extract</code>.</li>
+<li>added <code>contiguousIndex</code> option to file based <code>*Extract</code> which allows users to opt out of the expensive <code>_index</code> resolution from <code>_monotonically_increasing_id</code>.</li>
+<li>added ability to send a <code>POST</code> request with <code>body</code> in <code>HTTPExtract</code>.</li>
+<li>changed hashing function for <code>DiffTransform</code> and <code>EqualityValidate</code> from inbuilt <code>hash</code> to <code>sha2(512)</code>.</li>
+</ul>
+
+<h2 id="1-0-7">1.0.7</h2>
+
+<ul>
+<li>added the <code>DiffTransform</code> stage - a stage which efficiently calculutes the difference between two datasets and produces left, right and intersection output views.</li>
+<li>added logging of <code>records</code> and <code>batches</code> counts to the <code>AzureEventHubsLoad</code>.</li>
+<li>updated the <code>EqualityValidate</code> to use the <code>hash</code> diffing function as the inbuilt <code>except</code> function is very difficult to use in practice. API unchanged.</li>
+<li>updated the <code>HTTPExecute</code> stage to not automatically split the response body by newline (<code>\n</code>) - this is more in line with expected usecase of REST API endpoints.</li>
+</ul>
+
+<h2 id="1-0-6">1.0.6</h2>
+
+<ul>
+<li>updated <code>AzureEventHubsLoad</code> to use a SNAPSHOT compiled JAR in <code>/lib</code> to get latest changes. this will be changed back to Maven once version is officially released. Also exposed the expontential retry options to API.</li>
+<li>initial testing of a <code>.zip</code> reader/writer.</li>
+</ul>
+
+<h2 id="1-0-5">1.0.5</h2>
+
+<ul>
+<li>fix a longstanding defect in <code>TypingTranform</code> not correctly passing through values which are already of correct type.</li>
+<li>change the <code>_index</code> field added to <code>*Extract</code> from <code>monotonically_increasing_id()</code> to a <code>row_number(monotonically_increasing_id())</code> so that the index aligns to underlying files and is more intuitive to use.</li>
+</ul>
+
+<h2 id="1-0-4">1.0.4</h2>
+
+<ul>
+<li>allow passing of same metadata schema to <code>JSONExtract</code> and <code>XMLExtract</code> to reduce cost of schema inference for large number of files.</li>
+</ul>
+
+<h2 id="1-0-3">1.0.3</h2>
+
+<ul>
+<li>Expose numPartitions Optional Parameter for <code>*Extract</code>.</li>
+</ul>
+
+<h2 id="1-0-2">1.0.2</h2>
+
+<ul>
+<li>add sql validation step to <code>SQLValidate</code> configuration parsing and ensure parameters are injected first (including <code>SQLTransform</code>) so the statements with parameters can be parsed.</li>
+</ul>
+
+<h2 id="1-0-1">1.0.1</h2>
+
+<ul>
+<li>bump to Spark <a href="https://spark.apache.org/releases/spark-release-2-3-1.html">2.3.1</a>.</li>
+</ul>
+
+<h2 id="1-0-0">1.0.0</h2>
+
+<ul>
+<li>initial release.</li>
+</ul>
+
+
+
+			<aside class="copyright" role="note">
+				
+				&copy; 2020 Released under the MIT license
+				
+			</aside>
+
+			<footer class="footer">
+				
+
+<nav class="pagination" aria-label="Footer">
+  <div class="previous">
+    
+    <a href="https://arc.tripl.ai/solutions/" title="Common Solutions">
+      <span class="direction">
+        Previous
+      </span>
+      <div class="page">
+        <div class="button button-previous" role="button" aria-label="Previous">
+          <i class="icon icon-back"></i>
+        </div>
+        <div class="stretch">
+          <div class="title">
+            Common Solutions
+          </div>
+        </div>
+      </div>
+    </a>
+    
+  </div>
+
+  <div class="next">
+    
+    <a href="https://arc.tripl.ai/license/" title="License">
+      <span class="direction">
+        Next
+      </span>
+      <div class="page">
+        <div class="stretch">
+          <div class="title">
+            License
+          </div>
+        </div>
+        <div class="button button-next" role="button" aria-label="Next">
+          <i class="icon icon-forward"></i>
+        </div>
+      </div>
+    </a>
+    
+  </div>
+</nav>
+
+
+
+
+			</footer>
+		</div>
+	</article>
+
+	<div class="results" role="status" aria-live="polite">
+		<div class="scrollable">
+			<div class="wrapper">
+				<div class="meta"></div>
+				<div class="list"></div>
+			</div>
+		</div>
+	</div>
+</main>
+
+    <script>
+    
+      var base_url = 'https:\/\/arc.tripl.ai\/';
+      var repo_id  = 'tripl-ai\/arc';
+    
+    </script>
+
+    <script src="https://arc.tripl.ai/javascripts/application.js"></script>
+    
+
+    <script>
+      /* Add headers to scrollspy */
+      var headers   = document.getElementsByTagName("h2");
+      var scrollspy = document.getElementById('scrollspy');
+
+      if(scrollspy) {
+        if(headers.length > 0) {
+          for(var i = 0; i < headers.length; i++) {
+            var li = document.createElement("li");
+            li.setAttribute("class", "anchor");
+
+            var a  = document.createElement("a");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", headers[i].innerHTML);
+            a.innerHTML = headers[i].innerHTML;
+
+            li.appendChild(a)
+            scrollspy.appendChild(li);
+          }
+        } else {
+          scrollspy.parentElement.removeChild(scrollspy)
+        }
+
+
+        /* Add permanent link next to the headers */
+        var headers = document.querySelectorAll("h1, h2, h3, h4, h5, h6");
+
+        for(var i = 0; i < headers.length; i++) {
+            var a = document.createElement("a");
+            a.setAttribute("class", "headerlink");
+            a.setAttribute("href", "#" + headers[i].id);
+            a.setAttribute("title", "Permanent link")
+            a.innerHTML = "#";
+            headers[i].appendChild(a);
+        }
+      }
+    </script>
+
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/languages/scala.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <script>
+      window.onload = function (){
+        function addCopyButtons(clipboard) {
+          document.querySelectorAll('pre > code').forEach(function (codeBlock) {
+            var button = document.createElement('button');
+            button.className = 'copy-code-button';
+
+            button.addEventListener('click', function (e) {
+              clipboard.writeText(codeBlock.innerText).then(function () {
+                button.blur();
+              }, function (error) {
+                console.log(`cannot copy to clipboard ${error}`)
+              });
+            });        
+
+            codeBlock.insertBefore(button, codeBlock.firstChild);
+          });
+        }
+
+      if (navigator && navigator.clipboard) {
+        addCopyButtons(navigator.clipboard);
+      } else {
+        var script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/clipboard-polyfill/2.7.0/clipboard-polyfill.promise.js';
+        script.integrity = 'sha256-waClS2re9NUbXRsryKoof+F9qc1gjjIhc2eT7ZbIv94=';
+        script.crossOrigin = 'anonymous';
+        script.onload = function() {
+          addCopyButtons(clipboard);
+        };
+
+        document.body.appendChild(script);
+      }
+    }
+    </script>    
+  </body>
+</html>
+

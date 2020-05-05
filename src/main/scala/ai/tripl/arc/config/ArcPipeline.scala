@@ -19,6 +19,7 @@ import ai.tripl.arc.config.Error._
 import ai.tripl.arc.config.Plugins._
 import ai.tripl.arc.execute.PipelineExecuteStage
 import ai.tripl.arc.util.EitherUtils._
+import ai.tripl.arc.util.SerializableConfiguration
 
 object ArcPipeline {
 
@@ -130,7 +131,7 @@ object ArcPipeline {
                 activeLifecyclePlugins=activeLifecyclePluginInstances,
                 pipelineStagePlugins=arcContext.pipelineStagePlugins,
                 udfPlugins=arcContext.udfPlugins,
-                serializableConfiguration=arcContext.serializableConfiguration,
+                serializableConfiguration=new SerializableConfiguration(spark.sparkContext.hadoopConfiguration),
                 userData=arcContext.userData
               )
 

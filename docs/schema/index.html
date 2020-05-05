@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.10.0</span></strong>
+          <span class="version">2.11.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -399,6 +399,24 @@
 
 
 
+<a  title="Change Log" href="https://arc.tripl.ai/changelog/">
+	
+	Change Log
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="License" href="https://arc.tripl.ai/license/">
 	
 	License
@@ -433,7 +451,7 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Schema </h1>
+			<h1>Schema</h1>
 
 			
 
@@ -491,34 +509,6 @@
 </tr>
 
 <tr>
-<td>trim</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Trim the field prior to data typing attempts.</td>
-</tr>
-
-<tr>
-<td>nullable</td>
-<td>Boolean</td>
-<td>true</td>
-<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
-</tr>
-
-<tr>
-<td>nullableValues</td>
-<td>Array[String]</td>
-<td>false</td>
-<td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
-</tr>
-
-<tr>
-<td>nullReplacementValue</td>
-<td>String</td>
-<td>false</td>
-<td>An optional value that a null value input value is replaced with before typing.</td>
-</tr>
-
-<tr>
 <td>metadata</td>
 <td>Object</td>
 <td>false</td>
@@ -530,7 +520,6 @@
 <h3 id="examples">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;9712c383-22d1-44a6-9ca2-0087af4857f1&quot;,
   &quot;name&quot; : &quot;first_name&quot;,
   &quot;description&quot; : &quot;Customer First Name&quot;,
   &quot;type&quot; : &quot;string&quot;,
@@ -567,20 +556,24 @@
 <td>true</td>
 <td>The <a href="../schema/">schema</a> of the nested list of elements.</td>
 </tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-1">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;982cbf60-7ba7-4e50-a09b-d8624a5c49e6&quot;,
   &quot;name&quot; : &quot;customer_phone_numbers&quot;,
   &quot;description&quot; : &quot;Customer Phone Numbers&quot;,
   &quot;type&quot; : &quot;array&quot;,
-  &quot;trim&quot; : true,
   &quot;metadata&quot;: {},
   &quot;elementType&quot;: {
-    &quot;id&quot; : &quot;9712c383-22d1-44a6-9ca2-0087af4857f1&quot;,
     &quot;name&quot; : &quot;phone_number&quot;,
     &quot;description&quot; : &quot;Phone Number&quot;,
     &quot;type&quot; : &quot;string&quot;,
@@ -612,13 +605,40 @@
 <td>true</td>
 <td>The binary-to-text encoding format of the value. Valid values <code>base64</code>, <code>hexadecimal</code>.</td>
 </tr>
+
+<tr>
+<td>trim</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Trim the field prior to data typing attempts.</td>
+</tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
+
+<tr>
+<td>nullableValues</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
+</tr>
+
+<tr>
+<td>nullReplacementValue</td>
+<td>String</td>
+<td>false</td>
+<td>An optional value that a null value input value is replaced with before typing.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-2">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;982cbf60-7ba7-4e50-a09b-d8624a5c49e6&quot;,
   &quot;name&quot; : &quot;id&quot;,
   &quot;description&quot; : &quot;GUID identifier&quot;,
   &quot;type&quot; : &quot;binary&quot;,
@@ -661,13 +681,40 @@
 <td>true</td>
 <td>A list of values which are considered as false. Try to order this list so the values are arranged from most frequent to least frequent.</td>
 </tr>
+
+<tr>
+<td>trim</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Trim the field prior to data typing attempts.</td>
+</tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
+
+<tr>
+<td>nullableValues</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
+</tr>
+
+<tr>
+<td>nullReplacementValue</td>
+<td>String</td>
+<td>false</td>
+<td>An optional value that a null value input value is replaced with before typing.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-3">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;982cbf60-7ba7-4e50-a09b-d8624a5c49e6&quot;,
   &quot;name&quot; : &quot;marketing_opt_in_flag&quot;,
   &quot;description&quot; : &quot;Whether the customer has opted in to receive marketing communications.&quot;,
   &quot;type&quot; : &quot;boolean&quot;,
@@ -712,13 +759,40 @@
 <td>true</td>
 <td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.</td>
 </tr>
+
+<tr>
+<td>trim</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Trim the field prior to data typing attempts.</td>
+</tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
+
+<tr>
+<td>nullableValues</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
+</tr>
+
+<tr>
+<td>nullReplacementValue</td>
+<td>String</td>
+<td>false</td>
+<td>An optional value that a null value input value is replaced with before typing.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-4">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;0e8109ba-1000-4b7d-8a4c-b01bae07027f&quot;,
   &quot;name&quot; : &quot;birth_date&quot;,
   &quot;description&quot; : &quot;Customer Birth Date&quot;,
   &quot;type&quot; : &quot;date&quot;,
@@ -768,13 +842,40 @@
 <td>false</td>
 <td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0.###;-#,##0.###</code></td>
 </tr>
+
+<tr>
+<td>trim</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Trim the field prior to data typing attempts.</td>
+</tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
+
+<tr>
+<td>nullableValues</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
+</tr>
+
+<tr>
+<td>nullReplacementValue</td>
+<td>String</td>
+<td>false</td>
+<td>An optional value that a null value input value is replaced with before typing.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-5">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;9712c383-22d1-44a6-9ca2-0087af4857f1&quot;,
   &quot;name&quot; : &quot;account_balance&quot;,
   &quot;description&quot; : &quot;The current account balance&quot;,
   &quot;type&quot; : &quot;decimal&quot;,
@@ -818,13 +919,40 @@
 <td>false</td>
 <td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0.###;-#,##0.###</code></td>
 </tr>
+
+<tr>
+<td>trim</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Trim the field prior to data typing attempts.</td>
+</tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
+
+<tr>
+<td>nullableValues</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
+</tr>
+
+<tr>
+<td>nullReplacementValue</td>
+<td>String</td>
+<td>false</td>
+<td>An optional value that a null value input value is replaced with before typing.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-6">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;31541ea3-5b74-4753-857c-770bd601c35b&quot;,
   &quot;name&quot; : &quot;last_meter_reading&quot;,
   &quot;description&quot; : &quot;The last reading from the customer power meter.&quot;,
   &quot;type&quot; : &quot;double&quot;,
@@ -861,13 +989,40 @@
 <td>false</td>
 <td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0;-#,##0</code></td>
 </tr>
+
+<tr>
+<td>trim</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Trim the field prior to data typing attempts.</td>
+</tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
+
+<tr>
+<td>nullableValues</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
+</tr>
+
+<tr>
+<td>nullReplacementValue</td>
+<td>String</td>
+<td>false</td>
+<td>An optional value that a null value input value is replaced with before typing.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-7">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;a66f3bbe-d1c6-44c7-b096-a4be59fdcd78&quot;,
   &quot;name&quot; : &quot;update_count&quot;,
   &quot;description&quot; : &quot;Number of updates to this customer record.&quot;,
   &quot;type&quot; : &quot;integer&quot;,
@@ -904,13 +1059,40 @@
 <td>false</td>
 <td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/text/DecimalFormat.html">DecimalFormat</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Formatters be used to specify uncommon number formats such as <code>#,##0.###;#,##0.###-</code> for a decimal with trailing minus sign or <code>#,##0.###;(#,##0.###)</code> for a decimal where the negative is displayed in accounting format with brakets instead of minus sign.<br><br>Default: <code>#,##0;-#,##0</code></td>
 </tr>
+
+<tr>
+<td>trim</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Trim the field prior to data typing attempts.</td>
+</tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
+
+<tr>
+<td>nullableValues</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
+</tr>
+
+<tr>
+<td>nullReplacementValue</td>
+<td>String</td>
+<td>false</td>
+<td>An optional value that a null value input value is replaced with before typing.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-8">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;1c0eec1d-17cd-45da-8744-7a9ef5b8b086&quot;,
   &quot;name&quot; : &quot;transaction_num&quot;,
   &quot;description&quot; : &quot;Global transaction sequence number.&quot;,
   &quot;type&quot; : &quot;long&quot;,
@@ -952,13 +1134,47 @@
 <td>false</td>
 <td>The maximum length of the string value.</td>
 </tr>
+
+<tr>
+<td>regex</td>
+<td>String</td>
+<td>false</td>
+<td>A <a href="https://en.wikipedia.org/wiki/Regular_expression">regular expression</a> to validate the input value against e.g. <code>[a-z]*</code> would match a value made of only lowercase alphabet characters.</td>
+</tr>
+
+<tr>
+<td>trim</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Trim the field prior to data typing attempts.</td>
+</tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
+
+<tr>
+<td>nullableValues</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
+</tr>
+
+<tr>
+<td>nullReplacementValue</td>
+<td>String</td>
+<td>false</td>
+<td>An optional value that a null value input value is replaced with before typing.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-9">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;9712c383-22d1-44a6-9ca2-0087af4857f1&quot;,
   &quot;name&quot; : &quot;first_name&quot;,
   &quot;description&quot; : &quot;Customer First Name&quot;,
   &quot;type&quot; : &quot;string&quot;,
@@ -995,45 +1211,47 @@
 <td>true</td>
 <td>A list of <a href="../schema/">schema</a> fields.</td>
 </tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-10">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;982cbf60-7ba7-4e50-a09b-d8624a5c49e6&quot;,
   &quot;name&quot; : &quot;customer_name&quot;,
   &quot;description&quot; : &quot;Customer Name&quot;,
   &quot;type&quot; : &quot;struct&quot;,
-  &quot;trim&quot; : true,
+  &quot;nullable&quot; : true,
   &quot;metadata&quot;: {
     &quot;primaryKey&quot; : true,
     &quot;position&quot;: 1
   },
   &quot;fields&quot;: [
     {
-      &quot;id&quot; : &quot;9712c383-22d1-44a6-9ca2-0087af4857f1&quot;,
       &quot;name&quot; : &quot;first_name&quot;,
       &quot;description&quot; : &quot;Customer First Name&quot;,
       &quot;type&quot; : &quot;string&quot;,
       &quot;trim&quot; : true,
       &quot;nullable&quot; : true,
       &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
-      &quot;primaryKey&quot; : false,
       &quot;metadata&quot;: {
         &quot;primaryKey&quot; : true,
         &quot;position&quot;: 1
       }
     },
     {
-      &quot;id&quot; : &quot;3f11973f-9448-4b3b-bb2a-bebdbf774ea4&quot;,
       &quot;name&quot; : &quot;last_name&quot;,
       &quot;description&quot; : &quot;Customer Last Name&quot;,
       &quot;type&quot; : &quot;string&quot;,
       &quot;trim&quot; : true,
       &quot;nullable&quot; : true,
       &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
-      &quot;primaryKey&quot; : false,
       &quot;metadata&quot;: {
         &quot;primaryKey&quot; : true,
         &quot;position&quot;: 1
@@ -1069,13 +1287,40 @@
 <td>true</td>
 <td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.</td>
 </tr>
+
+<tr>
+<td>trim</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Trim the field prior to data typing attempts.</td>
+</tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
+
+<tr>
+<td>nullableValues</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
+</tr>
+
+<tr>
+<td>nullReplacementValue</td>
+<td>String</td>
+<td>false</td>
+<td>An optional value that a null value input value is replaced with before typing.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-11">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;0f5162ce-64ca-409d-abd1-f0b5bb5830de&quot;,
   &quot;name&quot; : &quot;transaction_time&quot;,
   &quot;description&quot; : &quot;Time of the database transaction&quot;,
   &quot;type&quot; : &quot;time&quot;,
@@ -1125,13 +1370,40 @@
 <td>false</td>
 <td>Use this capability if converting a Date label into a Timestamp for relative comparisons. Required fields are <code>hour</code>, <code>minute</code>, <code>second</code> and <code>nano</code> . These values can be agreed with source data suppliers to ensure intra-system data alignment. See below for example.</td>
 </tr>
+
+<tr>
+<td>trim</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Trim the field prior to data typing attempts.</td>
+</tr>
+
+<tr>
+<td>nullable</td>
+<td>Boolean</td>
+<td>true</td>
+<td>Whether the field is allowed to be nullable. Will throw fatal exception if this constraint is not met.</td>
+</tr>
+
+<tr>
+<td>nullableValues</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Values which when found will be converted to <code>null</code>. This is generally used for converting text serialisation formats back to correct <code>null</code> data types. This conversion is executed prior to <code>nullable</code> check.</td>
+</tr>
+
+<tr>
+<td>nullReplacementValue</td>
+<td>String</td>
+<td>false</td>
+<td>An optional value that a null value input value is replaced with before typing.</td>
+</tr>
 </tbody>
 </table>
 
 <h3 id="examples-12">Examples</h3>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;8e42c8f0-22a8-40db-9798-6dd533c1de36&quot;,
   &quot;name&quot; : &quot;create_date&quot;,
   &quot;description&quot; : &quot;Customer Creation Date&quot;,
   &quot;type&quot; : &quot;timestamp&quot;,
@@ -1159,7 +1431,6 @@
 <p>For converting a <code>Date</code> label into a <code>Timestamp</code> supply the <code>time</code> key:</p>
 
 <pre><code class="language-json">{
-  &quot;id&quot; : &quot;8e42c8f0-22a8-40db-9798-6dd533c1de36&quot;,
   &quot;name&quot; : &quot;create_date&quot;,
   &quot;description&quot; : &quot;Customer Creation Date&quot;,
   &quot;type&quot; : &quot;timestamp&quot;,

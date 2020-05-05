@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.10.0</span></strong>
+          <span class="version">2.11.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -399,6 +399,24 @@
 
 
 
+<a  title="Change Log" href="https://arc.tripl.ai/changelog/">
+	
+	Change Log
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="License" href="https://arc.tripl.ai/license/">
 	
 	License
@@ -433,9 +451,25 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Security </h1>
+			<h1>Security</h1>
 
 			
+
+<h2 id="encryption">Encryption</h2>
+
+<h3 id="arc-local">Arc Local</h3>
+
+<p>Spark <a href="https://spark.apache.org/docs/latest/security.html">natively supports</a> many different types of encryption. When running as a single master from the <code>Dockerfile</code> (as per <a href="https://github.com/tripl-ai/arc-starter">Arc Starter</a>) then set these options to ensure temporary data spilled to disk and any network traffic will be encrypted with a randomly generated key for each execution:</p>
+
+<pre><code class="language-bash">--conf spark.authenticate=true \
+--conf spark.authenticate.secret=$(openssl rand -hex 64) \
+--conf spark.io.encryption.enabled=true \
+--conf spark.network.crypto.enabled=true \
+</code></pre>
+
+<h3 id="arc-jupyter">Arc Jupyter</h3>
+
+<p>The <a href="#arclocal">Arc Local</a> encrpytion options are also set in <a href="https://github.com/tripl-ai/arc-jupyter">Arc Jupyter</a> and have a secure random secret generated for each notebook session and cannot be overridden by setting custom configurations.</p>
 
 <h2 id="authentication">Authentication</h2>
 
@@ -450,13 +484,13 @@
 }
 </code></pre>
 
-<p>It is strongly discouraged to use simple authentication like above and in favor of mechaisms like <code>AmazonIAM</code> which do not risk exposing secrets by accident.</p>
+<p>It is strongly discouraged to use simple authentication like above and in favor of mechaisms like <code>AmazonIAM</code> which do not risk exposing secrets.</p>
 
 <div class="admonition note">
 <p class="admonition-title">Authentication Scope</p>
 <p><p>Currently these options are defined at a global level meaning that if an <code>authentication</code> object is supplied for one stage it will apply to all stages after that.</p>
 
-<p>This approach is being reworked to be more targeted &lsquo;scope&rsquo;, i.e. to specific bucket or similar.</p>
+<p>Amazon Web Services <code>s3a</code> access is an exception which has <code>stage</code> level scoping of permissions which override globals.</p>
 </p>
 </div>
 
@@ -678,6 +712,8 @@
 
 <h2 id="amazon-web-services">Amazon Web Services</h2>
 
+<h3 id="authentication-1">Authentication</h3>
+
 <p>When running on Amazon Web Services Arc will try to resolve permissions in this order. These can ben overridden for a specific stage by specifying a <a href="../security/#authentication">authentication</a> method.</p>
 
 <ul>
@@ -687,6 +723,30 @@
 <li><code>ContainerCredentialsProvider</code>: IAM Role attached to the container in case of ECS and EKS</li>
 <li><code>AnonymousAWSCredentialsProvider</code>: try to access without credentials - useful for accessing the <a href="https://registry.opendata.aws/">Registry of Open Data on AWS</a>.</li>
 </ul>
+
+<h3 id="encryption-at-rest">Encryption-at-Rest</h3>
+
+<p><a href="https://aws.amazon.com/s3/">Amazon S3</a> supports full encryption for data-at-rest via the <a href="https://aws.amazon.com/kms/">Amazon Key Management Service</a>. When used with Amazon <a href="https://aws.amazon.com/iam/">Identity and Access Management</a> it provides a mechanism for securely storing data and providing access control that works seamlessly with Arc.</p>
+
+<p>A policy like this will work:</p>
+
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;2012-10-17&quot;,
+  &quot;Statement&quot;: [
+    {
+      &quot;Effect&quot;: &quot;Allow&quot;,
+      &quot;Action&quot;: [
+        &quot;kms:Decrypt&quot;,
+        &quot;s3:GetObject&quot;
+      ],
+      &quot;Resource&quot;: [
+        &quot;arn:aws:kms:example-region-1:123456789012:key/example-key-id&quot;,
+        &quot;arn:aws:s3:::example-bucket-name/*&quot;
+      ]
+    }
+  ]
+}
+</code></pre>
 
 
 			<aside class="copyright" role="note">

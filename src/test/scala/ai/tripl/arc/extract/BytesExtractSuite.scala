@@ -25,7 +25,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
 
   val pathView = "pathView"
   val outputView = "outputView"
-  val targetFile = getClass.getResource("/notes.xml.zip").toString
+  val targetFile = getClass.getResource("/binary/puppy.jpg").toString
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "missing.binary"
   val missingDirectory = FileUtils.getTempDirectoryPath() + "/missing/missing.binary"
   val emptyWildcardDirectory = FileUtils.getTempDirectoryPath() + "*.binary"

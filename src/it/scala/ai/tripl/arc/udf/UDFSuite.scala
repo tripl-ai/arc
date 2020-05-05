@@ -17,7 +17,6 @@ import ai.tripl.arc.udf.UDF
 class UDFSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _
-  var logger: ai.tripl.arc.util.log.logger.Logger = _
 
   // minio seems to need ip address not hostname
   val bucketName = "bucket0"
@@ -26,6 +25,8 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
   val minioSecretKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
   val targetFile = s"s3a://${bucketName}/akc_breed_info.csv"
 
+  var expected: String = _
+
   before {
     implicit val spark = SparkSession
                   .builder()
@@ -33,16 +34,17 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .appName("Spark ETL Test")
                   .getOrCreate()
-    spark.sparkContext.setLogLevel("WARN")
+    spark.sparkContext.setLogLevel("INFO")
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
-    logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    // register udf
+    expected = spark.read.option("wholetext", true).text(getClass.getResource("/minio/it/bucket0/akc_breed_info.csv").toString).first.getString(0)
+
     UDF.registerUDFs()(spark, logger, arcContext)
   }
 
@@ -50,16 +52,238 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  test("get_uri: batch") {
+  test("UDFSuite: get_uri - batch") {
     implicit val spark = session
-    val df = spark.sql(s"SELECT DECODE(GET_URI('${targetFile}'), 'UTF-8') AS simpleConf")
-    assert(df.first.getString(0).contains("Breed,height_low_inches"))
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    // test multiple extension types
+    for (extension <- Seq("", ".gz", ".gzip", ".bz2", ".bzip2", ".lz4")) {
+      val conf = s"""{
+        "stages": [
+          {
+            "type": "SQLTransform",
+            "name": "test",
+            "description": "test",
+            "environments": [
+              "production",
+              "test"
+            ],
+            "authentication": {
+              "method": "AmazonAccessKey",
+              "accessKeyID": "${minioAccessKey}",
+              "secretAccessKey": "${minioSecretKey}",
+              "endpoint": "${minioHostPort}"
+            },
+            "sql": "SELECT DECODE(GET_URI('${targetFile}${extension}'), 'UTF-8')",
+            "outputView": "outputView"
+          }
+        ]
+      }"""
+
+      val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+      pipelineEither match {
+        case Left(err) => fail(err.toString)
+        case Right((pipeline, _)) => {
+          val df = ARC.run(pipeline).get
+          assert(df.first.getString(0) == expected)
+        }
+      }
+    }
+  }
+
+  test("UDFSuite: get_uri - batch glob") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "SQLTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "authentication": {
+            "method": "AmazonAccessKey",
+            "accessKeyID": "${minioAccessKey}",
+            "secretAccessKey": "${minioSecretKey}",
+            "endpoint": "${minioHostPort}"
+          },
+          "sql": "SELECT DECODE(GET_URI('s3a://${bucketName}/{a,b,c}kc_breed_info.csv'), 'UTF-8')",
+          "outputView": "outputView",
+          "persist": true
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline).get
+        assert(df.first.getString(0) == expected)
+      }
+    }
   }  
 
-  test("get_uri: streaming") {
+  test("UDFSuite: get_uri - batch glob multiple") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "SQLTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "authentication": {
+            "method": "AmazonAccessKey",
+            "accessKeyID": "${minioAccessKey}",
+            "secretAccessKey": "${minioSecretKey}",
+            "endpoint": "${minioHostPort}"
+          },
+          "sql": "SELECT DECODE(GET_URI('s3a://${bucketName}/{a,b,c}kc_breed_info.*'), 'UTF-8')",
+          "outputView": "outputView",
+          "persist": true
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val thrown0 = intercept[Exception with DetailException] {
+          val df = ARC.run(pipeline).get
+        }
+        assert(thrown0.getMessage.contains("more than one file found for uri 's3a://bucket0/{a,b,c}kc_breed_info.*'"))
+      }
+    }
+  }    
+
+  test("UDFSuite: get_uri - batch binary") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val expected = spark.sqlContext.sparkContext.binaryFiles(getClass.getResource("/minio/it/bucket0/puppy.jpg").toString).map { case (_, portableDataStream) => portableDataStream.toArray }.collect.head
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "SQLTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "authentication": {
+            "method": "AmazonAccessKey",
+            "accessKeyID": "${minioAccessKey}",
+            "secretAccessKey": "${minioSecretKey}",
+            "endpoint": "${minioHostPort}"
+          },
+          "sql": "SELECT GET_URI('s3a://${bucketName}/puppy.jpg')",
+          "outputView": "outputView",
+          "persist": true
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline).get
+        assert(df.first.getAs[Array[Byte]](0).deep == expected.deep)
+      }
+    }
+  }
+
+  test("UDFSuite: get_uri - batch remote s3a://") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "SQLTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "authentication": {
+            "method": "AmazonAnonymous"
+          },
+          "sql": "SELECT DECODE(GET_URI('s3a://nyc-tlc/trip*data/green_tripdata_2013-08.csv'), 'UTF-8')",
+          "outputView": "outputView",
+          "persist": true
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline).get
+        assert(df.first.getString(0).startsWith("VendorID,lpep_pickup_datetime"))
+      }
+    }
+  }
+
+  test("UDFSuite: get_uri - batch remote https://") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "SQLTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "sql": "SELECT DECODE(GET_URI('https://raw.githubusercontent.com/tripl-ai/arc/master/src/it/resources/minio/it/bucket0/akc_breed_info.csv'), 'UTF-8')",
+          "outputView": "outputView",
+          "persist": true
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline).get
+        assert(df.first.getString(0) == expected)
+      }
+    }
+  }  
+
+  test("UDFSuite: get_uri - streaming") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=true)
+    spark.sparkContext.hadoopConfiguration.set("fs.s3a.aws.credentials.provider", CloudUtils.defaultAWSProvidersOverride)
+    CloudUtils.setHadoopConfiguration(Some(Authentication.AmazonAccessKey(None, minioAccessKey, minioSecretKey, Some(minioHostPort), None)))
+    arcContext.serializableConfiguration = new SerializableConfiguration(spark.sparkContext.hadoopConfiguration)
 
     val readStream = spark
       .readStream

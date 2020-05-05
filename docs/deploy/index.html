@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.10.0</span></strong>
+          <span class="version">2.11.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -399,6 +399,24 @@
 
 
 
+<a  title="Change Log" href="https://arc.tripl.ai/changelog/">
+	
+	Change Log
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="License" href="https://arc.tripl.ai/license/">
 	
 	License
@@ -433,7 +451,7 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Deploy </h1>
+			<h1>Deploy</h1>
 
 			
 
@@ -441,7 +459,7 @@
 
 <p>The <a href="https://github.com/tripl-ai/deploy">deploy</a> repository has examples of how to run Arc jobs on common cloud environments.</p>
 
-<h2 id="local">Local</h2>
+<h2 id="arc-local">Arc Local</h2>
 
 <p>An example command to start a job from the <a href="https://github.com/tripl-ai/arc-starter">Arc Starter</a> base directory:</p>
 
@@ -451,11 +469,15 @@
 --env &quot;ETL_CONF_ENV=production&quot; \
 --entrypoint='' \
 --publish 4040:4040 \
-triplai/arc:arc_2.10.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.0.0 \
+triplai/arc:arc_2.11.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.0.0 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory 4g \
 --driver-java-options &quot;-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap&quot; \
+--conf spark.authenticate=true \
+--conf spark.authenticate.secret=$(openssl rand -hex 64) \
+--conf spark.io.encryption.enabled=true \
+--conf spark.network.crypto.enabled=true \
 --class ai.tripl.arc.ARC \
 /opt/spark/jars/arc.jar \
 --etl.config.uri=file:///home/jovyan/examples/tutorial/0/nyctaxi.ipynb
@@ -471,7 +493,7 @@ bin/spark-submit \
 <li><p><code>etl.config.uri</code> is a reserved JVM property which describes to Arc which job to execute. See below for all the properties that can be passed to Arc.</p></li>
 </ul>
 
-<h2 id="kubernetes">Kubernetes</h2>
+<h2 id="arc-on-kubernetes">Arc on Kubernetes</h2>
 
 <p>Arc is built using the offical <a href="https://spark.apache.org/docs/latest/running-on-kubernetes">Spark Kubernetes</a> image <a href="https://spark.apache.org/docs/latest/running-on-kubernetes.html#docker-images">build process</a> which allows Arc to be easily deployed to a Kubernetes cluster.</p>
 
@@ -482,7 +504,7 @@ bin/spark-submit \
 --class ai.tripl.arc.ARC \
 --conf spark.executor.instances=1 \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
---conf spark.kubernetes.container.image=triplai/arc:arc_2.10.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.0.0  \
+--conf spark.kubernetes.container.image=triplai/arc:arc_2.11.0_spark_2.4.5_scala_2.12_hadoop_2.9.2_1.0.0  \
 --conf spark.kubernetes.driverEnv.ETL_CONF_ENV=production \
 --conf spark.kubernetes.driverEnv.ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data \
 --conf spark.kubernetes.driverEnv.ETL_CONF_JOB_URL=https://raw.githubusercontent.com/tripl-ai/arc-starter/master/examples/kubernetes \
