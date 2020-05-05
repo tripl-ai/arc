@@ -1,24 +1,6 @@
 package ai.tripl.arc.util
 
-import java.io.File
-import java.net.URI
-
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.IOUtils
-
 object SQLUtils {
-
-  private lazy val clazz = getClass
-
-  def sqlForResource(name: String): String = {
-    val file = clazz.getResourceAsStream(s"/sql/$name")
-    IOUtils.toString(file, "UTF-8")
-  }
-
-  def sqlForURI(uri: URI): String = {
-    val file = new File(uri.getPath())
-    FileUtils.readFileToString(file, "UTF-8")
-  }
 
   def injectParameters(sql: String, params: Map[String, String], allowMissing: Boolean)(implicit logger: ai.tripl.arc.util.log.logger.Logger): String = {
     // replace sql parameters

@@ -1,5 +1,9 @@
 # Change Log
 
+## next
+
+- prevent early validation of SQL statements which contain `${hiveconf:` or `${hivevar:` to prevent incorrect validation failure.
+
 ## 2.11.0
 
 - add ability to define the Arc [schema](https://arc.tripl.ai/schema/) with a `schema` key (`{"schema": [...]}`) so that common attributes can be defined using [Human-Optimized Config Object Notation](https://en.wikipedia.org/wiki/HOCON) (HOCON) functionality.
