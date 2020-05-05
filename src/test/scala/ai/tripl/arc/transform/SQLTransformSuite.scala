@@ -249,7 +249,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
           name="SQLTransform",
           description=None,
           inputURI=Option(new URI(targetFile)),
-          sql=s"SELECT * FROM ${inputView} WHERE stringDatum = $${sql_string_param} AND booleanDatum = $${sql_boolean}",
+          sql=s"SELECT * FROM ${inputView} WHERE stringDatum = '$${sql_string_param}' AND booleanDatum = $${sql_boolean}",
           outputView=outputView,
           persist=false,
           sqlParams=Map("sql_string_param" -> "test"),
@@ -262,6 +262,38 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     }
     assert(thrown0.getMessage === "No replacement value found in parameters: [sql_string_param] for placeholders: [${sql_boolean}].")
   }
+
+  // test("SQLTransform: sqlParams with environment variable") {
+  //   implicit val spark = session
+  //   import spark.implicits._
+  //   implicit val logger = TestUtils.getLogger()
+  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+  //   val df = TestUtils.getKnownDataset
+  //   df.createOrReplaceTempView(inputView)
+
+  //   val dataset = transform.SQLTransformStage.execute(
+  //     transform.SQLTransformStage(
+  //       plugin=new transform.SQLTransform,
+  //       name="SQLTransform",
+  //       description=None,
+  //       inputURI=Option(new URI(targetFile)),
+  //       sql=s"SELECT * FROM ${inputView} WHERE stringDatum = '$${sql_string_param}' AND booleanDatum = $${ETL_CONF_TEST_SQL_PARAM}",
+  //       outputView=outputView,
+  //       persist=false,
+  //       sqlParams=Map("sql_string_param" -> "test,breakdelimiter"),
+  //       authentication=None,
+  //       params=Map.empty,
+  //       numPartitions=None,
+  //       partitionBy=Nil
+  //     )
+  //   ).get
+
+  //   val actual = dataset.drop($"nullDatum")
+  //   val expected = df.filter(df("booleanDatum")===true).drop($"nullDatum")
+
+  //   assert(TestUtils.datasetEquality(expected, actual))
+  // }
 
   test("SQLTransform: predicatePushdown") {
     implicit val spark = session

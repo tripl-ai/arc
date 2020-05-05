@@ -21,6 +21,7 @@ import ai.tripl.arc.config.Error
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.util.log.LoggerFactory
 import ai.tripl.arc.util.TestUtils
+import ai.tripl.arc.transform.SQLTransformStage
 
 class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
@@ -594,16 +595,23 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  // this test verifies ipynb for inline sql
-  test("Test read .ipynb tutorial") {
+  // this test verifies ipynb with hiveconf
+  test("Test read .ipynb with ${hiveconf:}") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false,commandLineArguments=Map[String,String]("ETL_CONF_DATA_URL" -> "", "ETL_CONF_JOB_URL" -> ""))
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
-    val targetFile = getClass.getResource("/conf/nyctaxi.ipynb").toString
+    val targetFile = getClass.getResource("/conf/hive_variable.ipynb").toString
     val file = spark.read.option("wholetext", true).text(targetFile)
     val conf = ConfigUtils.readIPYNB(None, file.first.getString(0))
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        println(pipeline.stages(0).asInstanceOf[SQLTransformStage].sql == "SELECT ${hiveconf:test_variable}")
+      }
+    }    
   }  
 
 }

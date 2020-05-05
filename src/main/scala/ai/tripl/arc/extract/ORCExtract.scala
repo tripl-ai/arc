@@ -148,10 +148,6 @@ object ORCExtractStage {
         Left(FileNotFoundExtractError(Option(stage.input)))
       case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
         Left(PathNotExistsExtractError(Option(stage.input)))
-
-      case e: AnalysisException  =>
-        println(e.getMessage())
-        throw new Exception(e)
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stage.stageDetail
       }
