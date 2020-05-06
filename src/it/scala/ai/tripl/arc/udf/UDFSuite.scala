@@ -130,46 +130,6 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     }
   }  
 
-  test("UDFSuite: get_uri - batch glob multiple") {
-    implicit val spark = session
-    implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-    val conf = s"""{
-      "stages": [
-        {
-          "type": "SQLTransform",
-          "name": "test",
-          "description": "test",
-          "environments": [
-            "production",
-            "test"
-          ],
-          "authentication": {
-            "method": "AmazonAccessKey",
-            "accessKeyID": "${minioAccessKey}",
-            "secretAccessKey": "${minioSecretKey}",
-            "endpoint": "${minioHostPort}"
-          },
-          "sql": "SELECT DECODE(GET_URI('s3a://${bucketName}/{a,b,c}kc_breed_info.*'), 'UTF-8')",
-          "outputView": "outputView",
-          "persist": true
-        }
-      ]
-    }"""
-
-    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
-    pipelineEither match {
-      case Left(err) => fail(err.toString)
-      case Right((pipeline, _)) => {
-        val thrown0 = intercept[Exception with DetailException] {
-          val df = ARC.run(pipeline).get
-        }
-        assert(thrown0.getMessage.contains("more than one file found for uri 's3a://bucket0/{a,b,c}kc_breed_info.*'"))
-      }
-    }
-  }    
-
   test("UDFSuite: get_uri - batch binary") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
@@ -319,7 +279,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     val df = spark.table("transformed")
 
     try {
-      Thread.sleep(2000)
+      Thread.sleep(5000)
       assert(df.count > 0)
 
       assert(df.first.getString(0).contains("Breed,height_low_inches"))
