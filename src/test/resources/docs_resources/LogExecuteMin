@@ -1,0 +1,9 @@
+{
+  "type": "LogExecute",
+  "name": "log customer counts",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/customer_error_threshold.sql"
+}

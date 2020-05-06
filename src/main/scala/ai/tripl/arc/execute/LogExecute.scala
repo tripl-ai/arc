@@ -1,4 +1,4 @@
-package ai.tripl.arc.validate
+package ai.tripl.arc.execute
 
 import java.net.URI
 import scala.collection.JavaConverters._
@@ -16,7 +16,7 @@ import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.Utils
 
-class SQLValidate extends PipelineStagePlugin {
+class LogExecute extends PipelineStagePlugin {
 
   val version = Utils.getFrameworkVersion
 
@@ -47,7 +47,7 @@ class SQLValidate extends PipelineStagePlugin {
 
         val uri = if (isInputURI) Option(parsedURI) else None
 
-        val stage = SQLValidateStage(
+        val stage = LogExecuteStage(
           plugin=this,
           name=name,
           description=description,
@@ -72,8 +72,8 @@ class SQLValidate extends PipelineStagePlugin {
   }
 }
 
-case class SQLValidateStage(
-    plugin: SQLValidate,
+case class LogExecuteStage(
+    plugin: LogExecute,
     name: String,
     description: Option[String],
     inputURI: URI,
@@ -83,15 +83,15 @@ case class SQLValidateStage(
   ) extends PipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
-    SQLValidateStage.execute(this)
+    LogExecuteStage.execute(this)
   }
 }
 
-object SQLValidateStage {
+object LogExecuteStage {
 
-  def execute(stage: SQLValidateStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+  def execute(stage: LogExecuteStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
-    val signature = "SQLValidate requires query to return 1 row with [outcome: boolean, message: string] signature."
+    val signature = "LogExecute requires query to return 1 row with [message: string] signature."
 
     val stmt = SQLUtils.injectParameters(stage.sql, stage.sqlParams, false)
     stage.stageDetail.put("sql", stmt)
@@ -105,7 +105,7 @@ object SQLValidateStage {
     }
     val count = df.persist(arcContext.storageLevel).count
 
-    if (df.count != 1 || df.schema.length != 2) {
+    if (df.count != 1 || df.schema.length != 1) {
       throw new Exception(s"""${signature} Query returned ${count} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].""") with DetailException {
         override val detail = stage.stageDetail
       }
@@ -115,16 +115,15 @@ object SQLValidateStage {
 
     try {
       val row = df.first
-      val resultIsNull = row.isNullAt(0)
-      val messageIsNull = row.isNullAt(1)
+      val messageIsNull = row.isNullAt(0)
 
-      if (resultIsNull) {
-        throw new Exception(s"""${signature} Query returned [null, ${if (messageIsNull) "null" else "not null"}].""") with DetailException {
+      if (messageIsNull) {
+        throw new Exception(s"""${signature} Query returned [null].""") with DetailException {
           override val detail = stage.stageDetail
         }
       }
 
-      val message = row.getString(1)
+      val message = row.getString(0)
 
       // try to parse to json
       try {
@@ -134,15 +133,6 @@ object SQLValidateStage {
       } catch {
         case e: Exception =>
           stage.stageDetail.put("message", message)
-      }
-
-      val result = row.getBoolean(0)
-
-      // if result is false throw exception to exit job
-      if (result == false) {
-        throw new Exception(s"SQLValidate failed with message: '${message}'.") with DetailException {
-          override val detail = stage.stageDetail
-        }
       }
     } catch {
       case e: ClassCastException =>

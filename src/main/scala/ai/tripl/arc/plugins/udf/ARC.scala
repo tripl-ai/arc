@@ -2,6 +2,7 @@ package ai.tripl.arc.plugins.udf
 
 import java.io.CharArrayWriter
 import java.net.URI
+import java.io.InputStream
 import java.io.ByteArrayInputStream
 import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.XMLStreamWriter
@@ -44,6 +45,8 @@ class ARC extends ai.tripl.arc.plugins.UDFPlugin {
     spark.sqlContext.udf.register("get_json_long_array", ARCPlugin.getJSONLongArray _ )
     spark.sqlContext.udf.register("get_uri", ARCPlugin.getURI _ )
     spark.sqlContext.udf.register("get_uri_delay", ARCPlugin.getURIDelay _ )
+    spark.sqlContext.udf.register("get_uri_array", ARCPlugin.getURIArray _ )
+    spark.sqlContext.udf.register("get_uri_array_delay", ARCPlugin.getURIArrayDelay _ )
     spark.sqlContext.udf.register("random", ARCPlugin.getRandom _ )
     spark.sqlContext.udf.register("to_xml", ARCPlugin.toXML _ )
     spark.sqlContext.udf.register("struct_keys", ARCPlugin.structKeys _ )
@@ -114,14 +117,27 @@ object ARCPlugin {
     input.schema.fieldNames
   }
 
+  case class URIInputStream(
+    path: String,
+    inputStream: InputStream
+  )
+
   // get byte array content of uri
   def getURI(uri: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[Byte] = {
-    getURIDelay(uri, 0L)
+    getURIArrayDelay(uri, 0L).head
   }
 
   def getURIDelay(uri: String, delay: Long)(implicit spark: SparkSession, arcContext: ARCContext): Array[Byte] = {
+    getURIArrayDelay(uri, delay).head
+  }
 
-    val (glob, inputStream) = uri match {
+  def getURIArray(uri: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[Array[Byte]]  = {
+    getURIArrayDelay(uri, 0L)
+  }
+
+  def getURIArrayDelay(uri: String, delay: Long)(implicit spark: SparkSession, arcContext: ARCContext): Array[Array[Byte]] = {
+
+    val uriInputStreams = uri match {
       case uri: String if (uri.startsWith("http") || uri.startsWith("https")) => {
         val client = HttpClients.createDefault
         try {
@@ -134,7 +150,7 @@ object ARCPlugin {
             if (statusCode != 200) {
               throw new Exception(s"""Expected StatusCode = 200 when GET '${uri}' but server responded with ${statusCode} (${reasonPhrase}).""")
             }
-            (uri, new ByteArrayInputStream(IOUtils.toByteArray(response.getEntity.getContent)))
+            Array(URIInputStream(uri, new ByteArrayInputStream(IOUtils.toByteArray(response.getEntity.getContent))))
           } finally {
             response.close
           }
@@ -151,24 +167,26 @@ object ARCPlugin {
         val globStatus = fs.globStatus(path)
         globStatus.length match {
           case 0 => throw new Exception(s"no files found for uri '${uri}'")
-          case 1 => (globStatus(0).getPath.toString, fs.open(globStatus(0).getPath))
-          case _ => throw new Exception(s"more than one file found for uri '${uri}'")
+          case _ => globStatus.map { fileStatus => URIInputStream(fileStatus.getPath.toString, fs.open(fileStatus.getPath)) }
         }
       }
     }
 
-    // create inputStream matching compression if possible
-    val compressionHandler = glob.toString match {
-      case u: String if (u.endsWith(".gzip") || u.endsWith(".gz")) => new java.util.zip.GZIPInputStream(inputStream)
-      case u: String if (u.endsWith(".bzip2") || u.endsWith(".bz2")) => new org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream(inputStream)
-      case u: String if u.endsWith(".deflate") => new java.util.zip.DeflaterInputStream(inputStream)
-      case u: String if u.endsWith(".lz4") => new net.jpountz.lz4.LZ4FrameInputStream(inputStream)
-      case _ => inputStream
+    uriInputStreams.map { uriInputStream =>
+      Thread.sleep(delay)
+      IOUtils.toByteArray(compressedInputStream(uriInputStream))
     }
+  }
 
-    Thread.sleep(delay)
-
-    IOUtils.toByteArray(compressionHandler)
+  // compressedInputStream wraps inputstreams with compression inputstreams based on file name
+  def compressedInputStream(fileInputStream: URIInputStream)(implicit spark: SparkSession, arcContext: ARCContext): InputStream = {
+    fileInputStream.path match {
+      case u: String if (u.endsWith(".gzip") || u.endsWith(".gz")) => new java.util.zip.GZIPInputStream(fileInputStream.inputStream)
+      case u: String if (u.endsWith(".bzip2") || u.endsWith(".bz2")) => new org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream(fileInputStream.inputStream)
+      case u: String if u.endsWith(".deflate") => new java.util.zip.DeflaterInputStream(fileInputStream.inputStream)
+      case u: String if u.endsWith(".lz4") => new net.jpountz.lz4.LZ4FrameInputStream(fileInputStream.inputStream)
+      case _ => fileInputStream.inputStream
+    }
   }
 
 }

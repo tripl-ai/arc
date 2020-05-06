@@ -1,0 +1,15 @@
+{
+  "type": "LogExecute",
+  "name": "log customer counts",
+  "description": "log customer counts",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/customer_error_threshold_dynamic.sql",
+  "sql": "SELECT 'this message will appear in logs' AS message",
+  "authentication": {},
+  "sqlParams": {
+    "record_error_tolerance_percentage": "0.05"
+  }
+}

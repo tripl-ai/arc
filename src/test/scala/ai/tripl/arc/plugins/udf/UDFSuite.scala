@@ -264,4 +264,45 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(System.currentTimeMillis() - startTime > 3000)
   }
 
+  test("UDFSuite: get_uri_array: batch") {
+    implicit val spark = session
+    val df = spark.sql(s"""
+    SELECT 
+      DECODE(col, 'UTF-8') AS value
+    FROM (
+      SELECT EXPLODE(GET_URI_ARRAY('${targetFile}*'))
+    ) files
+    """)
+    assert(df.count == 6)
+    val rows = df.collect()
+    assert(rows.forall( row => row.getString(0) == expected))
+  }  
+
+  test("UDFSuite: get_uri_array_delay: batch") {
+    implicit val spark = session
+    val startTime = System.currentTimeMillis()
+    val df = spark.sql(s"""
+    SELECT 
+      DECODE(col, 'UTF-8') AS value
+    FROM (
+      SELECT EXPLODE(GET_URI_ARRAY_DELAY('${targetFile}*', 1000))
+    ) files
+    """)
+    val count = 6
+    assert(df.count == count)
+    val rows = df.collect()
+    assert(rows.forall( row => row.getString(0) == expected))
+    assert(System.currentTimeMillis() - startTime > (1000 * count))
+  }    
+
+  test("UDFSuite: get_uri_array: batch transform") {
+    implicit val spark = session
+    val df = spark.sql(s"""
+    SELECT TRANSFORM(GET_URI_ARRAY('${targetFile}*'), x -> DECODE(x, 'UTF-8'))
+    """)
+    assert(df.count == 1)
+    assert(df.first.getAs[Seq[String]](0).mkString == List(expected, expected, expected, expected, expected, expected).mkString)
+  } 
+  
+
 }

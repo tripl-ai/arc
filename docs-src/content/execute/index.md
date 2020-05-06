@@ -114,6 +114,33 @@ For example, if a job reads from a Kafka topic and writes the results to `parque
 #### Minimal
 {{< readfile file="/resources/docs_resources_plugins/KafkaCommitExecuteMin" highlight="json" >}}
 
+
+## LogExecute
+##### Since: 2.12.0 - Supports Streaming: True
+
+The `LogExecute` takes an input SQL statement which must return a `string` and will write the output to the Arc logs. `LogExecute` will try to convert the message from a JSON string manually created in the SQL statement so that logging is easier to parse by log aggregation tools.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|*true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}} Required if `sql` not provided.|
+|sql|String|*true|{{< readfile file="/content/partials/fields/sql.md" markdown="true" >}} Required if `inputURI` not provided.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/LogExecuteMin" highlight="json" >}}
+
+#### Complete
+{{< readfile file="/resources/docs_resources/LogExecuteComplete" highlight="json" >}}
+
+
 ## PipelineExecute
 ##### Since: 1.0.9 - Supports Streaming: True
 

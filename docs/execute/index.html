@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.11.0</span></strong>
+          <span class="version">2.12.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -875,6 +875,108 @@
   <span class="nt">&#34;groupID&#34;</span><span class="p">:</span> <span class="s2">&#34;spark-customer-extract-job&#34;</span>
 <span class="p">}</span></code></pre></div>
 
+<h2 id="logexecute">LogExecute</h2>
+
+<h5 id="since-2-12-0-supports-streaming-true">Since: 2.12.0 - Supports Streaming: True</h5>
+
+<p>The <code>LogExecute</code> takes an input SQL statement which must return a <code>string</code> and will write the output to the Arc logs. <code>LogExecute</code> will try to convert the message from a JSON string manually created in the SQL statement so that logging is easier to parse by log aggregation tools.</p>
+
+<h3 id="parameters-4">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
+<td>*true</td>
+<td>URI of the input file containing the SQL statement. Required if <code>sql</code> not provided.</td>
+</tr>
+
+<tr>
+<td>sql</td>
+<td>String</td>
+<td>*true</td>
+<td>A SQL statement to execute. Required if <code>inputURI</code> not provided.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>sqlParams</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-4">Examples</h3>
+
+<h4 id="minimal-4">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;LogExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;log customer counts&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/customer_error_threshold.sql&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-3">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;LogExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;log customer counts&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;log customer counts&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/customer_error_threshold_dynamic.sql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;sql&#34;</span><span class="p">:</span> <span class="s2">&#34;SELECT &#39;this message will appear in logs&#39; AS message&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;record_error_tolerance_percentage&#34;</span><span class="p">:</span> <span class="s2">&#34;0.05&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
 <h2 id="pipelineexecute">PipelineExecute</h2>
 
 <h5 id="since-1-0-9-supports-streaming-true">Since: 1.0.9 - Supports Streaming: True</h5>
@@ -883,7 +985,7 @@
 
 <p>An example use case could be a <code>pipeline</code> which defines how your organisation defines active customer records which could then be embedded in multiple downstream <code>pipelines</code> to ensure definition consistency.</p>
 
-<h3 id="parameters-4">Parameters</h3>
+<h3 id="parameters-5">Parameters</h3>
 
 <table>
 <thead>
@@ -933,9 +1035,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-4">Examples</h3>
+<h3 id="examples-5">Examples</h3>
 
-<h4 id="minimal-4">Minimal</h4>
+<h4 id="minimal-5">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;PipelineExecute&#34;</span><span class="p">,</span>
@@ -947,7 +1049,7 @@
   <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/job/active_customers.json&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-3">Complete</h4>
+<h4 id="complete-4">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;PipelineExecute&#34;</span><span class="p">,</span>
