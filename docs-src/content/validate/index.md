@@ -94,7 +94,7 @@ The `SQLValidate` takes an input SQL statement which must return [Boolean, Optio
 
 For example it can be used to perform automated extract validation against file formats which may have a header/footer layout or datasets where a certain level of data conversion errors are acceptable.
 
-`SQLValidate` will try to convert the message from a JSON string which can be manually created in the SQL statement so that logging is easier to parse by log aggregation tools.
+`SQLValidate` will try to convert the message from a JSON string manually created in the SQL statement so that logging is easier to parse by log aggregation tools.
 
 See [patterns](../solutions/) for more examples.
 

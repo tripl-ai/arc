@@ -782,9 +782,14 @@ object ConfigUtils {
     def err(lineNumber: Option[Int], msg: String): Either[Errors, String] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
     try {
-      val parser = spark.sessionState.sqlParser
-      parser.parsePlan(sql)
-      Right(sql)
+      // hiveconf/hivevar may not have resolved by this stage of the job so will not resolve correctly resulting in incorrect failure
+      if (sql.contains("${hiveconf:") || sql.contains("${hivevar:")) {
+        Right(sql)
+      } else {
+        val parser = spark.sessionState.sqlParser
+        parser.parsePlan(sql)
+        Right(sql)
+      }
     } catch {
       case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), e.getMessage)
     }

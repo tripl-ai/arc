@@ -1,5 +1,14 @@
 # Change Log
 
+**This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.**
+
+## 2.12.0
+
+- **FIX** prevent early validation failure of SQL statements which contain `${hiveconf:` or `${hivevar:`.
+- add `get_uri_array` user defined function which returns the contents of a Glob/URI as an `Array[Array[Byte]]`.
+- add `get_uri_array_delay` which is the same as `get_uri_array` but adds a delay in milliseconds to reduce DDOS liklihood.
+- add `LogExecute` which allows logging to the Arc log similar to `SQLValidate` but without the success/fail decision.
+
 ## 2.11.0
 
 - add ability to define the Arc [schema](https://arc.tripl.ai/schema/) with a `schema` key (`{"schema": [...]}`) so that common attributes can be defined using [Human-Optimized Config Object Notation](https://en.wikipedia.org/wiki/HOCON) (HOCON) functionality.
@@ -10,10 +19,8 @@
 
 ## 2.10.2
 
-- fix `get_uri` ability to read compressed file formats `.gzip`, `.bzip2`, `.lz4`.
+- **FIX** `get_uri` ability to read compressed file formats `.gzip`, `.bzip2`, `.lz4`.
 - add `get_uri` ability to read from `http` and `https` sources.
-
-**NOTE** This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.
 
 ## 2.10.1
 
@@ -29,7 +36,7 @@
 - add `to_xml` UDF.
 - add support for `struct` and `array` types in the schema definition file.
 - add support for `TextExtract` to be suppiled an `inputView`.
-- fix any deprecations preventing upgrade to Spark 3.0.
+- **FIX** any deprecations preventing upgrade to Spark 3.0.
 - deprecate of `get_json_double_array`, `get_json_integer_array`, `get_json_long_array` in favor of inbuilt `get_json_object`.
 - ability to pass in config file via `http` or `https`.
 - **BREAKING** remove `DataFramePrinter` lifecycle plugin as it presents too much risk of data leakage.
@@ -38,20 +45,20 @@
 
 ## 2.9.0
 
-- fix defect with `JSONExtract` not using `basePath` correctly.
+- **FIX** defect with `JSONExtract` not using `basePath` correctly.
 - add ability to export to multiple files by providing second `filename` column to `TextLoad` when set to `singleFile` mode but not create a directory like the standard Spark behavior.
 - add ability to provide an [XML Schema Definition](https://en.wikipedia.org/wiki/XML_Schema_(W3C)) (XSD) to `XMLExtract` to validate input file schemas.
 - add `blas` and `lapack` implementation to `MLTransform` logs to help debug performance.
 
 ## 2.8.1
 
-- fix defect with `MetadataTransform` logic.
+- **FIX** defect with `MetadataTransform` logic.
 - add `contentLength` to `HTTPExtract` response and logs.
 
 ## 2.8.0
 
-- fix defect which reported job failure when running in YARN mode.
-- fix defect relating to Amazon S3 protocol to use when running on [Amazon EMR](https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-plan-file-systems.html)
+- **FIX** defect which reported job failure when running in YARN mode.
+- **FIX** defect relating to Amazon S3 protocol to use when running on [Amazon EMR](https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-plan-file-systems.html)
 - added  `sql` attribute to `SQLTransform` and `SQLValidate` allowing inline SQL statements.
 - added capability to replace the returned dataset via a `LifecyclePlugin` `after` hook.
 - removed `tutorials` directory from main arc repo as it is available via [arc-starter](https://github.com/tripl-ai/arc-starter).
@@ -74,7 +81,7 @@
 
 ## 2.4.0
 
-- fixed defect in `DelimitedExtract` when running in streaming mode.
+- **FIX** defect in `DelimitedExtract` when running in streaming mode.
 - added `MetadataExtract` stage which creates an Arc `metadata` dataframe from an input view.
 - added `MetadataTransform` stage which attaches/overrides the metadata attached to an input view.
 - added `MetadataValidate` stage which allows runtime rules to be aplied against an input view's metadata.
@@ -96,7 +103,7 @@
 - add ability to execute [arc-jupyter](https://github.com/tripl-ai/arc-jupyter) notebook files (.ipynb) directly without conversion to arc 'job'.
 - add `watermark` to `DelimitedExtract`, `ImageExtract`, `JSONExtract`, `ORCExtract`, `ParquetExtract` and `TextExtract` for structured streaming.
 - performance and usability improvements for `SimilarityJoinTransform`. Can now cope with null inputs and performs caching to prevent recalculation of input data.
-- fix issue where malformed job configuration files would not error and job would exit with success.
+- **FIX** issue where malformed job configuration files would not error and job would exit with success.
 
 ## 2.1.0
 
@@ -342,7 +349,7 @@ Arc 2.0.0 is a major (breaking) change which has been done for multiple reasons:
 
 ## 1.0.5
 
-- fix a longstanding defect in `TypingTranform` not correctly passing through values which are already of correct type.
+- **FIX** a longstanding defect in `TypingTranform` not correctly passing through values which are already of correct type.
 - change the `_index` field added to `*Extract` from `monotonically_increasing_id()` to a `row_number(monotonically_increasing_id())` so that the index aligns to underlying files and is more intuitive to use.
 
 ## 1.0.4

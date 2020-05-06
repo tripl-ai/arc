@@ -1,44 +1,42 @@
 package ai.tripl.arc.util
 
-import java.io.File
-import java.net.URI
-
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.IOUtils
-
 object SQLUtils {
 
-  private lazy val clazz = getClass
-
-  def sqlForResource(name: String): String = {
-    val file = clazz.getResourceAsStream(s"/sql/$name")
-    IOUtils.toString(file, "UTF-8")
-  }
-
-  def sqlForURI(uri: URI): String = {
-    val file = new File(uri.getPath())
-    FileUtils.readFileToString(file, "UTF-8")
-  }
-
   def injectParameters(sql: String, params: Map[String, String], allowMissing: Boolean)(implicit logger: ai.tripl.arc.util.log.logger.Logger): String = {
-    // replace sql parameters
-    // using regex from the apache zeppelin project
-    val stmt = params.foldLeft(sql) {
-      case (sql, (k,v)) => {
-          val placeholderRegex = "[$][{]\\s*" + k + "\\s*(?:=[^}]+)?[}]"
+    // replace sqlParams parameters
+    var stmt = params.foldLeft(sql) {
+      case (stmt, (k,v)) => {
+          val matchPlaceholderRegex = "[$][{]\\s*" + k + "\\s*(?:=[^}]+)?[}]"
 
           // throw error if no match found
-          if (!allowMissing && placeholderRegex.r.findAllIn(sql).length == 0) {
+          if (!allowMissing && matchPlaceholderRegex.r.findAllIn(stmt).length == 0) {
             throw new Exception(s"No placeholder found for parameter: '${k}'.")
           }
 
-          placeholderRegex.r.replaceAllIn(sql, v)
+          matchPlaceholderRegex.r.replaceAllIn(stmt, v)
       }
     }
 
     // find missing replacements
-    val missingRegex = "[$][{](\\w*)(?:=[^}]+)?[}]"
-    val missingValues = missingRegex.r.findAllIn(stmt).toList
+    val placeholdersRegex = "[$][{](\\w*)(?:=[^}]+)?[}]"
+
+    // // replace any environment variable parameters
+    // val remainingValues = placeholdersRegex.r.findAllMatchIn(stmt)
+    // stmt = remainingValues.foldLeft(stmt) {
+    //   case (stmt, m) => {
+    //     val k = m.group(1)
+    //     envOrNone(k) match {
+    //       case Some(v) => {
+    //         val matchPlaceholderRegex = "[$][{]\\s*" + k + "\\s*(?:=[^}]+)?[}]"
+    //         matchPlaceholderRegex.r.replaceAllIn(stmt, v)
+    //       }
+    //       case None => stmt
+    //     }
+    //   }
+    // }
+
+    // find any values not replaced
+    val missingValues = placeholdersRegex.r.findAllIn(stmt).toList
     if (missingValues.length != 0) {
       throw new Exception(s"""No replacement value found in parameters: ${params.keys.toList.mkString("[", ", ", "]")} for placeholders: ${missingValues.mkString("[", ", ", "]")}.""")
     }

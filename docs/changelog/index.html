@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.11.0</span></strong>
+          <span class="version">2.12.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -455,6 +455,17 @@
 
 			<h1 id="change-log">Change Log</h1>
 
+<p><strong>This is likely the last release supporting <code>Scala 2.11</code> given the preview release of <code>Spark 3.0</code> which only supports <code>Scala 2.12</code>.</strong></p>
+
+<h2 id="2-12-0">2.12.0</h2>
+
+<ul>
+<li><strong>FIX</strong> prevent early validation failure of SQL statements which contain <code>${hiveconf:</code> or <code>${hivevar:</code>.</li>
+<li>add <code>get_uri_array</code> user defined function which returns the contents of a Glob/URI as an <code>Array[Array[Byte]]</code>.</li>
+<li>add <code>get_uri_array_delay</code> which is the same as <code>get_uri_array</code> but adds a delay in milliseconds to reduce DDOS liklihood.</li>
+<li>add <code>LogExecute</code> which allows logging to the Arc log similar to <code>SQLValidate</code> but without the success/fail decision.</li>
+</ul>
+
 <h2 id="2-11-0">2.11.0</h2>
 
 <ul>
@@ -468,11 +479,9 @@
 <h2 id="2-10-2">2.10.2</h2>
 
 <ul>
-<li>fix <code>get_uri</code> ability to read compressed file formats <code>.gzip</code>, <code>.bzip2</code>, <code>.lz4</code>.</li>
+<li><strong>FIX</strong> <code>get_uri</code> ability to read compressed file formats <code>.gzip</code>, <code>.bzip2</code>, <code>.lz4</code>.</li>
 <li>add <code>get_uri</code> ability to read from <code>http</code> and <code>https</code> sources.</li>
 </ul>
-
-<p><strong>NOTE</strong> This is likely the last release supporting <code>Scala 2.11</code> given the preview release of <code>Spark 3.0</code> which only supports <code>Scala 2.12</code>.</p>
 
 <h2 id="2-10-1">2.10.1</h2>
 
@@ -491,7 +500,7 @@
 <li>add <code>to_xml</code> UDF.</li>
 <li>add support for <code>struct</code> and <code>array</code> types in the schema definition file.</li>
 <li>add support for <code>TextExtract</code> to be suppiled an <code>inputView</code>.</li>
-<li>fix any deprecations preventing upgrade to Spark 3.0.</li>
+<li><strong>FIX</strong> any deprecations preventing upgrade to Spark 3.0.</li>
 <li>deprecate of <code>get_json_double_array</code>, <code>get_json_integer_array</code>, <code>get_json_long_array</code> in favor of inbuilt <code>get_json_object</code>.</li>
 <li>ability to pass in config file via <code>http</code> or <code>https</code>.</li>
 <li><strong>BREAKING</strong> remove <code>DataFramePrinter</code> lifecycle plugin as it presents too much risk of data leakage.</li>
@@ -502,7 +511,7 @@
 <h2 id="2-9-0">2.9.0</h2>
 
 <ul>
-<li>fix defect with <code>JSONExtract</code> not using <code>basePath</code> correctly.</li>
+<li><strong>FIX</strong> defect with <code>JSONExtract</code> not using <code>basePath</code> correctly.</li>
 <li>add ability to export to multiple files by providing second <code>filename</code> column to <code>TextLoad</code> when set to <code>singleFile</code> mode but not create a directory like the standard Spark behavior.</li>
 <li>add ability to provide an <a href="https://en.wikipedia.org/wiki/XML_Schema_(W3C)">XML Schema Definition</a> (XSD) to <code>XMLExtract</code> to validate input file schemas.</li>
 <li>add <code>blas</code> and <code>lapack</code> implementation to <code>MLTransform</code> logs to help debug performance.</li>
@@ -511,15 +520,15 @@
 <h2 id="2-8-1">2.8.1</h2>
 
 <ul>
-<li>fix defect with <code>MetadataTransform</code> logic.</li>
+<li><strong>FIX</strong> defect with <code>MetadataTransform</code> logic.</li>
 <li>add <code>contentLength</code> to <code>HTTPExtract</code> response and logs.</li>
 </ul>
 
 <h2 id="2-8-0">2.8.0</h2>
 
 <ul>
-<li>fix defect which reported job failure when running in YARN mode.</li>
-<li>fix defect relating to Amazon S3 protocol to use when running on <a href="https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-plan-file-systems.html">Amazon EMR</a></li>
+<li><strong>FIX</strong> defect which reported job failure when running in YARN mode.</li>
+<li><strong>FIX</strong> defect relating to Amazon S3 protocol to use when running on <a href="https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-plan-file-systems.html">Amazon EMR</a></li>
 <li>added  <code>sql</code> attribute to <code>SQLTransform</code> and <code>SQLValidate</code> allowing inline SQL statements.</li>
 <li>added capability to replace the returned dataset via a <code>LifecyclePlugin</code> <code>after</code> hook.</li>
 <li>removed <code>tutorials</code> directory from main arc repo as it is available via <a href="https://github.com/tripl-ai/arc-starter">arc-starter</a>.</li>
@@ -550,7 +559,7 @@
 <h2 id="2-4-0">2.4.0</h2>
 
 <ul>
-<li>fixed defect in <code>DelimitedExtract</code> when running in streaming mode.</li>
+<li><strong>FIX</strong> defect in <code>DelimitedExtract</code> when running in streaming mode.</li>
 <li>added <code>MetadataExtract</code> stage which creates an Arc <code>metadata</code> dataframe from an input view.</li>
 <li>added <code>MetadataTransform</code> stage which attaches/overrides the metadata attached to an input view.</li>
 <li>added <code>MetadataValidate</code> stage which allows runtime rules to be aplied against an input view&rsquo;s metadata.</li>
@@ -578,7 +587,7 @@
 <li>add ability to execute <a href="https://github.com/tripl-ai/arc-jupyter">arc-jupyter</a> notebook files (.ipynb) directly without conversion to arc &lsquo;job&rsquo;.</li>
 <li>add <code>watermark</code> to <code>DelimitedExtract</code>, <code>ImageExtract</code>, <code>JSONExtract</code>, <code>ORCExtract</code>, <code>ParquetExtract</code> and <code>TextExtract</code> for structured streaming.</li>
 <li>performance and usability improvements for <code>SimilarityJoinTransform</code>. Can now cope with null inputs and performs caching to prevent recalculation of input data.</li>
-<li>fix issue where malformed job configuration files would not error and job would exit with success.</li>
+<li><strong>FIX</strong> issue where malformed job configuration files would not error and job would exit with success.</li>
 </ul>
 
 <h2 id="2-1-0">2.1.0</h2>
@@ -898,7 +907,7 @@
 <h2 id="1-0-5">1.0.5</h2>
 
 <ul>
-<li>fix a longstanding defect in <code>TypingTranform</code> not correctly passing through values which are already of correct type.</li>
+<li><strong>FIX</strong> a longstanding defect in <code>TypingTranform</code> not correctly passing through values which are already of correct type.</li>
 <li>change the <code>_index</code> field added to <code>*Extract</code> from <code>monotonically_increasing_id()</code> to a <code>row_number(monotonically_increasing_id())</code> so that the index aligns to underlying files and is more intuitive to use.</li>
 </ul>
 
