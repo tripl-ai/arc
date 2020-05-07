@@ -128,7 +128,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
         assert(df.first.getString(0) == expected)
       }
     }
-  }  
+  }
 
   test("UDFSuite: get_uri - batch binary") {
     implicit val spark = session
@@ -235,7 +235,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
         assert(df.first.getString(0) == expected)
       }
     }
-  }  
+  }
 
   test("UDFSuite: get_uri - streaming") {
     implicit val spark = session

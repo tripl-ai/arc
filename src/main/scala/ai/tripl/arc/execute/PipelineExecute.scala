@@ -32,7 +32,7 @@ class PipelineExecute extends PipelineStagePlugin {
       case (Right(name), Right(description), Right(uri), Right(textContent), Right(invalidKeys)) =>
 
         // try and read the nested pipeline
-        val subPipeline = ai.tripl.arc.config.ArcPipeline.parseConfig(Left(textContent), arcContext)
+        val subPipeline = ai.tripl.arc.config.ArcPipeline.parseConfig(Right(uri), arcContext)
 
         subPipeline match {
           case Right((pipeline, ctx)) => {

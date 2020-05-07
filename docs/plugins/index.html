@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.12.0</span></strong>
+          <span class="version">2.12.1</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -588,20 +588,6 @@
 <pre><code class="language-sql">SELECT DECODE(GET_URI('s3a://bucket/file.txt'), 'UTF-8')
 </code></pre>
 
-<h4 id="get-uri-delay">get_uri_delay</h4>
-
-<h5 id="since-2-10-3">Since: 2.10.3</h5>
-
-<p><code>get_uri_delay</code> returns the contents of a URI as an <code>Array[Byte]</code> and is like <code>get_uri</code> but accepts a second argument which is <code>delay</code> in milliseconds. Prior to Arc 3.x this will not allow authentication to be modified from the standard inbuilt permissions (like <code>AmazonIAM</code>).</p>
-
-<pre><code class="language-sql">SELECT GET_URI_DELAY('s3a://bucket/file.txt', 1000) AS content
-</code></pre>
-
-<p>If reading text this function can be wrapped with the inbuilt <a href="https://spark.apache.org/docs/latest/api/sql/index.html#decode">decode</a> Spark SQL function to convert from <code>Array[Byte]</code> to <code>string</code> like:</p>
-
-<pre><code class="language-sql">SELECT DECODE(GET_URI_DELAY('s3a://bucket/file.txt', 1000), 'UTF-8')
-</code></pre>
-
 <h4 id="get-uri-array">get_uri_array</h4>
 
 <h5 id="since-2-12-0">Since: 2.12.0</h5>
@@ -625,24 +611,23 @@ FROM (
 ) uri_array
 </code></pre>
 
-<h4 id="get-uri-array-delay">get_uri_array_delay</h4>
+<h4 id="get-uri-filename-array">get_uri_filename_array</h4>
 
-<h5 id="since-2-12-0-1">Since: 2.12.0</h5>
+<h5 id="since-2-12-1">Since: 2.12.1</h5>
 
-<p><code>get_uri_array_delay</code> returns the contents of a Glob pattern as an <code>Array</code> of <code>Array[Byte]</code> and is like <code>get_uri_array</code> but accepts a second argument which is <code>delay</code> in milliseconds.  Prior to Arc 3.x this will not allow authentication to be modified from the standard inbuilt permissions (like <code>AmazonIAM</code>).</p>
+<p><code>get_uri_filename_array</code> returns the contents of a Glob pattern as an <code>Array</code> of <code>(Array[Byte], String)</code> which means the contents of multiple files can be returned with their filenames.  Prior to Arc 3.x this will not allow authentication to be modified from the standard inbuilt permissions (like <code>AmazonIAM</code>).</p>
 
-<p>If reading text this function can be wrapped with the inbuilt <a href="https://spark.apache.org/docs/latest/api/sql/index.html#decode">decode</a> and <a href="https://spark.apache.org/docs/latest/api/sql/index.html#transform">transform</a> Spark SQL functions to convert from <code>Array[Array[Byte]]</code> to multiple records of type <code>string</code> like:</p>
-
-<pre><code class="language-sql">SELECT TRANSFORM(GET_URI_ARRAY_DELAY('s3a://bucket/file*.txt', 1000), bytes -&gt; DECODE(bytes, 'UTF-8'))
+<pre><code class="language-sql">SELECT GET_URI_FILENAME_ARRAY('s3a://bucket/file.*') AS content
 </code></pre>
 
-<p>or with the <a href="https://spark.apache.org/docs/latest/api/sql/index.html#explode">explode</a> function to return multiple rows:</p>
+<p>If reading text this function can be wrapped with the <a href="https://spark.apache.org/docs/latest/api/sql/index.html#explode">explode</a> and <a href="https://spark.apache.org/docs/latest/api/sql/index.html#decode">decode</a> functions to return multiple rows:</p>
 
 <pre><code class="language-sql">SELECT
-  DECODE(uri_contents, 'UTF-8') AS string_value
+  DECODE(col._1, 'UTF-8') AS value
+  ,col._2 AS filename
 FROM (
-  SELECT EXPLODE(GET_URI_ARRAY_DELAY('s3a://bucket/file*.txt', 1000)) AS uri_contents
-) uri_array
+  SELECT EXPLODE(GET_URI_FILENAME_ARRAY('s3a://bucket/file.*'))
+) files
 </code></pre>
 
 <h4 id="to-xml">to_xml</h4>

@@ -44,9 +44,8 @@ class ARC extends ai.tripl.arc.plugins.UDFPlugin {
     spark.sqlContext.udf.register("get_json_integer_array", ARCPlugin.getJSONIntArray _ )
     spark.sqlContext.udf.register("get_json_long_array", ARCPlugin.getJSONLongArray _ )
     spark.sqlContext.udf.register("get_uri", ARCPlugin.getURI _ )
-    spark.sqlContext.udf.register("get_uri_delay", ARCPlugin.getURIDelay _ )
     spark.sqlContext.udf.register("get_uri_array", ARCPlugin.getURIArray _ )
-    spark.sqlContext.udf.register("get_uri_array_delay", ARCPlugin.getURIArrayDelay _ )
+    spark.sqlContext.udf.register("get_uri_filename_array", ARCPlugin.getURIFilenameArray _ )
     spark.sqlContext.udf.register("random", ARCPlugin.getRandom _ )
     spark.sqlContext.udf.register("to_xml", ARCPlugin.toXML _ )
     spark.sqlContext.udf.register("struct_keys", ARCPlugin.structKeys _ )
@@ -124,18 +123,16 @@ object ARCPlugin {
 
   // get byte array content of uri
   def getURI(uri: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[Byte] = {
-    getURIArrayDelay(uri, 0L).head
+    getURIFilenameArray(uri).head match {
+      case (byteArray, _) => byteArray
+    }
   }
 
-  def getURIDelay(uri: String, delay: Long)(implicit spark: SparkSession, arcContext: ARCContext): Array[Byte] = {
-    getURIArrayDelay(uri, delay).head
+  def getURIArray(uri: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[Array[Byte]] = {
+    getURIFilenameArray(uri).map { case (byteArray, _) => byteArray }
   }
 
-  def getURIArray(uri: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[Array[Byte]]  = {
-    getURIArrayDelay(uri, 0L)
-  }
-
-  def getURIArrayDelay(uri: String, delay: Long)(implicit spark: SparkSession, arcContext: ARCContext): Array[Array[Byte]] = {
+  def getURIFilenameArray(uri: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[(Array[Byte], String)] = {
 
     val uriInputStreams = uri match {
       case uri: String if (uri.startsWith("http") || uri.startsWith("https")) => {
@@ -173,19 +170,18 @@ object ARCPlugin {
     }
 
     uriInputStreams.map { uriInputStream =>
-      Thread.sleep(delay)
-      IOUtils.toByteArray(compressedInputStream(uriInputStream))
+      (IOUtils.toByteArray(compressedInputStream(uriInputStream)), uriInputStream.path)
     }
   }
 
   // compressedInputStream wraps inputstreams with compression inputstreams based on file name
-  def compressedInputStream(fileInputStream: URIInputStream)(implicit spark: SparkSession, arcContext: ARCContext): InputStream = {
-    fileInputStream.path match {
-      case u: String if (u.endsWith(".gzip") || u.endsWith(".gz")) => new java.util.zip.GZIPInputStream(fileInputStream.inputStream)
-      case u: String if (u.endsWith(".bzip2") || u.endsWith(".bz2")) => new org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream(fileInputStream.inputStream)
-      case u: String if u.endsWith(".deflate") => new java.util.zip.DeflaterInputStream(fileInputStream.inputStream)
-      case u: String if u.endsWith(".lz4") => new net.jpountz.lz4.LZ4FrameInputStream(fileInputStream.inputStream)
-      case _ => fileInputStream.inputStream
+  def compressedInputStream(uriInputStream: URIInputStream)(implicit spark: SparkSession, arcContext: ARCContext): InputStream = {
+    uriInputStream.path match {
+      case u: String if (u.endsWith(".gzip") || u.endsWith(".gz")) => new java.util.zip.GZIPInputStream(uriInputStream.inputStream)
+      case u: String if (u.endsWith(".bzip2") || u.endsWith(".bz2")) => new org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream(uriInputStream.inputStream)
+      case u: String if u.endsWith(".deflate") => new java.util.zip.DeflaterInputStream(uriInputStream.inputStream)
+      case u: String if u.endsWith(".lz4") => new net.jpountz.lz4.LZ4FrameInputStream(uriInputStream.inputStream)
+      case _ => uriInputStream.inputStream
     }
   }
 
