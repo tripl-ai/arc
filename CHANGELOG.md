@@ -6,7 +6,7 @@
 
 - **FIX** `PipelineExecute` so that it will correctly identify `.ipynb` files and parse them correctly.
 - add `get_uri_filename_array` user defined function which returns the contents of a Glob/URI as an `Array[(Array[Byte], String)]` where the second return value is `filename`.
-- remove `delay` verisons of `get_uri` as this can be handled by target service.
+- remove `delay` versions of `get_uri` as this can be handled by target service.
 
 ## 2.12.0
 
