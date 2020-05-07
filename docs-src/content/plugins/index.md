@@ -93,21 +93,6 @@ If reading text this function can be wrapped with the inbuilt [decode](https://s
 SELECT DECODE(GET_URI('s3a://bucket/file.txt'), 'UTF-8')
 ```
 
-#### get_uri_delay
-##### Since: 2.10.3
-
-`get_uri_delay` returns the contents of a URI as an `Array[Byte]` and is like `get_uri` but accepts a second argument which is `delay` in milliseconds. Prior to Arc 3.x this will not allow authentication to be modified from the standard inbuilt permissions (like `AmazonIAM`).
-
-```sql
-SELECT GET_URI_DELAY('s3a://bucket/file.txt', 1000) AS content
-```
-
-If reading text this function can be wrapped with the inbuilt [decode](https://spark.apache.org/docs/latest/api/sql/index.html#decode) Spark SQL function to convert from `Array[Byte]` to `string` like:
-
-```sql
-SELECT DECODE(GET_URI_DELAY('s3a://bucket/file.txt', 1000), 'UTF-8')
-```
-
 #### get_uri_array
 ##### Since: 2.12.0
 
@@ -133,25 +118,24 @@ FROM (
 ) uri_array
 ```
 
-#### get_uri_array_delay
-##### Since: 2.12.0
+#### get_uri_filename_array
+##### Since: 2.12.1
 
-`get_uri_array_delay` returns the contents of a Glob pattern as an `Array` of `Array[Byte]` and is like `get_uri_array` but accepts a second argument which is `delay` in milliseconds.  Prior to Arc 3.x this will not allow authentication to be modified from the standard inbuilt permissions (like `AmazonIAM`).
-
-If reading text this function can be wrapped with the inbuilt [decode](https://spark.apache.org/docs/latest/api/sql/index.html#decode) and [transform](https://spark.apache.org/docs/latest/api/sql/index.html#transform) Spark SQL functions to convert from `Array[Array[Byte]]` to multiple records of type `string` like:
+`get_uri_filename_array` returns the contents of a Glob pattern as an `Array` of `(Array[Byte], String)` which means the contents of multiple files can be returned with their filenames.  Prior to Arc 3.x this will not allow authentication to be modified from the standard inbuilt permissions (like `AmazonIAM`).
 
 ```sql
-SELECT TRANSFORM(GET_URI_ARRAY_DELAY('s3a://bucket/file*.txt', 1000), bytes -> DECODE(bytes, 'UTF-8'))
+SELECT GET_URI_FILENAME_ARRAY('s3a://bucket/file.*') AS content
 ```
 
-or with the [explode](https://spark.apache.org/docs/latest/api/sql/index.html#explode) function to return multiple rows:
+If reading text this function can be wrapped with the [explode](https://spark.apache.org/docs/latest/api/sql/index.html#explode) and [decode](https://spark.apache.org/docs/latest/api/sql/index.html#decode) functions to return multiple rows:
 
 ```sql
 SELECT
-  DECODE(uri_contents, 'UTF-8') AS string_value
+  DECODE(col._1, 'UTF-8') AS value
+  ,col._2 AS filename
 FROM (
-  SELECT EXPLODE(GET_URI_ARRAY_DELAY('s3a://bucket/file*.txt', 1000)) AS uri_contents
-) uri_array
+  SELECT EXPLODE(GET_URI_FILENAME_ARRAY('s3a://bucket/file.*'))
+) files
 ```
 
 #### to_xml

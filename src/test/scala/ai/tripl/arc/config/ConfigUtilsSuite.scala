@@ -75,7 +75,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val metaConf = mlConf.replaceAll("hdfs://datalake/schema/", getClass.getResource("/conf/schema/").toString)
 
       // replace job directory with config so that the examples read correctly but have resource to validate
-      val xmlConf = metaConf.replaceAll("hdfs://datalake/xml/", getClass.getResource("/conf/xml/").toString)      
+      val xmlConf = metaConf.replaceAll("hdfs://datalake/xml/", getClass.getResource("/conf/xml/").toString)
 
       // replace job directory with config so that the examples read correctly but have resource to validate
       val jobConf = xmlConf.replaceAll("hdfs://datalake/job/", getClass.getResource("/conf/job/").toString)
@@ -464,7 +464,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/python3.ipynb")), arcContext)
     }
     assert(thrown0.getMessage.contains("Support for IPython Notebook Configuration Files (.ipynb) for configuration 'classpath://conf/python3.ipynb' has been disabled by policy."))
-  }  
+  }
 
   // this test verifies ipynb to job conversion works
   test("Test read .ipynb positive") {
@@ -498,6 +498,37 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     assert(thrown0.getMessage.contains("does not appear to be a valid arc notebook. Has kernelspec: 'python3'."))
   }
 
+  // this test verifies nested ipynb jobs work
+  test("Test read .ipynb with .ipynb PipelineExecute") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val targetFile = "classpath://conf/job.ipynb"
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "PipelineExecute",
+          "name": "nested ipynb",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "uri": "${targetFile}"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        println(pipeline)
+      }
+    }
+  }
+
   // this test verifies inline sql policy
   test("Test inlinesql policy") {
     implicit val spark = session
@@ -509,8 +540,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     pipelineEither match {
       case Left(err) => assert(err.toString.contains("Inline SQL (use of the 'sql' attribute) has been disabled by policy. SQL statements must be supplied via files located at 'inputURI'."))
       case Right((pipeline, arcCtx)) => fail()
-    }    
-  } 
+    }
+  }
 
   // this test verifies ipynb for inline sql
   test("Test read .ipynb inlinesql") {
@@ -534,10 +565,10 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         assert(pipeline.stages(2).asInstanceOf[extract.RateExtractStage].outputView == "stream2")
         val sqlValidateStage0 = pipeline.stages(3).asInstanceOf[validate.SQLValidateStage]
         assert(sqlValidateStage0.sql == "SELECT\n  TRUE AS valid\n  ,\"${message}\" AS message")
-        assert(sqlValidateStage0.sqlParams == Map[String, String]("message" -> "stream0"))        
+        assert(sqlValidateStage0.sqlParams == Map[String, String]("message" -> "stream0"))
       }
     }
-  }  
+  }
 
   test("Test read authentication AmazonIAM with KMS") {
 
@@ -611,7 +642,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, _)) => {
         println(pipeline.stages(0).asInstanceOf[SQLTransformStage].sql == "SELECT ${hiveconf:test_variable}")
       }
-    }    
-  }  
+    }
+  }
 
 }

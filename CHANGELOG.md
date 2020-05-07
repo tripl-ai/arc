@@ -2,6 +2,12 @@
 
 **This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.**
 
+## 2.12.1
+
+- **FIX** `PipelineExecute` so that it will correctly identify `.ipynb` files and parse them correctly.
+- add `get_uri_filename_array` user defined function which returns the contents of a Glob/URI as an `Array[(Array[Byte], String)]` where the second return value is `filename`.
+- remove `delay` versions of `get_uri` as this can be handled by target service.
+
 ## 2.12.0
 
 - **FIX** prevent early validation failure of SQL statements which contain `${hiveconf:` or `${hivevar:`.
