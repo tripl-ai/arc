@@ -49,8 +49,9 @@ class PipelineExecute extends PipelineStagePlugin {
             Right(stage)
           }
           case Left(errors) => {
+            val configErrors = errors.collect { case configError: ConfigError => configError }
             val stageErrors = errors.collect { case stageError: StageError => stageError }
-            Left(stageErrors)
+            Left(List(StageError(index, name, c.origin.lineNumber, configErrors )) ++ stageErrors )
           }
         }
       case _ =>
