@@ -498,37 +498,6 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     assert(thrown0.getMessage.contains("does not appear to be a valid arc notebook. Has kernelspec: 'python3'."))
   }
 
-  // this test verifies nested ipynb jobs work
-  test("Test read .ipynb with .ipynb PipelineExecute") {
-    implicit val spark = session
-    implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-    val targetFile = "classpath://conf/job.ipynb"
-    val conf = s"""{
-      "stages": [
-        {
-          "type": "PipelineExecute",
-          "name": "nested ipynb",
-          "environments": [
-            "production",
-            "test"
-          ],
-          "uri": "${targetFile}"
-        }
-      ]
-    }"""
-
-    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
-
-    pipelineEither match {
-      case Left(err) => fail(err.toString)
-      case Right((pipeline, _)) => {
-        println(pipeline)
-      }
-    }
-  }
-
   // this test verifies inline sql policy
   test("Test inlinesql policy") {
     implicit val spark = session

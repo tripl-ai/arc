@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.12.1</span></strong>
+          <span class="version">2.12.2</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -457,12 +457,19 @@
 
 <p><strong>This is likely the last release supporting <code>Scala 2.11</code> given the preview release of <code>Spark 3.0</code> which only supports <code>Scala 2.12</code>.</strong></p>
 
+<h2 id="2-12-2">2.12.2</h2>
+
+<ul>
+<li><strong>FIX</strong> <code>PipelineExecute</code> long standing issue where errors in nested pipeline were not being exposed correctly.</li>
+<li>restore the ability for user to be able to define <code>fs.s3a.aws.credentials.provider</code> overrides via <code>--conf spark.hadoop.fs.s3a.aws.credentials.provider=</code></li>
+</ul>
+
 <h2 id="2-12-1">2.12.1</h2>
 
 <ul>
 <li><strong>FIX</strong> <code>PipelineExecute</code> so that it will correctly identify <code>.ipynb</code> files and parse them correctly.</li>
 <li>add <code>get_uri_filename_array</code> user defined function which returns the contents of a Glob/URI as an <code>Array[(Array[Byte], String)]</code> where the second return value is <code>filename</code>.</li>
-<li>remove <code>delay</code> verisons of <code>get_uri</code> as this can be handled by target service.</li>
+<li>remove <code>delay</code> versions of <code>get_uri</code> as this can be handled by target service.</li>
 </ul>
 
 <h2 id="2-12-0">2.12.0</h2>

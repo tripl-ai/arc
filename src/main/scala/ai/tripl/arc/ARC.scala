@@ -125,8 +125,10 @@ object ARC {
         sys.exit(1)
     }
 
-    // override default aws credential providers
-    spark.sparkContext.hadoopConfiguration.set("fs.s3a.aws.credentials.provider", CloudUtils.defaultAWSProvidersOverride)
+    // only set default aws provider override if not provided
+    if (Option(spark.sparkContext.hadoopConfiguration.get("fs.s3a.aws.credentials.provider")).isEmpty) {
+      spark.sparkContext.hadoopConfiguration.set("fs.s3a.aws.credentials.provider", CloudUtils.defaultAWSProvidersOverride)
+    }
 
     // add spark config to log
     val sparkConf = new java.util.HashMap[String, String]()
@@ -224,7 +226,7 @@ object ARC {
       pipelineStagePlugins=ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList,
       udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList,
       serializableConfiguration=new SerializableConfiguration(spark.sparkContext.hadoopConfiguration),
-      userData=collection.mutable.Map.empty
+      userData=collection.mutable.Map[String, Object]()
     )
 
     // add spark listeners and register udfs
