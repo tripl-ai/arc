@@ -13,6 +13,7 @@ import org.apache.spark.sql.functions._
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.config._
+import ai.tripl.arc.util._
 
 import ai.tripl.arc.util.TestUtils
 
@@ -44,6 +45,11 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")
+
+    // only set default aws provider override if not provided
+    if (Option(spark.sparkContext.hadoopConfiguration.get("fs.s3a.aws.credentials.provider")).isEmpty) {
+      spark.sparkContext.hadoopConfiguration.set("fs.s3a.aws.credentials.provider", CloudUtils.defaultAWSProvidersOverride)
+    }
 
     session = spark
   }
