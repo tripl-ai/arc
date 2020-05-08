@@ -43,6 +43,11 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
 
+    // only set default aws provider override if not provided
+    if (Option(spark.sparkContext.hadoopConfiguration.get("fs.s3a.aws.credentials.provider")).isEmpty) {
+      spark.sparkContext.hadoopConfiguration.set("fs.s3a.aws.credentials.provider", CloudUtils.defaultAWSProvidersOverride)
+    }
+
     expected = spark.read.option("wholetext", true).text(getClass.getResource("/minio/it/bucket0/akc_breed_info.csv").toString).first.getString(0)
 
     UDF.registerUDFs()(spark, logger, arcContext)
