@@ -28,7 +28,6 @@ object CloudUtils {
     hc.unset("fs.s3a.secret.key")
     hc.unset("fs.s3a.server-side-encryption-algorithm")
     hc.unset("fs.s3a.server-side-encryption.key")
-    hc.set("fs.s3a.aws.credentials.provider", defaultAWSProvidersOverride)
 
     authentication match {
       case Some(API.Authentication.AmazonAccessKey(bucket, accessKeyID, secretAccessKey, endpoint, ssl)) => {
