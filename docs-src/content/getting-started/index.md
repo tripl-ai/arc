@@ -8,7 +8,7 @@ type: blog
 
 To quickly get started with a real-world example you can clone the [Arc Starter](https://github.com/tripl-ai/arc-starter) project which has included job definitions and includes a limited [set of data](https://registry.opendata.aws/nyc-tlc-trip-records-pds/) for you to quickly try Arc in a [custom](https://github.com/tripl-ai/arc-jupyter) [Jupyter Notebooks](https://jupyter.org/) environment.
 
-This assumes you have already installed [Docker](https://www.docker.com/) and have configured the [memory settings](https://docs.docker.com/docker-for-mac/#resources) to at least `4GB` (more is better).
+This assumes you have already installed [Docker Desktop](https://www.docker.com/products/docker-desktop) and have configured the [memory settings](https://docs.docker.com/docker-for-mac/#resources) to at least `4GB` (more is better).
 
 ```bash
 git clone https://github.com/tripl-ai/arc-starter.git

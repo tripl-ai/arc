@@ -18,7 +18,7 @@
       
       <guid>https://arc.tripl.ai/getting-started/</guid>
       <description>Get Started To quickly get started with a real-world example you can clone the Arc Starter project which has included job definitions and includes a limited set of data for you to quickly try Arc in a custom Jupyter Notebooks environment.
-This assumes you have already installed Docker and have configured the memory settings to at least 4GB (more is better).
+This assumes you have already installed Docker Desktop and have configured the memory settings to at least 4GB (more is better).
 git clone https://github.com/tripl-ai/arc-starter.git cd arc-starter ./develop.sh  The example is within the examples/0/ directory.</description>
     </item>
     
