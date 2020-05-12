@@ -37,7 +37,7 @@ docker run \
 --name arc-jupyter \
 --rm \
 --volume $(pwd)/examples:/home/jovyan/examples:Z \
--e JAVA_OPTS="-Xmx4096m" \
+--env JAVA_OPTS="-Xmx4096m" \
 --entrypoint='' \
 --publish 4040:4040 \
 --publish 8888:8888 \
