@@ -236,7 +236,7 @@ object ConfigUtils {
           val behavior = lines(0).trim.toLowerCase
 
           // only cells that are explicitly '%arc' or '%sql' or '%sqlvalidate' and not other magic !'%'
-          (!behavior.startsWith("%") && cell.length > 0) || behavior.startsWith("%arc") || behavior.startsWith("%sql") || behavior.startsWith("%sqlvalidate")
+          (!behavior.startsWith("%") && cell.length > 0) || behavior.startsWith("%arc") || behavior.startsWith("%sql") || behavior.startsWith("%sqlvalidate") || behavior.startsWith("%log")
         }
         .map { case (cell, index) =>
           val lines = cell.split("\n")
@@ -247,7 +247,7 @@ object ConfigUtils {
             case b: String if (b.toLowerCase.startsWith("%arc")) => {
               command
             }
-            case b: String if (b.toLowerCase.startsWith("%sql")) => {
+            case b: String if (b.toLowerCase.startsWith("%sql") || b.toLowerCase.startsWith("%sqlvalidate") || b.toLowerCase.startsWith("%log")) => {
               val args = parseArgs(behavior).map {
                 case (k,v) => (k, v.stripPrefix(""""""").stripSuffix(""""""").trim)
               }
@@ -266,28 +266,40 @@ object ConfigUtils {
                 case None => ""
               }
 
-              if (behavior.toLowerCase.startsWith("%sqlvalidate")) {
-                s"""{
-                |  "type": "SQLValidate",
-                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
-                |  "description": "${args.getOrElse("description", "")}",
-                |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
-                |  "sql": \"\"\"${command}\"\"\",
-                |  "sqlParams": {${sqlParams}},
-                |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "numRows", "truncate", "persist", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
-                |}""".stripMargin
-              } else {
-                s"""{
-                |  "type": "SQLTransform",
-                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
-                |  "description": "${args.getOrElse("description", "")}",
-                |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
-                |  "sql": \"\"\"${command}\"\"\",
-                |  "outputView": "${args.getOrElse("outputView", "")}",
-                |  "persist": ${args.getOrElse("persist", "false")},
-                |  "sqlParams": {${sqlParams}},
-                |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "outputView", "numRows", "truncate", "persist", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
-                |}""".stripMargin
+              behavior.toLowerCase match {
+                case b if b.startsWith("%sqlvalidate") =>
+                  s"""{
+                  |  "type": "SQLValidate",
+                  |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                  |  "description": "${args.getOrElse("description", "")}",
+                  |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
+                  |  "sql": \"\"\"${command}\"\"\",
+                  |  "sqlParams": {${sqlParams}},
+                  |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
+                  |}""".stripMargin
+                case b if b.startsWith("%sql") =>
+                  s"""{
+                  |  "type": "SQLTransform",
+                  |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                  |  "description": "${args.getOrElse("description", "")}",
+                  |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
+                  |  "sql": \"\"\"${command}\"\"\",
+                  |  "outputView": "${args.getOrElse("outputView", "")}",
+                  |  "persist": ${args.getOrElse("persist", "false")},
+                  |  "sqlParams": {${sqlParams}},
+                  |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "outputView", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "datasetLabels", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
+                  |}""".stripMargin
+                case b if b.startsWith("%log") =>
+                  s"""{
+                  |  "type": "LogExecute",
+                  |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                  |  "description": "${args.getOrElse("description", "")}",
+                  |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
+                  |  "sql": \"\"\"${command}\"\"\",
+                  |  "sqlParams": {${sqlParams}},
+                  |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
+                  |}""".stripMargin
+                case _ => ""             
               }
             }
             case _ => cell
