@@ -103,6 +103,34 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("SQLValidate: end-to-end with json array") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "SQLValidate",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "sql": "SELECT TRUE, TO_JSON(COLLECT_LIST(NAMED_STRUCT('stringKey', 'stringValue', 'numKey', 123)))"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
+    }
+  }  
+
   test("SQLValidate: true, null") {
     implicit val spark = session
     import spark.implicits._

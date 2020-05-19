@@ -2,6 +2,10 @@
 
 **This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.**
 
+## 2.12.3
+
+- add support for parsing `array` objects when returned in the `message` field from `LogExecute` and `SQLValidate`.
+
 ## 2.12.2
 
 - **FIX** `PipelineExecute` long standing issue where errors in nested pipeline were not being exposed correctly.

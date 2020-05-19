@@ -111,8 +111,6 @@ object LogExecuteStage {
       }
     }
 
-    var messageMap = new java.util.HashMap[String, Object]()
-
     try {
       val row = df.first
       val messageIsNull = row.isNullAt(0)
@@ -125,14 +123,23 @@ object LogExecuteStage {
 
       val message = row.getString(0)
 
-      // try to parse to json
+      // try to parse to json object or array[json object]
+      val objectMapper = new ObjectMapper()
       try {
-        val objectMapper = new ObjectMapper()
+        var messageMap = new java.util.HashMap[String, Object]()
         messageMap = objectMapper.readValue(message, classOf[java.util.HashMap[String, Object]])
         stage.stageDetail.put("message", messageMap)
       } catch {
-        case e: Exception =>
-          stage.stageDetail.put("message", message)
+        case e: Exception => {
+          try {
+            var messageArray = new java.util.ArrayList[java.util.HashMap[String, Object]]
+            messageArray = objectMapper.readValue(message, classOf[java.util.ArrayList[java.util.HashMap[String, Object]]])
+            stage.stageDetail.put("message", messageArray)
+          } catch {
+            case e: Exception =>
+              stage.stageDetail.put("message", message)
+          }     
+        }   
       }
     } catch {
       case e: ClassCastException =>
