@@ -53,7 +53,7 @@ These concerns are supported at run time to ensure that as deployment grows in u
 
 ## Why abstract from code?
 
-From experience a very high proportion of data pipelines perform very similar extract, transform and load actions on datasets. Unfortunately, whilst the desired outcomes are largely similar, the implementations are vastly varied resulting in higher maintenance costs, lower test-coverage and high levels of rework. 
+From experience a very high proportion of data pipelines perform very similar extract, transform and load actions on datasets. Unfortunately, whilst the desired outcomes are largely similar, the implementations are vastly varied resulting in higher maintenance costs, lower test-coverage and high levels of rework.
 
 The intention of this project is to define and implement an **opinionated** standard approach for declaring data pipelines which is open and extensible. Abstraction from underlying code allows rapid deployment, a consistent way of defining transformation tasks (such as data typing) and allows abstraction of the pipeline definition from the pipeline execution (to support changing of the underlying execution engines) - see [declarative programming](https://en.wikipedia.org/wiki/Declarative_programming).
 
@@ -61,7 +61,7 @@ Currently it is tightly coupled to [Apache Spark](https://spark.apache.org) due 
 
 ## Why SQL first?
 
-SQL first (copied from the Mobile First UX principle) is an approach where, if possible, transformations are done using Structured Query Language (SQL) as a preference. This is because SQL is a very good way of expressing standard data transformation intent in a [declarative](https://en.wikipedia.org/wiki/Declarative_programming) way. SQL is so widely known and taught that finding people who are able to understand the business context and able to write basic SQL is much easier than finding a Scala developer who also understands the business context (for example). 
+SQL first (copied from the Mobile First UX principle) is an approach where, if possible, transformations are done using Structured Query Language (SQL) as a preference. This is because SQL is a very good way of expressing standard data transformation intent in a [declarative](https://en.wikipedia.org/wiki/Declarative_programming) way. SQL is so widely known and taught that finding people who are able to understand the business context and able to write basic SQL is much easier than finding a Scala developer who also understands the business context (for example).
 
 Currently the [HIVE](https://cwiki.apache.org/confluence/display/Hive/LanguageManual) dialect of SQL is supported as [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) uses the same SQL dialect and has a lot of the same [functions](https://spark.apache.org/docs/latest/api/sql/) that would be expected from other SQL dialects. This could change in the future.
 
@@ -127,7 +127,7 @@ This is an example of a fairly standard pipeline:
       "inputView": "green_tripdata0",
       "outputURI": ${ETL_CONF_BASE_URL}"/data/output/green_tripdata0.parquet",
       "saveMode": "Overwrite"
-    }    
+    }
   ]
 }
 ```
@@ -194,7 +194,7 @@ When you contribute code, you affirm that the contribution is your original work
 
 ## Support
 
-For questions around use (which are not clear from the documentation) post a new 'issue' in the [questions](https://github.com/tripl-ai/questions/issues) repository. This repository acts as a forum where questions can be posted, discussed and searched. 
+For questions around use (which are not clear from the documentation) post a new 'issue' in the [questions](https://github.com/tripl-ai/questions/issues) repository. This repository acts as a forum where questions can be posted, discussed and searched.
 
 For commercial support requests please [contact us](mailto:contact@tripl.ai) via email.
 
@@ -204,7 +204,7 @@ For commercial support requests please [contact us](mailto:contact@tripl.ai) via
 - [John Bruce](https://github.com/jbruce)
 
 
-## Attribution 
+## Attribution
 
 Thanks to the following projects:
 
