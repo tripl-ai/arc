@@ -121,6 +121,7 @@ object TextLoadStage {
     val stageSeparator = stage.separator
     val stageSuffix = stage.suffix
     val stageSaveMode = stage.saveMode
+    val contextSerializableConfiguration = arcContext.serializableConfiguration
 
     val df = spark.table(stage.inputView)
 
@@ -155,7 +156,7 @@ object TextLoadStage {
 
         repartitionedDF.foreachPartition { partition: Iterator[Row] =>
           if (partition.hasNext) {
-            val hadoopConf = arcContext.serializableConfiguration.value
+            val hadoopConf = contextSerializableConfiguration.value
 
             // buffer so first row can be accessed
             val bufferedPartition = partition.buffered
