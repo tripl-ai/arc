@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.0
+
+- **BREAKING** remove `Scala 2.11` support as Arc is now built against `Spark 3.0.0` which does not support `Scala 2.11`.
+- **BREAKING** remove `GraphTransform` and `CypherTransform` as the underlying [library](https://github.com/opencypher/morpheus) has been [abandoned](https://github.com/opencypher/morpheus/issues/943#issuecomment-610215881).
+- **BREAKING** move `XMLExtract` and `XMLLoad` to their own repository.
+
 **This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.**
 
 ## 2.12.5
