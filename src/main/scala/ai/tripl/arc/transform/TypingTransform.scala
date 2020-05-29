@@ -238,7 +238,7 @@ object Typing {
                   if (col.nullable || failMode == FailMode.FailFast) {
                     (null :: valuesAccum, err :: errorsAccum)
                   } else {
-                    // this exception is to override the default spark non-nullable error which is not intuitive: 
+                    // this exception is to override the default spark non-nullable error which is not intuitive:
                     // The 0th field '<column name>' of input row cannot be null.
                     throw new Exception(s"""TypingTransform with non-nullable column '${err.field}' cannot continue due to error: ${err.message}.""")
                   }
@@ -360,7 +360,7 @@ object Typing {
         case c: TimeColumn => TimeTypeable.typeValue(c, valueToType)
         case c: TimestampColumn => TimestampTypeable.typeValue(c, valueToType)
         case c: StructColumn => throw new Exception("TypingTransform does not support 'StructColumn' type.")
-        case c: ArrayColumn => throw new Exception("TypingTransform does not support 'ArrayColumn' type.")        
+        case c: ArrayColumn => throw new Exception("TypingTransform does not support 'ArrayColumn' type.")
       }
     }
   }
@@ -708,9 +708,17 @@ object Typing {
         val key = s"${pattern}:${tz.getId}:${strict}"
         // get the existing formatter or add it to memory
         memoizedFormatters.get(key).getOrElse {
+          // create base formatter
+          val dateTimeFormatter = DateTimeFormatter.ofPattern(pattern)
+          // if formatter does not specify zone information use default
+          val withZone = Seq("Offset(", "ZoneId(", "ZoneText(", "LocalizedOffset(").forall { part => !dateTimeFormatter.toString.contains(part) } match {
+            case true => dateTimeFormatter.withZone(tz)
+            case false => dateTimeFormatter
+          }
+          // apply resolver style
           val formatter = strict match {
-            case true => DateTimeFormatter.ofPattern(pattern).withZone(tz).withResolverStyle(ResolverStyle.STRICT)
-            case false => DateTimeFormatter.ofPattern(pattern).withZone(tz).withResolverStyle(ResolverStyle.SMART) // smart is default
+            case true => withZone.withResolverStyle(ResolverStyle.STRICT)
+            case false => withZone.withResolverStyle(ResolverStyle.SMART) // smart is default
           }
           memoizedFormatters.put(key, formatter)
           formatter
