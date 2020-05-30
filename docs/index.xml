@@ -153,7 +153,7 @@ Database Inconsistency When writing data to targets like databases using the JDB
       
       <guid>https://arc.tripl.ai/changelog/</guid>
       <description>Change Log This is likely the last release supporting Scala 2.11 given the preview release of Spark 3.0 which only supports Scala 2.12.
-2.12.4  FIX rare edge-case of TextLoad in singleFile mode throwing non-seriaizable exception when non-serializable userData exists.  2.12.3  add support for parsing array objects when returned in the message field from LogExecute and SQLValidate.  2.12.2  FIX PipelineExecute long standing issue where errors in nested pipeline were not being exposed correctly.</description>
+2.12.5  FIX support for timestamp formatters that include offset (e.g. +01:00) will override timezoneId which remains mandatory.  2.12.4  FIX rare edge-case of TextLoad in singleFile mode throwing non-seriaizable exception when non-serializable userData exists.  2.12.3  add support for parsing array objects when returned in the message field from LogExecute and SQLValidate.</description>
     </item>
     
     <item>

@@ -422,8 +422,8 @@ Spark does not have an internal `TimeType` representation of time. This type can
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
-|formatters|Array[String]|true|{{< readfile file="/content/partials/fields/dateFormatters.md" markdown="true" >}}<br><br>Custom formats `ssssssssss` and `sssssssssssss` have been added to support epoch time (i.e. 1527727035) and epoch millis time (i.e. 1527727035456) respectively. Both require `timezoneId` of `UTC`.|
-|timezoneId|String|true|The timezone of the incoming timestamp. This uses the [SimpleDateFormat](https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html#timezone) supported timezones. All timestamps are internally stored in [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time) to allow correctly sequenced events when dealing with events from multiple systems which may all run with different internal timezones.|
+|formatters|Array[String]|true|{{< readfile file="/content/partials/fields/dateFormatters.md" markdown="true" >}}<br><br>Custom formats `ssssssssss` and `sssssssssssss` have been added to support epoch time (i.e. `1527727035`) and epoch millis time (i.e. `1527727035456`) respectively. Both require `timezoneId` of `UTC`.|
+|timezoneId|String|true|The timezone of the incoming timestamp using [SimpleDateFormat](https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html#timezone) supported timezones. If the `formatter` contains timezone information that will take precendence to this value.<br><br>All timestamps are internally stored in [UTC](https://en.wikipedia.org/wiki/Coordinated_Universal_Time) to allow correctly sequenced events when dealing with events from multiple systems which may run with different internal timezones.|
 |time|Map[String, Integer]|false|Use this capability if converting a Date label into a Timestamp for relative comparisons. Required fields are `hour`, `minute`, `second` and `nano` . These values can be agreed with source data suppliers to ensure intra-system data alignment. See below for example.|
 |trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
 |nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
@@ -441,6 +441,7 @@ Spark does not have an internal `TimeType` representation of time. This type can
   "nullable" : true,
   "nullableValues" : [ "", "null" ],
   "formatters": [
+    "dd/MM/uuuu HH:mm:ssZ",
     "dd/MM/uuuu HH:mm:ss",
     "dd/MM/uuuu H:mm:ss",
     "dd/MM/uuuu HH:mm",
