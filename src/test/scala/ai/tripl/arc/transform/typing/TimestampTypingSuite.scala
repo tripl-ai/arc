@@ -33,6 +33,12 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  case class Test(
+    fmt: String,
+    value: String,
+    expected: Timestamp
+  )
+
   test("Type Timestamp Column: leading spaces trim") {
     val datetimeValue = ZonedDateTime.of(2017, 12, 20, 21, 46, 54, 0, ZoneId.of("UTC"))
     val timestampValue = Timestamp.from(datetimeValue.toInstant())
@@ -508,6 +514,49 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
     assert(!formatter.contains("(YearOfEra,"))
     assert(!formatter.contains("(Era,"))
     assert(formatter.contains("(Year,"))
+  }
+
+  test("Type Timestamp Column: Formatter supports timezones if specified") {
+    val tests = List(
+      Test("uuuu-MM-dd'T'HH:mm:ss '['VV']'", "2017-10-01T23:30:00 [Africa/Kinshasa]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['z']'", "2017-10-01T23:30:00 [WET]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['zz']'", "2017-10-01T23:30:00 [WET]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['zzz']'", "2017-10-01T23:30:00 [WET]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['zzzz']'", "2017-10-01T23:30:00 [Western European Time]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['O']'", "2017-10-01T23:30:00 [GMT+1]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['OOOO']'", "2017-10-01T23:30:00 [GMT+01:00]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['X']'", "2017-10-01T23:30:00 [+01]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['XX']'", "2017-10-01T23:30:00 [+0100]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['XXX']'", "2017-10-01T23:30:00 [+01:00]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['XXXX']'", "2017-10-01T23:30:00 [+010000]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['XXXXX']'", "2017-10-01T23:30:00 [+01:00:00]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['x']'", "2017-10-01T23:30:00 [+01]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['xx']'", "2017-10-01T23:30:00 [+0100]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['xxx']'", "2017-10-01T23:30:00 [+01:00]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['xxxx']'", "2017-10-01T23:30:00 [+010000]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['xxxxx']'", "2017-10-01T23:30:00 [+01:00:00]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['Z']'", "2017-10-01T23:30:00 [+0100]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['ZZ']'", "2017-10-01T23:30:00 [+0100]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['ZZZ']'", "2017-10-01T23:30:00 [+0100]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['ZZZZ']'", "2017-10-01T23:30:00 [GMT+01:00]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['ZZZZZ']'", "2017-10-01T23:30:00 [+01:00:00]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant))
+    )
+
+    for (test <- tests) {
+      val col = TimestampColumn(None, name="timestamp", description=None, nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="Australia/Sydney", formatters=List(test.fmt), None, metadata=None, strict=true)
+
+      val format = DateTimeFormatter.ofPattern(test.fmt)
+      println(format)
+      println(ZonedDateTime.parse(test.value, format))
+
+      Typing.typeValue(test.value, col) match {
+        case (Some(res), err) => {
+          assert(res === test.expected)
+          assert(err === None)
+        }
+        case (_,_) => assert(false)
+      }
+    }
   }
 
   test("Type Timestamp Column: nanosecond") {

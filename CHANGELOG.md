@@ -2,6 +2,10 @@
 
 **This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.**
 
+## 2.12.5
+
+- **FIX** support for `timestamp` `formatters` that include offset (e.g. `+01:00`) will override `timezoneId` which remains mandatory.
+
 ## 2.12.4
 
 - **FIX** rare edge-case of `TextLoad` in `singleFile` mode throwing non-seriaizable exception when non-serializable `userData` exists.

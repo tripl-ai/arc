@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.12.4</span></strong>
+          <span class="version">2.12.5</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -1354,14 +1354,14 @@
 <td>formatters</td>
 <td>Array[String]</td>
 <td>true</td>
-<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Custom formats <code>ssssssssss</code> and <code>sssssssssssss</code> have been added to support epoch time (i.e. 1527727035) and epoch millis time (i.e. 1527727035456) respectively. Both require <code>timezoneId</code> of <code>UTC</code>.</td>
+<td>The formatters to try to convert this field based on the Java <a href="https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html">DateTimeFormatter</a> patterns. Try to order this list so the values are arranged from most frequent to least frequent.<br><br>Custom formats <code>ssssssssss</code> and <code>sssssssssssss</code> have been added to support epoch time (i.e. <code>1527727035</code>) and epoch millis time (i.e. <code>1527727035456</code>) respectively. Both require <code>timezoneId</code> of <code>UTC</code>.</td>
 </tr>
 
 <tr>
 <td>timezoneId</td>
 <td>String</td>
 <td>true</td>
-<td>The timezone of the incoming timestamp. This uses the <a href="https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html#timezone">SimpleDateFormat</a> supported timezones. All timestamps are internally stored in <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a> to allow correctly sequenced events when dealing with events from multiple systems which may all run with different internal timezones.</td>
+<td>The timezone of the incoming timestamp using <a href="https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html#timezone">SimpleDateFormat</a> supported timezones. If the <code>formatter</code> contains timezone information that will take precendence to this value.<br><br>All timestamps are internally stored in <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">UTC</a> to allow correctly sequenced events when dealing with events from multiple systems which may run with different internal timezones.</td>
 </tr>
 
 <tr>
@@ -1411,6 +1411,7 @@
   &quot;nullable&quot; : true,
   &quot;nullableValues&quot; : [ &quot;&quot;, &quot;null&quot; ],
   &quot;formatters&quot;: [
+    &quot;dd/MM/uuuu HH:mm:ssZ&quot;,
     &quot;dd/MM/uuuu HH:mm:ss&quot;,
     &quot;dd/MM/uuuu H:mm:ss&quot;,
     &quot;dd/MM/uuuu HH:mm&quot;,
