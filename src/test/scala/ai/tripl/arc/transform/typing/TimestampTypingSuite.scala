@@ -539,7 +539,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       Test("uuuu-MM-dd'T'HH:mm:ss '['ZZ']'", "2017-10-01T23:30:00 [+0100]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
       Test("uuuu-MM-dd'T'HH:mm:ss '['ZZZ']'", "2017-10-01T23:30:00 [+0100]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
       Test("uuuu-MM-dd'T'HH:mm:ss '['ZZZZ']'", "2017-10-01T23:30:00 [GMT+01:00]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
-      Test("uuuu-MM-dd'T'HH:mm:ss '['ZZZZZ']'", "2017-10-01T23:30:00 [+01:00:00]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant)),
+      Test("uuuu-MM-dd'T'HH:mm:ss '['ZZZZZ']'", "2017-10-01T23:30:00 [+01:00:00]", Timestamp.from(ZonedDateTime.of(2017, 10, 1, 22, 30, 0, 0, ZoneId.of("UTC")).toInstant))
     )
 
     for (test <- tests) {
