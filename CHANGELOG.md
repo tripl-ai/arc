@@ -4,6 +4,7 @@
 
 ## 2.12.5
 
+- add [probit](https://en.wikipedia.org/wiki/Probit) and inverse `probnorm` UDFs.
 - **FIX** support for `timestamp` `formatters` that include offset (e.g. `+01:00`) will override `timezoneId` which remains mandatory.
 
 ## 2.12.4

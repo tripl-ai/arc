@@ -544,11 +544,6 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
 
     for (test <- tests) {
       val col = TimestampColumn(None, name="timestamp", description=None, nullable=false, nullReplacementValue=None, trim=true, nullableValues="" :: Nil, timezoneId="Australia/Sydney", formatters=List(test.fmt), None, metadata=None, strict=true)
-
-      val format = DateTimeFormatter.ofPattern(test.fmt)
-      println(format)
-      println(ZonedDateTime.parse(test.value, format))
-
       Typing.typeValue(test.value, col) match {
         case (Some(res), err) => {
           assert(res === test.expected)
