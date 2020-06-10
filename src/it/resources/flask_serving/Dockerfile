@@ -1,5 +1,5 @@
 # thanks to https://blog.keras.io/building-a-simple-keras-deep-learning-rest-api.html
-FROM python:3.8.3-slim-buster
+FROM python:3.6.8-slim-jessie
 
 # install python packages
 RUN pip install flask==1.1.1 gevent==1.5.0 requests==2.22.0 keras==2.2.5 tensorflow==1.13.2 pillow==5.4.0
