@@ -1,9 +1,10 @@
 # Change Log
 
-**This is likely the last release supporting `Scala 2.11` given the preview release of `Spark 3.0` which only supports `Scala 2.12`.**
+## 2.13.0
 
-## 2.12.5
+**This is the last release supporting `Scala 2.11` given the release of `Spark 3.0` which only supports `Scala 2.12`.**
 
+- bump to Spark [2.4.6](https://spark.apache.org/releases/spark-release-2-4-6.html).
 - **FIX** support for `timestamp` `formatters` that include offset (e.g. `+01:00`) will override `timezoneId` which remains mandatory.
 
 ## 2.12.4

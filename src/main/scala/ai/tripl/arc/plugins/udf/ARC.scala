@@ -32,6 +32,8 @@ import ai.tripl.arc.util.SerializableConfiguration
 import com.databricks.spark.xml.util._
 import com.sun.xml.txw2.output.IndentingXMLStreamWriter
 
+import breeze.stats.distributions
+
 class ARC extends ai.tripl.arc.plugins.UDFPlugin {
 
   val version = Utils.getFrameworkVersion
@@ -49,6 +51,8 @@ class ARC extends ai.tripl.arc.plugins.UDFPlugin {
     spark.sqlContext.udf.register("random", ARCPlugin.getRandom _ )
     spark.sqlContext.udf.register("to_xml", ARCPlugin.toXML _ )
     spark.sqlContext.udf.register("struct_keys", ARCPlugin.structKeys _ )
+    spark.sqlContext.udf.register("probit", ARCPlugin.probit _ )
+    spark.sqlContext.udf.register("probnorm", ARCPlugin.probnorm _ )
   }
 
   override def deprecations()(implicit spark: SparkSession, logger: Logger, arcContext: ARCContext) = {
@@ -64,37 +68,54 @@ class ARC extends ai.tripl.arc.plugins.UDFPlugin {
 object ARCPlugin {
 
   // extract the object from the json string
-  def jsonPath(json: String, path: String): List[JsonNode] = {
-    if (!path.startsWith("$")) {
-      throw new Exception(s"""path '${path}' must start with '$$'.""")
-    }
-    val objectMapper = new ObjectMapper()
-    val rootNode = objectMapper.readTree(json)
-    val node = rootNode.at(path.substring(1).replace(".", "/"))
+  def jsonPath(value: String, path: String): List[JsonNode] = {
+    if (value != null) {
+      if (!path.startsWith("$")) {
+        throw new Exception(s"""path '${path}' must start with '$$'.""")
+      }
+      val objectMapper = new ObjectMapper()
+      val rootNode = objectMapper.readTree(value)
+      val node = rootNode.at(path.substring(1).replace(".", "/"))
 
-    if (node.getNodeType.toString != "ARRAY") {
-      throw new Exception(s"""value at '${path}' must be 'array' type.""")
-    }
+      if (node.getNodeType.toString != "ARRAY") {
+        throw new Exception(s"""value at '${path}' must be 'array' type.""")
+      }
 
-    node.asScala.toList
+      node.asScala.toList
+    } else {
+      null
+    }
   }
 
   // get json array cast as double
-  def getJSONDoubleArray(json: String, path: String): Array[Double] = {
-    val node = jsonPath(json, path)
-    node.map(_.asDouble).toArray
+  def getJSONDoubleArray(value: String, path: String): Array[Double] = {
+    Option(value) match {
+      case Some(value) => {
+        val node = jsonPath(value, path)
+        node.map(_.asDouble).toArray
+      }
+      case None => null
+    }
   }
 
   // get json array cast as integer
-  def getJSONIntArray(json: String, path: String): Array[Int] = {
-    val node = jsonPath(json, path)
-    node.map(_.asInt).toArray
+  def getJSONIntArray(value: String, path: String): Array[Int] = {
+    if (value != null) {
+      val node = jsonPath(value, path)
+      node.map(_.asInt).toArray
+    } else {
+      null
+    }
   }
 
   // get json array cast as long
-  def getJSONLongArray(json: String, path: String): Array[Long] = {
-    val node = jsonPath(json, path)
-    node.map(_.asLong).toArray
+  def getJSONLongArray(value: String, path: String): Array[Long] = {
+    if (value != null) {
+      val node = jsonPath(value, path)
+      node.map(_.asLong).toArray
+    } else {
+      null
+    }
   }
 
   def getRandom(): Double = {
@@ -102,18 +123,26 @@ object ARCPlugin {
   }
 
   // convert structtype to xml
-  def toXML(input: Row): String = {
-    val factory = XMLOutputFactory.newInstance
-    val writer = new CharArrayWriter
-    val xmlWriter = factory.createXMLStreamWriter(writer)
-    val indentingXmlWriter = new IndentingXMLStreamWriter(xmlWriter)
-    ai.tripl.arc.load.XMLLoad.StaxXmlGenerator(input.schema, indentingXmlWriter)(input)
-    indentingXmlWriter.flush
-    writer.toString.trim
+  def toXML(value: Row): String = {
+    if (value != null) {
+      val factory = XMLOutputFactory.newInstance
+      val writer = new CharArrayWriter
+      val xmlWriter = factory.createXMLStreamWriter(writer)
+      val indentingXmlWriter = new IndentingXMLStreamWriter(xmlWriter)
+      ai.tripl.arc.load.XMLLoad.StaxXmlGenerator(value.schema, indentingXmlWriter)(value)
+      indentingXmlWriter.flush
+      writer.toString.trim
+    } else {
+      null
+    }
   }
 
-  def structKeys(input: Row): Array[String] = {
-    input.schema.fieldNames
+  def structKeys(value: Row): Array[String] = {
+    if (value != null) {
+      value.schema.fieldNames
+    } else {
+      null
+    }
   }
 
   case class URIInputStream(
@@ -122,14 +151,22 @@ object ARCPlugin {
   )
 
   // get byte array content of uri
-  def getURI(uri: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[Byte] = {
-    getURIFilenameArray(uri).head match {
-      case (byteArray, _) => byteArray
+  def getURI(value: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[Byte] = {
+    if (value != null) {
+      getURIFilenameArray(value).head match {
+        case (byteArray, _) => byteArray
+      }
+    } else {
+      null
     }
   }
 
-  def getURIArray(uri: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[Array[Byte]] = {
-    getURIFilenameArray(uri).map { case (byteArray, _) => byteArray }
+  def getURIArray(value: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[Array[Byte]] = {
+    if (value != null) {
+      getURIFilenameArray(value).map { case (byteArray, _) => byteArray }
+    } else {
+      null
+    }
   }
 
   def getURIFilenameArray(uri: String)(implicit spark: SparkSession, arcContext: ARCContext): Array[(Array[Byte], String)] = {
@@ -185,4 +222,12 @@ object ARCPlugin {
     }
   }
 
+
+  def probit(value: Double): Double = {
+    distributions.Gaussian(0.0, 1.0).inverseCdf(value)
+  }
+
+  def probnorm(value: Double): Double = {
+    distributions.Gaussian(0.0, 1.0).cdf(value)
+  }
 }

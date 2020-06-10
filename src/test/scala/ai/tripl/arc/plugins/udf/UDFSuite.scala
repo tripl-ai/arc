@@ -64,40 +64,51 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     val df = spark.sql("""
-    SELECT get_json_double_array('[0.1, 1.1]', '$') AS test
+    SELECT 
+      get_json_double_array('[0.1, 1.1]', '$') AS test
+      ,get_json_double_array(null, '$') AS null_test
     """)
 
     assert(df.first.getAs[scala.collection.mutable.WrappedArray[Double]](0)(0) == 0.1)
     assert(df.schema.fields(0).dataType.toString == "ArrayType(DoubleType,false)")
+    assert(df.first.isNullAt(1))
   }
+  
 
   test("UDFSuite: get_json_integer_array") {
     implicit val spark = session
 
     val df = spark.sql("""
-    SELECT get_json_integer_array('[1, 2]', '$') AS test
+    SELECT 
+      get_json_integer_array('[1, 2]', '$') AS test
+      ,get_json_integer_array(null, '$') AS null_test
     """)
 
     assert(df.first.getAs[scala.collection.mutable.WrappedArray[Integer]](0)(0) == 1)
     assert(df.schema.fields(0).dataType.toString == "ArrayType(IntegerType,false)")
+    assert(df.first.isNullAt(1))
   }
 
   test("UDFSuite: get_json_long_array") {
     implicit val spark = session
 
     val df = spark.sql("""
-    SELECT get_json_long_array('[2147483648, 2147483649]', '$') AS test
+    SELECT 
+      get_json_long_array('[2147483648, 2147483649]', '$') AS test
+      ,get_json_long_array(null, '$') AS null_test
     """)
 
     assert(df.first.getAs[scala.collection.mutable.WrappedArray[Long]](0)(0) == 2147483648L)
     assert(df.schema.fields(0).dataType.toString == "ArrayType(LongType,false)")
+    assert(df.first.isNullAt(1))
   }
 
   test("UDFSuite: random") {
     implicit val spark = session
 
     val df = spark.sql("""
-    SELECT random() AS test
+    SELECT 
+      random() AS test
     """)
 
     assert(df.first.getDouble(0) > 0.0)
@@ -124,6 +135,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
           )
         )
       ) AS xml
+      ,to_xml(null) AS null_test
     """)
 
     assert(df.first.getString(0) ==
@@ -134,6 +146,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     |    <nested1>nestedvalue</nested1>
     |  </child1>
     |</Document>""".stripMargin)
+    assert(df.first.isNullAt(1))
   }
 
   test("UDFSuite: struct_keys") {
@@ -147,9 +160,11 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
           'key1', 'value1'
         )
       )
+      ,STRUCT_KEYS(null) AS null_test
     """)
 
     assert(df.first.getSeq[String](0) == Seq("key0", "key1"))
+    assert(df.first.isNullAt(1))
   }
 
   test("UDFSuite: struct_contains: true") {
@@ -188,6 +203,15 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     """)
     assert(df.first.getBoolean(0) == false)
   }
+
+  test("UDFSuite: get_uri: null") {
+    implicit val spark = session
+    val df = spark.sql("""
+      SELECT 
+        GET_URI(null)
+    """)
+    assert(df.first.isNullAt(0))
+  }  
 
   test("UDFSuite: get_uri: batch") {
     implicit val spark = session
@@ -296,4 +320,29 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(rows.forall( row => row.getString(0) == expected && row.getString(1).contains("akc_breed_info.csv")))
   }
 
+  test("UDFSuite: probit") {
+    implicit val spark = session
+
+    val df = spark.sql("""
+    SELECT 
+      probit(null) AS probit_null
+      ,probit(0.025) AS probit_0
+    """)
+    assert(df.first.isNullAt(0))
+    assert(df.first.getDouble(1) == -1.959963984540054)
+  }
+
+  test("UDFSuite: probnorm") {
+    implicit val spark = session
+
+    val df = spark.sql("""
+    SELECT 
+      probnorm(null) AS probnorm_null
+      ,probnorm(-1.959963984540054) AS probit_0
+    """)
+    assert(df.first.isNullAt(0))
+    assert(df.first.getDouble(1) == 0.025000000000000022)
+  }
+
 }
+
