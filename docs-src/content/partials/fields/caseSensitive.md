@@ -1,0 +1,1 @@
+Use a case-sensitive formatter.<br><br>A case-insensitive formatter `MMM` will accept both `JUL` and `Jul` where case-sensitive will only only accept `Jul`.<br><br>Default: `false`.

@@ -9,18 +9,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=10" />
-    <title>Security - Arc</title>
+    <title> - Arc</title>
     <meta name="generator" content="Hugo 0.51" />
 
     
     <meta name="description" content="Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.">
     
-    <link rel="canonical" href="https://arc.tripl.ai/security/">
+    <link rel="canonical" href="https://arc.tripl.ai/partials/fields/casesensitive/">
     
     <meta name="author" content="ai.tripl.arc">
     
 
-    <meta property="og:url" content="https://arc.tripl.ai/security/">
+    <meta property="og:url" content="https://arc.tripl.ai/partials/fields/casesensitive/">
     <meta property="og:title" content="Arc">
     <meta property="og:image" content="https://arc.tripl.ai/images/logo.png">
     <meta name="apple-mobile-web-app-title" content="Arc">
@@ -113,7 +113,7 @@
     </div>
     <div class="stretch">
       <div class="title">
-        Security
+        
       </div>
     </div>
 
@@ -342,14 +342,11 @@
 
 
 
-<a class="current" title="Security" href="https://arc.tripl.ai/security/">
+<a  title="Security" href="https://arc.tripl.ai/security/">
 	
 	Security
 </a>
 
-
-<ul id="scrollspy">
-</ul>
 
 
   
@@ -451,302 +448,9 @@
 
 	<article class="article">
 		<div class="wrapper">
-			<h1>Security</h1>
-
 			
 
-<h2 id="encryption">Encryption</h2>
-
-<h3 id="arc-local">Arc Local</h3>
-
-<p>Spark <a href="https://spark.apache.org/docs/latest/security.html">natively supports</a> many different types of encryption. When running as a single master from the <code>Dockerfile</code> (as per <a href="https://github.com/tripl-ai/arc-starter">Arc Starter</a>) then set these options to ensure temporary data spilled to disk and any network traffic will be encrypted with a randomly generated key for each execution:</p>
-
-<pre><code class="language-bash">--conf spark.authenticate=true \
---conf spark.authenticate.secret=$(openssl rand -hex 64) \
---conf spark.io.encryption.enabled=true \
---conf spark.network.crypto.enabled=true \
-</code></pre>
-
-<h3 id="arc-jupyter">Arc Jupyter</h3>
-
-<p>The <a href="#arclocal">Arc Local</a> encrpytion options are also set in <a href="https://github.com/tripl-ai/arc-jupyter">Arc Jupyter</a> and have a secure random secret generated for each notebook session and cannot be overridden by setting custom configurations.</p>
-
-<h2 id="authentication">Authentication</h2>
-
-<p>The <code>authentication</code> object defines the authentication parameters for connecting to a remote service (e.g. HDFS, Blob Storage, etc.). To define these the <code>authentication</code> key can be supplied for different providers:</p>
-
-<pre><code class="language-json">{
-  &quot;authentication&quot;: {
-    &quot;method&quot;: &quot;AmazonAccessKey&quot;,
-    &quot;accessKeyID&quot;: &quot;AKIAIOSFODNN7EXAMPLE&quot;,
-    &quot;secretAccessKey&quot;: &quot;wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY&quot;,
-  }
-}
-</code></pre>
-
-<p>It is strongly discouraged to use simple authentication like above and in favor of mechaisms like <code>AmazonIAM</code> which do not risk exposing secrets.</p>
-
-<div class="admonition note">
-<p class="admonition-title">Authentication Scope</p>
-<p><p>Currently these options are defined at a global level meaning that if an <code>authentication</code> object is supplied for one stage it will apply to all stages after that.</p>
-
-<p>Amazon Web Services <code>s3a</code> access is an exception which has <code>stage</code> level scoping of permissions which override globals.</p>
-</p>
-</div>
-
-<h3 id="parameters">Parameters</h3>
-
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>method</td>
-<td>String</td>
-<td>true</td>
-<td>A value of <code>AzureSharedKey</code>, <code>AzureSharedAccessSignature</code>, <code>AzureDataLakeStorageToken</code>, <code>AzureDataLakeStorageGen2AccountKey</code>, <code>AzureDataLakeStorageGen2OAuth</code>, <code>AmazonAccessKey</code>, <code>AmazonAnonymous</code>, <code>AmazonIAM</code>, <code>AmazonEnvironmentVariable</code>, <code>GoogleCloudStorageKeyFile</code> which defines which method should be used to authenticate with the remote service.</td>
-</tr>
-
-<tr>
-<td>accountName</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureSharedKey</code> and <code>AzureSharedAccessSignature</code>.</td>
-</tr>
-
-<tr>
-<td>signature</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureSharedKey</code>.</td>
-</tr>
-
-<tr>
-<td>container</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureSharedAccessSignature</code>.</td>
-</tr>
-
-<tr>
-<td>token</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureSharedAccessSignature</code>.</td>
-</tr>
-
-<tr>
-<td>clientID</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureDataLakeStorageToken</code>.</td>
-</tr>
-
-<tr>
-<td>refreshToken</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureDataLakeStorageToken</code>.</td>
-</tr>
-
-<tr>
-<td>accountName</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureDataLakeStorageGen2AccountKey</code>.</td>
-</tr>
-
-<tr>
-<td>accessKey</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureDataLakeStorageGen2AccountKey</code>.</td>
-</tr>
-
-<tr>
-<td>clientID</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureDataLakeStorageGen2OAuth</code>.</td>
-</tr>
-
-<tr>
-<td>secret</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureDataLakeStorageGen2OAuth</code>.</td>
-</tr>
-
-<tr>
-<td>directoryID</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AzureDataLakeStorageGen2OAuth</code>.</td>
-</tr>
-
-<tr>
-<td>accessKeyID</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AmazonAccessKey</code>.</td>
-</tr>
-
-<tr>
-<td>secretAccessKey</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AmazonAccessKey</code>.</td>
-</tr>
-
-<tr>
-<td>accessKeyID</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AmazonIAM</code>.</td>
-</tr>
-
-<tr>
-<td>secretAccessKey</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>AmazonAccessKey</code>.</td>
-</tr>
-
-<tr>
-<td>encryptionAlgorithm</td>
-<td>String</td>
-<td>false*</td>
-<td>The bucket encrpytion algorithm: <code>SSE-S3</code>, <code>SSE-KMS</code>, <code>SSE-C</code>. Optional for <code>AmazonIAM</code>.</td>
-</tr>
-
-<tr>
-<td>kmsArn</td>
-<td>String</td>
-<td>false*</td>
-<td>The Key Management Service Amazon Resource Name when using <code>SSE-KMS</code> encryptionAlgorithm e.g. <code>arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab</code>. Optional for <code>AmazonIAM</code>.</td>
-</tr>
-
-<tr>
-<td>customKey</td>
-<td>String</td>
-<td>false*</td>
-<td>The key to use when using Customer-Provided Encryption Keys (<code>SSE-C</code>). Optional for <code>AmazonIAM</code>.</td>
-</tr>
-
-<tr>
-<td>endpoint</td>
-<td>String</td>
-<td>false</td>
-<td>Used for setting S3 endpoint for services like <code>Ceph Object Store</code> or <code>Minio</code>. Optional for <code>AmazonAccessKey</code>.</td>
-</tr>
-
-<tr>
-<td>sslEnabled</td>
-<td>Boolean</td>
-<td>false</td>
-<td>Used to set whether to use SSL. Optional for <code>AmazonAccessKey</code>.</td>
-</tr>
-
-<tr>
-<td>projectID</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>GoogleCloudStorageKeyFile</code>.</td>
-</tr>
-
-<tr>
-<td>keyFilePath</td>
-<td>String</td>
-<td>false*</td>
-<td>Required for <code>GoogleCloudStorageKeyFile</code>.</td>
-</tr>
-</tbody>
-</table>
-
-<h3 id="examples">Examples</h3>
-
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;DelimitedExtract&quot;,
-    ...
-    &quot;authentication&quot;: {
-        &quot;method&quot;: &quot;AzureSharedKey&quot;,
-        &quot;accountName&quot;: &quot;myaccount&quot;,
-        &quot;signature&quot;: &quot;ctzMq410TV3wS7upTBcunJTDLEJwMAZuFPfr0mrrA08=&quot;,
-    }
-    ...
-}
-</code></pre>
-
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;DelimitedExtract&quot;,
-    ...
-    &quot;authentication&quot;: {
-        &quot;method&quot;: &quot;AzureSharedAccessSignature&quot;,
-        &quot;accountName&quot;: &quot;myaccount&quot;,
-        &quot;container&quot;: &quot;mycontainer&quot;,
-        &quot;token&quot;: &quot;sv=2015-04-05&amp;st=2015-04-29T22%3A18%3A26Z&amp;se=2015-04-30T02%3A23%3A26Z&amp;sr=b&amp;sp=rw&amp;sip=168.1.5.60-168.1.5.70&amp;spr=https&amp;sig=Z%2FRHIX5Xcg0Mq2rqI3OlWTjEg2tYkboXr1P9ZUXDtkk%3D&quot;,
-    }
-    ...
-}
-</code></pre>
-
-<pre><code class="language-json">{
-    &quot;type&quot;: &quot;DelimitedExtract&quot;,
-    ...
-    &quot;authentication&quot;: {
-        &quot;method&quot;: &quot;AmazonAccessKey&quot;,
-        &quot;accessKeyID&quot;: &quot;AKIAIOSFODNN7EXAMPLE&quot;,
-        &quot;secretAccessKey&quot;: &quot;wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY&quot;,
-        &quot;endpoint&quot;: &quot;http://minio:9000&quot;
-    }
-    ...
-}
-</code></pre>
-
-<h2 id="amazon-web-services">Amazon Web Services</h2>
-
-<h3 id="authentication-1">Authentication</h3>
-
-<p>When running on Amazon Web Services Arc will try to resolve permissions in this order. These can ben overridden for a specific stage by specifying a <a href="../security/#authentication">authentication</a> method.</p>
-
-<ul>
-<li><code>SimpleAWSCredentialsProvider</code>: access key and secret</li>
-<li><code>EnvironmentVariableCredentialsProvider</code>: environment variables of access key and secret</li>
-<li><code>InstanceProfileCredentialsProvider</code>: IAM Role attached to the EC2 instance</li>
-<li><code>ContainerCredentialsProvider</code>: IAM Role attached to the container in case of ECS and EKS</li>
-<li><code>AnonymousAWSCredentialsProvider</code>: try to access without credentials - useful for accessing the <a href="https://registry.opendata.aws/">Registry of Open Data on AWS</a>.</li>
-</ul>
-
-<h3 id="encryption-at-rest">Encryption-at-Rest</h3>
-
-<p><a href="https://aws.amazon.com/s3/">Amazon S3</a> supports full encryption for data-at-rest via the <a href="https://aws.amazon.com/kms/">Amazon Key Management Service</a>. When used with Amazon <a href="https://aws.amazon.com/iam/">Identity and Access Management</a> it provides a mechanism for securely storing data and providing access control that works seamlessly with Arc.</p>
-
-<p>A policy like this will work:</p>
-
-<pre><code class="language-json">{
-  &quot;Version&quot;: &quot;2012-10-17&quot;,
-  &quot;Statement&quot;: [
-    {
-      &quot;Effect&quot;: &quot;Allow&quot;,
-      &quot;Action&quot;: [
-        &quot;kms:Decrypt&quot;,
-        &quot;s3:GetObject&quot;
-      ],
-      &quot;Resource&quot;: [
-        &quot;arn:aws:kms:example-region-1:123456789012:key/example-key-id&quot;,
-        &quot;arn:aws:s3:::example-bucket-name/*&quot;
-      ]
-    }
-  ]
-}
-</code></pre>
+			<p>Use a case-sensitive formatter.<br><br>A case-insensitive formatter <code>MMM</code> will accept both <code>JUL</code> and <code>Jul</code> where case-sensitive will only only accept <code>Jul</code>.<br><br>Default: <code>false</code>.</p>
 
 
 			<aside class="copyright" role="note">
@@ -761,7 +465,7 @@
 <nav class="pagination" aria-label="Footer">
   <div class="previous">
     
-    <a href="https://arc.tripl.ai/deploy/" title="Deploy">
+    <a href="https://arc.tripl.ai/partials/fields/bulkload/" title="">
       <span class="direction">
         Previous
       </span>
@@ -771,7 +475,7 @@
         </div>
         <div class="stretch">
           <div class="title">
-            Deploy
+            
           </div>
         </div>
       </div>
@@ -781,14 +485,14 @@
 
   <div class="next">
     
-    <a href="https://arc.tripl.ai/plugins/" title="Plugins">
+    <a href="https://arc.tripl.ai/partials/fields/contiguousindex/" title="">
       <span class="direction">
         Next
       </span>
       <div class="page">
         <div class="stretch">
           <div class="title">
-            Plugins
+            
           </div>
         </div>
         <div class="button button-next" role="button" aria-label="Next">
