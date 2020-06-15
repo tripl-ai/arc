@@ -1,10 +1,17 @@
 # Change Log
 
-## 2.13.0
+## 2.14.0
 
 **This is the last release supporting `Scala 2.11` given the release of `Spark 3.0` which only supports `Scala 2.12`.**
 
+- add support for case-insensitive formatter (default `true`) to allow formatter `MMM` to accept `JUL` and `Jul` where case-sensitive will only accept `Jul`. Applies to `Date` and `Timestamp` schema columns. Boolean property `caseSensitive` can be used to set case-senstive behavior.
+
+## 2.13.0
+
 - bump to Spark [2.4.6](https://spark.apache.org/releases/spark-release-2-4-6.html).
+
+## 2.12.5
+
 - **FIX** support for `timestamp` `formatters` that include offset (e.g. `+01:00`) will override `timezoneId` which remains mandatory.
 
 ## 2.12.4
