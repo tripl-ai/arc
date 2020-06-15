@@ -155,24 +155,25 @@ object ArcSchema {
 
           case "date" => {
             // test keys
-            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "formatters" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "formatters" :: "caseSensitive" :: baseKeys
             val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
             val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
             val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
             val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
+            val caseSensitive = ConfigReader.getValue[java.lang.Boolean]("caseSensitive", default = Some(false))
             val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             val formatters = ConfigReader.getValue[StringList]("formatters") |> validateDateTimeFormatter("formatters") _
 
-            (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters) match {
-              case (Right(id), Right(name), Right(description), Right(_type), Right(nullable), Right(nullReplacementValue), Right(trim), Right(nullableValues), Right(metadata), Right(formatters)) => {
+            (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, caseSensitive) match {
+              case (Right(id), Right(name), Right(description), Right(_type), Right(nullable), Right(nullReplacementValue), Right(trim), Right(nullableValues), Right(metadata), Right(formatters), Right(caseSensitive)) => {
 
                 // test if strict mode possible and throw warning
                 val strict = formatters.forall(formatter => strictDateTimeFormatter(name, formatter))
-                Right(DateColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, formatters, metadata, strict))
+                Right(DateColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, formatters, metadata, strict, caseSensitive))
               }
               case _ => {
-                val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, invalidKeys).collect{ case Left(errs) => errs }.flatten
+                val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, caseSensitive, invalidKeys).collect{ case Left(errs) => errs }.flatten
                 val metaName = stringOrDefault(name, "unnamed meta")
                 val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                 Left(err :: Nil)
@@ -330,11 +331,12 @@ object ArcSchema {
 
           case "timestamp" => {
             // test keys
-            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "formatters" :: "timezoneId" :: "time" :: baseKeys
+            val expectedKeys = "trim" :: "nullable" :: "nullReplacementValue" :: "nullableValues" :: "formatters" :: "timezoneId" :: "time" :: "caseSensitive" :: baseKeys
             val trim = ConfigReader.getValue[java.lang.Boolean]("trim", default = Some(false))
             val nullable = ConfigReader.getValue[java.lang.Boolean]("nullable")
             val nullReplacementValue = ConfigReader.getOptionalValue[String]("nullReplacementValue")
             val nullableValues = ConfigReader.getValue[StringList]("nullableValues", default = Some(Nil))
+            val caseSensitive = ConfigReader.getValue[java.lang.Boolean]("caseSensitive", default = Some(false))
             val invalidKeys = checkValidKeys(c)(expectedKeys)
 
             val formatters = ConfigReader.getValue[StringList]("formatters") |> validateDateTimeFormatter("formatters") _
@@ -361,16 +363,16 @@ object ArcSchema {
               Right(None)
             }
 
-            (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, timezoneId, time) match {
-              case (Right(id), Right(name), Right(description), Right(_type), Right(nullable), Right(nullReplacementValue), Right(trim), Right(nullableValues), Right(metadata), Right(formatters), Right(timezoneId), Right(time)) => {
+            (id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, timezoneId, time, caseSensitive) match {
+              case (Right(id), Right(name), Right(description), Right(_type), Right(nullable), Right(nullReplacementValue), Right(trim), Right(nullableValues), Right(metadata), Right(formatters), Right(timezoneId), Right(time), Right(caseSensitive)) => {
 
                 // test if strict mode possible and throw warning
                 val strict = formatters.forall(formatter => strictDateTimeFormatter(name, formatter))
 
-                Right(TimestampColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, timezoneId, formatters, time, metadata, strict))
+                Right(TimestampColumn(id, name, description, nullable, nullReplacementValue, trim, nullableValues, timezoneId, formatters, time, metadata, strict, caseSensitive))
               }
               case _ => {
-                val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, timezoneId, time, invalidKeys).collect{ case Left(errs) => errs }.flatten
+                val allErrors: Errors = List(id, name, description, _type, nullable, nullReplacementValue, trim, nullableValues, metadata, formatters, timezoneId, time, caseSensitive, invalidKeys).collect{ case Left(errs) => errs }.flatten
                 val metaName = stringOrDefault(name, "unnamed meta")
                 val err = StageError(idx, metaName, c.origin.lineNumber, allErrors)
                 Left(err :: Nil)

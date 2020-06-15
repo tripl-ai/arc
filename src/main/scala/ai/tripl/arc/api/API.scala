@@ -172,7 +172,7 @@ object API {
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class DateColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String], strict: Boolean) extends ExtractColumn {
+  case class DateColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], formatters: List[String], metadata: Option[String], strict: Boolean, caseSensitive: Boolean) extends ExtractColumn {
     val sparkDataType: DataType = DateType
   }
 
@@ -186,7 +186,7 @@ object API {
   /** Formatters is a list of valid Java Time formats. Will attemp to parse in
     * order so most likely match should be first.
     */
-  case class TimestampColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], timezoneId: String, formatters: List[String], time: Option[LocalTime], metadata: Option[String], strict: Boolean) extends ExtractColumn {
+  case class TimestampColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], timezoneId: String, formatters: List[String], time: Option[LocalTime], metadata: Option[String], strict: Boolean, caseSensitive: Boolean) extends ExtractColumn {
     val sparkDataType: DataType = TimestampType
   }
 

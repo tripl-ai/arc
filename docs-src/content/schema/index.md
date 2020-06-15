@@ -148,6 +148,7 @@ This means that if users will be executing SQL statements which have conditional
 |formatters|Array[String]|true|{{< readfile file="/content/partials/fields/dateFormatters.md" markdown="true" >}}|
 |trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
 |nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
+|caseSensitive|Boolean|false|Use a case-senstive formatter. E.g. format `MMM` will only accept `Jul` not `JUL`.<br><br>Default: `false`.|
 |nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
 |nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 
@@ -427,6 +428,7 @@ Spark does not have an internal `TimeType` representation of time. This type can
 |time|Map[String, Integer]|false|Use this capability if converting a Date label into a Timestamp for relative comparisons. Required fields are `hour`, `minute`, `second` and `nano` . These values can be agreed with source data suppliers to ensure intra-system data alignment. See below for example.|
 |trim|Boolean|true|{{< readfile file="/content/partials/fields/trim.md" markdown="true" >}}|
 |nullable|Boolean|true|{{< readfile file="/content/partials/fields/nullable.md" markdown="true" >}}|
+|caseSensitive|Boolean|false|Use a case-senstive formatter. E.g. format `MMM` will only accept `Jul` not `JUL`.<br><br>Default: `false`.|
 |nullableValues|Array[String]|false|{{< readfile file="/content/partials/fields/nullableValues.md" markdown="true" >}}|
 |nullReplacementValue|String|false|{{< readfile file="/content/partials/fields/nullReplacementValue.md" markdown="true" >}}|
 
