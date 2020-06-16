@@ -699,7 +699,7 @@ The backtick character (`) can be used to address fields with non-alphanumeric n
 ### Examples
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/XMLExtractMin" highlight="json" >}}
+{{< readfile file="/resources/docs_resources_plugins/XMLExtractMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/XMLExtractComplete" highlight="json" >}}
+{{< readfile file="/resources/docs_resources_plugins/XMLExtractComplete" highlight="json" >}}

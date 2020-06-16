@@ -525,7 +525,7 @@ Results in:
 ```
 
 #### Minimal
-{{< readfile file="/resources/docs_resources/XMLLoadMin" highlight="json" >}}
+{{< readfile file="/resources/docs_resources_plugins/XMLLoadMin" highlight="json" >}}
 
 #### Complete
-{{< readfile file="/resources/docs_resources/XMLLoadComplete" highlight="json" >}}
+{{< readfile file="/resources/docs_resources_plugins/XMLLoadComplete" highlight="json" >}}

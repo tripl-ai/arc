@@ -2,9 +2,11 @@
 
 ## 3.0.0
 
+- bump to Spark [3.0.0](https://spark.apache.org/releases/spark-release-3-0-0.html).
+- bump to Hadoop [3.2.1](https://hadoop.apache.org/release/3.1.2.html).
 - **BREAKING** remove `Scala 2.11` support as Arc is now built against `Spark 3.0.0` which does not support `Scala 2.11`.
+- **BREAKING** move `XMLExtract` and `XMLLoad` to [arc-xml-plugin](https://github.com/triplai/arc-xml-plugin).
 - **BREAKING** remove `GraphTransform` and `CypherTransform` as the underlying [library](https://github.com/opencypher/morpheus) has been [abandoned](https://github.com/opencypher/morpheus/issues/943#issuecomment-610215881).
-- **BREAKING** move `XMLExtract` and `XMLLoad` to their own repository.
 
 ## 2.14.0
 

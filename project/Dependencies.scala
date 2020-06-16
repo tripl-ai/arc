@@ -25,9 +25,6 @@ object Dependencies {
   val hadoopCommon =  "org.apache.hadoop" % "hadoop-common" % hadoopVersion
   val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % hadoopVersion
 
-  // spark XML
-  val sparkXML = "com.databricks" %% "spark-xml" % "0.9.0"
-
   // Project
   val etlDeps = Seq(
     typesafeConfig,
@@ -41,7 +38,6 @@ object Dependencies {
     sparkSql,
     sparkHive,
     sparkMl,
-    sparkAvro,
-    sparkXML
+    sparkAvro
   )
 }
