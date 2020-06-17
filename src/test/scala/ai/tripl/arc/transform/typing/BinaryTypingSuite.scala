@@ -61,7 +61,7 @@ class BinaryTypingSuite extends FunSuite with BeforeAndAfter {
         assert(err === TypingError("name", s"""Unable to convert '${value}' to binary using 'base64' decoding."""))
       }
       case (_,_) => {
-        println("Here")
+        ("Here")
         assert(false)
       }
     }

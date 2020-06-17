@@ -82,7 +82,6 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
 
       {
         val value = "   42"
-        //println(Typing.typeValue(value,col))
         Typing.typeValue(value, col) match {
           case (res, Some(err)) => {
             assert(res === None)

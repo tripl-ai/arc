@@ -89,10 +89,7 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(error) => {
-        println(error)
-        assert(false)
-      }
+      case Left(err) => fail(err.toString)
       case Right((pipeline, ctx)) => ARC.run(pipeline)(spark, logger, ctx)
     }
   }  
@@ -147,10 +144,7 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
-      case Left(error) => {
-        println(error)
-        assert(false)
-      }
+      case Left(err) => fail(err.toString)
       case Right((pipeline, ctx)) => {
         val thrown = intercept[Exception with DetailException] {
           ARC.run(pipeline)(spark, logger, ctx)

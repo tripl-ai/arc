@@ -51,10 +51,8 @@ It is a great dataset as it has a lot of the attributes of real-world data that 
       <guid>https://arc.tripl.ai/transform/</guid>
       <description>*Transform stages apply a single transformation to one or more incoming datasets.
 Transformers should meet this criteria:
- Be logically pure. Perform only a single function. Utilise Spark internal functionality where possible.  CypherTransform Since: 2.0.0 - Supports Streaming: True Plugin
-The CypherTransform is provided by the https://github.com/tripl-ai/arc-graph-pipeline-plugin package.
- The CypherTransform executes an Cypher graph query against a graph already created by a GraphTransform stage.
-Parameters    Attribute Type Required Description     name String true Name of the stage for logging.</description>
+ Be logically pure. Perform only a single function. Utilise Spark internal functionality where possible.  DiffTransform Since: 1.0.8 - Supports Streaming: False The DiffTransform stage calculates the difference between two input datasets and produces three datasets:
+ A dataset of the intersection of the two datasets - or rows that exist and are the same in both datasets.</description>
     </item>
     
     <item>
@@ -152,8 +150,7 @@ Database Inconsistency When writing data to targets like databases using the JDB
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/changelog/</guid>
-      <description>Change Log 2.14.0 This is the last release supporting Scala 2.11 given the release of Spark 3.0 which only supports Scala 2.12.
- add support for case-insensitive formatter (default true) to allow formatter MMM to accept JUL and Jul where case-sensitive will only accept Jul. Applies to Date and Timestamp schema columns. Boolean property caseSensitive can be used to set case-senstive behavior.  2.13.0  bump to Spark 2.4.6.  2.</description>
+      <description>Change Log 3.0.0  bump to Spark 3.0.0. bump to Hadoop 3.2.0. FIX MLTransform dropping all calculated columns when applying models which do not produce a prediction column. BREAKING remove Scala 2.11 support as Arc is now built against Spark 3.0.0 which does not support Scala 2.11. BREAKING move XMLExtract and XMLLoad to arc-xml-plugin. BREAKING Spark ML models trained with Spark 2.x do not work with Spark 3.x and will need to be retrained (MLTransform).</description>
     </item>
     
     <item>
