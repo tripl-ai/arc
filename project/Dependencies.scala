@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
   // versions
   lazy val sparkVersion = "3.0.0"
-  lazy val hadoopVersion = "3.2.1"
+  lazy val hadoopVersion = "3.2.0"
 
   // arc
   val typesafeConfig = "com.typesafe" % "config" % "1.3.1"

@@ -12,8 +12,8 @@ import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-
 import ai.tripl.arc.util._
+import ai.tripl.arc.config._
 
 class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
@@ -60,6 +60,38 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(customDelimiterTargetFile))
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
   }
+
+  test("DelimitedExtract: end-to-end") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "DelimitedExtract",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${targetFile}",
+          "outputView": "${outputView}"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+        assert(df.count != 0)
+      }
+    }
+  }  
 
   test("DelimitedExtract") {
     implicit val spark = session
