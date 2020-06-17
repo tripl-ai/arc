@@ -1,10 +1,20 @@
 # Change Log
 
+## 3.0.0
+
+- bump to Spark [3.0.0](https://spark.apache.org/releases/spark-release-3-0-0.html).
+- bump to Hadoop [3.2.0](https://hadoop.apache.org/release/3.2.0.html).
+- **FIX** `MLTransform` dropping all calculated columns when applying models which do not produce a prediction column.
+- **BREAKING** remove `Scala 2.11` support as Arc is now built against `Spark 3.0.0` which does not support `Scala 2.11`.
+- **BREAKING** move `XMLExtract` and `XMLLoad` to [arc-xml-plugin](https://github.com/triplai/arc-xml-plugin).
+- **BREAKING** Spark ML models trained with Spark 2.x do not work with Spark 3.x and will need to be retrained (`MLTransform`).
+- **BREAKING** remove `GraphTransform` and `CypherTransform` as the underlying [library](https://github.com/opencypher/morpheus) has been [abandoned](https://github.com/opencypher/morpheus/issues/943#issuecomment-610215881).
+
 ## 2.14.0
 
 **This is the last release supporting `Scala 2.11` given the release of `Spark 3.0` which only supports `Scala 2.12`.**
 
-- add support for case-insensitive formatter (default `true`) to allow formatter `MMM` to accept `JUL` and `Jul` where case-sensitive will only accept `Jul`. Applies to `Date` and `Timestamp` schema columns. Boolean property `caseSensitive` can be used to set case-senstive behavior.
+- add support for case-insensitive formatter (default `true`) to allow formatter `MMM` to accept `JUL` and `Jul` where case-sensitive will only accept `Jul`. Applies to `Date` and `Timestamp` schema columns. Boolean property `caseSensitive` can be used to set case-sensitive behavior.
 
 ## 2.13.0
 

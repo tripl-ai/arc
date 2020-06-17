@@ -75,10 +75,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val metaConf = mlConf.replaceAll("hdfs://datalake/schema/", getClass.getResource("/conf/schema/").toString)
 
       // replace job directory with config so that the examples read correctly but have resource to validate
-      val xmlConf = metaConf.replaceAll("hdfs://datalake/xml/", getClass.getResource("/conf/xml/").toString)
-
-      // replace job directory with config so that the examples read correctly but have resource to validate
-      val jobConf = xmlConf.replaceAll("hdfs://datalake/job/", getClass.getResource("/conf/job/").toString)
+      val jobConf = metaConf.replaceAll("hdfs://datalake/job/", getClass.getResource("/conf/job/").toString)
 
       try {
         val pipelineEither = ArcPipeline.parseConfig(Left(jobConf), arcContext)

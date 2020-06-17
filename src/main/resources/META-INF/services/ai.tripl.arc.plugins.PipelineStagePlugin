@@ -15,7 +15,6 @@ ai.tripl.arc.extract.ORCExtract
 ai.tripl.arc.extract.ParquetExtract
 ai.tripl.arc.extract.RateExtract
 ai.tripl.arc.extract.TextExtract
-ai.tripl.arc.extract.XMLExtract
 ai.tripl.arc.load.AvroLoad
 ai.tripl.arc.load.ConsoleLoad
 ai.tripl.arc.load.DelimitedLoad
@@ -25,7 +24,6 @@ ai.tripl.arc.load.JSONLoad
 ai.tripl.arc.load.ORCLoad
 ai.tripl.arc.load.ParquetLoad
 ai.tripl.arc.load.TextLoad
-ai.tripl.arc.load.XMLLoad
 ai.tripl.arc.transform.DiffTransform
 ai.tripl.arc.transform.HTTPTransform
 ai.tripl.arc.transform.JSONTransform
