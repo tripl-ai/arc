@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">2.14.0</span></strong>
+          <span class="version">3.0.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -454,6 +454,18 @@
 			
 
 			<h1 id="change-log">Change Log</h1>
+
+<h2 id="3-0-0">3.0.0</h2>
+
+<ul>
+<li>bump to Spark <a href="https://spark.apache.org/releases/spark-release-3-0-0.html">3.0.0</a>.</li>
+<li>bump to Hadoop <a href="https://hadoop.apache.org/release/3.2.0.html">3.2.0</a>.</li>
+<li><strong>FIX</strong> <code>MLTransform</code> dropping all calculated columns when applying models which do not produce a prediction column.</li>
+<li><strong>BREAKING</strong> remove <code>Scala 2.11</code> support as Arc is now built against <code>Spark 3.0.0</code> which does not support <code>Scala 2.11</code>.</li>
+<li><strong>BREAKING</strong> move <code>XMLExtract</code> and <code>XMLLoad</code> to <a href="https://github.com/triplai/arc-xml-plugin">arc-xml-plugin</a>.</li>
+<li><strong>BREAKING</strong> Spark ML models trained with Spark 2.x do not work with Spark 3.x and will need to be retrained (<code>MLTransform</code>).</li>
+<li><strong>BREAKING</strong> remove <code>GraphTransform</code> and <code>CypherTransform</code> as the underlying <a href="https://github.com/opencypher/morpheus">library</a> has been <a href="https://github.com/opencypher/morpheus/issues/943#issuecomment-610215881">abandoned</a>.</li>
+</ul>
 
 <h2 id="2-14-0">2.14.0</h2>
 

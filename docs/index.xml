@@ -152,8 +152,7 @@ Database Inconsistency When writing data to targets like databases using the JDB
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/changelog/</guid>
-      <description>Change Log 2.14.0 This is the last release supporting Scala 2.11 given the release of Spark 3.0 which only supports Scala 2.12.
- add support for case-insensitive formatter (default true) to allow formatter MMM to accept JUL and Jul where case-sensitive will only accept Jul. Applies to Date and Timestamp schema columns. Boolean property caseSensitive can be used to set case-senstive behavior.  2.13.0  bump to Spark 2.4.6.  2.</description>
+      <description>Change Log 3.0.0  bump to Spark 3.0.0. bump to Hadoop 3.2.0. FIX MLTransform dropping all calculated columns when applying models which do not produce a prediction column. BREAKING remove Scala 2.11 support as Arc is now built against Spark 3.0.0 which does not support Scala 2.11. BREAKING move XMLExtract and XMLLoad to arc-xml-plugin. BREAKING Spark ML models trained with Spark 2.x do not work with Spark 3.x and will need to be retrained (MLTransform).</description>
     </item>
     
     <item>
