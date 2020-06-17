@@ -318,7 +318,6 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    println(thrown1.getMessage)
     assert(thrown1.getMessage.contains("No files matched '"))
     assert(thrown1.getMessage.contains("json' and no schema has been provided to create an empty dataframe."))
 
