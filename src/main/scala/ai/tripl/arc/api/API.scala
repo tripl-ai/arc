@@ -368,7 +368,6 @@ object API {
     case class AmazonIAM(bucket: Option[String], encryptionType: Option[AmazonS3EncryptionType], keyArn: Option[String], customKey: Option[String]) extends Authentication {
       def method = "AmazonIAM"
     }
-
     case class AzureSharedKey(accountName: String, signature: String) extends Authentication{
       def method = "AzureSharedKey"
     }

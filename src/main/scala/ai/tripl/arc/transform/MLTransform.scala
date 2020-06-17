@@ -130,10 +130,11 @@ object MLTransformStage {
     }
 
     val stages = try {
-      stage.model match {
-        case Right(crossValidatorModel) => crossValidatorModel.bestModel.asInstanceOf[PipelineModel].stages
-        case Left(pipelineModel) => pipelineModel.stages
+      val model = stage.model match {
+        case Right(crossValidatorModel) => crossValidatorModel.bestModel.asInstanceOf[PipelineModel]
+        case Left(pipelineModel) => pipelineModel
       }
+      modelStages(model)
     } catch {
       case e: Exception => throw new Exception(e) with DetailException {
         override val detail = stage.stageDetail
@@ -163,7 +164,7 @@ object MLTransformStage {
       .map(predictionCol => predictionCol.getOrElse("probability"))
       .map(_.toString)
       .map(col(_))
-    var transformedDF = fullTransformedDF.select((inputCols ++ predictionCols ++ probabilityCols): _*)
+    var transformedDF = if (predictionCols.isEmpty) fullTransformedDF else fullTransformedDF.select((inputCols ++ predictionCols ++ probabilityCols): _*)
 
     // if any probability columns exist replace with the max value in the probability vector using a custom UDF
     val maxProbability = udf((v: Vector) => v.toArray.max)
@@ -210,5 +211,12 @@ object MLTransformStage {
     }
 
     Option(repartitionedDF)
+  }
+
+  def modelStages(model: PipelineModel): Seq[Transformer] = {
+    model.stages.flatMap {
+      case pm: PipelineModel => modelStages(pm)
+      case t => t :: Nil
+    }
   }
 }

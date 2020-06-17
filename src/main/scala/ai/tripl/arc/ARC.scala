@@ -136,24 +136,6 @@ object ARC {
 
     implicit val logger = LoggerFactory.getLogger(jobId.getOrElse(spark.sparkContext.applicationId))
 
-    // version deprecations
-    // scala
-    val targetScalaVersion = "2.12"
-    if (scala.util.Properties.versionNumberString.startsWith("2.11")) {
-      logger.warn()
-        .field("event", "deprecation")
-        .field("message", s"scala ${scala.util.Properties.versionNumberString} support is deprecated and will be removed in coming versions. please use a scala ${targetScalaVersion} build.")
-        .log()
-    }
-    // hadoop
-    val targetHadoopVersion = "2.9.2"
-    if (org.apache.hadoop.util.VersionInfo.getVersion.startsWith("2.7")) {
-      logger.warn()
-        .field("event", "deprecation")
-        .field("message", s"hadoop ${scala.util.Properties.versionNumberString} support is deprecated and will be removed in coming versions. please use a hadoop ${targetHadoopVersion} build.")
-        .log()
-    }
-
     // add tags
     val tags: Option[String] = commandLineArguments.get("etl.config.tags").orElse(envOrNone("ETL_CONF_TAGS"))
     for (tgs <- tags) {

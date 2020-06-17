@@ -20,12 +20,12 @@ pygmentsUseClasses=true
 	repo_url = "https://github.com/tripl-ai/arc"
 
 	image = "triplai/arc"
-	version = "2.14.0"
+	version = "3.0.0"
 	arc_jupyter_image= "triplai/arc-jupyter"
-	arc_jupyter_version = "2.4.2"
-	spark_version = "2.4.6"
+	arc_jupyter_version = "3.0.0"
+	spark_version = "3.0.0"
 	scala_version = "2.12"
-	hadoop_version = "2.9.2"
+	hadoop_version = "3.2.1"
 	arc_image_version = "1.0.0"
 	arc_jupyter_image_version = "1.0.0"
 

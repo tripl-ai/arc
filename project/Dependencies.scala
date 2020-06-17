@@ -2,8 +2,8 @@ import sbt._
 
 object Dependencies {
   // versions
-  lazy val sparkVersion = "2.4.6"
-  lazy val hadoopVersion = "2.9.2"
+  lazy val sparkVersion = "3.0.0"
+  lazy val hadoopVersion = "3.2.0"
 
   // arc
   val typesafeConfig = "com.typesafe" % "config" % "1.3.1"
@@ -25,9 +25,6 @@ object Dependencies {
   val hadoopCommon =  "org.apache.hadoop" % "hadoop-common" % hadoopVersion
   val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % hadoopVersion
 
-  // spark XML
-  val sparkXML = "com.databricks" %% "spark-xml" % "0.9.0"
-
   // Project
   val etlDeps = Seq(
     typesafeConfig,
@@ -41,7 +38,6 @@ object Dependencies {
     sparkSql,
     sparkHive,
     sparkMl,
-    sparkAvro,
-    sparkXML
+    sparkAvro
   )
 }
