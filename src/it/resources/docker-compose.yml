@@ -7,24 +7,24 @@ networks:
     driver: bridge
     ipam:
      config:
-       - subnet: 172.19.0.0/24  
+       - subnet: 172.19.0.0/24
 
 services:
   sbt:
     container_name: sbt
-    image: mozilla/sbt:8u232_1.3.8
+    image: mozilla/sbt:8u232_1.3.13
     networks:
-      - arc-integration     
+      - arc-integration
     command: tail -f /dev/null
     volumes:
-      - ${PWD}:/app  
+      - ${PWD}:/app
       - /tmp/pgp:/pgp
     working_dir: /app
 
   tensorflow_serving:
     image: tensorflow_serving/simple:latest
     networks:
-      - arc-integration    
+      - arc-integration
     ports:
       - 9001:9001
     build: tensorflow_serving/.
@@ -32,9 +32,9 @@ services:
   postgres:
     image: postgres:12.2-alpine-init
     networks:
-      - arc-integration  
+      - arc-integration
     ports:
-      - 5432:5432          
+      - 5432:5432
     build: postgres/.
     environment:
       POSTGRES_USER: sa
@@ -43,7 +43,7 @@ services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2019-latest
     networks:
-      - arc-integration    
+      - arc-integration
     environment:
       ACCEPT_EULA: Y
       SA_PASSWORD: "SecretPass!2018"
@@ -52,18 +52,18 @@ services:
   flask_serving:
     image: flask_serving/simple:latest
     networks:
-      - arc-integration    
+      - arc-integration
     ports:
-      - 5000:5000        
+      - 5000:5000
     build: flask_serving/.
-  
+
   minio:
     image: minio/minio:it
     build: minio/.
     networks:
       - arc-integration
     ports:
-      - 9000:9000          
+      - 9000:9000
     command: server /it
     environment:
       MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE

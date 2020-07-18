@@ -21,9 +21,22 @@ import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
-class AvroExtract extends PipelineStagePlugin {
+class AvroExtract extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "AvroExtract",
+    |  "name": "AvroExtract",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputURI": "hdfs://*.avro",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/extract/#avroextract")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -128,11 +141,12 @@ case class AvroExtractStage(
     basePath: Option[String],
     avroSchema: Option[org.apache.avro.Schema],
     inputField: Option[String]
-  ) extends PipelineStage {
+  ) extends ExtractPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     AvroExtractStage.execute(this)
   }
+
 }
 
 object AvroExtractStage {

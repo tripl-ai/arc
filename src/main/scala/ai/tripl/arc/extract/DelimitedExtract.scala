@@ -17,9 +17,23 @@ import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
-class DelimitedExtract extends PipelineStagePlugin {
+class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "DelimitedExtract",
+    |  "name": "DelimitedExtract",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputURI": "hdfs://*.csv",
+    |  "outputView": "outputView",
+    |  "header": false
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/extract/#delimitedextract")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -129,11 +143,12 @@ case class DelimitedExtractStage(
     inputField: Option[String],
     basePath: Option[String],
     watermark: Option[Watermark]
-  ) extends PipelineStage {
+  ) extends ExtractPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     DelimitedExtractStage.execute(this)
   }
+
 }
 
 object DelimitedExtractStage {

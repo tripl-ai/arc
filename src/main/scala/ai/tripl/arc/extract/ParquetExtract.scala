@@ -15,9 +15,22 @@ import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
-class ParquetExtract extends PipelineStagePlugin {
+class ParquetExtract extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "ParquetExtract",
+    |  "name": "ParquetExtract",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputURI": "hdfs://*.parquet",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/extract/#parquetextract")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -87,25 +100,26 @@ class ParquetExtract extends PipelineStagePlugin {
 }
 
 case class ParquetExtractStage(
-  plugin: ParquetExtract,
-  name: String,
-  description: Option[String],
-  schema: Either[String, List[ExtractColumn]],
-  outputView: String,
-  input: String,
-  authentication: Option[Authentication],
-  params: Map[String, String],
-  persist: Boolean,
-  numPartitions: Option[Int],
-  partitionBy: List[String],
-  contiguousIndex: Boolean,
-  basePath: Option[String],
-  watermark: Option[Watermark]
-) extends PipelineStage {
+    plugin: ParquetExtract,
+    name: String,
+    description: Option[String],
+    schema: Either[String, List[ExtractColumn]],
+    outputView: String,
+    input: String,
+    authentication: Option[Authentication],
+    params: Map[String, String],
+    persist: Boolean,
+    numPartitions: Option[Int],
+    partitionBy: List[String],
+    contiguousIndex: Boolean,
+    basePath: Option[String],
+    watermark: Option[Watermark]
+  ) extends ExtractPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     ParquetExtractStage.execute(this)
   }
+
 }
 
 object ParquetExtractStage {

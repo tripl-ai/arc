@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.1.0
+
+- add the `JupyterCompleter` trait for auto-completion in Jupyter allowing `snippet`, `language` and `documentationURI` to be defined.
+- add the `ExtractPipelineStage`, `TransformPipelineStage` and `LoadPipelineStage` traits to allow easier pattern matching in `LifecyclePlugins`.
+
 ## 3.0.0
 
 - bump to Spark [3.0.0](https://spark.apache.org/releases/spark-release-3-0-0.html).

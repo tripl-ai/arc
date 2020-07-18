@@ -15,9 +15,22 @@ import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
-class ORCExtract extends PipelineStagePlugin {
+class ORCExtract extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "ORCExtract",
+    |  "name": "ORCExtract",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputURI": "hdfs://*.orc",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/extract/#orcextract")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -103,11 +116,12 @@ case class ORCExtractStage(
     contiguousIndex: Boolean,
     basePath: Option[String],
     watermark: Option[Watermark]
-  ) extends PipelineStage {
+  ) extends ExtractPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     ORCExtractStage.execute(this)
   }
+
 }
 
 object ORCExtractStage {

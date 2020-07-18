@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.0.0</span></strong>
+          <span class="version">3.1.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -466,9 +466,7 @@
 <li><a href="#user-defined-functions">User Defined Functions</a> which extend the Spark SQL dialect.</li>
 </ul>
 
-<h2 id="included-plugins">Included Plugins</h2>
-
-<h3 id="lifecycle-plugins">Lifecycle Plugins</h3>
+<h2 id="lifecycle-plugins">Lifecycle Plugins</h2>
 
 <h4 id="chaosmonkey">ChaosMonkey</h4>
 
@@ -528,7 +526,7 @@
   <span class="nt">&#34;probability&#34;</span><span class="p">:</span> <span class="mf">0.05</span>
 <span class="p">}</span></code></pre></div>
 
-<h3 id="user-defined-functions">User Defined Functions</h3>
+<h2 id="user-defined-functions">User Defined Functions</h2>
 
 <p>To help with common data tasks several additional functions have been added to Arc in addition to the inbuilt <a href="https://spark.apache.org/docs/latest/api/sql/index.html">Spark SQL Functions</a>.</p>
 
@@ -679,9 +677,7 @@ FROM (
   )
 </code></pre>
 
-<h2 id="custom-plugins">Custom Plugins</h2>
-
-<h3 id="resolution">Resolution</h3>
+<h2 id="resolution">Resolution</h2>
 
 <p>Plugins are resolved dynamically at runtime and are resolved by name and version.</p>
 
@@ -726,7 +722,7 @@ FROM (
   ...
 </code></pre>
 
-<h3 id="dynamic-configuration-plugins">Dynamic Configuration Plugins</h3>
+<h2 id="dynamic-configuration-plugins">Dynamic Configuration Plugins</h2>
 
 <h5 id="since-1-3-0">Since: 1.3.0</h5>
 
@@ -860,7 +856,7 @@ class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
 }
 </code></pre>
 
-<h3 id="lifecycle-plugins-1">Lifecycle Plugins</h3>
+<h2 id="lifecycle-plugins-1">Lifecycle Plugins</h2>
 
 <h5 id="since-1-3-0-1">Since: 1.3.0</h5>
 
@@ -959,32 +955,11 @@ case class DataFramePrinterInstance(
 }
 </code></pre>
 
-<h3 id="pipeline-stage-plugins">Pipeline Stage Plugins</h3>
+<h2 id="pipeline-stage-plugins">Pipeline Stage Plugins</h2>
 
 <h5 id="since-1-3-0-2">Since: 1.3.0</h5>
 
 <p>Custom <code>Pipeline Stage Plugins</code> allow users to extend the base Arc framework with custom stages which allow the full use of the Spark <a href="https://spark.apache.org/docs/latest/api/scala/">Scala API</a>. This means that private business logic or code which relies on libraries not included in the base Arc framework can be used - however it is strongly advised to use the inbuilt SQL stages where possible. If stages are general purpose enough for use outside your organisation consider contributing them to <a href="https://github.com/tripl-ai">ai.tripl</a> so that others can benefit.</p>
-
-<p>When writing plugins and you find Spark throwing <code>NotSerializableException</code> errors like:</p>
-
-<pre><code class="language-scala">Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: scala.collection.convert.Wrappers$MapWrapper
-</code></pre>
-
-<p>Ensure that any stage with a <code>mapPartitions</code> or <code>map</code> DataFrame does not require the <code>PipelineStage</code> instance to be passed into the <code>map</code> function. So instead of doing something like:</p>
-
-<pre><code class="language-scala">val transformedDF = try {
-  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =&gt;
-    val uri = stage.uri.toString
-</code></pre>
-
-<p>Declare the variables outside the map function so that <code>stage</code> does not have to be serialised and sent to all the executors (which fails if any of the <code>PipelineStage</code> contents are not serializable):</p>
-
-<pre><code class="language-scala">val stageUri = stage.uri
-
-val transformedDF = try {
-  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =&gt;
-    val uri = stageUri.toString
-</code></pre>
 
 <h4 id="examples-4">Examples</h4>
 
@@ -1087,7 +1062,51 @@ object ConsoleLoadStage {
 }
 </code></pre>
 
-<h3 id="user-defined-functions-1">User Defined Functions</h3>
+<h4 id="jupyter-code-completion">Jupyter Code Completion</h4>
+
+<p>To allow the plugin to be registerd for code completion in <code>Jupyter</code> include the <code>JupyterCompleter</code> trait and define the <code>snippet</code> and <code>documentationURI</code> values:</p>
+
+<pre><code class="language-scala">class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
+
+  val snippet = &quot;&quot;&quot;{
+  |  &quot;type&quot;: &quot;DelimitedExtract&quot;,
+  |  &quot;name&quot;: &quot;DelimitedExtract&quot;,
+  |  &quot;environments&quot;: [
+  |    &quot;production&quot;,
+  |    &quot;test&quot;
+  |  ],
+  |  &quot;inputURI&quot;: &quot;hdfs://*.csv&quot;,
+  |  &quot;outputView&quot;: &quot;outputView&quot;,
+  |  &quot;header&quot;: false
+  |}&quot;&quot;&quot;.stripMargin
+
+  val documentationURI = new java.net.URI(s&quot;${baseURI}/extract/#delimitedextract&quot;)
+</code></pre>
+
+<h4 id="notserializableexception">NotSerializableException</h4>
+
+<p>When writing plugins and you find Spark throwing <code>NotSerializableException</code> errors like:</p>
+
+<pre><code class="language-scala">Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: scala.collection.convert.Wrappers$MapWrapper
+</code></pre>
+
+<p>Ensure that any stage with a <code>mapPartitions</code> or <code>map</code> DataFrame does not require the <code>PipelineStage</code> instance to be passed into the <code>map</code> function. So instead of doing something like:</p>
+
+<pre><code class="language-scala">val transformedDF = try {
+  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =&gt;
+    val uri = stage.uri.toString
+</code></pre>
+
+<p>Declare the variables outside the map function so that <code>stage</code> does not have to be serialised and sent to all the executors (which fails if any of the <code>PipelineStage</code> contents are not serializable):</p>
+
+<pre><code class="language-scala">val stageUri = stage.uri
+
+val transformedDF = try {
+  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =&gt;
+    val uri = stageUri.toString
+</code></pre>
+
+<h2 id="user-defined-functions-1">User Defined Functions</h2>
 
 <h5 id="since-1-3-0-3">Since: 1.3.0</h5>
 

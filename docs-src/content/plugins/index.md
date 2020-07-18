@@ -13,9 +13,7 @@ Arc can be exended in four ways by registering:
 - [Pipeline Stage Plugins](#pipeline-stage-plugins) which allow users to extend the base Arc framework with custom stages which allow the full use of the Spark [Scala API](https://spark.apache.org/docs/latest/api/scala/). All the Arc core stages are built by using this plugin interface.
 - [User Defined Functions](#user-defined-functions) which extend the Spark SQL dialect.
 
-## Included Plugins
-
-### Lifecycle Plugins
+## Lifecycle Plugins
 
 #### ChaosMonkey
 ##### Since: 2.10.0 - Supports Streaming: False
@@ -35,7 +33,7 @@ The `ChaosMonkey` plugin is intended to be used for testing your orchestration d
 
 {{< readfile file="/resources/docs_resources_plugins/ChaosMonkeyComplete" highlight="json" >}}
 
-### User Defined Functions
+## User Defined Functions
 
 To help with common data tasks several additional functions have been added to Arc in addition to the inbuilt [Spark SQL Functions](https://spark.apache.org/docs/latest/api/sql/index.html).
 
@@ -189,10 +187,7 @@ SELECT
 ```
 
 
-## Custom Plugins
-
-
-### Resolution
+## Resolution
 
 Plugins are resolved dynamically at runtime and are resolved by name and version.
 
@@ -232,7 +227,7 @@ To allow more specitivity you can use either the full package name and/or includ
 ```
 
 
-### Dynamic Configuration Plugins
+## Dynamic Configuration Plugins
 ##### Since: 1.3.0
 
 {{<note title="Dynamic vs Deterministic Configuration">}}
@@ -367,7 +362,7 @@ The `ETL_CONF_DELTA_PERIOD` variable is then available to be resolved in a stand
 ```
 
 
-### Lifecycle Plugins
+## Lifecycle Plugins
 ##### Since: 1.3.0
 
 Custom `Lifecycle Plugins` allow users to extend the base Arc framework with logic which is executed `before` or `after` each Arc stage (lifecycle hooks). These stages are useful for implementing things like dataset logging after each stage execution for debugging.
@@ -468,34 +463,10 @@ To execute:
 ```
 
 
-### Pipeline Stage Plugins
+## Pipeline Stage Plugins
 ##### Since: 1.3.0
 
 Custom `Pipeline Stage Plugins` allow users to extend the base Arc framework with custom stages which allow the full use of the Spark [Scala API](https://spark.apache.org/docs/latest/api/scala/). This means that private business logic or code which relies on libraries not included in the base Arc framework can be used - however it is strongly advised to use the inbuilt SQL stages where possible. If stages are general purpose enough for use outside your organisation consider contributing them to [ai.tripl](https://github.com/tripl-ai) so that others can benefit.
-
-When writing plugins and you find Spark throwing `NotSerializableException` errors like:
-
-```scala
-Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: scala.collection.convert.Wrappers$MapWrapper
-```
-
-Ensure that any stage with a `mapPartitions` or `map` DataFrame does not require the `PipelineStage` instance to be passed into the `map` function. So instead of doing something like:
-
-```scala
-val transformedDF = try {
-  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =>
-    val uri = stage.uri.toString
-```
-
-Declare the variables outside the map function so that `stage` does not have to be serialised and sent to all the executors (which fails if any of the `PipelineStage` contents are not serializable):
-
-```scala
-val stageUri = stage.uri
-
-val transformedDF = try {
-  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =>
-    val uri = stageUri.toString
-```
 
 #### Examples
 
@@ -600,7 +571,56 @@ To execute:
 }
 ```
 
-### User Defined Functions
+#### Jupyter Code Completion
+
+To allow the plugin to be registerd for code completion in `Jupyter` include the `JupyterCompleter` trait and define the `snippet` and `documentationURI` values:
+
+```scala
+class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
+
+  val snippet = """{
+  |  "type": "DelimitedExtract",
+  |  "name": "DelimitedExtract",
+  |  "environments": [
+  |    "production",
+  |    "test"
+  |  ],
+  |  "inputURI": "hdfs://*.csv",
+  |  "outputView": "outputView",
+  |  "header": false
+  |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/extract/#delimitedextract")
+```
+
+
+#### NotSerializableException
+
+When writing plugins and you find Spark throwing `NotSerializableException` errors like:
+
+```scala
+Job aborted due to stage failure: Task not serializable: java.io.NotSerializableException: scala.collection.convert.Wrappers$MapWrapper
+```
+
+Ensure that any stage with a `mapPartitions` or `map` DataFrame does not require the `PipelineStage` instance to be passed into the `map` function. So instead of doing something like:
+
+```scala
+val transformedDF = try {
+  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =>
+    val uri = stage.uri.toString
+```
+
+Declare the variables outside the map function so that `stage` does not have to be serialised and sent to all the executors (which fails if any of the `PipelineStage` contents are not serializable):
+
+```scala
+val stageUri = stage.uri
+
+val transformedDF = try {
+  df.mapPartitions[TransformedRow] { partition: Iterator[Row] =>
+    val uri = stageUri.toString
+```
+
+## User Defined Functions
 ##### Since: 1.3.0
 
 {{<note title="User Defined Functions vs Spark SQL Functions">}}

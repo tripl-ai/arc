@@ -18,9 +18,23 @@ import ai.tripl.arc.util.JDBCUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
-class JDBCExtract extends PipelineStagePlugin {
+class JDBCExtract extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "JDBCExtract",
+    |  "name": "JDBCExtract",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputURI": "jdbc:postgresql://",
+    |  "tableName": "(SELECT * FROM table) table",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/extract/#jdbcextract")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -113,11 +127,12 @@ case class JDBCExtractStage(
     persist: Boolean,
     partitionBy: List[String],
     predicates: List[String]
-  ) extends PipelineStage {
+  ) extends ExtractPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     JDBCExtractStage.execute(this)
   }
+
 }
 
 object JDBCExtractStage {

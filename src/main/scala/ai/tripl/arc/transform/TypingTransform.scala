@@ -28,9 +28,23 @@ import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.Utils
 
-class TypingTransform extends PipelineStagePlugin {
+class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "TypingTransform",
+    |  "name": "TypingTransform",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputView": "inputView",
+    |  "schemaURI": "hdfs://*.json",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/transform/#typingtransform")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -99,11 +113,12 @@ case class TypingTransformStage(
     failMode: FailMode,
     numPartitions: Option[Int],
     partitionBy: List[String]
-  ) extends PipelineStage {
+  ) extends TransformPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     TypingTransformStage.execute(this)
   }
+
 }
 
 object TypingTransformStage {
@@ -714,7 +729,7 @@ object Typing {
           val dateTimeFormatter = if (caseSensitive) {
             DateTimeFormatter.ofPattern(pattern)
           } else {
-            val builder = new DateTimeFormatterBuilder()  
+            val builder = new DateTimeFormatterBuilder()
             builder.parseCaseInsensitive()
             builder.appendPattern(pattern)
             builder.toFormatter()
@@ -742,7 +757,7 @@ object Typing {
           val dateTimeFormatter = if (caseSensitive) {
             DateTimeFormatter.ofPattern(pattern)
           } else {
-            val builder = new DateTimeFormatterBuilder()  
+            val builder = new DateTimeFormatterBuilder()
             builder.parseCaseInsensitive()
             builder.appendPattern(pattern)
             builder.toFormatter()

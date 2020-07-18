@@ -10,9 +10,24 @@ import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.Utils
 
-class RateExtract extends PipelineStagePlugin {
+class RateExtract extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "RateExtract",
+    |  "name": "RateExtract",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "rowsPerSecond": 1,
+    |  "rampUpTime": 0,
+    |  "numPartitions": 10,
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/extract/#rateextract")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -69,11 +84,12 @@ case class RateExtractStage(
     rowsPerSecond: Int,
     rampUpTime: Int,
     numPartitions: Int
-  ) extends PipelineStage {
+  ) extends ExtractPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     RateExtractStage.execute(this)
   }
+
 }
 
 object RateExtractStage {

@@ -20,9 +20,9 @@ pygmentsUseClasses=true
 	repo_url = "https://github.com/tripl-ai/arc"
 
 	image = "triplai/arc"
-	version = "3.0.0"
+	version = "3.1.0"
 	arc_jupyter_image= "triplai/arc-jupyter"
-	arc_jupyter_version = "3.0.1"
+	arc_jupyter_version = "3.2.0"
 	spark_version = "3.0.0"
 	scala_version = "2.12"
 	hadoop_version = "3.2.1"
@@ -100,7 +100,7 @@ pygmentsUseClasses=true
 [[menu.main]]
 	name   = "Security"
 	url    = "security/"
-	weight = 85	
+	weight = 85
 
 [[menu.main]]
 	name   = "Plugins"

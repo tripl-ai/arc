@@ -22,9 +22,22 @@ import ai.tripl.arc.util.ListenerUtils
 import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.Utils
 
-class MetadataExtract extends PipelineStagePlugin {
+class MetadataExtract extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "MetadataExtract",
+    |  "name": "MetadataExtract",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputView": "inputView",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/extract/#metadataextract")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -83,11 +96,12 @@ case class MetadataExtractStage(
     persist: Boolean,
     numPartitions: Option[Int],
     partitionBy: List[String]
-  ) extends PipelineStage {
+  ) extends ExtractPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     MetadataExtractStage.execute(this)
   }
+
 }
 
 

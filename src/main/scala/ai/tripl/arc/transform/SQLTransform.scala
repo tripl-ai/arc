@@ -16,9 +16,22 @@ import ai.tripl.arc.util.QueryExecutionUtils
 import ai.tripl.arc.util.Utils
 import ai.tripl.arc.util.CloudUtils
 
-class SQLTransform extends PipelineStagePlugin {
+class SQLTransform extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "SQLTransform",
+    |  "name": "SQLTransform",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputURI": "hdfs://*.sql",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/transform/#sqltransform")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -51,7 +64,7 @@ class SQLTransform extends PipelineStagePlugin {
 
         val lowerValidSQL = validSQL.toLowerCase
 
-        Seq("now()", "current_date()", "current_timestamp()").foreach { nonDeterministic => 
+        Seq("now()", "current_date()", "current_timestamp()").foreach { nonDeterministic =>
           if (lowerValidSQL contains nonDeterministic) {
             logger.warn()
               .field("event", "validateConfig")
@@ -72,7 +85,7 @@ class SQLTransform extends PipelineStagePlugin {
                 .field("type", "SQLTransform")
                 .field("message", s"sql contains deprecated function '${deprecation.function}' which will be removed in future Arc version. Use `${deprecation.replaceFunction}` instead.")
                 .log()
-            }            
+            }
           }
         }
 
@@ -125,11 +138,12 @@ case class SQLTransformStage(
     persist: Boolean,
     numPartitions: Option[Int],
     partitionBy: List[String]
-  ) extends PipelineStage {
+  ) extends TransformPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     SQLTransformStage.execute(this)
   }
+
 }
 
 object SQLTransformStage {

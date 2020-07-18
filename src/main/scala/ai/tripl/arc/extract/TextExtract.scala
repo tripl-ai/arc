@@ -16,9 +16,22 @@ import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
-class TextExtract extends PipelineStagePlugin {
+class TextExtract extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "TextExtract",
+    |  "name": "TextExtract",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputURI": "hdfs://*.txt",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/extract/#textextract")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -111,11 +124,12 @@ case class TextExtractStage(
     multiLine: Boolean,
     basePath: Option[String],
     watermark: Option[Watermark]
-  ) extends PipelineStage {
+  ) extends ExtractPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     TextExtractStage.execute(this)
   }
+
 }
 
 object TextExtractStage {
@@ -138,7 +152,7 @@ object TextExtractStage {
     val df = try {
 
       val path = stage.input match {
-        case Left(view) => {  
+        case Left(view) => {
           val inputView = spark.table(view)
           val schema = inputView.schema
 

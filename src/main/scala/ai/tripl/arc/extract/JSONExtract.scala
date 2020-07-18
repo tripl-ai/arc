@@ -17,9 +17,22 @@ import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.Utils
 
-class JSONExtract extends PipelineStagePlugin {
+class JSONExtract extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "JSONExtract",
+    |  "name": "JSONExtract",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputURI": "hdfs://*.json",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/extract/#jsonextract")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -118,11 +131,12 @@ case class JSONExtractStage(
     inputField: Option[String],
     basePath: Option[String],
     watermark: Option[Watermark]
-  ) extends PipelineStage {
+  ) extends ExtractPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     JSONExtractStage.execute(this)
   }
+
 }
 
 object JSONExtractStage {
@@ -235,7 +249,7 @@ object JSONExtractStage {
                   Left(PathNotExistsExtractError(Option(glob)))
                 case e: Exception => throw e
               }
-            }              
+            }
           case Left(view) => {
             stage.inputField match {
               case Some(inputField) => Right(spark.read.options(options).json(spark.table(view).select(col(inputField).as("value")).as[String]))
