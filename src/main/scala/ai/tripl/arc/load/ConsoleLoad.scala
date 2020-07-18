@@ -61,7 +61,7 @@ case class ConsoleLoadStage(
     inputView: String,
     outputMode: OutputModeType,
     params: Map[String, String]
-  ) extends PipelineStage {
+  ) extends LoadPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     ConsoleLoadStage.execute(this)

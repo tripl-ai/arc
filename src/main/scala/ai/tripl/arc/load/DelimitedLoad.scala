@@ -17,9 +17,22 @@ import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.ListenerUtils
 import ai.tripl.arc.util.Utils
 
-class DelimitedLoad extends PipelineStagePlugin {
+class DelimitedLoad extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "DelimitedLoad",
+    |  "name": "DelimitedLoad",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputView": "inputView",
+    |  "outputURI": "hdfs://*.csv"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/load/#delimitedload")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -94,11 +107,12 @@ case class DelimitedLoadStage(
     authentication: Option[Authentication],
     saveMode: SaveMode,
     params: Map[String, String]
-  ) extends PipelineStage {
+  ) extends LoadPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     DelimitedLoadStage.execute(this)
   }
+
 }
 
 object DelimitedLoadStage {

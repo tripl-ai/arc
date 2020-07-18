@@ -12,9 +12,22 @@ import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.Utils
 
-class JSONTransform extends PipelineStagePlugin {
+class JSONTransform extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "JSONTransform",
+    |  "name": "JSONTransform",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputView": "inputView",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/transform/#jsontransform")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -73,11 +86,12 @@ case class JSONTransformStage(
     persist: Boolean,
     numPartitions: Option[Int],
     partitionBy: List[String]
-  ) extends PipelineStage {
+  ) extends TransformPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     JSONTransformStage.execute(this)
   }
+
 }
 
 object JSONTransformStage {

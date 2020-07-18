@@ -18,9 +18,22 @@ import ai.tripl.arc.util.JDBCUtils
 import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.Utils
 
-class JDBCExecute extends PipelineStagePlugin {
+class JDBCExecute extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "JDBCExecute",
+    |  "name": "JDBCExecute",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputURI": "hdfs://*.sql",
+    |  "jdbcURL": "jdbc:postgresql://"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/execute/#jdbcexecute")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -83,6 +96,7 @@ case class JDBCExecuteStage(
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     JDBCExecuteStage.execute(this)
   }
+
 }
 
 object JDBCExecuteStage {

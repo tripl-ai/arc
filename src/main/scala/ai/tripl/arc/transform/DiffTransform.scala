@@ -10,9 +10,25 @@ import ai.tripl.arc.config.Error._
 import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.Utils
 
-class DiffTransform extends PipelineStagePlugin {
+class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "DiffTransform",
+    |  "name": "DiffTransform",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputLeftView": "inputLeftView",
+    |  "inputRightView": "inputRightView",
+    |  "outputLeftView": "outputLeftView",
+    |  "outputIntersectionView": "outputIntersectionView",
+    |  "outputRightView": "outputRightView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/transform/#difftransform")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -82,6 +98,7 @@ case class DiffTransformStage(
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     DiffTransformStage.execute(this)
   }
+
 }
 
 object DiffTransformStage {

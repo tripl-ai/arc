@@ -76,10 +76,10 @@ object MetadataUtils {
         }
       })
 
-      output      
+      output
     } else {
-      // create a new schema merging the input dataframe's schema with the incomingSchema 
-      // if the incomingSchema has a metadata field set then override the field metadata in the input dataframe 
+      // create a new schema merging the input dataframe's schema with the incomingSchema
+      // if the incomingSchema has a metadata field set then override the field metadata in the input dataframe
       val outputSchema = upsertMetadata(input.schema, getFieldMetadataMap(incomingSchema))
 
       // replace the schema
@@ -96,7 +96,6 @@ object MetadataUtils {
 
       field.dataType match {
         case _: BooleanType => {
-          node.set[ObjectNode]("id", jsonNodeFactory.textNode(""))
           node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
           node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
 
@@ -120,7 +119,6 @@ object MetadataUtils {
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: DateType => {
-          node.set[ObjectNode]("id", jsonNodeFactory.textNode(""))
           node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
           node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
 
@@ -141,7 +139,6 @@ object MetadataUtils {
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: DecimalType => {
-          node.set[ObjectNode]("id", jsonNodeFactory.textNode(""))
           node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
           node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
 
@@ -163,7 +160,6 @@ object MetadataUtils {
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: DoubleType => {
-          node.set[ObjectNode]("id", jsonNodeFactory.textNode(""))
           node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
           node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
 
@@ -181,7 +177,6 @@ object MetadataUtils {
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: IntegerType => {
-          node.set[ObjectNode]("id", jsonNodeFactory.textNode(""))
           node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
           node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
 
@@ -199,7 +194,6 @@ object MetadataUtils {
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: LongType => {
-          node.set[ObjectNode]("id", jsonNodeFactory.textNode(""))
           node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
           node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
 
@@ -217,7 +211,6 @@ object MetadataUtils {
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: StringType => {
-          node.set[ObjectNode]("id", jsonNodeFactory.textNode(""))
           node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
           node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
 
@@ -235,7 +228,6 @@ object MetadataUtils {
           Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
         }
         case _: TimestampType => {
-          node.set[ObjectNode]("id", jsonNodeFactory.textNode(""))
           node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
           node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
 

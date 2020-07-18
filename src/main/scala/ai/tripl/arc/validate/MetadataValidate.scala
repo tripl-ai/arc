@@ -17,9 +17,22 @@ import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.Utils
 import ai.tripl.arc.util.MetadataUtils
 
-class MetadataValidate extends PipelineStagePlugin {
+class MetadataValidate extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "MetadataValidate",
+    |  "name": "MetadataValidate",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputView": "inputView",
+    |  "inputURI": "hdfs://*.sql"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/validate/#metadatavalidate")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -82,7 +95,9 @@ case class MetadataValidateStage(
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     MetadataValidateStage.execute(this)
   }
+
 }
+
 
 object MetadataValidateStage {
 
@@ -95,7 +110,7 @@ object MetadataValidateStage {
 
     val inputDF = spark.table(stage.inputView)
     val metadataSchemaDF = MetadataUtils.createMetadataDataframe(inputDF)
-    metadataSchemaDF.createOrReplaceTempView("metadata")    
+    metadataSchemaDF.createOrReplaceTempView("metadata")
 
     val df = try {
       spark.sql(stmt)

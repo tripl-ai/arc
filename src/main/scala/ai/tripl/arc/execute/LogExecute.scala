@@ -16,9 +16,21 @@ import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.Utils
 
-class LogExecute extends PipelineStagePlugin {
+class LogExecute extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "LogExecute",
+    |  "name": "LogExecute",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputURI": "hdfs://*.sql"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/execute/#logexecute")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -85,7 +97,9 @@ case class LogExecuteStage(
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     LogExecuteStage.execute(this)
   }
+
 }
+
 
 object LogExecuteStage {
 
@@ -138,8 +152,8 @@ object LogExecuteStage {
           } catch {
             case e: Exception =>
               stage.stageDetail.put("message", message)
-          }     
-        }   
+          }
+        }
       }
     } catch {
       case e: ClassCastException =>

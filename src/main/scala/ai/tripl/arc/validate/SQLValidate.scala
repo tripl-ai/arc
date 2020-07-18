@@ -16,9 +16,21 @@ import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.Utils
 
-class SQLValidate extends PipelineStagePlugin {
+class SQLValidate extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "SQLValidate",
+    |  "name": "SQLValidate",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputURI": "hdfs://*.sql"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/validate/#sqlvalidate")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -85,6 +97,7 @@ case class SQLValidateStage(
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     SQLValidateStage.execute(this)
   }
+
 }
 
 object SQLValidateStage {
@@ -139,8 +152,8 @@ object SQLValidateStage {
           } catch {
             case e: Exception =>
               stage.stageDetail.put("message", message)
-          }     
-        }   
+          }
+        }
       }
 
       val result = row.getBoolean(0)

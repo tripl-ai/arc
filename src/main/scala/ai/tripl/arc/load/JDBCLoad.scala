@@ -22,9 +22,23 @@ import ai.tripl.arc.util.JDBCUtils
 import ai.tripl.arc.util.ListenerUtils
 import ai.tripl.arc.util.Utils
 
-class JDBCLoad extends PipelineStagePlugin {
+class JDBCLoad extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "JDBCLoad",
+    |  "name": "JDBCLoad",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputView": "inputView",
+    |  "jdbcURL": "jdbc:postgresql://",
+    |  "tableName": "database.schema.table"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/load/#jdbcload")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -127,11 +141,12 @@ case class JDBCLoadStage(
     driver: java.sql.Driver,
     tablock: Boolean,
     params: Map[String, String]
-  ) extends PipelineStage {
+  ) extends LoadPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     JDBCLoadStage.execute(this)
   }
+
 }
 
 object JDBCLoadStage {

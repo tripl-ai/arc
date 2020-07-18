@@ -9,6 +9,7 @@ import org.apache.spark.ml._
 import org.apache.spark.ml.tuning._
 import org.apache.spark.ml.linalg.Vector
 
+import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
@@ -20,9 +21,23 @@ import ai.tripl.arc.util.Utils
 
 import com.github.fommil.netlib.{BLAS, LAPACK}
 
-class MLTransform extends PipelineStagePlugin {
+class MLTransform extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet: String = """{
+    |  "type": "MLTransform",
+    |  "name": "MLTransform",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputView": "inputView",
+    |  "inputURI": "hdfs://*.model",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/transform/#mltransform")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], ai.tripl.arc.api.API.PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -70,7 +85,7 @@ class MLTransform extends PipelineStagePlugin {
         stage.stageDetail.put("params", params.asJava)
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        
+
         Right(stage)
       case _ =>
         val allErrors: Errors = List(name, description, inputURI, model, inputView, outputView, persist, numPartitions, partitionBy, invalidKeys, authentication).collect{ case Left(errs) => errs }.flatten
@@ -112,14 +127,16 @@ case class MLTransformStage(
     persist: Boolean,
     numPartitions: Option[Int],
     partitionBy: List[String]
-  ) extends ai.tripl.arc.api.API.PipelineStage {
+  ) extends TransformPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     MLTransformStage.execute(this)
   }
+
 }
 
 object MLTransformStage {
+
   def execute(stage: MLTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val df = spark.table(stage.inputView)

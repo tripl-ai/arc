@@ -15,9 +15,23 @@ import ai.tripl.arc.util.MetadataUtils
 import ai.tripl.arc.util.SQLUtils
 import ai.tripl.arc.util.Utils
 
-class MetadataFilterTransform extends PipelineStagePlugin {
+class MetadataFilterTransform extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "MetadataFilterTransform",
+    |  "name": "MetadataFilterTransform",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputView": "inputView",
+    |  "inputURI": "hdfs://*.sql",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/transform/#metadatafiltertransform")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -92,13 +106,13 @@ case class MetadataFilterTransformStage(
     persist: Boolean,
     numPartitions: Option[Int],
     partitionBy: List[String]
-  ) extends PipelineStage {
+  ) extends TransformPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     MetadataFilterTransformStage.execute(this)
   }
-}
 
+}
 
 object MetadataFilterTransformStage {
 

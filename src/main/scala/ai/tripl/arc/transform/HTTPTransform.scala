@@ -27,9 +27,23 @@ import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.HTTPUtils
 import ai.tripl.arc.util.Utils
 
-class HTTPTransform extends PipelineStagePlugin {
+class HTTPTransform extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "HTTPTransform",
+    |  "name": "HTTPTransform",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "inputView": "inputView",
+    |  "uri": "https://",
+    |  "outputView": "outputView"
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/transform/#httptransform")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
@@ -117,11 +131,12 @@ case class HTTPTransformStage(
     numPartitions: Option[Int],
     partitionBy: List[String],
     failMode: FailMode
-  ) extends PipelineStage {
+  ) extends TransformPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
     HTTPTransformStage.execute(this)
   }
+
 }
 
 object HTTPTransformStage {
@@ -212,7 +227,7 @@ object HTTPTransformStage {
                 stageDelimiter
               } else {
                 ""
-              }        
+              }
               new StringEntity(groupedRow.map(row => row.getString(fieldIndex)).mkString(delimiter))
             }
             case _: BinaryType => {

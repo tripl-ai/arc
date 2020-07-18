@@ -1,6 +1,7 @@
 package ai.tripl.arc.api
 
 import java.time.LocalTime
+import java.net.URI
 
 import scala.util.matching.Regex
 
@@ -63,7 +64,7 @@ object API {
 
     /** whether to allow inline sql submitted to stages like SQLTransform and SQLValidate
       */
-    inlineSQL: Boolean = true,    
+    inlineSQL: Boolean = true,
 
     /** the command line arguments
       */
@@ -95,7 +96,7 @@ object API {
     userData: collection.mutable.Map[String, Object],
 
     /** a serialized hadoop configuration object so that executors can access it directly
-    */ 
+    */
     var serializableConfiguration: SerializableConfiguration
 
   )
@@ -162,7 +163,7 @@ object API {
 
       StructField(col.name, col.sparkDataType, col.nullable, metadataBuilder.build())
     }
-    
+
   }
 
   case class StringColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], metadata: Option[String], minLength: Option[Int], maxLength: Option[Int], regex: Option[Regex]) extends ExtractColumn {
@@ -226,12 +227,12 @@ object API {
 
   case class StructColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], fields: List[ExtractColumn], metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = StructType(fields.map { child => ExtractColumn.toStructField(child) }.toSeq)
-  }    
+  }
 
 
   case class ArrayColumn(id: Option[String], name: String, description: Option[String], nullable: Boolean, nullReplacementValue: Option[String], trim: Boolean, nullableValues: List[String], elementType: ExtractColumn, metadata: Option[String]) extends ExtractColumn {
     val sparkDataType: DataType = ArrayType(ExtractColumn.toStructField(elementType).dataType, false)
-  }      
+  }
 
   sealed trait MetadataFormat
   object MetadataFormat {
@@ -279,6 +280,51 @@ object API {
 
   }
 
+  trait ExtractPipelineStage extends PipelineStage {
+
+    def outputView: String
+
+  }
+
+  trait TransformPipelineStage extends PipelineStage {
+
+    def outputView: String
+
+  }
+
+  trait LoadPipelineStage extends PipelineStage {
+
+    def inputView: String
+
+  }
+
+  trait JupyterCompleter {
+
+    def baseURI: String = "https://arc.tripl.ai"
+
+    // the raw text to replace in Jupyter
+    def snippet: String
+    /* e.g. raw string
+    {
+       "type": "SQLTransform",
+       "name": "SQLTransform",
+       "environments": [
+         "production",
+         "test"
+       ],
+       "inputURI": "hdfs://",
+       "outputView": "outputView"
+    }
+    */
+
+    // mimetype is the codeformatting language to use. e.g. javascript (for json) vs sql
+    def mimetype: String = "javascript"
+
+    // a link to documentation
+    def documentationURI: URI
+
+  }
+
   // A LifecyclePluginInstance executes before and after PipelineStage execution
   trait LifecyclePluginInstance {
 
@@ -288,7 +334,7 @@ object API {
       logger.trace()
         .field("event", "before")
         .field("stage", stage.name)
-        .log()      
+        .log()
     }
 
     def after(result: Option[DataFrame], stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {

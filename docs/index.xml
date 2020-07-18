@@ -150,7 +150,7 @@ Database Inconsistency When writing data to targets like databases using the JDB
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/changelog/</guid>
-      <description>Change Log 3.0.0  bump to Spark 3.0.0. bump to Hadoop 3.2.0. FIX MLTransform dropping all calculated columns when applying models which do not produce a prediction column. BREAKING remove Scala 2.11 support as Arc is now built against Spark 3.0.0 which does not support Scala 2.11. BREAKING move XMLExtract and XMLLoad to arc-xml-plugin. BREAKING Spark ML models trained with Spark 2.x do not work with Spark 3.x and will need to be retrained (MLTransform).</description>
+      <description>Change Log 3.1.0  add the JupyterCompleter trait for auto-completion in Jupyter allowing snippet, language and documentationURI to be defined. add the ExtractPipelineStage, TransformPipelineStage and LoadPipelineStage traits to allow easier pattern matching in LifecyclePlugins.  3.0.0  bump to Spark 3.0.0. bump to Hadoop 3.2.0. FIX MLTransform dropping all calculated columns when applying models which do not produce a prediction column. BREAKING remove Scala 2.11 support as Arc is now built against Spark 3.</description>
     </item>
     
     <item>

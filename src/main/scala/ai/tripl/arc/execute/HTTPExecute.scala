@@ -21,9 +21,22 @@ import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.HTTPUtils
 import ai.tripl.arc.util.Utils
 
-class HTTPExecute extends PipelineStagePlugin {
+class HTTPExecute extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """{
+    |  "type": "HTTPExecute",
+    |  "name": "HTTPExecute",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ],
+    |  "uri": "https://",
+    |  "headers": {}
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/execute/#httpexecute")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], PipelineStage] = {
     import ai.tripl.arc.config.ConfigReader._
