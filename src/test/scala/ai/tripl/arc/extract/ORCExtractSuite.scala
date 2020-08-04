@@ -46,7 +46,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
     FileUtils.forceMkdir(new java.io.File(emptyDirectory))
     // orc does not support writing NullType
-    TestUtils.getKnownDataset.drop($"nullDatum").write.orc(targetFile)
+    TestUtils.getKnownDataset.drop($"nullDatum").write.format("orc").save(targetFile)
   }
 
   after {

@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.1.1
+
+- remove `spark.authenticate.secret` from log output.
+- support nested `struct` and `array` types in `makeMetadataFromDataframe` helper function used by Arc Jupyter `%printmetadata` magic.
+- minor tweaks to readers and writers to begin `DataSourceV2` support.
+
 ## 3.1.0
 
 - add the `JupyterCompleter` trait for auto-completion in Jupyter allowing `snippet`, `language` and `documentationURI` to be defined.

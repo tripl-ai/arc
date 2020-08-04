@@ -138,16 +138,16 @@ object JSONLoadStage {
         stage.partitionBy match {
           case Nil => {
             stage.numPartitions match {
-              case Some(n) => nonNullDF.repartition(n).write.mode(stage.saveMode).json(stage.outputURI.toString)
-              case None => nonNullDF.write.mode(stage.saveMode).json(stage.outputURI.toString)
+              case Some(n) => nonNullDF.repartition(n).write.mode(stage.saveMode).format("json").save(stage.outputURI.toString)
+              case None => nonNullDF.write.mode(stage.saveMode).format("json").save(stage.outputURI.toString)
             }
           }
           case partitionBy => {
             // create a column array for repartitioning
             val partitionCols = partitionBy.map(col => nonNullDF(col))
             stage.numPartitions match {
-              case Some(n) => nonNullDF.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(stage.saveMode).json(stage.outputURI.toString)
-              case None => nonNullDF.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(stage.saveMode).json(stage.outputURI.toString)
+              case Some(n) => nonNullDF.repartition(n, partitionCols:_*).write.partitionBy(partitionBy:_*).mode(stage.saveMode).format("json").save(stage.outputURI.toString)
+              case None => nonNullDF.repartition(partitionCols:_*).write.partitionBy(partitionBy:_*).mode(stage.saveMode).format("json").save(stage.outputURI.toString)
             }
           }
         }

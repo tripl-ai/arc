@@ -87,174 +87,138 @@ object MetadataUtils {
     }
   }
 
-  // a helper function to speed up the creation of a metadata formatted file
-  def makeMetadataFromDataframe(input: DataFrame): String = {
-    val fields = input.schema.map(field => {
-      val objectMapper = new ObjectMapper()
-      val jsonNodeFactory = new JsonNodeFactory(true)
-      val node = jsonNodeFactory.objectNode
 
-      field.dataType match {
-        case _: BooleanType => {
-          node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
-          node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
+  def fieldAsObjectNode(field: StructField): Option[ObjectNode] = {
+    val jsonNodeFactory = new JsonNodeFactory(true)
+    val objectMapper = new ObjectMapper()
+    val node = jsonNodeFactory.objectNode
 
-          node.set[ObjectNode]("type", jsonNodeFactory.textNode("boolean"))
+    node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
+    node.set[ObjectNode]("description", jsonNodeFactory.textNode(if (field.metadata.contains("description")) field.metadata.getString("description") else ""))
+    node.set[ObjectNode]("nullable", jsonNodeFactory.booleanNode(field.nullable))
+    node.set[ObjectNode]("metadata", objectMapper.readTree(field.metadata.json))
 
-          val trueValuesArray = node.putArray("trueValues")
-          trueValuesArray.add("true")
+    field.dataType match {
+      case s: StructType => {
+        node.set[ObjectNode]("type", jsonNodeFactory.textNode("struct"))
+        val fieldsArray = node.putArray("fields")
+        s.fields.flatMap(fieldAsObjectNode).foreach { field => fieldsArray.add(field)}
 
-          val falseValuesArray = node.putArray("falseValues")
-          falseValuesArray.add("false")
-
-          node.set[ObjectNode]("nullable", jsonNodeFactory.booleanNode(field.nullable))
-          node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
-
-          val nullableValuesArray = node.putArray("nullableValues")
-          nullableValuesArray.add("")
-          nullableValuesArray.add("null")
-
-          node.set[ObjectNode]("metadata", jsonNodeFactory.objectNode())
-
-          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
-        }
-        case _: DateType => {
-          node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
-          node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
-
-          node.set[ObjectNode]("type", jsonNodeFactory.textNode("date"))
-
-          val formattersArray = node.putArray("formatters")
-          formattersArray.add("uuuu-MM-dd")
-
-          node.set[ObjectNode]("nullable", jsonNodeFactory.booleanNode(field.nullable))
-          node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
-
-          val nullableValuesArray = node.putArray("nullableValues")
-          nullableValuesArray.add("")
-          nullableValuesArray.add("null")
-
-          node.set[ObjectNode]("metadata", jsonNodeFactory.objectNode())
-
-          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
-        }
-        case _: DecimalType => {
-          node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
-          node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
-
-          val decimalField = field.dataType.asInstanceOf[DecimalType]
-
-          node.set[ObjectNode]("type", jsonNodeFactory.textNode("decimal"))
-          node.set[ObjectNode]("precision", jsonNodeFactory.numberNode(decimalField.precision))
-          node.set[ObjectNode]("scale", jsonNodeFactory.numberNode(decimalField.scale))
-
-          node.set[ObjectNode]("nullable", jsonNodeFactory.booleanNode(field.nullable))
-          node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
-
-          val nullableValuesArray = node.putArray("nullableValues")
-          nullableValuesArray.add("")
-          nullableValuesArray.add("null")
-
-          node.set[ObjectNode]("metadata", jsonNodeFactory.objectNode())
-
-          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
-        }
-        case _: DoubleType => {
-          node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
-          node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
-
-          node.set[ObjectNode]("type", jsonNodeFactory.textNode("double"))
-
-          node.set[ObjectNode]("nullable", jsonNodeFactory.booleanNode(field.nullable))
-          node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
-
-          val nullableValuesArray = node.putArray("nullableValues")
-          nullableValuesArray.add("")
-          nullableValuesArray.add("null")
-
-          node.set[ObjectNode]("metadata", jsonNodeFactory.objectNode())
-
-          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
-        }
-        case _: IntegerType => {
-          node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
-          node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
-
-          node.set[ObjectNode]("type", jsonNodeFactory.textNode("integer"))
-
-          node.set[ObjectNode]("nullable", jsonNodeFactory.booleanNode(field.nullable))
-          node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
-
-          val nullableValuesArray = node.putArray("nullableValues")
-          nullableValuesArray.add("")
-          nullableValuesArray.add("null")
-
-          node.set[ObjectNode]("metadata", jsonNodeFactory.objectNode())
-
-          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
-        }
-        case _: LongType => {
-          node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
-          node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
-
-          node.set[ObjectNode]("type", jsonNodeFactory.textNode("long"))
-
-          node.set[ObjectNode]("nullable", jsonNodeFactory.booleanNode(field.nullable))
-          node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
-
-          val nullableValuesArray = node.putArray("nullableValues")
-          nullableValuesArray.add("")
-          nullableValuesArray.add("null")
-
-          node.set[ObjectNode]("metadata", jsonNodeFactory.objectNode())
-
-          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
-        }
-        case _: StringType => {
-          node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
-          node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
-
-          node.set[ObjectNode]("type", jsonNodeFactory.textNode("string"))
-
-          node.set[ObjectNode]("nullable", jsonNodeFactory.booleanNode(field.nullable))
-          node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
-
-          val nullableValuesArray = node.putArray("nullableValues")
-          nullableValuesArray.add("")
-          nullableValuesArray.add("null")
-
-          node.set[ObjectNode]("metadata", jsonNodeFactory.objectNode())
-
-          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
-        }
-        case _: TimestampType => {
-          node.set[ObjectNode]("name", jsonNodeFactory.textNode(field.name))
-          node.set[ObjectNode]("description", jsonNodeFactory.textNode(""))
-
-          node.set[ObjectNode]("type", jsonNodeFactory.textNode("timestamp"))
-
-          val formattersArray = node.putArray("formatters")
-          formattersArray.add("uuuu-MM-dd HH:mm:ss")
-
-          node.set[ObjectNode]("timezoneId", jsonNodeFactory.textNode("UTC"))
-
-          node.set[ObjectNode]("nullable", jsonNodeFactory.booleanNode(field.nullable))
-          node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
-
-          val nullableValuesArray = node.putArray("nullableValues")
-          nullableValuesArray.add("")
-          nullableValuesArray.add("null")
-
-          node.set[ObjectNode]("metadata", jsonNodeFactory.objectNode())
-
-          Option(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(node))
-        }
-        case _: ArrayType => None
-        case _: NullType => None
+        Option(node)
       }
-    })
+      case a: ArrayType => {
+        node.set[ObjectNode]("type", jsonNodeFactory.textNode("array"))
+        val elementTypeNode = fieldAsObjectNode(StructField("", a.elementType, a.containsNull)).get
+        node.set[ObjectNode]("elementType", elementTypeNode)
 
-    s"""[${fields.flatten.mkString(",")}]"""
+        Option(node)
+      }
+      case _: BooleanType => {
+        node.set[ObjectNode]("type", jsonNodeFactory.textNode("boolean"))
+        node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
+
+        val trueValuesArray = node.putArray("trueValues")
+        trueValuesArray.add("true")
+
+        val falseValuesArray = node.putArray("falseValues")
+        falseValuesArray.add("false")
+
+        val nullableValuesArray = node.putArray("nullableValues")
+        nullableValuesArray.add("")
+        nullableValuesArray.add("null")
+
+        Option(node)
+      }
+      case _: DateType => {
+        node.set[ObjectNode]("type", jsonNodeFactory.textNode("date"))
+
+        val formattersArray = node.putArray("formatters")
+        formattersArray.add("uuuu-MM-dd")
+
+        node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
+
+        val nullableValuesArray = node.putArray("nullableValues")
+        nullableValuesArray.add("")
+        nullableValuesArray.add("null")
+
+        Option(node)
+      }
+      case decimalField: DecimalType => {
+        node.set[ObjectNode]("type", jsonNodeFactory.textNode("decimal"))
+        node.set[ObjectNode]("precision", jsonNodeFactory.numberNode(decimalField.precision))
+        node.set[ObjectNode]("scale", jsonNodeFactory.numberNode(decimalField.scale))
+        node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
+
+        val nullableValuesArray = node.putArray("nullableValues")
+        nullableValuesArray.add("")
+        nullableValuesArray.add("null")
+
+        Option(node)
+      }
+      case _: DoubleType => {
+        node.set[ObjectNode]("type", jsonNodeFactory.textNode("double"))
+        node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
+
+        val nullableValuesArray = node.putArray("nullableValues")
+        nullableValuesArray.add("")
+        nullableValuesArray.add("null")
+
+        Option(node)
+      }
+      case _: IntegerType => {
+        node.set[ObjectNode]("type", jsonNodeFactory.textNode("integer"))
+        node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
+
+        val nullableValuesArray = node.putArray("nullableValues")
+        nullableValuesArray.add("")
+        nullableValuesArray.add("null")
+
+        Option(node)
+      }
+      case _: LongType => {
+        node.set[ObjectNode]("type", jsonNodeFactory.textNode("long"))
+        node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
+
+        val nullableValuesArray = node.putArray("nullableValues")
+        nullableValuesArray.add("")
+        nullableValuesArray.add("null")
+
+        Option(node)
+      }
+      case _: StringType => {
+        node.set[ObjectNode]("type", jsonNodeFactory.textNode("string"))
+        node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
+
+        val nullableValuesArray = node.putArray("nullableValues")
+        nullableValuesArray.add("")
+        nullableValuesArray.add("null")
+
+        Option(node)
+      }
+      case _: TimestampType => {
+        node.set[ObjectNode]("type", jsonNodeFactory.textNode("timestamp"))
+        node.set[ObjectNode]("trim", jsonNodeFactory.booleanNode(true))
+
+        val formattersArray = node.putArray("formatters")
+        formattersArray.add("uuuu-MM-dd HH:mm:ss")
+
+        node.set[ObjectNode]("timezoneId", jsonNodeFactory.textNode("UTC"))
+
+        val nullableValuesArray = node.putArray("nullableValues")
+        nullableValuesArray.add("")
+        nullableValuesArray.add("null")
+
+        Option(node)
+      }
+      case _: NullType => None
+    }
+  }
+
+  // // a helper function to speed up the creation of a metadata formatted file
+  def makeMetadataFromDataframe(input: DataFrame): String = {
+    val objectMapper = new ObjectMapper()
+    val fields = input.schema.fields.flatMap(fieldAsObjectNode).map(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString)
+    s"""[${fields.mkString(",")}]"""
   }
 }
 
