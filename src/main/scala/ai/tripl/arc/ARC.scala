@@ -132,7 +132,9 @@ object ARC {
 
     // add spark config to log
     val sparkConf = new java.util.HashMap[String, String]()
-    spark.sparkContext.getConf.getAll.foreach{ case (k, v) => sparkConf.put(k, v) }
+    spark.sparkContext.getConf.getAll
+    .filter { case (k, _) => !("spark.authenticate.secret").contains(k) }
+    .foreach { case (k, v) => sparkConf.put(k, v) }
 
     implicit val logger = LoggerFactory.getLogger(jobId.getOrElse(spark.sparkContext.applicationId))
 

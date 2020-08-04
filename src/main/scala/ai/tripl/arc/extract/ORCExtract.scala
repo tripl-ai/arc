@@ -145,16 +145,16 @@ object ORCExtractStage {
         optionSchema match {
           case Some(schema) => {
             stage.watermark match {
-              case Some(watermark) => Right(spark.readStream.option("mergeSchema", "true").schema(schema).orc(stage.input).withWatermark(watermark.eventTime, watermark.delayThreshold))
-              case None => Right(spark.readStream.option("mergeSchema", "true").schema(schema).orc(stage.input))
+              case Some(watermark) => Right(spark.readStream.option("mergeSchema", "true").schema(schema).format("orc").load(stage.input).withWatermark(watermark.eventTime, watermark.delayThreshold))
+              case None => Right(spark.readStream.option("mergeSchema", "true").schema(schema).format("orc").load(stage.input))
             }
           }
           case None => throw new Exception("ORCExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
         }
       } else {
         stage.basePath match {
-          case Some(basePath) => Right(spark.read.option("mergeSchema", "true").option("basePath", basePath).orc(stage.input))
-          case None => Right(spark.read.option("mergeSchema", "true").orc(stage.input))
+          case Some(basePath) => Right(spark.read.option("mergeSchema", "true").option("basePath", basePath).format("orc").load(stage.input))
+          case None => Right(spark.read.option("mergeSchema", "true").format("orc").load(stage.input))
         }
       }
     } catch {

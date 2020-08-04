@@ -40,6 +40,7 @@ object TestUtils {
         val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
         Logger.getLogger("org").setLevel(Level.ERROR)
         Logger.getLogger("breeze").setLevel(Level.ERROR)
+
         logger
     }
 

@@ -45,7 +45,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     FileUtils.deleteQuietly(new java.io.File(emptyDirectory))
     FileUtils.forceMkdir(new java.io.File(emptyDirectory))
     // parquet does not support writing NullType
-    TestUtils.getKnownDataset.drop($"nullDatum").write.parquet(targetFile)
+    TestUtils.getKnownDataset.drop($"nullDatum").write.format("parquet").save(targetFile)
   }
 
   after {

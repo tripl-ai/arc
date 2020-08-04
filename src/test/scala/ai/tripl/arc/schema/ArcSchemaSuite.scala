@@ -10,12 +10,16 @@ import org.apache.commons.io.IOUtils
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
+import com.fasterxml.jackson.databind._
+import com.fasterxml.jackson.databind.node._
+
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
 
 import ai.tripl.arc.util.TestUtils
 import ai.tripl.arc.util.ExtractUtils
 import ai.tripl.arc.util.ArcSchema
+import ai.tripl.arc.util.MetadataUtils
 
 class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
 
@@ -67,7 +71,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
         "primaryKey" : true,
         "position": 1
       }
-    }  
+    }
     ]"""
 
     ArcSchema.parseArcSchema(arcSchema) match {
@@ -108,14 +112,14 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
         "primaryKey" : true,
         "position": 1
       }
-    }   
+    }
     ]"""
 
     ArcSchema.parseArcSchema(arcSchema) match {
       case Left(err) => assert(err.toString.contains("Missing required attribute 'fields'."))
       case Right(extractColumns) => fail("should fail")
     }
-  }   
+  }
 
   test("Schema nested error - fields empty") {
     implicit val spark = session
@@ -155,7 +159,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
       case Left(err) => assert(err.toString.contains("'fields' must have at least 1 element."))
       case Right(extractColumns) => fail("should fail")
     }
-  } 
+  }
 
   test("Schema nested error") {
     implicit val spark = session
@@ -210,16 +214,16 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
             "primaryKey" : true,
             "position": 1
           }
-        }        
+        }
       ]
-    }    
+    }
     ]"""
 
     ArcSchema.parseArcSchema(arcSchema) match {
       case Left(err) => assert(err.toString.contains("Missing required attribute 'name'"))
       case Right(extractColumns) => fail("should fail")
     }
-  }  
+  }
 
   test("Schema nested valid") {
     implicit val spark = session
@@ -275,9 +279,9 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
             "primaryKey" : true,
             "position": 1
           }
-        }        
+        }
       ]
-    }    
+    }
     ]"""
 
     ArcSchema.parseArcSchema(arcSchema) match {
@@ -286,8 +290,8 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
         val structType = ExtractUtils.getSchema(Right(extractColumns))
         assert(structType.isDefined)
     }
-  }  
-  
+  }
+
   test("Schema double nested") {
     implicit val spark = session
     import spark.implicits._
@@ -353,11 +357,11 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
                 "primaryKey" : true,
                 "position": 1
               }
-            }            
-          ]     
+            }
+          ]
         }
       ]
-    }    
+    }
     ]"""
 
     ArcSchema.parseArcSchema(arcSchema) match {
@@ -366,7 +370,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
         val structType = ExtractUtils.getSchema(Right(extractColumns))
         assert(structType.isDefined)
     }
-  }  
+  }
 
   test("Schema array simple success") {
     implicit val spark = session
@@ -396,8 +400,8 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
           "primaryKey" : true,
           "position": 1
         }
-      }    
-    }   
+      }
+    }
     ]"""
 
     ArcSchema.parseArcSchema(arcSchema) match {
@@ -425,14 +429,14 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
         "primaryKey" : true,
         "position": 1
       }
-    }   
+    }
     ]"""
 
     ArcSchema.parseArcSchema(arcSchema) match {
       case Left(err) => assert(err.toString.contains("Missing required attribute 'elementType'."))
       case Right(extractColumns) => fail("should fail")
     }
-  }  
+  }
 
  test("Schema array simple failure - elementType empty") {
     implicit val spark = session
@@ -452,14 +456,14 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
         "position": 1
       },
       "elementType": {}
-    },    
+    },
     ]"""
 
     ArcSchema.parseArcSchema(arcSchema) match {
       case Left(err) => assert(err.toString.contains("Missing required attribute 'type'."))
       case Right(extractColumns) => fail("should fail")
     }
-  }    
+  }
 
   test("Schema array complex success") {
     implicit val spark = session
@@ -505,7 +509,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
           }
         ]
       }
-    }  
+    }
     ]"""
 
     ArcSchema.parseArcSchema(arcSchema) match {
@@ -548,16 +552,16 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
             "primaryKey": true,
             "position": 1
           }
-        }   
+        }
       ]
-    }  
+    }
     ]"""
 
     ArcSchema.parseArcSchema(arcSchema) match {
       case Left(err) => assert(err.toString.contains("'elementType' must be of type object"))
       case Right(extractColumns) => fail("should fail")
     }
-  }  
+  }
 
   test("Schema with schema key") {
     implicit val spark = session
@@ -592,7 +596,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
         val structType = ExtractUtils.getSchema(Right(extractColumns))
         assert(structType.isDefined)
     }
-  } 
+  }
 
   test("Schema without schema key") {
     implicit val spark = session
@@ -622,10 +626,10 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     }"""
 
     val thrown0 = intercept[Exception] {
-      ArcSchema.parseArcSchema(arcSchema) 
+      ArcSchema.parseArcSchema(arcSchema)
     }
     assert(thrown0.getMessage === "does not appear to be an Arc schema. Must be either of type LIST or contain schema within 'schema' attribute.")
-  }   
+  }
 
   test("Schema with schema key and substitution") {
     implicit val spark = session
@@ -705,6 +709,97 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
         |  } ]
         |}""".stripMargin)
     }
-  }   
+  }
+
+  test("Schema roundtrip") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+
+    val arcSchema = """[
+    {
+      "name" : "first_name",
+      "description" : "Customer First Name",
+      "type" : "string",
+      "trim" : true,
+      "nullable" : true,
+      "nullableValues" : [ "", "null" ],
+      "metadata": {
+        "primaryKey" : true,
+        "position": 1
+      }
+    },
+    {
+      "name" : "group",
+      "description" : "Customer First Name",
+      "type" : "struct",
+      "nullable" : true,
+      "metadata": {
+        "primaryKey" : true,
+        "position": 2
+      },
+      "fields": [
+        {
+          "name" : "nested0",
+          "type" : "string",
+          "trim" : true,
+          "nullable" : true,
+          "nullableValues" : [ "", "null" ],
+          "metadata": {
+            "primaryKey" : true,
+            "position": 3
+          }
+        },
+        {
+          "name" : "nested1",
+          "type" : "string",
+          "trim" : true,
+          "nullable" : true,
+          "nullableValues" : [ "", "null" ],
+          "metadata": {
+            "primaryKey" : false,
+            "position": 4
+          }
+        }
+      ]
+    },
+    {
+      "name" : "group",
+      "description" : "Customer First Name",
+      "type" : "array",
+      "nullable" : true,
+      "metadata": {
+        "primaryKey" : true,
+        "position": 5
+      },
+      "elementType": {
+        "id" : "",
+        "name" : "nested0",
+        "type" : "string",
+        "trim" : true,
+        "nullable" : true,
+        "nullableValues" : [ "", "null" ],
+        "metadata": {
+          "primaryKey" : true,
+          "position": 6
+        }
+      }
+    }
+    ]"""
+
+    ArcSchema.parseArcSchema(arcSchema) match {
+      case Left(err) => fail(err.toString)
+      case Right(extractColumns) =>
+        val structType = ExtractUtils.getSchema(Right(extractColumns)).get
+        val df = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], structType)
+        val jsonSchema = MetadataUtils.makeMetadataFromDataframe(df)
+        print(jsonSchema)
+        ArcSchema.parseArcSchema(jsonSchema) match {
+          case Left(err) => fail(err.toString)
+          case _ =>
+        }
+    }
+  }
 
 }
