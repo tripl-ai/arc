@@ -143,16 +143,16 @@ object ParquetExtractStage {
         optionSchema match {
           case Some(schema) => {
             stage.watermark match {
-              case Some(watermark) => Right(spark.readStream.option("mergeSchema", "true").schema(schema).parquet(stage.input).withWatermark(watermark.eventTime, watermark.delayThreshold))
-              case None => Right(spark.readStream.option("mergeSchema", "true").schema(schema).parquet(stage.input))
+              case Some(watermark) => Right(spark.readStream.option("mergeSchema", "true").schema(schema).format("parquet").load(stage.input).withWatermark(watermark.eventTime, watermark.delayThreshold))
+              case None => Right(spark.readStream.option("mergeSchema", "true").schema(schema).format("parquet").load(stage.input))
             }
           }
           case None => throw new Exception("ParquetExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
         }
       } else {
         stage.basePath match {
-          case Some(basePath) => Right(spark.read.option("mergeSchema", "true").option("basePath", basePath).parquet(stage.input))
-          case None => Right(spark.read.option("mergeSchema", "true").parquet(stage.input))
+          case Some(basePath) => Right(spark.read.option("mergeSchema", "true").option("basePath", basePath).format("parquet").load(stage.input))
+          case None => Right(spark.read.option("mergeSchema", "true").format("parquet").load(stage.input))
         }
       }
     } catch {

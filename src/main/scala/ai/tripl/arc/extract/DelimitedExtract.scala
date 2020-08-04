@@ -179,8 +179,8 @@ object DelimitedExtractStage {
             optionSchema match {
               case Some(schema) => {
                 stage.watermark match {
-                  case Some(watermark) => Right(spark.readStream.options(options).schema(schema).csv(glob).withWatermark(watermark.eventTime, watermark.delayThreshold))
-                  case None => Right(spark.readStream.options(options).schema(schema).csv(glob))
+                  case Some(watermark) => Right(spark.readStream.options(options).schema(schema).format("csv").load(glob).withWatermark(watermark.eventTime, watermark.delayThreshold))
+                  case None => Right(spark.readStream.options(options).schema(schema).format("csv").load(glob))
                 }
               }
               case None => throw new Exception("CSVExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")

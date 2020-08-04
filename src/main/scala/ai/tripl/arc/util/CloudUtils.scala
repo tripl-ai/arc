@@ -41,7 +41,7 @@ object CloudUtils {
           case None => {
             hc.set(s"fs.s3a.access.key", accessKeyID)
             hc.set(s"fs.s3a.secret.key", secretAccessKey)
-            endpoint.foreach { endpoint => hc.set(s"fs.s3a.endpoint", endpoint) }            
+            endpoint.foreach { endpoint => hc.set(s"fs.s3a.endpoint", endpoint) }
           }
         }
         ssl.foreach { ssl => hc.set(s"fs.s3a.connection.ssl.enabled", ssl.toString) }
@@ -51,7 +51,7 @@ object CloudUtils {
       }
       case Some(API.Authentication.AmazonEnvironmentVariable(bucket)) => {
         bucket.foreach { bucket => hc.set(s"fs.s3a.bucket.$bucket.aws.credentials.provider", "com.amazonaws.auth.EnvironmentVariableCredentialsProvider")}
-      }      
+      }
       case Some(API.Authentication.AmazonIAM(bucket, encType, kmsId, customKey)) => {
         bucket.foreach { bucket => hc.set(s"fs.s3a.bucket.$bucket.aws.credentials.provider", "com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider")}
         var algorithm = "None"
