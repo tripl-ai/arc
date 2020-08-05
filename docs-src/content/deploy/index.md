@@ -75,7 +75,17 @@ local:///opt/spark/jars/arc.jar \
 |ETL_CONF_TAGS|etl.config.tags|Custom key/value tags separated by space to add to all logging messages.<br><br>E.g. `ETL_CONF_TAGS=cost_center=123456 owner=jovyan`.|
 |ETL_CONF_URI|etl.config.uri|The URI of the job file to execute.|
 
-Additionally there are permissions arguments that can be used to retrieve the job file from cloud storage:
+## Policy Parameters
+
+| Environment Variable | Property | Description |
+|----------|----------|-------------|
+|ETL_POLICY_INLINE_SCHEMA|etl.policy.inline.schema|Whether to support inline schemas (such as the `schema` attribute in `TypingTransform`) as opposed to force reading from an external file. Boolean. Default `true`.|
+|ETL_POLICY_INLINE_SQL|etl.policy.inline.sql|Whether to support inline SQL (such as the `sql` attribute in `SQLTransform`) as opposed to force reading from an external file. Boolean. Default `true`.|
+|ETL_POLICY_IPYNB|etl.policy.ipynb|Whether to support submission of IPython Notebook (.ipynb) files as opposed to Arc HOCON format only. Boolean. Default `true`.|
+
+## Authentication Parameters
+
+Permissions arguments can be used to retrieve the job file from cloud storage:
 
 | Variable | Property | Description |
 |----------|----------|-------------|

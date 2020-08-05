@@ -28,6 +28,8 @@ import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.Utils
 
+import com.typesafe.config._
+
 class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
@@ -51,12 +53,22 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "schemaURI" :: "schemaView" :: "inputView" :: "outputView" :: "authentication" :: "failMode" :: "persist" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "schema" :: "schemaURI" :: "schemaView" :: "inputView" :: "outputView" :: "authentication" :: "failMode" :: "persist" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val authentication = readAuthentication("authentication")
-    val extractColumns = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ |> checkSimpleColumnTypes("schemaURI", "TypingTransform") _ else Right(List.empty)
-    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
+
+    val source = checkOneOf(c)(Seq("schema", "schemaURI", "schemaView"))
+    val (schema, schemaURI, schemaView) = if (source.isRight) {
+      (
+        if (c.hasPath("schema")) Right(c.getConfigList("schema").asScala.map { o => o.root().render(ConfigRenderOptions.concise()) }.mkString("[", ",", "]") ) |> verifyInlineSchemaPolicy("schema") _ |> getExtractColumns("schema") _ else Right(List.empty),
+        if (c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> textContentForURI("schemaURI", authentication) |> getExtractColumns("schemaURI") _ else Right(List.empty),
+        if (c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
+      )
+    } else {
+      (Right(List.empty), Right(List.empty), Right(""))
+    }
+
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
@@ -66,15 +78,21 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, inputView, outputView, persist, failMode, numPartitions, partitionBy, invalidKeys, authentication) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(outputView), Right(persist), Right(failMode), Right(numPartitions), Right(partitionBy), Right(invalidKeys), Right(authentication)) =>
-        val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
+    (name, description, source, schema, schemaURI, schemaView, inputView, outputView, persist, failMode, numPartitions, partitionBy, invalidKeys, authentication) match {
+      case (Right(name), Right(description), Right(source), Right(schema), Right(schemaURI), Right(schemaView), Right(inputView), Right(outputView), Right(persist), Right(failMode), Right(numPartitions), Right(partitionBy), Right(invalidKeys), Right(authentication)) =>
+        val _schema = if (c.hasPath("schemaView")) {
+          Left(schemaView)
+        } else if (c.hasPath("schemaURI")) {
+          Right(schemaURI)
+        } else {
+          Right(schema)
+        }
 
         val stage = TypingTransformStage(
           plugin=this,
           name=name,
           description=description,
-          schema=schema,
+          schema=_schema,
           inputView=inputView,
           outputView=outputView,
           params=params,
@@ -84,6 +102,11 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
           partitionBy=partitionBy
         )
 
+        if (c.hasPath("schemaView")) {
+          stage.stageDetail.put("schemaView", c.getString("schemaView"))
+        } else if (c.hasPath("schemaURI")) {
+          stage.stageDetail.put("schemaURI", c.getString("schemaURI"))
+        }
         authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("failMode", failMode.sparkString)
@@ -94,7 +117,7 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, outputView, persist, authentication, failMode, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, source, schema, schemaURI, schemaView, inputView, outputView, persist, authentication, failMode, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)

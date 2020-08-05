@@ -34,10 +34,6 @@ object API {
       */
     environment: Option[String],
 
-    /** the running environment identifier
-      */
-    environmentId: Option[String],
-
     /** the job configuration path
       */
     configUri: Option[String],
@@ -60,11 +56,15 @@ object API {
 
     /** whether to allow ipython notebook configuration files
       */
-    ipynb: Boolean = true,
+    ipynb: Boolean,
 
     /** whether to allow inline sql submitted to stages like SQLTransform and SQLValidate
       */
-    inlineSQL: Boolean = true,
+    inlineSQL: Boolean,
+
+    /** whether to allow inline schema submitted to stages like TypingTransform and MetadataTransform
+      */
+    inlineSchema: Boolean,
 
     /** the command line arguments
       */

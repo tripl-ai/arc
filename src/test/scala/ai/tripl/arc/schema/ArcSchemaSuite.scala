@@ -794,7 +794,6 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
         val structType = ExtractUtils.getSchema(Right(extractColumns)).get
         val df = spark.createDataFrame(spark.sparkContext.emptyRDD[Row], structType)
         val jsonSchema = MetadataUtils.makeMetadataFromDataframe(df)
-        print(jsonSchema)
         ArcSchema.parseArcSchema(jsonSchema) match {
           case Left(err) => fail(err.toString)
           case _ =>

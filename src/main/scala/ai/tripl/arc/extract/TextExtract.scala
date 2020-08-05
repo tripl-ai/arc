@@ -49,7 +49,7 @@ class TextExtract extends PipelineStagePlugin with JupyterCompleter {
     val multiLine = getValue[java.lang.Boolean]("multiLine", default = Some(false))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
-    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
+    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> textContentForURI("schemaURI", authentication) |> getExtractColumns("schemaURI") _ else Right(List.empty)
     val basePath = getOptionalValue[String]("basePath")
     val watermark = readWatermark("watermark")
     val params = readMap("params", c)

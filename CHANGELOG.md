@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.2.0
+
+- add the `schema` attribute to `TypingTransform` and `MetadataTransform` to allow inline schema. Can be disabled via `etl.policy.inline.schema` and `ETL_POLICY_INLINE_SCHEMA`. These are being trialed and if beneficial will be added to all stages that support schemas.
+- rename `etl.policy.inlinesql` to `etl.policy.inline.sql` and `ETL_POLICY_INLINESQL` to `ETL_POLICY_INLINE_SQL`.
+- **BREAKING** remove deprecated `etl.config.environment.id` and `ETL_CONF_ENV_ID` in favor of `etl.config.tags` or `ETL_CONF_TAGS`.
+
 ## 3.1.1
 
 - remove `spark.authenticate.secret` from log output.

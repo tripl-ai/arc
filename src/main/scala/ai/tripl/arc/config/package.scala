@@ -1,6 +1,10 @@
 package ai.tripl.arc
 
+import com.typesafe.config.Config
+
 package object config {
+
+  type ConfigList = List[Config]
 
   type DoubleList = List[Double]
 

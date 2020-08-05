@@ -1,0 +1,1 @@
+Specification of an Arc [Schema](/schema).

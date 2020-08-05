@@ -9,8 +9,10 @@ object ARC {
 
   import java.util.UUID
   import java.util.ServiceLoader
-  import org.apache.commons.lang3.exception.ExceptionUtils
   import scala.collection.JavaConverters._
+  import scala.util.Try
+
+  import org.apache.commons.lang3.exception.ExceptionUtils
 
   import org.slf4j.MDC
 
@@ -42,46 +44,40 @@ object ARC {
     }
     val commandLineArguments = clArgs.toMap
 
-    val jobName: Option[String] = commandLineArguments.get("etl.config.job.name").orElse(envOrNone("ETL_CONF_JOB_NAME"))
-    for (j <- jobName) {
-        MDC.put("jobName", j)
-    }
-
+    // configurations
+    val isStreaming = Try(commandLineArguments.get("etl.config.streaming").orElse(envOrNone("ETL_CONF_STREAMING")).get.toBoolean).getOrElse(false)
+    val ignoreEnvironments = Try(commandLineArguments.get("etl.config.ignoreEnvironments").orElse(envOrNone("ETL_CONF_IGNORE_ENVIRONMENTS")).get.toBoolean).getOrElse(false)
+    val enableStackTrace = Try(commandLineArguments.get("etl.config.enableStackTrace").orElse(envOrNone("ETL_CONF_ENABLE_STACKTRACE")).get.toBoolean).getOrElse(false)
+    val immutableViews = Try(commandLineArguments.get("etl.config.immutableViews").orElse(envOrNone("ETL_CONF_IMMUTABLE_VIEWS")).get.toBoolean).getOrElse(false)
+    val configUri: Option[String] = commandLineArguments.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))
     val jobId: Option[String] = commandLineArguments.get("etl.config.job.id").orElse(envOrNone("ETL_CONF_JOB_ID"))
-    for (j <- jobId) {
-        MDC.put("jobId", j)
+    val jobName: Option[String] = commandLineArguments.get("etl.config.job.name").orElse(envOrNone("ETL_CONF_JOB_NAME"))
+    val environment: Option[String] = commandLineArguments.get("etl.config.environment").orElse(envOrNone("ETL_CONF_ENV"))
+    val (storageLevel, storageLevelName) = commandLineArguments.get("etl.config.storageLevel").orElse(envOrNone("ETL_CONF_STORAGE_LEVEL")) match {
+      case Some(v) if v.trim.toUpperCase == "DISK_ONLY" => (StorageLevel.DISK_ONLY, "DISK_ONLY")
+      case Some(v) if v.trim.toUpperCase == "DISK_ONLY_2" => (StorageLevel.DISK_ONLY_2, "DISK_ONLY_2")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK" => (StorageLevel.MEMORY_AND_DISK, "MEMORY_AND_DISK")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK_2" => (StorageLevel.MEMORY_AND_DISK_2, "MEMORY_AND_DISK_2")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK_SER" => (StorageLevel.MEMORY_AND_DISK_SER, "MEMORY_AND_DISK_SER")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK_SER_2" => (StorageLevel.MEMORY_AND_DISK_SER_2, "MEMORY_AND_DISK_SER_2")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_ONLY" => (StorageLevel.MEMORY_ONLY, "MEMORY_ONLY")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_ONLY_SER" => (StorageLevel.MEMORY_ONLY_SER, "MEMORY_ONLY_SER")
+      case Some(v) if v.trim.toUpperCase == "MEMORY_ONLY_SER_2" => (StorageLevel.MEMORY_ONLY_SER_2, "MEMORY_ONLY_SER_2")
+      case _ => (StorageLevel.MEMORY_AND_DISK_SER, "MEMORY_AND_DISK_SER")
     }
-
-    val isStreaming = commandLineArguments.get("etl.config.streaming").orElse(envOrNone("ETL_CONF_STREAMING")) match {
-      case Some(v) if v.trim.toLowerCase == "true" => true
-      case _ => false
-    }
-    MDC.put("streaming", isStreaming.toString)
-
-    val ignoreEnvironments = commandLineArguments.get("etl.config.ignoreEnvironments").orElse(envOrNone("ETL_CONF_IGNORE_ENVIRONMENTS")) match {
-      case Some(v) if v.trim.toLowerCase == "true" => true
-      case _ => false
-    }
-    MDC.put("ignoreEnvironments", ignoreEnvironments.toString)
-
-    val enableStackTrace = commandLineArguments.get("etl.config.enableStackTrace").orElse(envOrNone("ETL_CONF_ENABLE_STACKTRACE")) match {
-      case Some(v) if v.trim.toLowerCase == "true" => true
-      case _ => false
-    }
-    MDC.put("enableStackTrace", enableStackTrace.toString)
 
     // policies
-    val policyIPYNB = commandLineArguments.get("etl.policy.ipynb").orElse(envOrNone("ETL_POLICY_IPYNB")) match {
-      case Some(v) if v.trim.toLowerCase == "false" => false
-      case _ => true
-    }
+    val policyInlineSchema = Try(commandLineArguments.get("etl.policy.inline.schema").orElse(envOrNone("ETL_POLICY_INLINE_SCHEMA")).get.toBoolean).getOrElse(true)
+    val policyInlineSQL = Try(commandLineArguments.get("etl.policy.inline.sql").orElse(envOrNone("ETL_POLICY_INLINE_SQL")).get.toBoolean).getOrElse(true)
+    val policyIPYNB = Try(commandLineArguments.get("etl.policy.ipynb").orElse(envOrNone("ETL_POLICY_IPYNB")).get.toBoolean).getOrElse(true)
 
-    val policyInlineSQL = commandLineArguments.get("etl.policy.inlinesql").orElse(envOrNone("ETL_POLICY_INLINESQL")) match {
-      case Some(v) if v.trim.toLowerCase == "false" => false
-      case _ => true
-    }
-
-    val configUri: Option[String] = commandLineArguments.get("etl.config.uri").orElse(envOrNone("ETL_CONF_URI"))
+    // set global logging
+    MDC.put("streaming", isStreaming.toString)
+    MDC.put("ignoreEnvironments", ignoreEnvironments.toString)
+    MDC.put("enableStackTrace", enableStackTrace.toString)
+    jobId.foreach { j => MDC.put("jobId", j) }
+    jobName.foreach { jn => MDC.put("jobName", jn) }
+    environment.foreach { e => MDC.put("environment", e) }
 
     val frameworkVersion = Utils.getFrameworkVersion
 
@@ -131,12 +127,13 @@ object ARC {
     }
 
     // add spark config to log
-    val sparkConf = new java.util.HashMap[String, String]()
+    val sparkConfLog = new java.util.HashMap[String, String]()
     spark.sparkContext.getConf.getAll
     .filter { case (k, _) => !("spark.authenticate.secret").contains(k) }
-    .foreach { case (k, v) => sparkConf.put(k, v) }
+    .foreach { case (k, v) => sparkConfLog.put(k, v) }
 
     implicit val logger = LoggerFactory.getLogger(jobId.getOrElse(spark.sparkContext.applicationId))
+    MDC.put("applicationId", spark.sparkContext.applicationId)
 
     // add tags
     val tags: Option[String] = commandLineArguments.get("etl.config.tags").orElse(envOrNone("ETL_CONF_TAGS"))
@@ -151,43 +148,6 @@ object ARC {
       }
     }
 
-    val environment: Option[String] = commandLineArguments.get("etl.config.environment").orElse(envOrNone("ETL_CONF_ENV"))
-    for (environment <- environment) {
-      MDC.put("environment", environment)
-    }
-
-    val environmentId: Option[String] = commandLineArguments.get("etl.config.environment.id").orElse(envOrNone("ETL_CONF_ENV_ID"))
-    for (e <- environmentId) {
-      MDC.put("environmentId", e)
-      logger.warn()
-        .field("event", "deprecation")
-        .field("message", s"'etl.config.environment.id' and 'ETL_CONF_ENV_ID' are deprecated in favor of 'etl.config.tags' or 'ETL_CONF_TAGS'.")
-        .log()
-    }
-
-    MDC.put("applicationId", spark.sparkContext.applicationId)
-
-    // read storagelevel
-    val (storageLevel, storageLevelName) = commandLineArguments.get("etl.config.storageLevel").orElse(envOrNone("ETL_CONF_STORAGE_LEVEL")) match {
-      case Some(v) if v.trim.toUpperCase == "DISK_ONLY" => (StorageLevel.DISK_ONLY, "DISK_ONLY")
-      case Some(v) if v.trim.toUpperCase == "DISK_ONLY_2" => (StorageLevel.DISK_ONLY_2, "DISK_ONLY_2")
-      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK" => (StorageLevel.MEMORY_AND_DISK, "MEMORY_AND_DISK")
-      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK_2" => (StorageLevel.MEMORY_AND_DISK_2, "MEMORY_AND_DISK_2")
-      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK_SER" => (StorageLevel.MEMORY_AND_DISK_SER, "MEMORY_AND_DISK_SER")
-      case Some(v) if v.trim.toUpperCase == "MEMORY_AND_DISK_SER_2" => (StorageLevel.MEMORY_AND_DISK_SER_2, "MEMORY_AND_DISK_SER_2")
-      case Some(v) if v.trim.toUpperCase == "MEMORY_ONLY" => (StorageLevel.MEMORY_ONLY, "MEMORY_ONLY")
-      case Some(v) if v.trim.toUpperCase == "MEMORY_ONLY_SER" => (StorageLevel.MEMORY_ONLY_SER, "MEMORY_ONLY_SER")
-      case Some(v) if v.trim.toUpperCase == "MEMORY_ONLY_SER_2" => (StorageLevel.MEMORY_ONLY_SER_2, "MEMORY_ONLY_SER_2")
-      case _ => (StorageLevel.MEMORY_AND_DISK_SER, "MEMORY_AND_DISK_SER")
-    }
-
-    // read immutableViews
-    val immutableViews = commandLineArguments.get("etl.config.immutableViews").orElse(envOrNone("ETL_CONF_IMMUTABLE_VIEWS")) match {
-      case Some(v) if v.trim.toLowerCase == "true" => true
-      case Some(v) if v.trim.toLowerCase == "false" => false
-      case _ => false
-    }
-
     // log available plugins
     val loader = Utils.getContextOrSparkClassLoader
 
@@ -195,7 +155,6 @@ object ARC {
       jobId=jobId,
       jobName=jobName,
       environment=environment,
-      environmentId=environmentId,
       configUri=configUri,
       isStreaming=isStreaming,
       ignoreEnvironments=ignoreEnvironments,
@@ -203,6 +162,7 @@ object ARC {
       immutableViews=immutableViews,
       ipynb=policyIPYNB,
       inlineSQL=policyInlineSQL,
+      inlineSchema=policyInlineSchema,
       commandLineArguments=commandLineArguments,
       dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
       lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
@@ -221,7 +181,7 @@ object ARC {
       val registeredUDFs = UDF.registerUDFs()(spark, logger, arcContext)
       logger.info()
         .field("event", "enter")
-        .field("config", sparkConf)
+        .field("config", sparkConfLog)
         .field("sparkVersion", spark.version)
         .field("arcVersion", frameworkVersion)
         .field("hadoopVersion", org.apache.hadoop.util.VersionInfo.getVersion)
@@ -230,8 +190,9 @@ object ARC {
         .field("environment", environment.getOrElse(""))
         .field("storageLevel", storageLevelName)
         .field("immutableViews", java.lang.Boolean.valueOf(arcContext.immutableViews))
-        .field("ipynb", java.lang.Boolean.valueOf(arcContext.ipynb))
-        .field("inlineSQL", java.lang.Boolean.valueOf(arcContext.inlineSQL))
+        .field("policyIPYNB", java.lang.Boolean.valueOf(arcContext.ipynb))
+        .field("policyInlineSQL", java.lang.Boolean.valueOf(arcContext.inlineSQL))
+        .field("policyInlineSchema", java.lang.Boolean.valueOf(arcContext.inlineSchema))
         .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
         .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
         .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)

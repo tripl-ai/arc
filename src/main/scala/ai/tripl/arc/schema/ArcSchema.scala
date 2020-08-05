@@ -537,8 +537,8 @@ object ArcSchema {
       }
   }
 
-  def valueTypeArray(path: String, minLength: Int)(config: ConfigValue)(implicit c: Config): Either[Errors, ConfigList] = {
-    def err(lineNumber: Option[Int], msg: String): Either[Errors, ConfigList] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+  def valueTypeArray(path: String, minLength: Int)(config: ConfigValue)(implicit c: Config): Either[Errors, com.typesafe.config.ConfigList] = {
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, com.typesafe.config.ConfigList] = Left(ConfigError(path, lineNumber, msg) :: Nil)
       config.valueType match {
         case ConfigValueType.LIST => {
           val configList = c.getList(path)

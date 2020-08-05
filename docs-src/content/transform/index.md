@@ -201,8 +201,9 @@ The `MetadataTransform` stage attaches metadata input `Dataframe` and returns a 
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|schemaURI|URI|true*|URI of the input JSON file containing the schema. Required if `schemaView` not provided.|
-|schemaView|String|true*|Similar to `schemaURI` but allows the schema to be passed in as another `DataFrame`.  It takes precedence over `schemaURI` if provided.|
+|schema|Array|true*|An inline Arc [schema](/schema). Only one of `schema`, `schemaURI`, `schemaView` can be provided.|
+|schemaURI|URI|true*|URI of the input JSON file containing the Arc [schema](/schema). Only one of `schema`, `schemaURI`, `schemaView` can be provided.|
+|schemaView|String|true*|Similar to `schemaURI` but allows the Arc [schema](/schema) to be passed in as another `DataFrame`.  Only one of `schema`, `schemaURI`, `schemaView` can be provided.|
 |failMode|String|false|Either `permissive` or `failfast`:<br><br>`permissive` will attach metadata to any column of the input `DataFrame` which has the same name as in the incoming schema.<br><br>`failfast` will fail the Arc job if any of the columns in the input schema are not found in the input `DataFrame`.<br><br>Default: `permissive`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -400,8 +401,9 @@ The logical process that is applied to perform the typing on a field-by-field ba
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
-|schemaURI|URI|true*|URI of the input JSON file containing the schema. Required if `schemaView` not provided.|
-|schemaView|String|true*|Similar to `schemaURI` but allows the schema to be passed in as another `DataFrame`.  It takes precedence over `schemaURI` if provided.|
+|schema|Array|true*|An inline Arc [schema](/schema). Only one of `schema`, `schemaURI`, `schemaView` can be provided.|
+|schemaURI|URI|true*|URI of the input JSON file containing the Arc [schema](/schema). Only one of `schema`, `schemaURI`, `schemaView` can be provided.|
+|schemaView|String|true*|Similar to `schemaURI` but allows the Arc [schema](/schema) to be passed in as another `DataFrame`.  Only one of `schema`, `schemaURI`, `schemaView` can be provided.|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|

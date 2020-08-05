@@ -24,56 +24,56 @@ trait ConfigReader[A] {
 
 object ConfigReader {
 
-    def getConfigValue[A](path: String, c: Config, expectedType: String,
-                            default: Option[A] = None, validValues: Seq[A] = Seq.empty)(read: => A): Either[Errors, A] = {
+  def getConfigValue[A](path: String, c: Config, expectedType: String,
+                          default: Option[A] = None, validValues: Seq[A] = Seq.empty)(read: => A): Either[Errors, A] = {
 
-       def err(lineNumber: Option[Int], msg: String): Either[Errors, A] = Left(ConfigError(path, lineNumber, msg) :: Nil)
+    def err(lineNumber: Option[Int], msg: String): Either[Errors, A] = Left(ConfigError(path, lineNumber, msg) :: Nil)
 
-       try {
-        if (c.hasPath(path)) {
-            val value = read
-            if (!validValues.isEmpty) {
-                if (validValues.contains(value)) {
-                    Right(value)
-                } else {
-                    err(Some(c.getValue(path).origin.lineNumber()), s"""Invalid value. Valid values are ${validValues.map(value => s"'${value.toString}'").mkString("[",",","]")}.""")
-                }
+    try {
+      if (c.hasPath(path)) {
+          val value = read
+          if (!validValues.isEmpty) {
+            if (validValues.contains(value)) {
+              Right(value)
             } else {
-                Right(read)
+              err(Some(c.getValue(path).origin.lineNumber()), s"""Invalid value. Valid values are ${validValues.map(value => s"'${value.toString}'").mkString("[",",","]")}.""")
             }
-        } else {
-            default match {
-            case Some(value) => {
-                if (!validValues.isEmpty) {
-                    if (validValues.contains(value)) {
-                        Right(value)
-                    } else {
-                        err(None, s"""Invalid default value '$value'. Valid values are ${validValues.map(value => s"'${value.toString}'").mkString("[",",","]")}.""")
-                    }
-                } else {
-                    Right(value)
-                }
+          } else {
+            Right(read)
+          }
+      } else {
+        default match {
+        case Some(value) => {
+          if (!validValues.isEmpty) {
+            if (validValues.contains(value)) {
+              Right(value)
+            } else {
+              err(None, s"""Invalid default value '$value'. Valid values are ${validValues.map(value => s"'${value.toString}'").mkString("[",",","]")}.""")
             }
-            case None => err(None, s"""Missing required attribute '$path'.""")
-            }
+          } else {
+            Right(value)
+          }
         }
-        } catch {
-        case wt: ConfigException.WrongType => err(Some(c.getValue(path).origin.lineNumber()), s"Wrong type, expected: '$expectedType'.")
-        case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), s"Unable to read value: ${e.getMessage}")
+        case None => err(None, s"""Missing required attribute '$path'.""")
         }
-
+      }
+    } catch {
+      case wt: ConfigException.WrongType => err(Some(c.getValue(path).origin.lineNumber()), s"Wrong type, expected: '$expectedType'.")
+      case e: Exception => err(Some(c.getValue(path).origin.lineNumber()), s"Unable to read value: ${e.getMessage}")
     }
+
+  }
 
     def getOptionalConfigValue[A](path: String, c: Config, expectedType: String,
                                         default: Option[A] = None, validValues: Seq[A] = Seq.empty)(read: => A): Either[Errors, Option[A]] = {
         if (c.hasPath(path)) {
-            val value = getConfigValue(path, c, expectedType, None, validValues)(read)
-            value match {
-                case Right(cv) => Right(Option(cv))
-                case Left(l) => Left(l) // matching works around typing error
-            }
+          val value = getConfigValue(path, c, expectedType, None, validValues)(read)
+          value match {
+            case Right(cv) => Right(Option(cv))
+            case Left(l) => Left(l) // matching works around typing error
+          }
         } else {
-        Right(default)
+          Right(default)
         }
     }
 
@@ -154,6 +154,14 @@ object ConfigReader {
         val expectedType = "double array"
 
         def read(path: String, c: Config): DoubleList = c.getDoubleList(path).asScala.map(f => f.toDouble).toList
+
+    }
+
+    implicit object ConfigListConfigReader extends ConfigReader[ConfigList] {
+
+        val expectedType = "config array"
+
+        def read(path: String, c: Config): ConfigList = c.getConfigList(path).asScala.toList
 
     }
 

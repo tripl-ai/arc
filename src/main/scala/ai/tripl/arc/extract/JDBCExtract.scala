@@ -57,7 +57,7 @@ class JDBCExtract extends PipelineStagePlugin with JupyterCompleter {
     val partitionColumn = getOptionalValue[String]("partitionColumn")
     val predicates = getValue[StringList]("predicates", default = Some(Nil))
     val authentication = readAuthentication("authentication")
-    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
+    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> textContentForURI("schemaURI", authentication) |> getExtractColumns("schemaURI") _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)

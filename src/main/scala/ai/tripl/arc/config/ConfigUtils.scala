@@ -299,7 +299,7 @@ object ConfigUtils {
                   |  "sqlParams": {${sqlParams}},
                   |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
                   |}""".stripMargin
-                case _ => ""             
+                case _ => ""
               }
             }
             case _ => cell
@@ -356,7 +356,7 @@ object ConfigUtils {
     }
   }
 
-  def checkValidKeys(c: Config)(expectedKeys: => Seq[String]): Either[Errors, String] = {
+  def checkValidKeys(c: Config)(expectedKeys: Seq[String]): Either[Errors, String] = {
 
     val diffKeys = c.root().keySet.asScala.toSeq.diff(expectedKeys).toList
 
@@ -377,6 +377,20 @@ object ConfigUtils {
           ConfigError(key, Some(c.getValue(key).origin.lineNumber()), s"""Invalid attribute '${key}'.""")
         }
       }))
+    }
+  }
+
+  def checkOneOf(c: Config)(keys: Seq[String], required: Boolean = true): Either[Errors, Boolean] = {
+    val setKeys = keys.map { key => if (c.hasPath(key)) 1 else 0 }.reduce (_ + _)
+
+    if (setKeys == 0 && required) {
+      Left(List(ConfigError("", None, s"""One of ${keys.map(field => s"'${field}'").mkString("[",", ","]")} must be set.""")))
+    } else if (setKeys == 0 && !required) {
+      Right(true)
+    } else if (setKeys == 1) {
+      Right(true)
+    } else {
+      Left(List(ConfigError("", None, s"""Only one attribute of '${keys.map(field => s"'${field}'").mkString("[",", ","]")} is allowed.""")))
     }
   }
 
@@ -642,16 +656,12 @@ object ConfigUtils {
     }
   }
 
-  def getExtractColumns(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config, arcContext: ARCContext): Either[Errors, List[ExtractColumn]] = {
-    val schema = textContentForURI(uriKey, authentication)(uri).flatMap(text => Right(Option(text)))
+  def getExtractColumns(uriKey: String)(schema: String)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config, arcContext: ARCContext): Either[Errors, List[ExtractColumn]] = {
+    val cols = ArcSchema.parseArcSchema(schema)
 
-    schema.flatMap { sch =>
-      val cols = sch.map{ s => ArcSchema.parseArcSchema(s) }.getOrElse(Right(Nil))
-
-      cols match {
-        case Left(errs) => Left(errs.map( e => ConfigError("schema error", None, Error.pipelineSimpleErrorMsg(e.errors)) ))
-        case Right(extractColumns) => Right(extractColumns)
-      }
+    cols match {
+      case Left(errs) => Left(errs.map( e => ConfigError("schema error", None, Error.pipelineSimpleErrorMsg(e.errors)) ))
+      case Right(extractColumns) => Right(extractColumns)
     }
   }
 
@@ -678,7 +688,6 @@ object ConfigUtils {
       case _ => Left(errors.reverse)
     }
   }
-
 
   def textContentForURI(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config, arcContext: ARCContext): Either[Errors, String] = {
     uri.getScheme match {
@@ -812,6 +821,14 @@ object ConfigUtils {
       Left(ConfigError(path, None, s"Inline SQL (use of the 'sql' attribute) has been disabled by policy. SQL statements must be supplied via files located at 'inputURI'.") :: Nil)
     } else {
       Right(sql)
+    }
+  }
+
+  def verifyInlineSchemaPolicy(path: String)(schema: String)(implicit c: Config, arcContext: ARCContext): Either[Errors, String] = {
+    if (!arcContext.inlineSchema) {
+      Left(ConfigError(path, None, s"Inline Schema (use of the '${path}' attribute) has been disabled by policy. The schema must be supplied via other method.") :: Nil)
+    } else {
+      Right(schema)
     }
   }
 
