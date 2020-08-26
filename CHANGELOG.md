@@ -2,8 +2,11 @@
 
 ## 3.2.0
 
+- rewrote the code to calculate `_index` (vs `_monotonically_increasing_id`) to be more efficient on large datasets.
 - add the `schema` attribute to `TypingTransform` and `MetadataTransform` to allow inline schema. Can be disabled via `etl.policy.inline.schema` and `ETL_POLICY_INLINE_SCHEMA`. These are being trialed and if beneficial will be added to all stages that support schemas.
 - rename `etl.policy.inlinesql` to `etl.policy.inline.sql` and `ETL_POLICY_INLINESQL` to `ETL_POLICY_INLINE_SQL`.
+- remove forced use of `etl.config.fs.gs.project.id`/`ETL_CONF_GOOGLE_CLOUD_PROJECT_ID` and `etl.config.fs.google.cloud.auth.service.account.json.keyfile`/`ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE` to access Google Cloud Storage job files.
+- remove previous optimisation when reading a large number of small `json` files in `JSONExtract`. This is to better align with `DataSourceV2`.
 - **BREAKING** remove deprecated `etl.config.environment.id` and `ETL_CONF_ENV_ID` in favor of `etl.config.tags` or `ETL_CONF_TAGS`.
 
 ## 3.1.1
@@ -29,7 +32,7 @@
 
 ## 2.14.0
 
-**This is the last release supporting `Scala 2.11` given the release of `Spark 3.0` which only supports `Scala 2.12`.**
+**This is the last release supporting `Scala 2.s11` given the release of `Spark 3.0` which only supports `Scala 2.12`.**
 
 - add support for case-insensitive formatter (default `true`) to allow formatter `MMM` to accept `JUL` and `Jul` where case-sensitive will only accept `Jul`. Applies to `Date` and `Timestamp` schema columns. Boolean property `caseSensitive` can be used to set case-sensitive behavior.
 

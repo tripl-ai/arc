@@ -168,16 +168,12 @@ object ConfigUtils {
         val gsProjectID: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.gs.project.id").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_PROJECT_ID"))
         val gsKeyfilePath: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.google.cloud.auth.service.account.json.keyfile").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE"))
 
-        val projectID = gsProjectID match {
-          case Some(value) => value
-          case None => throw new IllegalArgumentException(s"Google Cloud Project ID not provided for: ${uri}. Set etl.config.fs.gs.project.id or ETL_CONF_GOOGLE_CLOUD_PROJECT_ID environment variable.")
-        }
-        val keyFilePath = gsKeyfilePath match {
-          case Some(value) => value
-          case None => throw new IllegalArgumentException(s"Google Cloud KeyFile Path not provided for: ${uri}. Set etl.config.fs.google.cloud.auth.service.account.json.keyfile property or ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE environment variable.")
+        (gsProjectID, gsKeyfilePath) match {
+          case (Some(projectID), Some(keyFilePath)) =>
+            CloudUtils.setHadoopConfiguration(Some(Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)))
+          case _ =>
         }
 
-        CloudUtils.setHadoopConfiguration(Some(Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)))
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
