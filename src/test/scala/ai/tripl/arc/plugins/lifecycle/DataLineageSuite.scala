@@ -54,7 +54,7 @@ class DataLineageSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "plugins": {
@@ -65,7 +65,7 @@ class DataLineageSuite extends FunSuite with BeforeAndAfter {
             "output": "log"
           }
         ]
-      },      
+      },
       "stages": [
         {
           "type": "ParquetExtract",
@@ -88,7 +88,7 @@ class DataLineageSuite extends FunSuite with BeforeAndAfter {
           ],
           "sql": "SELECT booleanDatum, decimalDatum + 1 AS decimalDatum FROM ${outputView0}",
           "outputView": "${outputView1}"
-        },        
+        },
         {
           "type": "ParquetLoad",
           "name": "test",
@@ -108,11 +108,11 @@ class DataLineageSuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(err) => fail(err.toString)
-      case Right((pipeline, arcCtx)) => 
-    
+      case Right((pipeline, arcCtx)) =>
+
       val df = ARC.run(pipeline)(spark, logger, arcCtx).get
-    
+
     }
-  }  
+  }
 
 }

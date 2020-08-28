@@ -66,6 +66,10 @@ object API {
       */
     inlineSchema: Boolean,
 
+    /** whether to allow dropping unsupported column types to meet load target requirements (i.e. Parquet does not support NullType)
+      */
+    dropUnsupported: Boolean,
+
     /** the command line arguments
       */
     commandLineArguments: Map[String, String],
@@ -602,3 +606,4 @@ object JSON {
     )
   }
 }
+

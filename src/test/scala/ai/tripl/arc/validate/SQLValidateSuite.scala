@@ -44,7 +44,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
   test("SQLValidate: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -75,7 +75,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
   test("SQLValidate: end-to-end inline sql") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -106,7 +106,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
   test("SQLValidate: end-to-end with json array") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -129,13 +129,13 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
     }
-  }  
+  }
 
   test("SQLValidate: true, null") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
@@ -154,7 +154,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
@@ -173,7 +173,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
@@ -192,7 +192,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException]  {
       validate.SQLValidateStage.execute(
@@ -214,7 +214,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException]  {
       validate.SQLValidateStage.execute(
@@ -236,7 +236,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException] {
       validate.SQLValidateStage.execute(
@@ -259,7 +259,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException]  {
       validate.SQLValidateStage.execute(
@@ -281,7 +281,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown0 = intercept[Exception with DetailException]  {
       validate.SQLValidateStage.execute(
@@ -318,7 +318,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown0 = intercept[Exception with DetailException]  {
       validate.SQLValidateStage.execute(
@@ -355,7 +355,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
@@ -389,7 +389,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException]  {
       validate.SQLValidateStage.execute(

@@ -70,6 +70,7 @@ object ARC {
     val policyInlineSchema = Try(commandLineArguments.get("etl.policy.inline.schema").orElse(envOrNone("ETL_POLICY_INLINE_SCHEMA")).get.toBoolean).getOrElse(true)
     val policyInlineSQL = Try(commandLineArguments.get("etl.policy.inline.sql").orElse(envOrNone("ETL_POLICY_INLINE_SQL")).get.toBoolean).getOrElse(true)
     val policyIPYNB = Try(commandLineArguments.get("etl.policy.ipynb").orElse(envOrNone("ETL_POLICY_IPYNB")).get.toBoolean).getOrElse(true)
+    val policyDropUnsupported = Try(commandLineArguments.get("etl.policy.drop.unsupported").orElse(envOrNone("ETL_POLICY_DROP_UNSUPPORTED")).get.toBoolean).getOrElse(false)
 
     // set global logging
     MDC.put("streaming", isStreaming.toString)
@@ -163,6 +164,7 @@ object ARC {
       ipynb=policyIPYNB,
       inlineSQL=policyInlineSQL,
       inlineSchema=policyInlineSchema,
+      dropUnsupported=policyDropUnsupported,
       commandLineArguments=commandLineArguments,
       dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
       lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
@@ -193,6 +195,7 @@ object ARC {
         .field("policyIPYNB", java.lang.Boolean.valueOf(arcContext.ipynb))
         .field("policyInlineSQL", java.lang.Boolean.valueOf(arcContext.inlineSQL))
         .field("policyInlineSchema", java.lang.Boolean.valueOf(arcContext.inlineSchema))
+        .field("policyDropUnsupported", java.lang.Boolean.valueOf(arcContext.dropUnsupported))
         .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
         .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
         .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
@@ -221,8 +224,10 @@ object ARC {
           .field("environment", environment.getOrElse(""))
           .field("storageLevel", storageLevelName)
           .field("immutableViews", java.lang.Boolean.valueOf(arcContext.immutableViews))
-          .field("ipynb", java.lang.Boolean.valueOf(arcContext.ipynb))
-          .field("inlineSQL", java.lang.Boolean.valueOf(arcContext.inlineSQL))
+          .field("policyIPYNB", java.lang.Boolean.valueOf(arcContext.ipynb))
+          .field("policyInlineSQL", java.lang.Boolean.valueOf(arcContext.inlineSQL))
+          .field("policyInlineSchema", java.lang.Boolean.valueOf(arcContext.inlineSchema))
+          .field("policyDropUnsupported", java.lang.Boolean.valueOf(arcContext.dropUnsupported))
           .field("dynamicConfigurationPlugins", arcContext.dynamicConfigurationPlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
           .field("lifecyclePlugins",  arcContext.lifecyclePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)
           .field("pipelineStagePlugins", arcContext.pipelineStagePlugins.map(c => s"${c.getClass.getName}:${c.version}").asJava)

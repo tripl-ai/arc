@@ -56,7 +56,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """[
     {
@@ -86,7 +86,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """[
     {
@@ -125,7 +125,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """[
     {
@@ -165,7 +165,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """[
     {
@@ -229,7 +229,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """[
     {
@@ -296,7 +296,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """[
     {
@@ -376,7 +376,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """[
     {
@@ -416,7 +416,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """[
     {
@@ -442,7 +442,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """[
     {
@@ -469,7 +469,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """[
     {
@@ -524,7 +524,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """[
     {
@@ -567,7 +567,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """{
       "schema": [
@@ -602,7 +602,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """{
       "notschema": [
@@ -635,7 +635,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """{
       "common": {
@@ -715,7 +715,7 @@ class ArcSchemaSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val arcSchema = """[
     {

@@ -82,6 +82,8 @@ local:///opt/spark/jars/arc.jar \
 |ETL_POLICY_INLINE_SCHEMA|etl.policy.inline.schema|Whether to support inline schemas (such as the `schema` attribute in `TypingTransform`) as opposed to force reading from an external file. Boolean. Default `true`.|
 |ETL_POLICY_INLINE_SQL|etl.policy.inline.sql|Whether to support inline SQL (such as the `sql` attribute in `SQLTransform`) as opposed to force reading from an external file. Boolean. Default `true`.|
 |ETL_POLICY_IPYNB|etl.policy.ipynb|Whether to support submission of IPython Notebook (.ipynb) files as opposed to Arc HOCON format only. Boolean. Default `true`.|
+|ETL_POLICY_DROP_UNSUPPORTED|etl.policy.drop.unsupported|Whether to enable automatic dropping of unsupported types when performing `*Load` stages (e.g. `ParquetLoad` cannot support `NullType` and would be dropped if enabled).<br><br>If `NullType` columns have been created due to a SQL query (like `SELECT NULL AS fieldname`) it is sometimes possible to correctly type the column by `CAST`ing the column like `SELECT CAST(NULL AS INTEGER) AS fieldname` which will treat the column as an `IntegerType` containing only `NULL` values.<br><br>Default `false`.|
+
 
 ## Authentication Parameters
 

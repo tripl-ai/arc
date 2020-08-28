@@ -99,7 +99,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val expected = spark.createDataFrame(Seq(
       (4L, "spark i j k", 1.0, 0.8),
@@ -135,7 +135,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val expected = spark.createDataFrame(Seq(
       (4L, "spark i j k", 1.0, 0.8),

@@ -63,7 +63,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(inputView)
@@ -94,7 +94,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -127,7 +127,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform: end-to-end inline sql") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -161,7 +161,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(inputView)
@@ -207,7 +207,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(inputView)
@@ -239,7 +239,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
@@ -267,7 +267,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   //   implicit val spark = session
   //   import spark.implicits._
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   val df = TestUtils.getKnownDataset
   //   df.createOrReplaceTempView(inputView)
@@ -298,7 +298,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
   test("SQLTransform: predicatePushdown") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = transform.SQLTransformStage.execute(
       transform.SQLTransformStage(

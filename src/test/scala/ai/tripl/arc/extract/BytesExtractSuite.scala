@@ -54,7 +54,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = extract.BytesExtractStage.execute(
       extract.BytesExtractStage(
@@ -80,7 +80,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val input = Seq(targetFile, targetFile).toDF("value")
     input.createOrReplaceTempView(pathView)
@@ -108,7 +108,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {

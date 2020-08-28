@@ -44,7 +44,17 @@ object TestUtils {
         logger
     }
 
-    def getARCContext(isStreaming: Boolean, environment: String = "test", commandLineArguments: Map[String,String] = Map[String,String]())(implicit spark: SparkSession) = {
+    def getARCContext(
+        isStreaming: Boolean = false,
+        ignoreEnvironments: Boolean = false,
+        immutableViews: Boolean = false,
+        environment: String = "test",
+        commandLineArguments: Map[String,String] = Map[String,String](),
+        ipynb: Boolean = true,
+        inlineSQL: Boolean = true,
+        inlineSchema: Boolean = true,
+        dropUnsupported: Boolean = false,
+    )(implicit spark: SparkSession): ARCContext = {
       val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
 
       ARCContext(
@@ -53,13 +63,14 @@ object TestUtils {
         environment=Option(environment),
         configUri=None,
         isStreaming=isStreaming,
-        ignoreEnvironments=false,
+        ignoreEnvironments=ignoreEnvironments,
         commandLineArguments=commandLineArguments,
         storageLevel=StorageLevel.MEMORY_AND_DISK_SER,
-        immutableViews=false,
-        ipynb=true,
-        inlineSQL=true,
-        inlineSchema=true,
+        immutableViews=immutableViews,
+        ipynb=ipynb,
+        inlineSQL=inlineSQL,
+        inlineSchema=inlineSchema,
+        dropUnsupported=dropUnsupported,
         dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
         lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
         activeLifecyclePlugins=Nil,

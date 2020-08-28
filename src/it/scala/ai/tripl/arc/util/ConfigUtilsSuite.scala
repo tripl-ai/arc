@@ -59,7 +59,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("ConfigUtilsSuite: Ensure remote data and config references can be parsed") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // note: initial files are created in the src/it/resources/minio/Dockerfile
     // then mounted in the minio command in src/it/resources/docker-compose.yml
@@ -121,12 +121,12 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("ConfigUtilsSuite: Test that AWS permissions are scoped to bucket") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // note: initial files are created in the src/it/resources/minio/Dockerfile
     // then mounted in the minio command in src/it/resources/docker-compose.yml
-    // first stage should work as authentication provided for ${bucketName} 
-    // second stage should fail as authentication not provided for ${forbiddenBucketName} 
+    // first stage should work as authentication provided for ${bucketName}
+    // second stage should fail as authentication not provided for ${forbiddenBucketName}
     val conf = s"""{
       "stages": [
         {
@@ -158,7 +158,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
           "outputView": "akc_breed_info1",
           "delimiter": "Comma",
           "header": true
-        }        
+        }
       ]
     }"""
 
@@ -170,14 +170,14 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
           val df = ARC.run(pipeline).get
         }
         assert(thrown0.getMessage.contains(s"java.nio.file.AccessDeniedException: s3a://${forbiddenBucketName}/akc_breed_info.csv"))
-      } 
-    }  
+      }
+    }
   }
 
   test("ConfigUtilsSuite: Test https remote job config") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val expected = spark.sql("SELECT '1' AS value")
     expected.createOrReplaceTempView("inputView")
@@ -189,8 +189,8 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         val actual = ARC.run(pipeline).get
 
         assert(expected.first.getString(0) == actual.first.getString(0))
-      } 
-    }  
-  }  
+      }
+    }
+  }
 
 }

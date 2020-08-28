@@ -113,21 +113,25 @@ object AvroLoadStage {
     // set write permissions
     CloudUtils.setHadoopConfiguration(stage.authentication)
 
-    val dropMap = new java.util.HashMap[String, Object]()
-
-    // Avro cannot handle a column of NullType
+    // AvroLoad cannot handle a column of NullType
     val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
-    if (!nulls.isEmpty) {
+    val nonNullDF = if (!nulls.isEmpty) {
+      val dropMap = new java.util.HashMap[String, Object]()
       dropMap.put("NullType", nulls.asJava)
+      if (arcContext.dropUnsupported) {
+        stage.stageDetail.put("drop", dropMap)
+        df.drop(nulls:_*)
+      } else {
+        throw new Exception(s"""inputView '${stage.inputView}' contains types ${new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(dropMap)} which are unsupported by AvroLoad and 'dropUnsupported' is set to false.""")
+      }
+    } else {
+      df
     }
-
-    stage.stageDetail.put("drop", dropMap)
 
     val listener = ListenerUtils.addStageCompletedListener(stage.stageDetail)
 
     // Avro will convert date and times to epoch milliseconds
     val outputDF = try {
-      val nonNullDF = df.drop(nulls:_*)
       stage.partitionBy match {
         case Nil =>
           val dfToWrite = stage.numPartitions.map(nonNullDF.repartition(_)).getOrElse(nonNullDF)

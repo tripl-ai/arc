@@ -69,7 +69,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset.select("stringDatum")
     dataset.createOrReplaceTempView(outputView)
@@ -103,7 +103,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -133,7 +133,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset.select("stringDatum")
     dataset.createOrReplaceTempView(outputView)
@@ -167,7 +167,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = Seq(
       (targetSingleFile0, "a"),
@@ -214,7 +214,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = Seq(
       (targetSingleFile0, "b", 1),
@@ -261,7 +261,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset.toJSON
     dataset.createOrReplaceTempView(outputView)

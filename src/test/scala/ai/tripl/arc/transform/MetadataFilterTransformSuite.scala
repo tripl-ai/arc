@@ -58,7 +58,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
   test("MetadataFilterTransform: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // load csv
     val df = spark.read.csv(targetFile)
@@ -115,7 +115,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // load csv
     val df = spark.read.csv(targetFile)
@@ -167,7 +167,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // load csv
     val df = spark.read.csv(targetFile)

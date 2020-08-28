@@ -124,23 +124,23 @@ object DelimitedLoadStage {
     // set write permissions
     CloudUtils.setHadoopConfiguration(stage.authentication)
 
-    val dropMap = new java.util.HashMap[String, Object]()
-
-    // delimited cannot handle a column of ArrayType
+    // DelimitedLoad cannot handle a column of ArrayType
     val arrays = df.schema.filter( _.dataType.typeName == "array").map(_.name)
-    if (!arrays.isEmpty) {
-      dropMap.put("ArrayType", arrays.asJava)
-    }
-
-    // delimited cannot handle a column of NullType
+    // DelimitedLoad cannot handle a column of NullType
     val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
-    if (!nulls.isEmpty) {
+    val nonNullDF = if (!arrays.isEmpty || !nulls.isEmpty) {
+      val dropMap = new java.util.HashMap[String, Object]()
+      dropMap.put("ArrayType", arrays.asJava)
       dropMap.put("NullType", nulls.asJava)
+      if (arcContext.dropUnsupported) {
+        stage.stageDetail.put("drop", dropMap)
+        df.drop(arrays:_*).drop(nulls:_*)
+      } else {
+        throw new Exception(s"""inputView '${stage.inputView}' contains types ${new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(dropMap)} which are unsupported by DelimitedLoad and 'dropUnsupported' is set to false.""")
+      }
+    } else {
+      df
     }
-
-    stage.stageDetail.put("drop", dropMap)
-
-    val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)
 
     val options = Delimited.toSparkOptions(stage.settings)
 

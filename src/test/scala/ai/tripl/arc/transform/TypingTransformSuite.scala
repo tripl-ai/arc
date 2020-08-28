@@ -65,7 +65,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   //   implicit val spark = session
   //   import spark.implicits._
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   // load csv
   //   extract.DelimitedExtractStage.execute(
@@ -135,7 +135,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   // test("TypingTransform: end-to-end") {
   //   implicit val spark = session
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   // load csv
   //   extract.DelimitedExtractStage.execute(
@@ -199,7 +199,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   // test("TypingTransform: end-to-end complex type failure") {
   //   implicit val spark = session
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   // load csv
   //   extract.DelimitedExtractStage.execute(
@@ -252,7 +252,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   //   implicit val spark = session
   //   import spark.implicits._
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   // get a corrupt dataset dataset
   //   // filter for a single row to have deterministic outcome
@@ -292,7 +292,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   //   implicit val spark = session
   //   import spark.implicits._
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   val inputDataFrame = Seq(
   //     ("textDatum")
@@ -345,7 +345,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   //   implicit val spark = session
   //   import spark.implicits._
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   val meta = """
   //   [
@@ -386,7 +386,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   //   implicit val spark = session
   //   import spark.implicits._
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   val meta = """
   //   [
@@ -425,7 +425,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   //   implicit val spark = session
   //   import spark.implicits._
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   val meta = """
   //   [
@@ -466,7 +466,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   //   implicit val spark = session
   //   import spark.implicits._
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   val meta = """
   //   [
@@ -508,7 +508,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   //   implicit val spark = session
   //   import spark.implicits._
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   val meta = """
   //   [
@@ -611,7 +611,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   //   implicit val spark = session
   //   import spark.implicits._
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   val meta = """
   //   [
@@ -662,7 +662,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   //   implicit val spark = session
   //   import spark.implicits._
   //   implicit val logger = TestUtils.getLogger()
-  //   implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+  //   implicit val arcContext = TestUtils.getARCContext()
 
   //   val meta = """
   //   [
@@ -694,7 +694,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   test("TypingTransform: multiple values") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // load csv
     extract.DelimitedExtractStage.execute(
@@ -747,7 +747,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   test("TypingTransform: inline schema") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // load csv
     extract.DelimitedExtractStage.execute(

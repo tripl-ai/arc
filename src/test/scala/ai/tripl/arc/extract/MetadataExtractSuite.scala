@@ -49,7 +49,7 @@ class MetadataExtractSuite extends FunSuite with BeforeAndAfter {
   test("MetadataExtract: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
     import spark.implicits._
 
     val df = TestUtils.getKnownDataset
@@ -89,7 +89,7 @@ class MetadataExtractSuite extends FunSuite with BeforeAndAfter {
   test("MetadataExtract: end-to-end with metadata") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
     import spark.implicits._
 
     val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)

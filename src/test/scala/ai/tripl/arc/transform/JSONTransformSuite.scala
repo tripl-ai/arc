@@ -38,7 +38,7 @@ class JSONTransformSuite extends FunSuite with BeforeAndAfter {
   test("JSONTransform") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     TestUtils.getKnownDataset.createOrReplaceTempView(inputView)
 

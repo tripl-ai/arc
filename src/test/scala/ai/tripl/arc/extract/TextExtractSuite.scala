@@ -52,7 +52,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
   test("TextExtract: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -85,7 +85,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
   test("TextExtract: end-to-end inputView") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     spark.sql(s"""
     SELECT 'b' AS notValue, '${targetFile}' AS value
@@ -123,7 +123,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = extract.TextExtractStage.execute(
       extract.TextExtractStage(
@@ -152,7 +152,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = extract.TextExtractStage.execute(
       extract.TextExtractStage(
@@ -181,7 +181,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
@@ -212,7 +212,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val actual = extract.TextExtractStage.execute(
       extract.TextExtractStage(

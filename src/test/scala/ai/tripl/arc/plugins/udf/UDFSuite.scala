@@ -37,7 +37,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
     session = spark
     logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
-    val arcContext = TestUtils.getARCContext(isStreaming=false)
+    val arcContext = TestUtils.getARCContext()
 
     expected = spark.read.option("wholetext", true).text(targetFile).first.getString(0)
 
@@ -64,7 +64,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     val df = spark.sql("""
-    SELECT 
+    SELECT
       get_json_double_array('[0.1, 1.1]', '$') AS test
       ,get_json_double_array(null, '$') AS null_test
     """)
@@ -73,13 +73,13 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     assert(df.schema.fields(0).dataType.toString == "ArrayType(DoubleType,false)")
     assert(df.first.isNullAt(1))
   }
-  
+
 
   test("UDFSuite: get_json_integer_array") {
     implicit val spark = session
 
     val df = spark.sql("""
-    SELECT 
+    SELECT
       get_json_integer_array('[1, 2]', '$') AS test
       ,get_json_integer_array(null, '$') AS null_test
     """)
@@ -93,7 +93,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     val df = spark.sql("""
-    SELECT 
+    SELECT
       get_json_long_array('[2147483648, 2147483649]', '$') AS test
       ,get_json_long_array(null, '$') AS null_test
     """)
@@ -107,7 +107,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     val df = spark.sql("""
-    SELECT 
+    SELECT
       random() AS test
     """)
 
@@ -174,11 +174,11 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
   test("UDFSuite: get_uri: null") {
     implicit val spark = session
     val df = spark.sql("""
-      SELECT 
+      SELECT
         GET_URI(null)
     """)
     assert(df.first.isNullAt(0))
-  }  
+  }
 
   test("UDFSuite: get_uri: batch") {
     implicit val spark = session
@@ -291,7 +291,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     val df = spark.sql("""
-    SELECT 
+    SELECT
       probit(null) AS probit_null
       ,probit(0.025) AS probit_0
     """)
@@ -303,7 +303,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     val df = spark.sql("""
-    SELECT 
+    SELECT
       probnorm(null) AS probnorm_null
       ,probnorm(-1.959963984540054) AS probit_0
     """)

@@ -41,7 +41,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
 
     session = spark
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // only set default aws provider override if not provided
     if (Option(spark.sparkContext.hadoopConfiguration.get("fs.s3a.aws.credentials.provider")).isEmpty) {
@@ -60,7 +60,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
   test("UDFSuite: get_uri - batch") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // test multiple extension types
     for (extension <- Seq("", ".gz", ".gzip", ".bz2", ".bzip2", ".lz4")) {
@@ -100,7 +100,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
   test("UDFSuite: get_uri - batch glob") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -138,7 +138,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
   test("UDFSuite: get_uri - batch binary") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val expected = spark.sqlContext.sparkContext.binaryFiles(getClass.getResource("/minio/it/bucket0/puppy.jpg").toString).map { case (_, portableDataStream) => portableDataStream.toArray }.collect.head
 
@@ -178,7 +178,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
   test("UDFSuite: get_uri - batch remote s3a://") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -213,7 +213,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
   test("UDFSuite: get_uri - batch remote https://") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [

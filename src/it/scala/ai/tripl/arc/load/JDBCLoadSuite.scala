@@ -76,7 +76,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
@@ -119,7 +119,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
@@ -162,7 +162,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val uuid = s"""a${UUID.randomUUID.toString.replace("-","")}"""
 

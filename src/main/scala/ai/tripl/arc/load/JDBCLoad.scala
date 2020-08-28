@@ -214,24 +214,23 @@ object JDBCLoadStage {
       }
     }
 
-    val dropMap = new java.util.HashMap[String, Object]()
-
-    // many jdbc targets cannot handle a column of ArrayType
-    // drop these columns before write
+    // JDBCLoad cannot handle a column of ArrayType
     val arrays = df.schema.filter( _.dataType.typeName == "array").map(_.name)
-    if (!arrays.isEmpty) {
-      dropMap.put("ArrayType", arrays.asJava)
-    }
-
-    // JDBC cannot handle a column of NullType
+    // JDBCLoad cannot handle a column of NullType
     val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
-    if (!nulls.isEmpty) {
+    val nonNullDF = if (!arrays.isEmpty || !nulls.isEmpty) {
+      val dropMap = new java.util.HashMap[String, Object]()
+      dropMap.put("ArrayType", arrays.asJava)
       dropMap.put("NullType", nulls.asJava)
+      if (arcContext.dropUnsupported) {
+        stage.stageDetail.put("drop", dropMap)
+        df.drop(arrays:_*).drop(nulls:_*)
+      } else {
+        throw new Exception(s"""inputView '${stage.inputView}' contains types ${new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(dropMap)} which are unsupported by JDBCLoad and 'dropUnsupported' is set to false.""")
+      }
+    } else {
+      df
     }
-
-    stage.stageDetail.put("drop", dropMap)
-
-    val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)
 
     val listener = ListenerUtils.addStageCompletedListener(stage.stageDetail)
 

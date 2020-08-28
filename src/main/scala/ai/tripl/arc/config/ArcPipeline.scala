@@ -125,6 +125,7 @@ object ArcPipeline {
                 ipynb=arcContext.ipynb,
                 inlineSQL=arcContext.inlineSQL,
                 inlineSchema=arcContext.inlineSchema,
+                dropUnsupported=arcContext.dropUnsupported,
                 commandLineArguments=arcContext.commandLineArguments,
                 dynamicConfigurationPlugins=arcContext.dynamicConfigurationPlugins,
                 lifecyclePlugins=arcContext.lifecyclePlugins,

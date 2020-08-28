@@ -43,7 +43,7 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
   test("ControlFlowExecute: end-to-end positive") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""
     {
@@ -92,13 +92,13 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
       case Left(err) => fail(err.toString)
       case Right((pipeline, ctx)) => ARC.run(pipeline)(spark, logger, ctx)
     }
-  }  
+  }
 
   // if sql returns true then delimitedextract will run and try to read inputView which does not exist
   test("ControlFlowExecute: end-to-end negative") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""
     {
@@ -152,5 +152,5 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
         assert(thrown.getMessage.contains("Table or view not found: inputView"))
       }
     }
-  }  
+  }
 }

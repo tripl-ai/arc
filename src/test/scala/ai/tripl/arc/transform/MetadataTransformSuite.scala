@@ -50,7 +50,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
   test("MetadataTransform: schema") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset.drop("nullDatum")
     df.createOrReplaceTempView(inputView)
@@ -92,7 +92,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
   test("MetadataTransform: schemaURI") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset.drop("nullDatum")
     df.createOrReplaceTempView(inputView)
@@ -134,7 +134,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
   test("MetadataTransform: schemaView failfast success") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
     import spark.implicits._
 
     val df = TestUtils.getKnownDataset.drop("nullDatum")
@@ -182,7 +182,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
   test("MetadataTransform: schemaView failfast failure") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
     import spark.implicits._
 
     val df = TestUtils.getKnownDataset.drop("nullDatum")
@@ -218,7 +218,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
   test("MetadataTransform: schemaView permissive") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
     import spark.implicits._
 
     val df = TestUtils.getKnownDataset.drop("nullDatum")

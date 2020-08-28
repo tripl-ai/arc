@@ -111,17 +111,20 @@ object ORCLoadStage {
     // set write permissions
     CloudUtils.setHadoopConfiguration(stage.authentication)
 
-    val dropMap = new java.util.HashMap[String, Object]()
-
-    // ORC cannot handle a column of NullType
+    // OrcLoad cannot handle a column of NullType
     val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
-    if (!nulls.isEmpty) {
+    val nonNullDF = if (!nulls.isEmpty) {
+      val dropMap = new java.util.HashMap[String, Object]()
       dropMap.put("NullType", nulls.asJava)
+      if (arcContext.dropUnsupported) {
+        stage.stageDetail.put("drop", dropMap)
+        df.drop(nulls:_*)
+      } else {
+        throw new Exception(s"""inputView '${stage.inputView}' contains types ${new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(dropMap)} which are unsupported by ORCLoad and 'dropUnsupported' is set to false.""")
+      }
+    } else {
+      df
     }
-
-    stage.stageDetail.put("drop", dropMap)
-
-    val nonNullDF = df.drop(nulls:_*)
 
     val listener = ListenerUtils.addStageCompletedListener(stage.stageDetail)
 

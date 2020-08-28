@@ -96,7 +96,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     ai.tripl.arc.execute.HTTPExecuteStage.execute(
       ai.tripl.arc.execute.HTTPExecuteStage(
@@ -116,7 +116,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception] {
       ai.tripl.arc.execute.HTTPExecuteStage.execute(
@@ -139,7 +139,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     ai.tripl.arc.execute.HTTPExecuteStage.execute(
       ai.tripl.arc.execute.HTTPExecuteStage(
@@ -159,7 +159,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception] {
       ai.tripl.arc.execute.HTTPExecuteStage.execute(
@@ -182,7 +182,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception] {
       ai.tripl.arc.execute.HTTPExecuteStage.execute(
@@ -205,7 +205,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     ai.tripl.arc.execute.HTTPExecuteStage.execute(
       ai.tripl.arc.execute.HTTPExecuteStage(

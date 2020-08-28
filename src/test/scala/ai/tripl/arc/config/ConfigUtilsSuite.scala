@@ -51,7 +51,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     var commandLineArguments = Map[String, String]("JOB_RUN_DATE" -> "0", "ETL_CONF_BASE_URL" -> "")
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false, commandLineArguments=commandLineArguments)
+    implicit val arcContext = TestUtils.getARCContext(commandLineArguments=commandLineArguments)
 
     val resourcesDir = getClass.getResource("/docs_resources/").getPath
 
@@ -100,7 +100,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test missing keys exception") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = """{
       "stages": [
@@ -133,7 +133,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test extraneous attributes") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = """{
       "stages": [
@@ -180,7 +180,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test invalid validValues") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = """{
       "stages": [
@@ -211,7 +211,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test read custom delimiter") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = """{
       "stages": [
@@ -242,7 +242,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test read custom delimiter success") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = """{
       "stages": [
@@ -277,7 +277,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test config substitutions") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = """{
       "common": {
@@ -314,7 +314,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test not List[Object]") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = """{
       "stages":
@@ -350,7 +350,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test read correct order") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView("start")
@@ -370,7 +370,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test throw error with corrupt") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView("start")
@@ -384,7 +384,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test config watermark negative") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = """{
       "stages": [
@@ -418,7 +418,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test config watermark positive") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = """{
       "stages": [
@@ -455,7 +455,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test read .ipynb policy") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false,ipynb=false)
+    implicit val arcContext = TestUtils.getARCContext(ipynb=false)
 
     val thrown0 = intercept[Exception] {
       val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/python3.ipynb")), arcContext)
@@ -467,7 +467,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test read .ipynb positive") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/job.ipynb")), arcContext)
 
@@ -487,7 +487,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test read .ipynb negative") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown0 = intercept[Exception] {
       val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/python3.ipynb")), arcContext)
@@ -499,7 +499,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test inlinesql policy") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false,inlineSQL=false,commandLineArguments=Map[String,String]("INPUTVIEW_ARGUMENT" -> "stream0"))
+    implicit val arcContext = TestUtils.getARCContext(inlineSQL=false,commandLineArguments=Map[String,String]("INPUTVIEW_ARGUMENT" -> "stream0"))
 
     val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/inlinesql.ipynb")), arcContext)
 
@@ -513,7 +513,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test read .ipynb inlinesql") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false,commandLineArguments=Map[String,String]("INPUTVIEW_ARGUMENT" -> "stream0"))
+    implicit val arcContext = TestUtils.getARCContext(commandLineArguments=Map[String,String]("INPUTVIEW_ARGUMENT" -> "stream0"))
 
     val pipelineEither = ArcPipeline.parseConfig(Right(new URI("classpath://conf/inlinesql.ipynb")), arcContext)
 
@@ -534,7 +534,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         assert(sqlValidateStage0.sqlParams == Map[String, String]("message" -> "stream0"))
         val logExecuteStage0 = pipeline.stages(4).asInstanceOf[ai.tripl.arc.execute.LogExecuteStage]
         assert(logExecuteStage0.sql == "SELECT\n  \"${message}\" AS message")
-        assert(logExecuteStage0.sqlParams == Map[String, String]("message" -> "stream0"))        
+        assert(logExecuteStage0.sqlParams == Map[String, String]("message" -> "stream0"))
       }
     }
   }
@@ -566,7 +566,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test config s3 deprecation") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = """{
       "stages": [
@@ -599,7 +599,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
   test("Test read .ipynb with ${hiveconf:}") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val targetFile = getClass.getResource("/conf/hive_variable.ipynb").toString
     val file = spark.read.option("wholetext", true).text(targetFile)
