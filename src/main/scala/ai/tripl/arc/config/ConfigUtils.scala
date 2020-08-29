@@ -191,7 +191,7 @@ object ConfigUtils {
     val kernelspecName = jsonTree.get("metadata").get("kernelspec").get("name").asText
     if (kernelspecName == "arc") {
 
-      val sources = jsonTree.get("cells").iterator.asScala
+      val cells = jsonTree.get("cells").iterator.asScala
         .zipWithIndex
         .filter { case (cell, _) =>
           // only include 'code' cells
@@ -209,112 +209,135 @@ object ConfigUtils {
           (cell.replaceAll(",$", ""), index)
         }.toList
 
-      // calculate the dynamic config plugins
-      val configs = sources
-        .filter { case (cell, _) =>
-          cell.startsWith("%configplugin")
-        }.map { case (cell, _) =>
-          cell.split("\n").drop(1).mkString("\n")
-        }
-
-      // calculate the lifecycle plugins
-      val lifecycles = sources
-        .filter { case (cell, _) =>
-          cell.startsWith("%lifecycleplugin")
-        }.map { case (cell, _) =>
-          cell.split("\n").drop(1).mkString("\n")
-        }
-
-        // calculate the arc stages
-        val stages = sources
-        .filter { case (cell, _) =>
-          val lines = cell.split("\n")
-          val behavior = lines(0).trim.toLowerCase
-
-          // only cells that are explicitly '%arc' or '%sql' or '%sqlvalidate' and not other magic !'%'
-          (!behavior.startsWith("%") && cell.length > 0) || behavior.startsWith("%arc") || behavior.startsWith("%sql") || behavior.startsWith("%sqlvalidate") || behavior.startsWith("%log")
-        }
-        .map { case (cell, index) =>
-          val lines = cell.split("\n")
-          val behavior = lines(0).trim
-          val command = lines.drop(1).mkString("\n")
-
-          behavior match {
-            case b: String if (b.toLowerCase.startsWith("%arc")) => {
-              command
-            }
-            case b: String if (b.toLowerCase.startsWith("%sql") || b.toLowerCase.startsWith("%sqlvalidate") || b.toLowerCase.startsWith("%log")) => {
-              val args = parseArgs(behavior).map {
-                case (k,v) => (k, v.stripPrefix(""""""").stripSuffix(""""""").trim)
-              }
-              val sqlParams = args.get("sqlParams") match {
-                case Some(sqlParams) => {
-                  parseArgs(sqlParams.replace(",", " ")).map{
-                    case (k, v) => {
-                      if (v.trim().startsWith("${")) {
-                        s""""${k}": ${v}"""
-                      } else {
-                        s""""${k}": "${v}""""
-                      }
-                    }
-                  }.mkString(",")
-                }
-                case None => ""
-              }
-
-              behavior.toLowerCase match {
-                case b if b.startsWith("%sqlvalidate") =>
-                  s"""{
-                  |  "type": "SQLValidate",
-                  |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
-                  |  "description": "${args.getOrElse("description", "")}",
-                  |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
-                  |  "sql": \"\"\"${command}\"\"\",
-                  |  "sqlParams": {${sqlParams}},
-                  |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
-                  |}""".stripMargin
-                case b if b.startsWith("%sql") =>
-                  s"""{
-                  |  "type": "SQLTransform",
-                  |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
-                  |  "description": "${args.getOrElse("description", "")}",
-                  |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
-                  |  "sql": \"\"\"${command}\"\"\",
-                  |  "outputView": "${args.getOrElse("outputView", "")}",
-                  |  "persist": ${args.getOrElse("persist", "false")},
-                  |  "sqlParams": {${sqlParams}},
-                  |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "outputView", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "datasetLabels", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
-                  |}""".stripMargin
-                case b if b.startsWith("%log") =>
-                  s"""{
-                  |  "type": "LogExecute",
-                  |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
-                  |  "description": "${args.getOrElse("description", "")}",
-                  |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
-                  |  "sql": \"\"\"${command}\"\"\",
-                  |  "sqlParams": {${sqlParams}},
-                  |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
-                  |}""".stripMargin
-                case _ => ""
-              }
-            }
-            case _ => cell
-          }
-        }
-
-      val config = s"""
-      |{
-      |"plugins": {
-      |"config": [${configs.mkString("\n", ",\n", "\n")}],
-      |"lifecycle": [${lifecycles.mkString("\n", ",\n", "\n")}]
-      |},
-      |"stages": [${stages.mkString("\n",",\n","\n")}]
-      |}""".stripMargin
-
-      config
+        parseIPYNBCells(cells)
     } else {
       throw new Exception(s"""file ${uri} does not appear to be a valid arc notebook. Has kernelspec: '${kernelspecName}'.""")
     }
+  }
+
+  def parseIPYNBCells(cells: List[(String, Int)]): String = {
+        // calculate the dynamic config plugins
+    val configs = cells
+      .filter { case (cell, _) =>
+        cell.startsWith("%configplugin")
+      }.map { case (cell, _) =>
+        cell.split("\n").drop(1).mkString("\n")
+      }
+
+    // calculate the lifecycle plugins
+    val lifecycles = cells
+      .filter { case (cell, _) =>
+        cell.startsWith("%lifecycleplugin")
+      }.map { case (cell, _) =>
+        cell.split("\n").drop(1).mkString("\n")
+      }
+
+      // calculate the arc stages
+      val stages = cells
+      .filter { case (cell, _) =>
+        val behavior = cell.trim.toLowerCase
+        (
+          (!behavior.startsWith("%") && cell.length > 0) // non-magic, non-empty cells assumed to be arc
+          || behavior.startsWith("%arc") // explicit arc cells
+          || behavior.startsWith("%sql") // explicit sql cells
+          || behavior.startsWith("%sqlvalidate") // explicit sqlvalidate cells
+          || behavior.startsWith("%log") // explicit log cells
+          || behavior.startsWith("%metadatavalidate") // explicit log cells
+        )
+      }
+      .map { case (cell, index) =>
+        val lines = cell.split("\n")
+        val behavior = lines(0).trim
+        val command = lines.drop(1).mkString("\n")
+
+        behavior match {
+          case b: String if (!b.startsWith("%")) => cell
+          case b: String if (b.toLowerCase.startsWith("%arc")) => command
+          case b: String if (b.toLowerCase.startsWith("%")) => {
+            val args = parseArgs(behavior).map {
+              case (k,v) => (k, v.stripPrefix(""""""").stripSuffix(""""""").trim)
+            }
+
+            val environments = args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")
+
+
+            val sqlParams = args.get("sqlParams") match {
+              case Some(sqlParams) => {
+                parseArgs(sqlParams.replace(",", " ")).map{
+                  case (k, v) => {
+                    if (v.trim().startsWith("${")) {
+                      s""""${k}": ${v}"""
+                    } else {
+                      s""""${k}": "${v}""""
+                    }
+                  }
+                }.mkString(",")
+              }
+              case None => ""
+            }
+            // these represent other parameters added to the 'behaviour line' which are not jupyter control values
+            val dynamicArguments = args
+              .filterKeys { !List("name", "description", "sqlParams", "environments", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "streamingDuration").contains(_) }
+              .map { case (k, v) => s""""${k}": "${v}"""" }
+              .mkString(",")
+
+            behavior.toLowerCase match {
+              case b if b.startsWith("%sqlvalidate") =>
+                s"""{
+                |  "type": "SQLValidate",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${environments}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "sqlParams": {${sqlParams}},
+                |  ${dynamicArguments}
+                |}""".stripMargin
+              case b if b.startsWith("%sql ") =>
+                s"""{
+                |  "type": "SQLTransform",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${environments}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "outputView": "${args.getOrElse("outputView", "")}",
+                |  "persist": ${args.getOrElse("persist", "false")},
+                |  "sqlParams": {${sqlParams}},
+                |  ${dynamicArguments}
+                |}""".stripMargin
+              case b if b.startsWith("%log") =>
+                s"""{
+                |  "type": "LogExecute",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${environments}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "sqlParams": {${sqlParams}},
+                |  ${dynamicArguments}
+                |}""".stripMargin
+              case b if b.startsWith("%metadatavalidate") =>
+                s"""{
+                |  "type": "MetadataValidate",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${environments}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "sqlParams": {${sqlParams}},
+                |  ${dynamicArguments}
+                |}""".stripMargin
+              case _ => ""
+            }
+          }
+        }
+      }
+
+    s"""
+    |{
+    |"plugins": {
+    |"config": [${configs.mkString("\n", ",\n", "\n")}],
+    |"lifecycle": [${lifecycles.mkString("\n", ",\n", "\n")}]
+    |},
+    |"stages": [${stages.mkString("\n",",\n","\n")}]
+    |}""".stripMargin
   }
 
   // defines rules for parsing arguments from the jupyter notebook
