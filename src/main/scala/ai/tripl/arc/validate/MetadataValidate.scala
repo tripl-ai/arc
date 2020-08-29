@@ -39,41 +39,47 @@ class MetadataValidate extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "authentication" :: "sqlParams" :: "params" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "sql" :: "inputView" :: "authentication" :: "sqlParams" :: "params" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
     val authentication = readAuthentication("authentication")
     val inputView = getValue[String]("inputView")
-    val inputSQL = parsedURI |> textContentForURI("inputURI", authentication) _
+    val isInputURI = c.hasPath("inputURI")
+    val source = if (isInputURI) "inputURI" else "sql"
+    val parsedURI = if (isInputURI) getValue[String]("inputURI") |> parseURI("inputURI") _ else Right(new URI(""))
+    val inputSQL = if (isInputURI) parsedURI |> textContentForURI("inputURI", authentication) _ else Right("")
+    val inlineSQL = if (!isInputURI) getValue[String]("sql") |> verifyInlineSQLPolicy("sql") _ else Right("")
     val sqlParams = readMap("sqlParams", c)
-    val validSQL = inputSQL |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
+    val sql = if (isInputURI) inputSQL else inlineSQL
+    val validSQL = sql |> injectSQLParams(source, sqlParams, false) _ |> validateSQL(source) _
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, parsedURI, inputView, inputSQL, validSQL, invalidKeys, authentication) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(inputView), Right(inputSQL), Right(validSQL), Right(invalidKeys), Right(authentication)) =>
+    (name, description, inputView, parsedURI, sql, validSQL, invalidKeys, authentication) match {
+      case (Right(name), Right(description), Right(inputView), Right(parsedURI), Right(sql), Right(validSQL), Right(invalidKeys), Right(authentication)) =>
+
+        val uri = if (isInputURI) Option(parsedURI) else None
 
         val stage = MetadataValidateStage(
           plugin=this,
           name=name,
           description=description,
-          inputURI=parsedURI,
+          inputURI=uri,
           inputView=inputView,
-          sql=inputSQL,
+          sql=sql,
           sqlParams=sqlParams,
           params=params
         )
 
         authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
-        stage.stageDetail.put("inputURI", parsedURI.toString)
         stage.stageDetail.put("inputView", inputView)
-        stage.stageDetail.put("sql", inputSQL)
+        uri.foreach { uri => stage.stageDetail.put("inputURI", uri.toString) }
+        stage.stageDetail.put("sql", sql)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, parsedURI, inputView, inputSQL, validSQL, invalidKeys, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, inputView, parsedURI, sql, validSQL, invalidKeys, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -85,7 +91,7 @@ case class MetadataValidateStage(
     plugin: MetadataValidate,
     name: String,
     description: Option[String],
-    inputURI: URI,
+    inputURI: Option[URI],
     inputView: String,
     sql: String,
     sqlParams: Map[String, String],

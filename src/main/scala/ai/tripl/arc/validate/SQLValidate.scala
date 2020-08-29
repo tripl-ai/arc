@@ -63,7 +63,7 @@ class SQLValidate extends PipelineStagePlugin with JupyterCompleter {
           plugin=this,
           name=name,
           description=description,
-          inputURI=parsedURI,
+          inputURI=uri,
           sql=sql,
           sqlParams=sqlParams,
           params=params
@@ -88,7 +88,7 @@ case class SQLValidateStage(
     plugin: SQLValidate,
     name: String,
     description: Option[String],
-    inputURI: URI,
+    inputURI: Option[URI],
     sql: String,
     sqlParams: Map[String, String],
     params: Map[String, String]
