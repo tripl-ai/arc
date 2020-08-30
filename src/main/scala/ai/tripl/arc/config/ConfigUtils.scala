@@ -247,6 +247,7 @@ object ConfigUtils {
           || behavior.startsWith("%sql") // explicit sql cells
           || behavior.startsWith("%sqlvalidate") // explicit sqlvalidate cells
           || behavior.startsWith("%log") // explicit log cells
+          || behavior.startsWith("%metadatafilter") // explicit log cells
           || behavior.startsWith("%metadatavalidate") // explicit log cells
         )
       }
