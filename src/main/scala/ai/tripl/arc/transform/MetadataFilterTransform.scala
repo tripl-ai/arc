@@ -38,32 +38,38 @@ class MetadataFilterTransform extends PipelineStagePlugin with JupyterCompleter 
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "sql" :: "inputView" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
-    val parsedURI = getValue[String]("inputURI") |> parseURI("inputURI") _
     val authentication = readAuthentication("authentication")
-    val inputSQL = parsedURI |> textContentForURI("inputURI", authentication) _
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
-    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
+    val isInputURI = c.hasPath("inputURI")
+    val source = if (isInputURI) "inputURI" else "sql"
+    val parsedURI = if (isInputURI) getValue[String]("inputURI") |> parseURI("inputURI") _ else Right(new URI(""))
+    val inputSQL = if (isInputURI) parsedURI |> textContentForURI("inputURI", authentication) _ else Right("")
+    val inlineSQL = if (!isInputURI) getValue[String]("sql") |> verifyInlineSQLPolicy("sql") _ else Right("")
     val sqlParams = readMap("sqlParams", c)
-    val validSQL = inputSQL |> injectSQLParams("inputURI", sqlParams, false) _ |> validateSQL("inputURI") _
+    val sql = if (isInputURI) inputSQL else inlineSQL
+    val validSQL = sql |> injectSQLParams(source, sqlParams, false) _ |> validateSQL(source) _
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, authentication, partitionBy) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(inputView), Right(outputView), Right(persist), Right(invalidKeys), Right(numPartitions), Right(authentication), Right(partitionBy)) =>
+    (name, description, parsedURI, sql, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, authentication, partitionBy) match {
+      case (Right(name), Right(description), Right(parsedURI), Right(sql), Right(validSQL), Right(inputView), Right(outputView), Right(persist), Right(invalidKeys), Right(numPartitions), Right(authentication), Right(partitionBy)) =>
+
+        val uri = if (isInputURI) Option(parsedURI) else None
 
         val stage = MetadataFilterTransformStage(
           plugin=this,
           name=name,
           description=description,
           inputView=inputView,
-          inputURI=parsedURI,
-          sql=inputSQL,
+          inputURI=uri,
+          sql=sql,
           outputView=outputView,
           params=params,
           sqlParams=sqlParams,
@@ -74,17 +80,17 @@ class MetadataFilterTransform extends PipelineStagePlugin with JupyterCompleter 
 
         authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
-        stage.stageDetail.put("inputURI", parsedURI.toString)
+        uri.foreach { uri => stage.stageDetail.put("inputURI", uri.toString) }
         stage.stageDetail.put("inputView", inputView)
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("partitionBy", partitionBy.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        stage.stageDetail.put("sql", inputSQL)
+        stage.stageDetail.put("sql", sql)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, parsedURI, inputSQL, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, authentication, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(name, description, parsedURI, sql, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, authentication, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -98,7 +104,7 @@ case class MetadataFilterTransformStage(
     name: String,
     description: Option[String],
     inputView: String,
-    inputURI: URI,
+    inputURI: Option[URI],
     sql: String,
     outputView: String,
     params: Map[String, String],
