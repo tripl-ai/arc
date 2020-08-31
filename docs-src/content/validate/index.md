@@ -52,17 +52,17 @@ This can be used like:
 ```sql
 -- ensure that no pii columns are present in the inputView
 SELECT
-    SUM(pii_column) = 0
-    ,TO_JSON(
-        NAMED_STRUCT(
-            'columns', COUNT(*),
-            'pii_columns', SUM(pii_column)
-        )
+  SUM(pii_column) = 0
+  ,TO_JSON(
+    NAMED_STRUCT(
+      'columns', COUNT(*),
+      'pii_columns', SUM(pii_column)
     )
+  )
 FROM (
-    SELECT
-        CASE WHEN metadata.pii THEN 1 ELSE 0 END AS pii_column
-    FROM detail
+  SELECT
+    CASE WHEN metadata.pii THEN 1 ELSE 0 END AS pii_column
+  FROM metadata
 ) valid
 ```
 
@@ -118,8 +118,8 @@ The `%sqlvalidate` magic is available via [arc-jupyter](https://github.com/tripl
 ```sql
 %sqlvaildate name="name" description="description" environments=production,test sqlParams=inputView=customer,inputField=id
 SELECT
-    ${inputField} = 1 AS valid,
-    "" AS message
+  ${inputField} = 1 AS valid,
+  "" AS message
 FROM ${inputView}
 ```
 
@@ -143,17 +143,17 @@ With a `JSON` message (preferred):
 
 ```sql
 SELECT
-    (SUM(errors) / COUNT(errors)) < ${record_error_tolerance_percentage}
-    ,TO_JSON(
-        NAMED_STRUCT(
-            'error', SUM(errors)/ COUNT(errors)
-            ,'threshold', ${record_error_tolerance_percentage}
-        )
+  (SUM(errors) / COUNT(errors)) < ${record_error_tolerance_percentage}
+  ,TO_JSON(
+    NAMED_STRUCT(
+      'error', SUM(errors)/ COUNT(errors)
+      ,'threshold', ${record_error_tolerance_percentage}
     )
+  )
 FROM (
-    SELECT
-        CASE WHEN SIZE(_errors) > 0 THEN 1 ELSE 0 END AS errors
-    FROM detail
+  SELECT
+    CASE WHEN SIZE(_errors) > 0 THEN 1 ELSE 0 END AS errors
+  FROM detail
 ) valid
 ```
 
@@ -167,15 +167,15 @@ With a text message:
 
 ```sql
 SELECT
-    (SUM(errors) / COUNT(errors)) < ${record_error_tolerance_percentage}
-    ,CASE
-        WHEN (SUM(errors) / COUNT(errors)) < ${record_error_tolerance_percentage} THEN 'number of errors below threshold. success.'
-        ELSE CONCAT('error records ', ROUND((SUM(errors) / COUNT(errors)) * 100, 2), '%. required < ', ${record_error_tolerance_percentage} * 100,'%')
-    END
+  (SUM(errors) / COUNT(errors)) < ${record_error_tolerance_percentage}
+  ,CASE
+    WHEN (SUM(errors) / COUNT(errors)) < ${record_error_tolerance_percentage} THEN 'number of errors below threshold. success.'
+    ELSE CONCAT('error records ', ROUND((SUM(errors) / COUNT(errors)) * 100, 2), '%. required < ', ${record_error_tolerance_percentage} * 100,'%')
+  END
 FROM (
-    SELECT
-        CASE WHEN SIZE(_errors) > 0 THEN 1 ELSE 0 END AS errors
-    FROM detail
+  SELECT
+    CASE WHEN SIZE(_errors) > 0 THEN 1 ELSE 0 END AS errors
+  FROM detail
 ) valid
 ```
 
