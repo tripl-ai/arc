@@ -45,8 +45,8 @@ object ExtractUtils {
 
         // add these as they are required for both _monotonically_increasing_id and _index
         val enrichedInput = input
-          .withColumn("_monotonically_increasing_id", monotonically_increasing_id().as("_monotonically_increasing_id", new MetadataBuilder().putBoolean("internal", true).build()))
-          .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))
+          .withColumn("_monotonically_increasing_id", monotonically_increasing_id().as("_monotonically_increasing_id", new MetadataBuilder().putBoolean("internal", true).putString("description", "An Arc internal field describing where in _filename this row was originally sourced from.").build()))
+          .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).putString("description", "An Arc internal field describing where this row was originally sourced from.").build()))
           .withColumn("_partition_id",spark_partition_id().as("_partition_id", new MetadataBuilder().putBoolean("internal", true).build()))
 
         if (contiguousIndex) {
@@ -114,8 +114,8 @@ object ExtractUtils {
               }
             }
           }
-          .withColumn("_index", col("_monotonically_increasing_id").as("_index", new MetadataBuilder().putBoolean("internal", true).build()))
-          .withColumn("_filename", col("_filename").as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))
+          .withColumn("_index", col("_monotonically_increasing_id").as("_index", new MetadataBuilder().putBoolean("internal", true).putString("description", "An Arc internal field describing where in _filename this row was originally sourced from.").build()))
+          .withColumn("_filename", col("_filename").as("_filename", new MetadataBuilder().putBoolean("internal", true).putString("description", "An Arc internal field describing where this row was originally sourced from.").build()))
           .drop("_monotonically_increasing_id")
           .drop("_partition_id")
         } else {

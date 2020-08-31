@@ -410,9 +410,7 @@ object Typing {
     )
 
   val typedFields: List[StructField] =
-    // TODO: add _index column back
-    //StructField("_index", LongType, false, new MetadataBuilder().putBoolean("internal", true).build()) ::
-    StructField("_errors", ArrayType(errorStructType), true, new MetadataBuilder().putBoolean("internal", true).build()) :: Nil
+    StructField("_errors", ArrayType(errorStructType), true, new MetadataBuilder().putBoolean("internal", true).putString("description", "An Arc internal field detailing any errors when executing TypingTransform against this row.").build()) :: Nil
 
   type TypingResult[S] = (Option[S], Option[TypingError])
 
