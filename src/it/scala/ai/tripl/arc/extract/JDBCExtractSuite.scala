@@ -76,7 +76,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext()
+    implicit val arcContext = TestUtils.getARCContext(dropUnsupported=true)
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
@@ -135,7 +135,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext()
+    implicit val arcContext = TestUtils.getARCContext(dropUnsupported=true)
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
@@ -193,7 +193,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext()
+    implicit val arcContext = TestUtils.getARCContext(dropUnsupported=true)
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)

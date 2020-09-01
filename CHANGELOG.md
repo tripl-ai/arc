@@ -3,6 +3,7 @@
 ## 3.2.0
 
 - rewrote the code to calculate `_index` (vs `_monotonically_increasing_id`) to be more efficient with large datasets.
+- add optional `id` attribute to all stages which can be used to easily identify individual stages when monitoring logs.
 - add the `schema` attribute to `TypingTransform` and `MetadataTransform` to allow inline schema. Can be disabled via `etl.policy.inline.schema` and `ETL_POLICY_INLINE_SCHEMA`. These are being trialed and if beneficial will be added to all stages that support schemas.
 - rename `etl.policy.inlinesql` to `etl.policy.inline.sql` and `ETL_POLICY_INLINESQL` to `ETL_POLICY_INLINE_SQL`.
 - remove forced use of `etl.config.fs.gs.project.id`/`ETL_CONF_GOOGLE_CLOUD_PROJECT_ID` and `etl.config.fs.google.cloud.auth.service.account.json.keyfile`/`ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE` to access Google Cloud Storage job files.
