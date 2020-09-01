@@ -112,6 +112,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MLTransformStage.execute(
       transform.MLTransformStage(
         plugin=new transform.MLTransform,
+        id=None,
         name="MLTransform",
         description=None,
         inputURI=new URI(pipelineModelTargetFile),
@@ -148,6 +149,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MLTransformStage.execute(
       transform.MLTransformStage(
         plugin=new transform.MLTransform,
+        id=None,
         name="MLTransform",
         description=None,
         inputURI=new URI(crossValidatorModelTargetFile),
@@ -193,6 +195,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MLTransformStage.execute(
       transform.MLTransformStage(
         plugin=new transform.MLTransform,
+        id=None,
         name="MLTransform",
         description=None,
         inputURI=new URI(crossValidatorModelTargetFile),

@@ -214,6 +214,7 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.SQLTransformStage.execute(
       transform.SQLTransformStage(
         plugin=new transform.SQLTransform,
+        id=None,
         name="SQLTransform",
         description=None,
         inputURI=None,

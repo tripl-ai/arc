@@ -38,7 +38,8 @@ class MetadataFilterTransform extends PipelineStagePlugin with JupyterCompleter 
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "sql" :: "inputView" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputURI" :: "sql" :: "inputView" :: "outputView" :: "authentication" :: "persist" :: "sqlParams" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val authentication = readAuthentication("authentication")
@@ -58,13 +59,14 @@ class MetadataFilterTransform extends PipelineStagePlugin with JupyterCompleter 
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, parsedURI, sql, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, authentication, partitionBy) match {
-      case (Right(name), Right(description), Right(parsedURI), Right(sql), Right(validSQL), Right(inputView), Right(outputView), Right(persist), Right(invalidKeys), Right(numPartitions), Right(authentication), Right(partitionBy)) =>
+    (id, name, description, parsedURI, sql, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, authentication, partitionBy) match {
+      case (Right(id), Right(name), Right(description), Right(parsedURI), Right(sql), Right(validSQL), Right(inputView), Right(outputView), Right(persist), Right(invalidKeys), Right(numPartitions), Right(authentication), Right(partitionBy)) =>
 
         val uri = if (isInputURI) Option(parsedURI) else None
 
         val stage = MetadataFilterTransformStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           inputView=inputView,
@@ -90,7 +92,7 @@ class MetadataFilterTransform extends PipelineStagePlugin with JupyterCompleter 
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, parsedURI, sql, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, authentication, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, parsedURI, sql, validSQL, inputView, outputView, persist, invalidKeys, numPartitions, authentication, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -101,6 +103,7 @@ class MetadataFilterTransform extends PipelineStagePlugin with JupyterCompleter 
 
 case class MetadataFilterTransformStage(
     plugin: MetadataFilterTransform,
+    id: Option[String],
     name: String,
     description: Option[String],
     inputView: String,

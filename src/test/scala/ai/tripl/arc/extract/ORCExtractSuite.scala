@@ -69,6 +69,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ORCExtractStage.execute(
       extract.ORCExtractStage(
         plugin=new extract.ORCExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -109,6 +110,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ORCExtractStage.execute(
       extract.ORCExtractStage(
         plugin=new extract.ORCExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -131,6 +133,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ORCExtractStage.execute(
       extract.ORCExtractStage(
         plugin=new extract.ORCExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -174,6 +177,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
       extract.ORCExtractStage.execute(
         extract.ORCExtractStage(
           plugin=new extract.ORCExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -198,6 +202,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
       extract.ORCExtractStage.execute(
         extract.ORCExtractStage(
           plugin=new extract.ORCExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -221,6 +226,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ORCExtractStage.execute(
       extract.ORCExtractStage(
         plugin=new extract.ORCExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema),
@@ -257,6 +263,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ORCExtractStage.execute(
       extract.ORCExtractStage(
         plugin=new extract.ORCExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),

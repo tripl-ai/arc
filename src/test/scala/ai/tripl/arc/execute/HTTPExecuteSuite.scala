@@ -101,6 +101,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.HTTPExecuteStage.execute(
       ai.tripl.arc.execute.HTTPExecuteStage(
         plugin=new ai.tripl.arc.execute.HTTPExecute,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
@@ -122,6 +123,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
       ai.tripl.arc.execute.HTTPExecuteStage.execute(
         ai.tripl.arc.execute.HTTPExecuteStage(
           plugin=new ai.tripl.arc.execute.HTTPExecute,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
@@ -144,6 +146,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.HTTPExecuteStage.execute(
       ai.tripl.arc.execute.HTTPExecuteStage(
         plugin=new ai.tripl.arc.execute.HTTPExecute,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
@@ -165,6 +168,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
       ai.tripl.arc.execute.HTTPExecuteStage.execute(
         ai.tripl.arc.execute.HTTPExecuteStage(
           plugin=new ai.tripl.arc.execute.HTTPExecute,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
@@ -188,6 +192,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
       ai.tripl.arc.execute.HTTPExecuteStage.execute(
         ai.tripl.arc.execute.HTTPExecuteStage(
           plugin=new ai.tripl.arc.execute.HTTPExecute,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
@@ -210,6 +215,7 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.HTTPExecuteStage.execute(
       ai.tripl.arc.execute.HTTPExecuteStage(
         plugin=new ai.tripl.arc.execute.HTTPExecute,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect

@@ -45,6 +45,7 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 |basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -80,6 +81,7 @@ The `BytesExtract` stage reads one or more binary files and returns a `DataFrame
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |failMode|String|false|Either `permissive` or `failfast`:<br><br>`permissive` will create an empty dataframe of `[value, _filename]` in case of no files.<br><br>`failfast` will fail the Arc job if no files are found.<br><br>Default: `failfast`.|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 
@@ -110,6 +112,7 @@ The `CassandraExtract` reads directly from a [Cassandra](https://cassandra.apach
 |table|String|true|The name of the Cassandra table to extract from.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Any parameters provided will be added to the Cassandra connection object.|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -141,6 +144,7 @@ The `DeltaLakeExtract` stage reads one or more [DeltaLake](https://delta.io/) fi
 |inputURI|URI|true|URI/Glob of the input Databricks Delta files.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |options|Map[String, String]|false|Time travel options to allow loading previous versions of the data. These values are limited to:<br><br>`versionAsOf` allows travelling to a specific version.<br><br>`timestampAsOf` allows travelling to the state before a specified timestamp.<br><br>`relativeVersion` allows travelling relative to the current version where the current version is `0` and `-1` is the previous version.|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -177,6 +181,7 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 |customDelimiter|String|true*|{{< readfile file="/content/partials/fields/customDelimiter.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |header|Boolean|false|Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named `_col1`, `_col2` ... `_colN`.<br><br>Default: `false`.|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |inputField|String|false|If using `inputView` this option allows you to specify the name of the field which contains the delimited data.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -212,6 +217,7 @@ The `ElasticsearchExtract` stage reads from an [Elasticsearch](https://www.elast
 |input|String|true|The name of the source Elasticsearch index.|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Parameters for connecting to the [Elasticsearch](https://www.elastic.co/products/elasticsearch) cluster are detailed [here](https://www.elastic.co/guide/en/elasticsearch/hadoop/master/configuration.html).|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -246,6 +252,7 @@ This stage would typically be used with a `JSONExtract` stage by specifying `inp
 |body|String|false|The request body/entity that is sent with a `POST` request.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |method|String|false|The request type with valid values `GET` or `POST`.<br><br>Default: `GET`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
@@ -294,6 +301,7 @@ SELECT image.height FROM dataset
 |basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |dropInvalid|Boolean|false|Whether to drop any invalid image files.<br><br>Default: true.|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -326,6 +334,7 @@ The `JDBCExtract` reads directly from a JDBC Database and returns a `DataFrame`.
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |fetchsize|Integer|false|{{< readfile file="/content/partials/fields/fetchsize.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Any parameters provided will be added to the JDBC connection object. These are not logged so it is safe to put passwords here.|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -364,6 +373,7 @@ If trying to run against an `inputView` in streaming mode this stage will not wo
 |basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |inputField|String|false|If using `inputView` this option allows you to specify the name of the field which contains the delimited data.|
 |multiLine|Boolean|false|Whether the input directory contains a single JSON object per file or multiple JSON records in a single file, one per line (see [JSONLines](http://jsonlines.org/).<br><br>Default: true.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
@@ -424,6 +434,7 @@ SELECT
 |groupID|String|true|{{< readfile file="/content/partials/fields/groupID.md" markdown="true" >}}|
 |autoCommit|Boolean|false|Whether to update the offsets in Kafka automatically. To be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecute) to allow quasi-transactional behaviour.<br><br>If `autoCommit` is set to `false` this stage will force `persist` equal to `true` so that Spark will not execute the Kafka extract process twice with a potentially different result (e.g. new messages added between extracts).<br><br>Default: false.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |maxPollRecords|Int|false|The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read.<br><br>Default: `10000`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -449,10 +460,11 @@ The `MetadataExtract` stage extracts the metadata attached to an input `Datafram
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
-|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -479,9 +491,10 @@ The `MongoDBExtract` stage reads a collection from [MongoDB](https://www.mongodb
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
-|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |options|Map[String, String]|false|Map of configuration parameters. These parameters are used to provide database connection/collection details.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
@@ -516,6 +529,7 @@ The `ORCExtract` stage reads one or more [Apache ORC](https://orc.apache.org/) f
 |basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -549,6 +563,7 @@ The `ParquetExtract` stage reads one or more [Apache Parquet](https://parquet.ap
 |basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -580,6 +595,7 @@ This stage has been included for testing Structured Streaming jobs as it can be 
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |rampUpTime|Integer|false|How long to ramp up before the generating speed becomes rowsPerSecond. Using finer granularities than seconds will be truncated to integer seconds.<br><br>Default: 0.|
 |rowsPerSecond|Integer|false|How many rows should be generated per second.<br><br>Default: 1.|
@@ -612,6 +628,7 @@ The `SASExtract` stage reads a collection from SAS `sas7bdat` binary file and re
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |options|Map[String, String]|false|Options for reading the `sas7bdat` file. These values are limited to:<br><br>`inferDecimal`: infer numeric columns with format width  > 0 and format precision > 0, as `Decimal(Width, Precision)`.<br><br>`inferDecimalScale`: scale of inferred decimals.<br><br>`inferFloat`: infer numeric columns with <= 4 bytes, as `Float`.<br><br>`inferInt`: infer numeric columns with <= 4 bytes, format width > 0 and format precision =0, as `Int`.<br><br>`inferLong`: infer numeric columns with <= 8 bytes, format width > 0 and format precision = 0, as `Long`.<br><br>`inferShort`: infer numeric columns with <= 2 bytes, format width > 0 and format precision = 0, as `Short`.<br><br>`maxSplitSize`: maximum byte length of input splits which can be decreased to force higher parallelism.|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -646,6 +663,7 @@ The `TextExtract` stage reads either one or more text files and returns a `DataF
 |basePath|URI|false|{{< readfile file="/content/partials/fields/basePath.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |multiLine|Boolean|false|Whether the to load the file as a single record or as individual records split by newline.<br><br>Default: `false`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -688,6 +706,7 @@ The backtick character (`) can be used to address fields with non-alphanumeric n
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |inputField|String|false|If using `inputView` this option allows you to specify the name of the field which contains the XML data.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|

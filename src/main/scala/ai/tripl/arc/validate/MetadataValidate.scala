@@ -39,7 +39,8 @@ class MetadataValidate extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "sql" :: "inputView" :: "authentication" :: "sqlParams" :: "params" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputURI" :: "sql" :: "inputView" :: "authentication" :: "sqlParams" :: "params" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val authentication = readAuthentication("authentication")
@@ -55,13 +56,14 @@ class MetadataValidate extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, parsedURI, sql, validSQL, invalidKeys, authentication) match {
-      case (Right(name), Right(description), Right(inputView), Right(parsedURI), Right(sql), Right(validSQL), Right(invalidKeys), Right(authentication)) =>
+    (id, name, description, inputView, parsedURI, sql, validSQL, invalidKeys, authentication) match {
+      case (Right(id), Right(name), Right(description), Right(inputView), Right(parsedURI), Right(sql), Right(validSQL), Right(invalidKeys), Right(authentication)) =>
 
         val uri = if (isInputURI) Option(parsedURI) else None
 
         val stage = MetadataValidateStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           inputURI=uri,
@@ -79,7 +81,7 @@ class MetadataValidate extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, parsedURI, sql, validSQL, invalidKeys, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, inputView, parsedURI, sql, validSQL, invalidKeys, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -89,6 +91,7 @@ class MetadataValidate extends PipelineStagePlugin with JupyterCompleter {
 
 case class MetadataValidateStage(
     plugin: MetadataValidate,
+    id: Option[String],
     name: String,
     description: Option[String],
     inputURI: Option[URI],

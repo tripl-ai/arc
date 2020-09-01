@@ -1,5 +1,6 @@
 {
   "type": "TensorFlowServingTransform",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "call the customer segmentation model",
   "description": "call the customer segmentation model",
   "environments": [

@@ -43,7 +43,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     )
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
         assert(params === configParms)
@@ -63,7 +63,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     )
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(name === "custom plugin")
         assert(params === configParms)
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
@@ -87,7 +87,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     )
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(name === "custom plugin")
         assert(params === configParms)
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")

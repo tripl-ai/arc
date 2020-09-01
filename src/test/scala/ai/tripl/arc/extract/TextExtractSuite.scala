@@ -128,6 +128,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.TextExtractStage.execute(
       extract.TextExtractStage(
         plugin=new extract.TextExtract,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(List.empty),
@@ -157,6 +158,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.TextExtractStage.execute(
       extract.TextExtractStage(
         plugin=new extract.TextExtract,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(List.empty),
@@ -188,6 +190,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
       extract.TextExtractStage.execute(
         extract.TextExtractStage(
           plugin=new extract.TextExtract,
+          id=None,
           name="dataset",
           description=None,
           schema=Right(List.empty),
@@ -217,6 +220,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.TextExtractStage.execute(
       extract.TextExtractStage(
         plugin=new extract.TextExtract,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(List.empty),
@@ -283,6 +287,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.TextExtractStage.execute(
       extract.TextExtractStage(
         plugin=new extract.TextExtract,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),

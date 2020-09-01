@@ -105,6 +105,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -169,6 +170,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -201,6 +203,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -224,6 +227,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -269,6 +273,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       val dataset = extract.DelimitedExtractStage.execute(
         extract.DelimitedExtractStage(
           plugin=new extract.DelimitedExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -295,6 +300,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       val dataset = extract.DelimitedExtractStage.execute(
         extract.DelimitedExtractStage(
           plugin=new extract.DelimitedExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -320,6 +326,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema),
@@ -362,6 +369,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -397,6 +405,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -444,6 +453,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -478,6 +488,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -515,6 +526,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),

@@ -25,7 +25,8 @@ class ControlFlowExecute extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "key" :: "description" :: "environments" :: "inputURI" :: "authentication" :: "sqlParams" :: "params" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "key" :: "description" :: "environments" :: "inputURI" :: "authentication" :: "sqlParams" :: "params" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val key = getValue[String]("key", default = Some("controlFlowPluginOutcome"))
     val description = getOptionalValue[String]("description")
@@ -37,11 +38,12 @@ class ControlFlowExecute extends PipelineStagePlugin {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, key, description, parsedURI, inputSQL, validSQL, invalidKeys) match {
-      case (Right(name), Right(key), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(invalidKeys)) =>
+    (id, name, key, description, parsedURI, inputSQL, validSQL, invalidKeys) match {
+      case (Right(id),  Right(name), Right(key), Right(description), Right(parsedURI), Right(inputSQL), Right(validSQL), Right(invalidKeys)) =>
 
         val stage = ControlFlowExecuteStage(
           plugin=this,
+          id=id,
           name=name,
           key=key,
           description=description,
@@ -59,7 +61,7 @@ class ControlFlowExecute extends PipelineStagePlugin {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, key, description, parsedURI, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, key, description, parsedURI, inputSQL, validSQL, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -69,6 +71,7 @@ class ControlFlowExecute extends PipelineStagePlugin {
 
 case class ControlFlowExecuteStage(
     plugin: ControlFlowExecute,
+    id: Option[String],
     name: String,
     key: String,
     description: Option[String],

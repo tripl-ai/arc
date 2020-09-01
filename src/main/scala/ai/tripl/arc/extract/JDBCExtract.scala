@@ -41,8 +41,8 @@ class JDBCExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "jdbcURL" :: "tableName" :: "outputView" :: "authentication" :: "contiguousIndex" :: "fetchsize" :: "numPartitions" :: "params" :: "partitionBy" :: "partitionColumn" :: "persist" :: "predicates" :: "schemaURI" :: "schemaView" :: "params" :: Nil
-
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "jdbcURL" :: "tableName" :: "outputView" :: "authentication" :: "contiguousIndex" :: "fetchsize" :: "numPartitions" :: "params" :: "partitionBy" :: "partitionColumn" :: "persist" :: "predicates" :: "schemaURI" :: "schemaView" :: "params" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val outputView = getValue[String]("outputView")
@@ -62,12 +62,13 @@ class JDBCExtract extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, predicates, numPartitions, fetchsize, customSchema, partitionColumn, partitionBy, authentication, invalidKeys) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(jdbcURL), Right(driver), Right(tableName), Right(predicates), Right(numPartitions), Right(fetchsize), Right(customSchema), Right(partitionColumn), Right(partitionBy), Right(authentication), Right(invalidKeys)) =>
+    (id, name, description, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, predicates, numPartitions, fetchsize, customSchema, partitionColumn, partitionBy, authentication, invalidKeys) match {
+      case (Right(id), Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(jdbcURL), Right(driver), Right(tableName), Right(predicates), Right(numPartitions), Right(fetchsize), Right(customSchema), Right(partitionColumn), Right(partitionBy), Right(authentication), Right(invalidKeys)) =>
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
         val stage = JDBCExtractStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           schema=schema,
@@ -101,7 +102,7 @@ class JDBCExtract extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, predicates, numPartitions, fetchsize, customSchema, partitionColumn, partitionBy, authentication, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, extractColumns, schemaView, outputView, persist, jdbcURL, driver, tableName, predicates, numPartitions, fetchsize, customSchema, partitionColumn, partitionBy, authentication, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -112,6 +113,7 @@ class JDBCExtract extends PipelineStagePlugin with JupyterCompleter {
 
 case class JDBCExtractStage(
     plugin: JDBCExtract,
+    id: Option[String],
     name: String,
     description: Option[String],
     schema: Either[String, List[ExtractColumn]],

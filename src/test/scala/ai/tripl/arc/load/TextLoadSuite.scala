@@ -77,6 +77,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     load.TextLoadStage.execute(
       load.TextLoadStage(
         plugin=new load.TextLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -141,6 +142,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     load.TextLoadStage.execute(
       load.TextLoadStage(
         plugin=new load.TextLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -269,6 +271,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
     load.TextLoadStage.execute(
       load.TextLoadStage(
         plugin=new load.TextLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,

@@ -71,6 +71,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
+        id=None,
         name="TypingTransform",
         description=None,
         schema=Right(schema.right.getOrElse(null)),
@@ -127,6 +128,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
+        id=None,
         name="TypingTransform",
         description=None,
         schema=Right(schema.right.getOrElse(null)),
@@ -143,6 +145,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MetadataFilterTransformStage.execute(
       transform.MetadataFilterTransformStage(
         plugin=new transform.MetadataFilterTransform,
+        id=None,
         name="MetadataFilterTransform",
         description=None,
         inputView=outputView,
@@ -179,6 +182,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
+        id=None,
         name="TypingTransform",
         description=None,
         schema=Right(schema.right.getOrElse(null)),
@@ -195,6 +199,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MetadataFilterTransformStage.execute(
       transform.MetadataFilterTransformStage(
         plugin=new transform.MetadataFilterTransform,
+        id=None,
         name="MetadataFilterTransform",
         description=None,
         inputView=outputView,
@@ -247,6 +252,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -263,6 +269,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MetadataFilterTransformStage.execute(
       transform.MetadataFilterTransformStage(
         plugin=new transform.MetadataFilterTransform,
+        id=None,
         name="MetadataFilterTransform",
         description=None,
         inputView=outputView,

@@ -1,5 +1,6 @@
 {
   "type": "MetadataExtract",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "extract metadata from customer view",
   "description": "extract metadata from customer view",
   "environments": [
@@ -12,5 +13,5 @@
   "partitionBy": [
     "type"
   ],
-  "persist": false 
+  "persist": false
 }

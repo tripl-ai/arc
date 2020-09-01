@@ -37,7 +37,8 @@ class ORCExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "watermark" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "watermark" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val parsedGlob = getValue[String]("inputURI") |> parseGlob("inputURI") _
@@ -54,12 +55,13 @@ class ORCExtract extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, basePath, invalidKeys, watermark) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(basePath), Right(invalidKeys), Right(watermark)) =>
+    (id, name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, basePath, invalidKeys, watermark) match {
+      case (Right(id), Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(basePath), Right(invalidKeys), Right(watermark)) =>
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
         val stage = ORCExtractStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           schema=schema,
@@ -82,7 +84,7 @@ class ORCExtract extends PipelineStagePlugin with JupyterCompleter {
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("params", params.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        for (watermark <- watermark) {
+        watermark.foreach { watermark =>
           val watermarkMap = new java.util.HashMap[String, Object]()
           watermarkMap.put("eventTime", watermark.eventTime)
           watermarkMap.put("delayThreshold", watermark.delayThreshold)
@@ -91,7 +93,7 @@ class ORCExtract extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, basePath, invalidKeys, watermark).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, basePath, invalidKeys, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -103,6 +105,7 @@ class ORCExtract extends PipelineStagePlugin with JupyterCompleter {
 
 case class ORCExtractStage(
     plugin: ORCExtract,
+    id: Option[String],
     name: String,
     description: Option[String],
     schema: Either[String, List[ExtractColumn]],

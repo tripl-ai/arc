@@ -61,6 +61,7 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
       load.AvroLoadStage.execute(
         load.AvroLoadStage(
           plugin=new load.AvroLoad,
+          id=None,
           name=outputView,
           description=None,
           inputView=outputView,
@@ -79,6 +80,7 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
     load.AvroLoadStage.execute(
       load.AvroLoadStage(
         plugin=new load.AvroLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -113,6 +115,7 @@ class AvroLoadSuite extends FunSuite with BeforeAndAfter {
     load.AvroLoadStage.execute(
       load.AvroLoadStage(
         plugin=new load.AvroLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,

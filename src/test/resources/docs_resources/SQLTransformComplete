@@ -1,5 +1,6 @@
 {
   "type": "SQLTransform",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "standardise customer fields",
   "description": "standardise customer fields",
   "environments": [

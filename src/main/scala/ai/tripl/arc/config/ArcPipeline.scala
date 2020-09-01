@@ -106,7 +106,7 @@ object ArcPipeline {
               // flatPipelineInstances is a merge of all the pipeline plugins
               // activeLifecyclePluginInstances is a merge of all the lifecycle plugins
               val (flatPipelineInstances, activeLifecyclePluginInstances) = pipelineInstances.map {
-                case PipelineExecuteStage(_, _, _, _, pipeline, pipelineLifecycleInstances) => (pipeline.stages, pipelineLifecycleInstances)
+                case PipelineExecuteStage(_, _, _, _, _, pipeline, pipelineLifecycleInstances) => (pipeline.stages, pipelineLifecycleInstances)
                 case pipelineStage: PipelineStage => (List(pipelineStage), Nil)
               }.unzip match {
                 case (stages, plugins) => (stages.flatten, lifecycleInstances ::: plugins.flatten)

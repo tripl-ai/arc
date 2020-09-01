@@ -199,6 +199,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
       transform.MetadataTransformStage.execute(
         transform.MetadataTransformStage(
           plugin=new transform.MetadataTransform,
+          id=None,
           name="MetadataTransform",
           description=None,
           inputView=inputView,

@@ -265,6 +265,8 @@ object API {
 
     def plugin: PipelineStagePlugin
 
+    def id: Option[String]
+
     def name: String
 
     def description: Option[String]
@@ -273,10 +275,9 @@ object API {
       val detail = new collection.mutable.HashMap[String, Object]()
       detail.put("type", plugin.getClass.getSimpleName)
       detail.put("plugin", s"${plugin.getClass.getName}:${plugin.version}")
+      id.foreach { id => detail.put("id", id) }
       detail.put("name", name)
-      for (d <- description) {
-        detail.put("description", d)
-      }
+      description.foreach { description => detail.put("description", description) }
       detail
     }
 

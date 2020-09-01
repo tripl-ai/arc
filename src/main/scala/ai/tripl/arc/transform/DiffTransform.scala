@@ -35,7 +35,8 @@ class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputLeftView" :: "inputRightView" :: "outputIntersectionView" :: "outputLeftView" :: "outputRightView" :: "persist" :: "params" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputLeftView" :: "inputRightView" :: "outputIntersectionView" :: "outputLeftView" :: "outputRightView" :: "persist" :: "params" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputLeftView = getValue[String]("inputLeftView")
@@ -47,11 +48,12 @@ class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputLeftView), Right(inputRightView), Right(outputIntersectionView), Right(outputLeftView), Right(outputRightView), Right(persist), Right(invalidKeys)) =>
+    (id, name, description, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys) match {
+      case (Right(id), Right(name), Right(description), Right(inputLeftView), Right(inputRightView), Right(outputIntersectionView), Right(outputLeftView), Right(outputRightView), Right(persist), Right(invalidKeys)) =>
 
         val stage = DiffTransformStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           inputLeftView=inputLeftView,
@@ -73,7 +75,7 @@ class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -84,6 +86,7 @@ class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
 
 case class DiffTransformStage(
     plugin: DiffTransform,
+    id: Option[String],
     name: String,
     description: Option[String],
     inputLeftView: String,

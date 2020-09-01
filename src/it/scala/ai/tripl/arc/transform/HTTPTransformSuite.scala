@@ -74,6 +74,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
         description=None,
+        id=None,
         name=outputView,
         uri=new URI(uri),
         headers=Map.empty,
@@ -120,6 +121,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
         description=None,
+        id=None,
         name=outputView,
         uri=new URI(uri),
         headers=Map.empty,

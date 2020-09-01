@@ -61,6 +61,7 @@ class DelimitedLoadSuite extends FunSuite with BeforeAndAfter {
       load.DelimitedLoadStage.execute(
         load.DelimitedLoadStage(
           plugin=new load.DelimitedLoad,
+          id=None,
           name=outputView,
           description=None,
           inputView=outputView,
@@ -80,6 +81,7 @@ class DelimitedLoadSuite extends FunSuite with BeforeAndAfter {
     load.DelimitedLoadStage.execute(
       load.DelimitedLoadStage(
         plugin=new load.DelimitedLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -122,6 +124,7 @@ class DelimitedLoadSuite extends FunSuite with BeforeAndAfter {
     load.DelimitedLoadStage.execute(
       load.DelimitedLoadStage(
         plugin=new load.DelimitedLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -156,6 +159,7 @@ class DelimitedLoadSuite extends FunSuite with BeforeAndAfter {
     load.DelimitedLoadStage.execute(
       load.DelimitedLoadStage(
         plugin=new load.DelimitedLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,

@@ -1,5 +1,6 @@
 {
   "type": "ImageExtract",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "load customer images",
   "description": "load customer images",
   "environments": [
@@ -19,5 +20,5 @@
   "watermark": {
     "eventTime": "timestamp",
     "delayThreshold": "10 minutes"
-  }  
+  }
 }

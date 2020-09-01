@@ -39,7 +39,8 @@ class JSONExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "inputField" :: "basePath" :: "watermark" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "inputField" :: "basePath" :: "watermark" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
@@ -59,13 +60,14 @@ class JSONExtract extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, inputField, basePath, invalidKeys, watermark) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(inputField), Right(basePath), Right(invalidKeys), Right(watermark)) =>
+    (id, name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, inputField, basePath, invalidKeys, watermark) match {
+      case (Right(id), Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(inputField), Right(basePath), Right(invalidKeys), Right(watermark)) =>
         val input = if(c.hasPath("inputView")) Left(inputView) else Right(parsedGlob)
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
         val stage = JSONExtractStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           schema=schema,
@@ -96,7 +98,7 @@ class JSONExtract extends PipelineStagePlugin with JupyterCompleter {
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("params", params.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        for (watermark <- watermark) {
+        watermark.foreach { watermark =>
           val watermarkMap = new java.util.HashMap[String, Object]()
           watermarkMap.put("eventTime", watermark.eventTime)
           watermarkMap.put("delayThreshold", watermark.delayThreshold)
@@ -105,7 +107,7 @@ class JSONExtract extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, invalidKeys, inputField, basePath, watermark).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, invalidKeys, inputField, basePath, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -116,6 +118,7 @@ class JSONExtract extends PipelineStagePlugin with JupyterCompleter {
 
 case class JSONExtractStage(
     plugin: JSONExtract,
+    id: Option[String],
     name: String,
     description: Option[String],
     schema: Either[String, List[ExtractColumn]],

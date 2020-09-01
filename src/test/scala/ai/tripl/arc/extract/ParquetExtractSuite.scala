@@ -99,6 +99,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -139,6 +140,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -160,6 +162,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -203,6 +206,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       extract.ParquetExtractStage.execute(
         extract.ParquetExtractStage(
           plugin=new extract.ParquetExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -227,6 +231,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       extract.ParquetExtractStage.execute(
         extract.ParquetExtractStage(
           plugin=new extract.ParquetExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -250,6 +255,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema),
@@ -286,6 +292,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),

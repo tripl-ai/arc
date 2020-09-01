@@ -1,5 +1,6 @@
 {
   "type": "MetadataTransform",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "set metadata for customer view",
   "description": "set metadata for customer view",
   "environments": [
@@ -14,5 +15,5 @@
   "partitionBy": [
     "type"
   ],
-  "persist": false 
+  "persist": false
 }

@@ -140,6 +140,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
         plugin=new validate.SQLValidate,
+        id=None,
         name=testName,
         description=None,
         inputURI=Option(new URI(testURI)),
@@ -159,6 +160,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
         plugin=new validate.SQLValidate,
+        id=None,
         name=testName,
         description=None,
         inputURI=Option(new URI(testURI)),
@@ -178,6 +180,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
         plugin=new validate.SQLValidate,
+        id=None,
         name=testName,
         description=None,
         inputURI=Option(new URI(testURI)),
@@ -198,6 +201,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
           inputURI=Option(new URI(testURI)),
@@ -220,6 +224,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
           inputURI=Option(new URI(testURI)),
@@ -242,6 +247,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
           inputURI=Option(new URI(testURI)),
@@ -265,6 +271,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
           inputURI=Option(new URI(testURI)),
@@ -287,6 +294,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
           inputURI=Option(new URI(testURI)),
@@ -302,6 +310,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
           inputURI=Option(new URI(testURI)),
@@ -324,6 +333,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
           inputURI=Option(new URI(testURI)),
@@ -339,6 +349,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
           inputURI=Option(new URI(testURI)),
@@ -360,6 +371,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
         plugin=new validate.SQLValidate,
+        id=None,
         name=testName,
         description=None,
         inputURI=Option(new URI(testURI)),
@@ -373,6 +385,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
           inputURI=Option(new URI(testURI)),
@@ -395,6 +408,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
           inputURI=Option(new URI(testURI)),

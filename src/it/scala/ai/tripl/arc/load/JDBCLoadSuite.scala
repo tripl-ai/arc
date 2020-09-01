@@ -84,6 +84,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoadStage.execute(
       load.JDBCLoadStage(
         plugin=new load.JDBCLoad,
+        id=None,
         name="dataset",
         description=None,
         inputView=dbtable,
@@ -127,6 +128,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoadStage.execute(
       load.JDBCLoadStage(
         plugin=new load.JDBCLoad,
+        id=None,
         name="dataset",
         description=None,
         inputView=dbtable,
@@ -193,6 +195,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoadStage.execute(
       load.JDBCLoadStage(
         plugin=new load.JDBCLoad,
+        id=None,
         name="dataset",
         description=None,
         inputView=dbtable,

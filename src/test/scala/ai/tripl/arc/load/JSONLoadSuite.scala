@@ -60,6 +60,7 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
       load.JSONLoadStage.execute(
         load.JSONLoadStage(
           plugin=new load.JSONLoad,
+          id=None,
           name=outputView,
           description=None,
           inputView=outputView,
@@ -78,6 +79,7 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
     load.JSONLoadStage.execute(
       load.JSONLoadStage(
         plugin=new load.JSONLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -112,6 +114,7 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
     load.JSONLoadStage.execute(
       load.JSONLoadStage(
         plugin=new load.JSONLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -145,6 +148,7 @@ class JSONLoadSuite extends FunSuite with BeforeAndAfter {
     load.JSONLoadStage.execute(
       load.JSONLoadStage(
         plugin=new load.JSONLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,

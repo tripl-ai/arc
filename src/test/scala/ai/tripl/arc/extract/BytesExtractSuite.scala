@@ -59,6 +59,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.BytesExtractStage.execute(
       extract.BytesExtractStage(
         plugin=new extract.BytesExtract,
+        id=None,
         name="dataset",
         description=None,
         outputView=outputView,
@@ -88,6 +89,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.BytesExtractStage.execute(
       extract.BytesExtractStage(
         plugin=new extract.BytesExtract,
+        id=None,
         name="dataset",
         description=None,
         outputView=outputView,
@@ -115,6 +117,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       extract.BytesExtractStage.execute(
         extract.BytesExtractStage(
           plugin=new extract.BytesExtract,
+          id=None,
           name="dataset",
           description=None,
           outputView=outputView,
@@ -135,6 +138,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       extract.BytesExtractStage.execute(
         extract.BytesExtractStage(
           plugin=new extract.BytesExtract,
+          id=None,
           name="dataset",
           description=None,
           outputView=outputView,
@@ -155,6 +159,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
       extract.BytesExtractStage.execute(
         extract.BytesExtractStage(
           plugin=new extract.BytesExtract,
+          id=None,
           name="dataset",
           description=None,
           outputView=outputView,
@@ -174,6 +179,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.BytesExtractStage.execute(
       extract.BytesExtractStage(
         plugin=new extract.BytesExtract,
+        id=None,
         name="dataset",
         description=None,
         outputView=outputView,

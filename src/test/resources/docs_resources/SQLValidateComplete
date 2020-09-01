@@ -1,5 +1,6 @@
 {
   "type": "SQLValidate",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "apply data integrity rules",
   "description": "apply data integrity rules",
   "environments": [

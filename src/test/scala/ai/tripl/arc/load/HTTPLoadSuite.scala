@@ -136,6 +136,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoadStage.execute(
       load.HTTPLoadStage(
         plugin=new load.HTTPLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -160,6 +161,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
       load.HTTPLoadStage.execute(
         load.HTTPLoadStage(
           plugin=new load.HTTPLoad,
+          id=None,
           name=outputView,
           description=None,
           inputView=outputView,
@@ -185,6 +187,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoadStage.execute(
       load.HTTPLoadStage(
         plugin=new load.HTTPLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -208,6 +211,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoadStage.execute(
       load.HTTPLoadStage(
         plugin=new load.HTTPLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -232,6 +236,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
       load.HTTPLoadStage.execute(
         load.HTTPLoadStage(
           plugin=new load.HTTPLoad,
+          id=None,
           name=outputView,
           description=None,
           inputView=outputView,
@@ -258,6 +263,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
       load.HTTPLoadStage.execute(
         load.HTTPLoadStage(
           plugin=new load.HTTPLoad,
+          id=None,
           name=outputView,
           description=None,
           inputView=outputView,
@@ -294,6 +300,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoadStage.execute(
       load.HTTPLoadStage(
         plugin=new load.HTTPLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -334,6 +341,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoadStage.execute(
       load.HTTPLoadStage(
         plugin=new load.HTTPLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,

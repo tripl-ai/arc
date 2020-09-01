@@ -55,6 +55,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     extract.BytesExtractStage.execute(
       extract.BytesExtractStage(
         plugin=new extract.BytesExtract,
+        id=None,
         name="dataset",
         description=None,
         outputView=outputView,
@@ -71,6 +72,7 @@ class BytesExtractSuite extends FunSuite with BeforeAndAfter {
     transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name="transform",
         description=None,
         uri=new URI(uri),

@@ -52,6 +52,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ImageExtractStage.execute(
       extract.ImageExtractStage(
         plugin=new extract.ImageExtract,
+        id=None,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -84,6 +85,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ImageExtractStage.execute(
       extract.ImageExtractStage(
         plugin=new extract.ImageExtract,
+        id=None,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -104,6 +106,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ImageExtractStage.execute(
       extract.ImageExtractStage(
         plugin=new extract.ImageExtract,
+        id=None,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -130,6 +133,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ImageExtractStage.execute(
       extract.ImageExtractStage(
         plugin=new extract.ImageExtract,
+        id=None,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -157,6 +161,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ImageExtractStage.execute(
       extract.ImageExtractStage(
         plugin=new extract.ImageExtract,
+        id=None,
         name=outputView,
         description=None,
         outputView=outputView,

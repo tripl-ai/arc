@@ -53,7 +53,8 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "schema" :: "schemaURI" :: "schemaView" :: "inputView" :: "outputView" :: "authentication" :: "failMode" :: "persist" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "schema" :: "schemaURI" :: "schemaView" :: "inputView" :: "outputView" :: "authentication" :: "failMode" :: "persist" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val authentication = readAuthentication("authentication")
@@ -78,8 +79,8 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, source, schema, schemaURI, schemaView, inputView, outputView, persist, failMode, numPartitions, partitionBy, invalidKeys, authentication) match {
-      case (Right(name), Right(description), Right(source), Right(schema), Right(schemaURI), Right(schemaView), Right(inputView), Right(outputView), Right(persist), Right(failMode), Right(numPartitions), Right(partitionBy), Right(invalidKeys), Right(authentication)) =>
+    (id, name, description, source, schema, schemaURI, schemaView, inputView, outputView, persist, failMode, numPartitions, partitionBy, invalidKeys, authentication) match {
+      case (Right(id), Right(name), Right(description), Right(source), Right(schema), Right(schemaURI), Right(schemaView), Right(inputView), Right(outputView), Right(persist), Right(failMode), Right(numPartitions), Right(partitionBy), Right(invalidKeys), Right(authentication)) =>
         val _schema = if (c.hasPath("schemaView")) {
           Left(schemaView)
         } else if (c.hasPath("schemaURI")) {
@@ -90,6 +91,7 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
 
         val stage = TypingTransformStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           schema=_schema,
@@ -117,7 +119,7 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, source, schema, schemaURI, schemaView, inputView, outputView, persist, authentication, failMode, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, source, schema, schemaURI, schemaView, inputView, outputView, persist, authentication, failMode, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -126,6 +128,7 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
 }
 case class TypingTransformStage(
     plugin: TypingTransform,
+    id: Option[String],
     name: String,
     description: Option[String],
     schema: Either[String, List[ExtractColumn]],

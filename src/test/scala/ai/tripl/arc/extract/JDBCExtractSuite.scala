@@ -80,6 +80,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JDBCExtractStage.execute(
       extract.JDBCExtractStage(
         plugin=new extract.JDBCExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(cols.right.getOrElse(Nil)),
@@ -117,6 +118,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JDBCExtractStage.execute(
       extract.JDBCExtractStage(
         plugin=new extract.JDBCExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -150,6 +152,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JDBCExtractStage.execute(
       extract.JDBCExtractStage(
         plugin=new extract.JDBCExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),

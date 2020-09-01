@@ -38,7 +38,8 @@ class TextExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "watermark" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "watermark" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
@@ -55,8 +56,8 @@ class TextExtract extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, parsedGlob, inputView, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys, watermark) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(parsedGlob), Right(inputView), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(basePath), Right(invalidKeys), Right(watermark)) =>
+    (id, name, description, extractColumns, parsedGlob, inputView, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys, watermark) match {
+      case (Right(id), Right(name), Right(description), Right(extractColumns), Right(parsedGlob), Right(inputView), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(basePath), Right(invalidKeys), Right(watermark)) =>
         val input = if(c.hasPath("inputView")) {
           Left(inputView)
         } else {
@@ -65,6 +66,7 @@ class TextExtract extends PipelineStagePlugin with JupyterCompleter {
 
       val stage = TextExtractStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           schema=Right(extractColumns),
@@ -91,7 +93,7 @@ class TextExtract extends PipelineStagePlugin with JupyterCompleter {
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("params", params.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        for (watermark <- watermark) {
+        watermark.foreach { watermark =>
           val watermarkMap = new java.util.HashMap[String, Object]()
           watermarkMap.put("eventTime", watermark.eventTime)
           watermarkMap.put("delayThreshold", watermark.delayThreshold)
@@ -100,7 +102,7 @@ class TextExtract extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, parsedGlob, inputView, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys, watermark).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, extractColumns, parsedGlob, inputView, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, basePath, invalidKeys, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -111,6 +113,7 @@ class TextExtract extends PipelineStagePlugin with JupyterCompleter {
 
 case class TextExtractStage(
     plugin: TextExtract,
+    id: Option[String],
     name: String,
     description: Option[String],
     schema: Either[String, List[ExtractColumn]],

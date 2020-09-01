@@ -118,6 +118,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${echo}/"),
@@ -167,6 +168,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${echo}/"),
@@ -211,6 +213,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${echo}/"),
@@ -256,6 +259,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${echo}/"),
@@ -294,6 +298,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${empty}/"),
@@ -328,6 +333,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage.execute(
         transform.HTTPTransformStage(
           plugin=new transform.HTTPTransform,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/fail/"),
@@ -362,6 +368,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage.execute(
         transform.HTTPTransformStage(
           plugin=new transform.HTTPTransform,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/${empty}/"),
@@ -403,6 +410,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${echo}/"),
@@ -449,6 +457,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage.execute(
         transform.HTTPTransformStage(
           plugin=new transform.HTTPTransform,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/${echo}/"),
@@ -490,6 +499,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage.execute(
         transform.HTTPTransformStage(
           plugin=new transform.HTTPTransform,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/${echo}/"),
@@ -533,6 +543,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage.execute(
         transform.HTTPTransformStage(
           plugin=new transform.HTTPTransform,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/${echo}/"),
@@ -578,6 +589,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${echo}/"),
@@ -623,6 +635,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${empty}/"),

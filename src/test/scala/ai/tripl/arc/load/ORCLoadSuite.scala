@@ -62,6 +62,7 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
       load.ORCLoadStage.execute(
         load.ORCLoadStage(
           plugin=new load.ORCLoad,
+          id=None,
           name=outputView,
           description=None,
           inputView=outputView,
@@ -80,6 +81,7 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     load.ORCLoadStage.execute(
       load.ORCLoadStage(
         plugin=new load.ORCLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -111,6 +113,7 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     load.ORCLoadStage.execute(
       load.ORCLoadStage(
         plugin=new load.ORCLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -144,6 +147,7 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     load.ORCLoadStage.execute(
       load.ORCLoadStage(
         plugin=new load.ORCLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,

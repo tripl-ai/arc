@@ -117,6 +117,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -174,6 +175,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -206,6 +208,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -229,6 +232,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -274,6 +278,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
       extract.JSONExtractStage.execute(
         extract.JSONExtractStage(
           plugin=new extract.JSONExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -299,6 +304,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
       extract.JSONExtractStage.execute(
         extract.JSONExtractStage(
           plugin=new extract.JSONExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -325,6 +331,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
       extract.JSONExtractStage.execute(
         extract.JSONExtractStage(
           plugin=new extract.JSONExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -349,6 +356,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema),
@@ -384,6 +392,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val actual1 = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -419,6 +428,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val actual0 = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -453,6 +463,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val actual1 = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -513,6 +524,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema),
@@ -550,6 +562,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),

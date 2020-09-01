@@ -35,6 +35,7 @@ This stage performs this 'diffing' operation in a single pass so if multiple of 
 |inputLeftView|String|true|Name of first incoming Spark dataset.|
 |inputRightView|String|true|Name of second incoming Spark dataset.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |outputIntersectionView|String|false|Name of output `intersection` view.|
 |outputLeftView|String|false|Name of output `left` view.|
 |outputRightView|String|false|Name of output `right` view.|
@@ -71,6 +72,7 @@ https://github.com/tripl-ai/arc/tree/master/src/it/resources/flask_serving
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |failMode|String|false|Either `permissive` or `failfast`:<br><br>`permissive` will process all rows in the dataset and collect HTTP response values (`statusCode`, `reasonPhrase`, `contentType`, `responseTime`) into a `response` column. Rules can then be applied in a [SQLValidate](validate/#sqlvalidate) stage if required.<br><br>`failfast` will fail the Arc job on the first reponse with a `statusCode` not in the `validStatusCodes` array.<br><br>Default: `failfast`.|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |inputField|String|false|The field to pass to the endpoint. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -100,6 +102,7 @@ The `JSONTransform` stage transforms the incoming dataset to rows of `json` stri
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -176,6 +179,7 @@ The `inputView` and `outputView` can be set to the same name so that downstream 
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
@@ -199,13 +203,14 @@ The `MetadataTransform` stage attaches metadata input `Dataframe` and returns a 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
-|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |schema|Array|true*|An inline Arc [schema](/schema). Only one of `schema`, `schemaURI`, `schemaView` can be provided.|
 |schemaURI|URI|true*|URI of the input JSON file containing the Arc [schema](/schema). Only one of `schema`, `schemaURI`, `schemaView` can be provided.|
 |schemaView|String|true*|Similar to `schemaURI` but allows the Arc [schema](/schema) to be passed in as another `DataFrame`.  Only one of `schema`, `schemaURI`, `schemaView` can be provided.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |failMode|String|false|Either `permissive` or `failfast`:<br><br>`permissive` will attach metadata to any column of the input `DataFrame` which has the same name as in the incoming schema.<br><br>`failfast` will fail the Arc job if any of the columns in the input schema are not found in the input `DataFrame`.<br><br>Default: `permissive`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -235,6 +240,8 @@ The `MLTransform` stage transforms the incoming dataset with a pretrained Spark 
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|true|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}} MLTransform will also log percentiles of prediction probabilities for classification models if this option is enabled.|
@@ -266,6 +273,7 @@ The `SimilarityJoinTransform` stage uses [Approximate String Matching](https://e
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |caseSensitive|Boolean|false|Whether to use case sensitive comparison.<br><br>Default: `false`.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numHashTables|Integer|false|The number of hash tables which can be used to trade off execution time vs. false positive rate. Lower values should produce quicker exeuction but higher false positive rate.<br><br>Default: `5`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
@@ -309,6 +317,7 @@ Whilst SQL is capable of converting data types using the `CAST` function (e.g. `
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
@@ -373,6 +382,7 @@ https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving
 |uri|String|true|The `URI` of the TensorFlow Serving REST end point.|
 |batchSize|Integer|false|The number of records to sent to TensorFlow Serving in each call. A higher number will decrease the number of calls to TensorFlow Serving which may be more efficient.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |inputField|String|false|The field to pass to the model. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Currently unused.|
@@ -411,6 +421,7 @@ The logical process that is applied to perform the typing on a field-by-field ba
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |failMode|String|false|Either `permissive` or `failfast`:<br><br>`permissive` will process all rows in the dataset and collect any errors for each row in the `_errors` column. Rules can then be applied in a [SQLValidate](validate/#sqlvalidate) stage if required.<br><br>`failfast` will fail the Arc job on the first row containing at least one error.<br><br>Default: `permissive`.|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|

@@ -196,6 +196,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Right(new URI(s"${uri}/${get}/")),
@@ -237,6 +238,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Right(new URI(s"${uri}/${post}/")),
@@ -277,6 +279,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Right(new URI(s"${uri}/${payload}/")),
@@ -307,6 +310,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Right(new URI(s"${uri}/${empty}/")),
@@ -340,6 +344,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       extract.HTTPExtractStage.execute(
         extract.HTTPExtractStage(
           plugin=new extract.HTTPExtract,
+          id=None,
           name=outputView,
           description=None,
           input=Right(new URI(s"${uri}/fail/")),
@@ -370,6 +375,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       extract.HTTPExtractStage.execute(
         extract.HTTPExtractStage(
           plugin=new extract.HTTPExtract,
+          id=None,
           name=outputView,
           description=None,
           input=Right(new URI(s"${uri}/${empty}/")),
@@ -400,6 +406,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
       extract.HTTPExtractStage.execute(
         extract.HTTPExtractStage(
           plugin=new extract.HTTPExtract,
+         id=None,
           name=outputView,
           description=None,
           input=Right(new URI(badUri)),
@@ -432,6 +439,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Left(inputView),
@@ -468,6 +476,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Left(inputView),
@@ -504,6 +513,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Left(inputView),

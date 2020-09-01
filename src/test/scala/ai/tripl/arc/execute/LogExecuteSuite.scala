@@ -83,6 +83,7 @@ class LogExecuteSuite extends FunSuite with BeforeAndAfter {
       ai.tripl.arc.execute.LogExecuteStage.execute(
         ai.tripl.arc.execute.LogExecuteStage(
           plugin=new ai.tripl.arc.execute.LogExecute,
+          id=None,
           name=testName,
           description=None,
           inputURI=new URI(testURI),
@@ -104,6 +105,7 @@ class LogExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.LogExecuteStage.execute(
       ai.tripl.arc.execute.LogExecuteStage(
         plugin=new ai.tripl.arc.execute.LogExecute,
+        id=None,
         name=testName,
         description=None,
         inputURI=new URI(testURI),
@@ -123,6 +125,7 @@ class LogExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.LogExecuteStage.execute(
       ai.tripl.arc.execute.LogExecuteStage(
         plugin=new ai.tripl.arc.execute.LogExecute,
+        id=None,
         name=testName,
         description=None,
         inputURI=new URI(testURI),
@@ -143,6 +146,7 @@ class LogExecuteSuite extends FunSuite with BeforeAndAfter {
       ai.tripl.arc.execute.LogExecuteStage.execute(
         ai.tripl.arc.execute.LogExecuteStage(
           plugin=new ai.tripl.arc.execute.LogExecute,
+          id=None,
           name=testName,
           description=None,
           inputURI=new URI(testURI),

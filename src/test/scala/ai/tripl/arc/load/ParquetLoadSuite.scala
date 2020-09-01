@@ -60,6 +60,7 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
       load.ParquetLoadStage.execute(
         load.ParquetLoadStage(
           plugin=new load.ParquetLoad,
+          id=None,
           name=outputView,
           description=None,
           inputView=outputView,
@@ -78,6 +79,7 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
     load.ParquetLoadStage.execute(
       load.ParquetLoadStage(
         plugin=new load.ParquetLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -109,6 +111,7 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
     load.ParquetLoadStage.execute(
       load.ParquetLoadStage(
         plugin=new load.ParquetLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -142,6 +145,7 @@ class ParquetLoadSuite extends FunSuite with BeforeAndAfter {
     load.ParquetLoadStage.execute(
       load.ParquetLoadStage(
         plugin=new load.ParquetLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,

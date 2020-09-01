@@ -42,7 +42,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin.conf"), arcContext)
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
         assert(params === configParms)
@@ -61,7 +61,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_short.conf"), arcContext)
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
         assert(params === configParms)
@@ -96,7 +96,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_version_correct.conf"), arcContext)
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
         assert(params === configParms)
@@ -115,7 +115,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_version_correct_long.conf"), arcContext)
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
         assert(params === configParms)

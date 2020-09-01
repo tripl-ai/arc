@@ -39,7 +39,8 @@ class DelimitedLoad extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "delimiter" :: "header" :: "numPartitions" :: "partitionBy" :: "quote" :: "saveMode" :: "params"  :: "customDelimiter" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "delimiter" :: "header" :: "numPartitions" :: "partitionBy" :: "quote" :: "saveMode" :: "params"  :: "customDelimiter" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = getValue[String]("inputView")
@@ -58,12 +59,13 @@ class DelimitedLoad extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, outputURI, partitionBy, numPartitions, authentication, saveMode, delimiter, quote, header, customDelimiter, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(partitionBy), Right(numPartitions), Right(authentication), Right(saveMode), Right(delimiter), Right(quote), Right(header), Right(customDelimiter), Right(invalidKeys)) =>
+    (id, name, description, inputView, outputURI, partitionBy, numPartitions, authentication, saveMode, delimiter, quote, header, customDelimiter, invalidKeys) match {
+      case (Right(id), Right(name), Right(description), Right(inputView), Right(outputURI), Right(partitionBy), Right(numPartitions), Right(authentication), Right(saveMode), Right(delimiter), Right(quote), Right(header), Right(customDelimiter), Right(invalidKeys)) =>
         val settings = new Delimited(header=header, sep=delimiter, quote=quote, customDelimiter=customDelimiter)
 
         val stage = DelimitedLoadStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           inputView=inputView,
@@ -86,7 +88,7 @@ class DelimitedLoad extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputURI, partitionBy, numPartitions, authentication, saveMode, delimiter, quote, header, customDelimiter, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, inputView, outputURI, partitionBy, numPartitions, authentication, saveMode, delimiter, quote, header, customDelimiter, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -97,6 +99,7 @@ class DelimitedLoad extends PipelineStagePlugin with JupyterCompleter {
   // case class DelimitedLoad() extends Load { val getType = "DelimitedLoad" }
 case class DelimitedLoadStage(
     plugin: DelimitedLoad,
+    id: Option[String],
     name: String,
     description: Option[String],
     inputView: String,

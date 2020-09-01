@@ -1,5 +1,6 @@
 {
   "type": "LogExecute",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "log customer counts",
   "description": "log customer counts",
   "environments": [

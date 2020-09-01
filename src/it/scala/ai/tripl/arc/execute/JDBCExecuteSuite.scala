@@ -75,6 +75,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
       ai.tripl.arc.execute.JDBCExecuteStage(
         plugin=new ai.tripl.arc.execute.JDBCExecute,
+        id=None,
         name=outputView,
         description=None,
         inputURI=new URI(testURI),
@@ -121,6 +122,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
       ai.tripl.arc.execute.JDBCExecuteStage(
         plugin=new ai.tripl.arc.execute.JDBCExecute,
+        id=None,
         name=outputView,
         description=None,
         inputURI=new URI(testURI),
@@ -162,6 +164,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
       ai.tripl.arc.execute.JDBCExecuteStage(
         plugin=new ai.tripl.arc.execute.JDBCExecute,
+          id=None,
           name=outputView,
           description=None,
           inputURI=new URI(testURI),

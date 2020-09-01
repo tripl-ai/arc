@@ -84,6 +84,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val expected = load.JDBCLoadStage.execute(
       load.JDBCLoadStage(
         plugin=new load.JDBCLoad,
+        id=None,
         name="dataset",
         description=None,
         inputView=dbtable,
@@ -106,6 +107,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.JDBCExtractStage.execute(
       extract.JDBCExtractStage(
         plugin=new extract.JDBCExtract,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(Nil),
@@ -141,6 +143,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val expected = load.JDBCLoadStage.execute(
       load.JDBCLoadStage(
         plugin=new load.JDBCLoad,
+        id=None,
         name="dataset",
         description=None,
         inputView=dbtable,
@@ -163,6 +166,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.JDBCExtractStage.execute(
       extract.JDBCExtractStage(
         plugin=new extract.JDBCExtract,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(Nil),
@@ -197,6 +201,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val expected = load.JDBCLoadStage.execute(
       load.JDBCLoadStage(
         plugin=new load.JDBCLoad,
+        id=None,
         name="dataset",
         description=None,
         inputView=dbtable,
@@ -219,6 +224,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.JDBCExtractStage.execute(
       extract.JDBCExtractStage(
         plugin=new extract.JDBCExtract,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(Nil),
@@ -251,6 +257,7 @@ class JDBCExtractSuite extends FunSuite with BeforeAndAfter {
     val actual = extract.JDBCExtractStage.execute(
       extract.JDBCExtractStage(
         plugin=new extract.JDBCExtract,
+        id=None,
         name="meta",
         description=None,
         schema=Right(Nil),

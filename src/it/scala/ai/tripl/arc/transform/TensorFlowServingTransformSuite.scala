@@ -68,6 +68,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.TensorFlowServingTransformStage.execute(
       transform.TensorFlowServingTransformStage(
         plugin=new transform.TensorFlowServingTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -107,6 +108,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.TensorFlowServingTransformStage.execute(
       transform.TensorFlowServingTransformStage(
         plugin=new transform.TensorFlowServingTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -146,6 +148,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.TensorFlowServingTransformStage.execute(
       transform.TensorFlowServingTransformStage(
         plugin=new transform.TensorFlowServingTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -185,6 +188,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
       transform.TensorFlowServingTransformStage.execute(
         transform.TensorFlowServingTransformStage(
           plugin=new transform.TensorFlowServingTransform,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(uri),
@@ -206,6 +210,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.TensorFlowServingTransformStage.execute(
       transform.TensorFlowServingTransformStage(
         plugin=new transform.TensorFlowServingTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -242,6 +247,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.TensorFlowServingTransformStage.execute(
       transform.TensorFlowServingTransformStage(
         plugin=new transform.TensorFlowServingTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(uri),

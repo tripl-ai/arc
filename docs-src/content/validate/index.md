@@ -27,6 +27,7 @@ This stage will validate:
 |leftView|String|true|Name of first incoming Spark dataset.|
 |rightView|String|true|Name of second incoming Spark dataset.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 
 ### Examples
 
@@ -77,6 +78,7 @@ FROM (
 |sql|String|*true|{{< readfile file="/content/partials/fields/sql.md" markdown="true" >}} Required if `inputURI` not provided.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
 
 ### Examples
@@ -109,6 +111,7 @@ See [patterns](../solutions/) for more examples.
 |sql|String|*true|{{< readfile file="/content/partials/fields/sql.md" markdown="true" >}} Required if `inputURI` not provided.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
 
 ### Magic

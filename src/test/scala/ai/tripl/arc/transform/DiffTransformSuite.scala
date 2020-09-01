@@ -62,6 +62,7 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
     transform.DiffTransformStage.execute(
       transform.DiffTransformStage(
         plugin=new transform.DiffTransform,
+        id=None,
         name="DiffTransform",
         description=None,
         inputLeftView=inputLeftView,

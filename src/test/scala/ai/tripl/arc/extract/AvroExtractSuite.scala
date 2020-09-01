@@ -73,6 +73,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -116,6 +117,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -138,6 +140,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -183,6 +186,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       extract.AvroExtractStage.execute(
         extract.AvroExtractStage(
           plugin=new extract.AvroExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -208,6 +212,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       extract.AvroExtractStage.execute(
         extract.AvroExtractStage(
           plugin=new extract.AvroExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -232,6 +237,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema),
@@ -310,6 +316,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -341,6 +348,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     extract.BytesExtractStage.execute(
       extract.BytesExtractStage(
         plugin=new extract.BytesExtract,
+        id=None,
         name="dataset",
         description=None,
         outputView=outputView,
@@ -357,6 +365,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
