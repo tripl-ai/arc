@@ -29,7 +29,7 @@ class JDBCExtract extends PipelineStagePlugin with JupyterCompleter {
     |    "production",
     |    "test"
     |  ],
-    |  "inputURI": "jdbc:postgresql://",
+    |  "jdbcURL": "jdbc:postgresql://",
     |  "tableName": "(SELECT * FROM table) table",
     |  "outputView": "outputView"
     |}""".stripMargin
