@@ -564,7 +564,8 @@ object Typing {
       import NumberUtils._
 
       def typeValue(col: IntegerColumn, value: String): (Option[Int], Option[TypingError]) = {
-        val formatters = col.formatters.getOrElse(List("#,##0;-#,##0"))
+        lazy val formatters = col.formatters.getOrElse(List("#,##0;-#,##0"))
+        lazy val error = Some(TypingError.forCol(col, s"""Unable to convert '${value}' to integer using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
 
         try {
           val v = col.formatters match {
@@ -573,14 +574,22 @@ object Typing {
               val number = parseNumber(fmt, value)
               number.map( num => num.toString.toInt )
             }
-            case None => Option(value.toInt)
+            case None => {
+              if (value.toUpperCase.contains("E+")) {
+                val decimal = new java.math.BigDecimal(value)
+                Option(decimal.intValueExact)
+              } else {
+                Option(value.toInt)
+              }
+            }
           }
-          if(v == None)
-            throw new Exception()
-          v -> None
+          v match {
+            case None => None -> error
+            case _ => v -> None
+          }
         } catch {
           case e: Exception =>
-            None -> Some(TypingError.forCol(col, s"""Unable to convert '${value}' to integer using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
+            None -> error
         }
       }
 
@@ -590,7 +599,8 @@ object Typing {
       import NumberUtils._
 
       def typeValue(col: LongColumn, value: String): (Option[Long], Option[TypingError]) = {
-        val formatters = col.formatters.getOrElse(List("#,##0;-#,##0"))
+        lazy val formatters = col.formatters.getOrElse(List("#,##0;-#,##0"))
+        lazy val error = Some(TypingError.forCol(col, s"""Unable to convert '${value}' to long using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
 
         try {
           val v = col.formatters match {
@@ -599,14 +609,22 @@ object Typing {
               val number = parseNumber(fmt, value)
               number.map( num => num.toString.toLong )
             }
-            case None => Option(value.toLong)
+            case None => {
+              if (value.toUpperCase.contains("E+")) {
+                val decimal = new java.math.BigDecimal(value)
+                Option(decimal.longValueExact)
+              } else {
+                Option(value.toLong)
+              }
+            }
           }
-          if(v == None)
-            throw new Exception()
-          v -> None
+          v match {
+            case None => None -> error
+            case _ => v -> None
+          }
         } catch {
           case e: Exception =>
-            None -> Some(TypingError.forCol(col, s"""Unable to convert '${value}' to long using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
+            None -> error
         }
       }
 

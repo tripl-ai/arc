@@ -9,6 +9,7 @@
 - remove forced use of `etl.config.fs.gs.project.id`/`ETL_CONF_GOOGLE_CLOUD_PROJECT_ID` and `etl.config.fs.google.cloud.auth.service.account.json.keyfile`/`ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE` to access Google Cloud Storage job files.
 - remove previous optimisation when reading a large number of small `json` files in `JSONExtract`. This is to better align with `DataSourceV2`.
 - added `sql` attribute to `MetadataFilterTransform` and `MetadataValidate` allowing inline SQL statements.
+- added support for scientific notation to `Integer` and `Long` when performing `TypingTransform`.
 - **BREAKING** disable automatic dropping of unsupported types when performing `*Load` stages (e.g. `ParquetLoad` cannot support `NullType`). Old behavior can be enabled by setting `etl.policy.drop.unsupported`/`ETL_POLICY_DROP_UNSUPPORTED` to `true`.
 - **BREAKING** remove deprecated `etl.config.environment.id` and `ETL_CONF_ENV_ID` in favor of `etl.config.tags` or `ETL_CONF_TAGS`.
 

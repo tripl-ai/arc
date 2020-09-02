@@ -311,6 +311,34 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
       }
     }
 
+    //test scientific number
+    {
+      val col = IntegerColumn(None, name = "name", description = Some("description"), nullable = false, nullReplacementValue = None, trim = false, nullableValues = "" :: Nil, metadata=None, formatters = None)
+
+      // value contains E
+      {
+        val value = "7.000000000000000E+3"
+        Typing.typeValue(value, col) match {
+          case (Some(res), err) => {
+            assert(res === 7000)
+            assert(err === None)
+          }
+          case (_, _) => assert(false)
+        }
+      }
+
+      {
+        val value = "9.8760000000000000e+3"
+        Typing.typeValue(value, col) match {
+          case (Some(res), err) => {
+            assert(res === 9876)
+            assert(err === None)
+          }
+          case (_, _) => assert(false)
+        }
+      }
+    }
+
   }
 
 }
