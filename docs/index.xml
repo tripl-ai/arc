@@ -74,9 +74,9 @@ Parameters    Attribute Type Required Description     name String true Name of t
       
       <guid>https://arc.tripl.ai/execute/</guid>
       <description>*Execute stages are used to execute arbitrary commands against external systems such as Databases and APIs.
-CassandraExecute Since: 2.0.0 - Supports Streaming: False Plugin
-The CassandraExecute is provided by the https://github.com/tripl-ai/arc-cassandra-pipeline-plugin package.
- The CassandraExecute executes a CQL statement against an external Cassandra cluster.
+BigQueryExecute Supports Streaming: False Plugin
+The BigQueryExecute is provided by the https://github.com/tripl-ai/arc-big-query-pipeline-plugin package.
+ The BigQueryExecute executes a SQL statement against BigQuery.
 Parameters    Attribute Type Required Description     name String true Name of the stage for logging.   environments Array[String] true A list of environments under which this stage will be executed.</description>
     </item>
     
@@ -150,7 +150,7 @@ Database Inconsistency When writing data to targets like databases using the JDB
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/changelog/</guid>
-      <description>Change Log 3.1.0  add the JupyterCompleter trait for auto-completion in Jupyter allowing snippet, language and documentationURI to be defined. add the ExtractPipelineStage, TransformPipelineStage and LoadPipelineStage traits to allow easier pattern matching in LifecyclePlugins.  3.0.0  bump to Spark 3.0.0. bump to Hadoop 3.2.0. FIX MLTransform dropping all calculated columns when applying models which do not produce a prediction column. BREAKING remove Scala 2.11 support as Arc is now built against Spark 3.</description>
+      <description>Change Log 3.2.0  rewrote the code to calculate _index (vs _monotonically_increasing_id) to be more efficient with large datasets. add optional id attribute to all stages which can be used to easily identify individual stages when monitoring logs. add the schema attribute to TypingTransform and MetadataTransform to allow inline schema. Can be disabled via etl.policy.inline.schema and ETL_POLICY_INLINE_SCHEMA. These are being trialed and if beneficial will be added to all stages that support schemas.</description>
     </item>
     
     <item>
@@ -603,6 +603,15 @@ e.g. [&#39;id=1&#39;, &#39;id=2&#39;, &#39;id=3&#39;, &#39;id=4&#39;] would crea
     
     <item>
       <title></title>
+      <link>https://arc.tripl.ai/partials/fields/schema/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://arc.tripl.ai/partials/fields/schema/</guid>
+      <description>Specification of an Arc Schema.</description>
+    </item>
+    
+    <item>
+      <title></title>
       <link>https://arc.tripl.ai/partials/fields/schemauri/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -618,7 +627,7 @@ e.g. [&#39;id=1&#39;, &#39;id=2&#39;, &#39;id=3&#39;, &#39;id=4&#39;] would crea
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/partials/fields/schemaview/</guid>
-      <description>Similar to schemaURI but allows the schema to be passed in as another DataFrame. It takes precedence over schemaURI if provided.</description>
+      <description>Similar to schemaURI but allows the schema to be passed in as another DataFrame.</description>
     </item>
     
     <item>
@@ -664,6 +673,15 @@ e.g. [&#39;id=1&#39;, &#39;id=2&#39;, &#39;id=3&#39;, &#39;id=4&#39;] would crea
       
       <guid>https://arc.tripl.ai/partials/fields/sqlparams/</guid>
       <description>Parameters to inject into the SQL statement before executing. The parameters use the ${} format.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://arc.tripl.ai/partials/fields/stageid/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://arc.tripl.ai/partials/fields/stageid/</guid>
+      <description>A optional unique identifier for this stage.</description>
     </item>
     
     <item>

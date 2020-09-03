@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.1.0</span></strong>
+          <span class="version">3.2.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -469,7 +469,7 @@
 --env &quot;ETL_CONF_ENV=production&quot; \
 --entrypoint='' \
 --publish 4040:4040 \
-triplai/arc:arc_3.1.0_spark_3.0.0_scala_2.12_hadoop_3.2.1_1.0.0 \
+triplai/arc:arc_3.2.0_spark_3.0.0_scala_2.12_hadoop_3.2.0_1.0.0 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory 4g \
@@ -504,7 +504,7 @@ bin/spark-submit \
 --class ai.tripl.arc.ARC \
 --conf spark.executor.instances=1 \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
---conf spark.kubernetes.container.image=triplai/arc:arc_3.1.0_spark_3.0.0_scala_2.12_hadoop_3.2.1_1.0.0  \
+--conf spark.kubernetes.container.image=triplai/arc:arc_3.2.0_spark_3.0.0_scala_2.12_hadoop_3.2.0_1.0.0  \
 --conf spark.kubernetes.driverEnv.ETL_CONF_ENV=production \
 --conf spark.kubernetes.driverEnv.ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data \
 --conf spark.kubernetes.driverEnv.ETL_CONF_JOB_URL=https://raw.githubusercontent.com/tripl-ai/arc-starter/master/examples/kubernetes \
@@ -580,7 +580,47 @@ local:///opt/spark/jars/arc.jar \
 </tbody>
 </table>
 
-<p>Additionally there are permissions arguments that can be used to retrieve the job file from cloud storage:</p>
+<h2 id="policy-parameters">Policy Parameters</h2>
+
+<table>
+<thead>
+<tr>
+<th>Environment Variable</th>
+<th>Property</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>ETL_POLICY_INLINE_SCHEMA</td>
+<td>etl.policy.inline.schema</td>
+<td>Whether to support inline schemas (such as the <code>schema</code> attribute in <code>TypingTransform</code>) as opposed to force reading from an external file. Boolean. Default <code>true</code>.</td>
+</tr>
+
+<tr>
+<td>ETL_POLICY_INLINE_SQL</td>
+<td>etl.policy.inline.sql</td>
+<td>Whether to support inline SQL (such as the <code>sql</code> attribute in <code>SQLTransform</code>) as opposed to force reading from an external file. Boolean. Default <code>true</code>.</td>
+</tr>
+
+<tr>
+<td>ETL_POLICY_IPYNB</td>
+<td>etl.policy.ipynb</td>
+<td>Whether to support submission of IPython Notebook (.ipynb) files as opposed to Arc HOCON format only. Boolean. Default <code>true</code>.</td>
+</tr>
+
+<tr>
+<td>ETL_POLICY_DROP_UNSUPPORTED</td>
+<td>etl.policy.drop.unsupported</td>
+<td>Whether to enable automatic dropping of unsupported types when performing <code>*Load</code> stages (e.g. <code>ParquetLoad</code> cannot support <code>NullType</code> and would be dropped if enabled).<br><br>If <code>NullType</code> columns have been created due to a SQL query (like <code>SELECT NULL AS fieldname</code>) it is sometimes possible to correctly type the column by <code>CAST</code>ing the column like <code>SELECT CAST(NULL AS INTEGER) AS fieldname</code> which will treat the column as an <code>IntegerType</code> containing only <code>NULL</code> values.<br><br>Default <code>false</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="authentication-parameters">Authentication Parameters</h2>
+
+<p>Permissions arguments can be used to retrieve the job file from cloud storage:</p>
 
 <table>
 <thead>

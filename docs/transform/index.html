@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.1.0</span></strong>
+          <span class="version">3.2.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -531,6 +531,13 @@
 </tr>
 
 <tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
 <td>outputIntersectionView</td>
 <td>String</td>
 <td>false</td>
@@ -580,6 +587,7 @@
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DiffTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;calculate the difference between the yesterday and today datasets&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;calculate the difference between the yesterday and today datasets&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -687,6 +695,13 @@
 </tr>
 
 <tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
 <td>inputField</td>
 <td>String</td>
 <td>false</td>
@@ -743,6 +758,7 @@
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;look up customer retention score&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;look up customer retention score&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -826,6 +842,13 @@
 </tr>
 
 <tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
 <td>numPartitions</td>
 <td>Integer</td>
 <td>false</td>
@@ -867,6 +890,7 @@
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;convert customer to json for sending to eternal api&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;convert customer to json for sending to eternal api&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -982,8 +1006,22 @@ WHERE metadata.pii = (
 <tr>
 <td>inputURI</td>
 <td>URI</td>
+<td>*true</td>
+<td>URI of the input file containing the SQL statement. Required if <code>sql</code> not provided.<br><br>This statement must be written to query against a table called <code>metadata</code> and must return at least the <code>name</code> column or an error will be raised.</td>
+</tr>
+
+<tr>
+<td>sql</td>
+<td>String</td>
+<td>*true</td>
+<td>A SQL statement to execute. Required if <code>inputURI</code> not provided.<br><br>This statement must be written to query against a table called <code>metadata</code> and must return at least the <code>name</code> column or an error will be raised.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
 <td>true</td>
-<td>URI of the input file containing the SQL statement.<br><br>This statement must be written to query against a table called <code>metadata</code> and must return at least the <code>name</code> column or an error will be raised.</td>
+<td>URI of the input file containing the SQL statement.</td>
 </tr>
 
 <tr>
@@ -1019,6 +1057,13 @@ WHERE metadata.pii = (
 <td>String</td>
 <td>false</td>
 <td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
 </tr>
 
 <tr>
@@ -1064,6 +1109,7 @@ WHERE metadata.pii = (
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataFilterTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;filter out Personally identifiable information (pii) fields&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;filter out Personally identifiable information (pii) fields&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -1111,13 +1157,6 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
-<td>description</td>
-<td>String</td>
-<td>false</td>
-<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
-</tr>
-
-<tr>
 <td>environments</td>
 <td>Array[String]</td>
 <td>true</td>
@@ -1139,17 +1178,38 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
+<td>schema</td>
+<td>Array</td>
+<td>true*</td>
+<td>An inline Arc <a href="https://arc.tripl.ai/schema">schema</a>. Only one of <code>schema</code>, <code>schemaURI</code>, <code>schemaView</code> can be provided.</td>
+</tr>
+
+<tr>
 <td>schemaURI</td>
 <td>URI</td>
 <td>true*</td>
-<td>URI of the input JSON file containing the schema. Required if <code>schemaView</code> not provided.</td>
+<td>URI of the input JSON file containing the Arc <a href="https://arc.tripl.ai/schema">schema</a>. Only one of <code>schema</code>, <code>schemaURI</code>, <code>schemaView</code> can be provided.</td>
 </tr>
 
 <tr>
 <td>schemaView</td>
 <td>String</td>
 <td>true*</td>
-<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>.  It takes precedence over <code>schemaURI</code> if provided.</td>
+<td>Similar to <code>schemaURI</code> but allows the Arc <a href="https://arc.tripl.ai/schema">schema</a> to be passed in as another <code>DataFrame</code>.  Only one of <code>schema</code>, <code>schemaURI</code>, <code>schemaView</code> can be provided.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
 </tr>
 
 <tr>
@@ -1202,6 +1262,7 @@ WHERE metadata.pii = (
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;set metadata for customer view&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;set metadata for customer view&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -1216,7 +1277,7 @@ WHERE metadata.pii = (
   <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;type&#34;</span>
   <span class="p">],</span>
-  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span> 
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="mltransform">MLTransform</h2>
@@ -1281,6 +1342,20 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
 <td>numPartitions</td>
 <td>Integer</td>
 <td>false</td>
@@ -1330,6 +1405,7 @@ WHERE metadata.pii = (
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MLTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply machine learning model&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;apply machine learning model&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -1430,6 +1506,13 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
 <td>numHashTables</td>
 <td>Integer</td>
 <td>false</td>
@@ -1513,6 +1596,7 @@ WHERE metadata.pii = (
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SimilarityJoinTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;test&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;production&#34;</span><span class="p">,</span>
@@ -1626,6 +1710,13 @@ WHERE metadata.pii = (
 </tr>
 
 <tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
 <td>numPartitions</td>
 <td>Integer</td>
 <td>false</td>
@@ -1696,6 +1787,7 @@ FROM ${inputView}
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;standardise customer fields&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;standardise customer fields&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -1799,6 +1891,13 @@ FROM ${inputView}
 </tr>
 
 <tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
 <td>inputField</td>
 <td>String</td>
 <td>false</td>
@@ -1869,6 +1968,7 @@ FROM ${inputView}
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TensorFlowServingTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;call the customer segmentation model&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;call the customer segmentation model&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -1924,17 +2024,24 @@ FROM ${inputView}
 </tr>
 
 <tr>
+<td>schema</td>
+<td>Array</td>
+<td>true*</td>
+<td>An inline Arc <a href="https://arc.tripl.ai/schema">schema</a>. Only one of <code>schema</code>, <code>schemaURI</code>, <code>schemaView</code> can be provided.</td>
+</tr>
+
+<tr>
 <td>schemaURI</td>
 <td>URI</td>
 <td>true*</td>
-<td>URI of the input JSON file containing the schema. Required if <code>schemaView</code> not provided.</td>
+<td>URI of the input JSON file containing the Arc <a href="https://arc.tripl.ai/schema">schema</a>. Only one of <code>schema</code>, <code>schemaURI</code>, <code>schemaView</code> can be provided.</td>
 </tr>
 
 <tr>
 <td>schemaView</td>
 <td>String</td>
 <td>true*</td>
-<td>Similar to <code>schemaURI</code> but allows the schema to be passed in as another <code>DataFrame</code>.  It takes precedence over <code>schemaURI</code> if provided.</td>
+<td>Similar to <code>schemaURI</code> but allows the Arc <a href="https://arc.tripl.ai/schema">schema</a> to be passed in as another <code>DataFrame</code>.  Only one of <code>schema</code>, <code>schemaURI</code>, <code>schemaView</code> can be provided.</td>
 </tr>
 
 <tr>
@@ -1970,6 +2077,13 @@ FROM ${inputView}
 <td>String</td>
 <td>false</td>
 <td>Either <code>permissive</code> or <code>failfast</code>:<br><br><code>permissive</code> will process all rows in the dataset and collect any errors for each row in the <code>_errors</code> column. Rules can then be applied in a <a href="validate/#sqlvalidate">SQLValidate</a> stage if required.<br><br><code>failfast</code> will fail the Arc job on the first row containing at least one error.<br><br>Default: <code>permissive</code>.</td>
+</tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
 </tr>
 
 <tr>
@@ -2015,6 +2129,7 @@ FROM ${inputView}
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply data types to customer records&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;apply data types to customer records&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -2022,7 +2137,6 @@ FROM ${inputView}
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;schemaView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_schema&#34;</span><span class="p">,</span>
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_untyped&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
