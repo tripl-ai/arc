@@ -10,6 +10,8 @@
 - remove previous optimisation when reading a large number of small `json` files in `JSONExtract`. This is to better align with `DataSourceV2`.
 - added `sql` attribute to `MetadataFilterTransform` and `MetadataValidate` allowing inline SQL statements.
 - added support for scientific notation to `Integer` and `Long` when performing `TypingTransform`.
+- **FIX** a non-threadsafe HashMap was used in string validation functions resulting in non-deterministic hanging in the `TypingTransform`. This would happen more frequently with datasets containing many string columns.
+- This commit replaces the HashMap with the threadsafe ConcurrentHashMap
 - **BREAKING** disable automatic dropping of unsupported types when performing `*Load` stages (e.g. `ParquetLoad` cannot support `NullType`). Old behavior can be enabled by setting `etl.policy.drop.unsupported`/`ETL_POLICY_DROP_UNSUPPORTED` to `true`.
 - **BREAKING** remove deprecated `etl.config.environment.id` and `ETL_CONF_ENV_ID` in favor of `etl.config.tags` or `ETL_CONF_TAGS`.
 
