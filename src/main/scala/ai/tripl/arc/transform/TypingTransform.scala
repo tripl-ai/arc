@@ -11,8 +11,11 @@ import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 import java.time.format.ResolverStyle
 import java.time.format.SignStyle
 import java.time.temporal.ChronoField
+import java.util.concurrent.ConcurrentHashMap
 import org.apache.commons.codec.binary.Base64
+
 import scala.collection.JavaConverters._
+import scala.util.matching.Regex
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
@@ -425,9 +428,6 @@ object Typing {
 
     object StringTypeable extends Typeable[StringColumn, String] {
 
-      import scala.collection.mutable.HashMap
-      import scala.util.matching.Regex
-
       case class ValidationResult(valid: Boolean, errorMessage: Option[String] = None)
 
       sealed trait Validator {
@@ -467,10 +467,10 @@ object Typing {
         }
       }
 
-      private val validatorMemo: HashMap[StringColumn, Seq[Validator]] = HashMap[StringColumn, Seq[Validator]]()
+      private val memoizedValidators = new ConcurrentHashMap[StringColumn, Seq[Validator]].asScala
 
       def colValidators(col: StringColumn): Seq[Validator] = {
-        validatorMemo.getOrElseUpdate(col, {
+        memoizedValidators.getOrElseUpdate(col, {
           val minLength = col.minLength.map(MinLengthValidator(_) :: Nil).getOrElse(Nil)
           val maxLength = col.maxLength.map(MaxLengthValidator(_) :: Nil).getOrElse(Nil)
           val regexMatch = col.regex.map(RegexValidator(_) :: Nil).getOrElse(Nil)
@@ -497,6 +497,7 @@ object Typing {
           case ValidationResult(true, _) => Option(value) -> None
           case ValidationResult(false, errorMsgs) => None -> errorMsgs.map(TypingError.forCol(col, _))
         }
+
       }
 
     }
@@ -743,7 +744,7 @@ object Typing {
 
     object DateTimeUtils {
       private val memoizedFormatters: collection.mutable.Map[String, DateTimeFormatter] = {
-        val dtf = new collection.mutable.HashMap[String, DateTimeFormatter]()
+        val dtf = new ConcurrentHashMap[String, DateTimeFormatter].asScala
 
         val epochFormatter = new DateTimeFormatterBuilder()
           .appendValue(ChronoField.INSTANT_SECONDS, 10, 10, SignStyle.NEVER)
@@ -806,7 +807,7 @@ object Typing {
           }
           val formatter = strict match {
             case true => dateTimeFormatter.withResolverStyle(ResolverStyle.STRICT)
-            case false =>dateTimeFormatter.withResolverStyle(ResolverStyle.SMART) // smart is default
+            case false => dateTimeFormatter.withResolverStyle(ResolverStyle.SMART) // smart is default
           }
           memoizedFormatters.put(key, formatter)
           formatter
