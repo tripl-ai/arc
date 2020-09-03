@@ -1,5 +1,6 @@
 {
   "type": "RateExtract",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "create a streaming source",
   "description": "create a streaming source",
   "environments": [

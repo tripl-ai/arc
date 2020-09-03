@@ -58,7 +58,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
   test("MetadataFilterTransform: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // load csv
     val df = spark.read.csv(targetFile)
@@ -71,6 +71,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
+        id=None,
         name="TypingTransform",
         description=None,
         schema=Right(schema.right.getOrElse(null)),
@@ -115,7 +116,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // load csv
     val df = spark.read.csv(targetFile)
@@ -127,6 +128,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
+        id=None,
         name="TypingTransform",
         description=None,
         schema=Right(schema.right.getOrElse(null)),
@@ -143,10 +145,11 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MetadataFilterTransformStage.execute(
       transform.MetadataFilterTransformStage(
         plugin=new transform.MetadataFilterTransform,
+        id=None,
         name="MetadataFilterTransform",
         description=None,
         inputView=outputView,
-        inputURI=new URI(targetFile),
+        inputURI=Option(new URI(targetFile)),
         sql=s"SELECT * FROM metadata WHERE metadata.private=false",
         outputView=outputView,
         persist=false,
@@ -167,7 +170,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // load csv
     val df = spark.read.csv(targetFile)
@@ -179,6 +182,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
+        id=None,
         name="TypingTransform",
         description=None,
         schema=Right(schema.right.getOrElse(null)),
@@ -195,10 +199,11 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MetadataFilterTransformStage.execute(
       transform.MetadataFilterTransformStage(
         plugin=new transform.MetadataFilterTransform,
+        id=None,
         name="MetadataFilterTransform",
         description=None,
         inputView=outputView,
-        inputURI=new URI(targetFile),
+        inputURI=Option(new URI(targetFile)),
         sql=s"SELECT * FROM metadata WHERE metadata.securityLevel <= 4",
         outputView=outputView,
         persist=false,
@@ -247,6 +252,7 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -263,10 +269,11 @@ class MetadataFilterTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MetadataFilterTransformStage.execute(
       transform.MetadataFilterTransformStage(
         plugin=new transform.MetadataFilterTransform,
+        id=None,
         name="MetadataFilterTransform",
         description=None,
         inputView=outputView,
-        inputURI=new URI(targetFile),
+        inputURI=Option(new URI(targetFile)),
         sql=s"SELECT * FROM metadata WHERE metadata.securityLevel <= 4",
         outputView=outputView,
         persist=false,

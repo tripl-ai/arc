@@ -47,7 +47,8 @@ class SimilarityJoinTransform extends PipelineStagePlugin with JupyterCompleter 
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "leftView" :: "leftFields" :: "rightView" :: "rightFields" :: "outputView" :: "persist" :: "shingleLength" :: "numHashTables" :: "threshold" :: "caseSensitive" :: "numPartitions" :: "partitionBy" :: "params" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "leftView" :: "leftFields" :: "rightView" :: "rightFields" :: "outputView" :: "persist" :: "shingleLength" :: "numHashTables" :: "threshold" :: "caseSensitive" :: "numPartitions" :: "partitionBy" :: "params" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val leftView = getValue[String]("leftView")
@@ -65,11 +66,12 @@ class SimilarityJoinTransform extends PipelineStagePlugin with JupyterCompleter 
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, leftView, leftFields, rightView, rightFields, outputView, persist, shingleLength, numHashTables, threshold, caseSensitive, partitionBy, numPartitions, invalidKeys) match {
-      case (Right(name), Right(description), Right(leftView), Right(leftFields), Right(rightView), Right(rightFields), Right(outputView), Right(persist), Right(shingleLength), Right(numHashTables), Right(threshold), Right(caseSensitive), Right(partitionBy), Right(numPartitions), Right(invalidKeys)) =>
+    (id, name, description, leftView, leftFields, rightView, rightFields, outputView, persist, shingleLength, numHashTables, threshold, caseSensitive, partitionBy, numPartitions, invalidKeys) match {
+      case (Right(id), Right(name), Right(description), Right(leftView), Right(leftFields), Right(rightView), Right(rightFields), Right(outputView), Right(persist), Right(shingleLength), Right(numHashTables), Right(threshold), Right(caseSensitive), Right(partitionBy), Right(numPartitions), Right(invalidKeys)) =>
 
         val stage = SimilarityJoinTransformStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           leftView=leftView,
@@ -102,7 +104,7 @@ class SimilarityJoinTransform extends PipelineStagePlugin with JupyterCompleter 
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, leftView, leftFields, rightView, rightFields, outputView, persist, shingleLength, numHashTables, threshold, caseSensitive, partitionBy, numPartitions, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, leftView, leftFields, rightView, rightFields, outputView, persist, shingleLength, numHashTables, threshold, caseSensitive, partitionBy, numPartitions, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -112,6 +114,7 @@ class SimilarityJoinTransform extends PipelineStagePlugin with JupyterCompleter 
 
 case class SimilarityJoinTransformStage(
     plugin: SimilarityJoinTransform,
+    id: Option[String],
     name: String,
     description: Option[String],
     leftView: String,

@@ -168,16 +168,12 @@ object ConfigUtils {
         val gsProjectID: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.gs.project.id").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_PROJECT_ID"))
         val gsKeyfilePath: Option[String] = arcContext.commandLineArguments.get("etl.config.fs.google.cloud.auth.service.account.json.keyfile").orElse(envOrNone("ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE"))
 
-        val projectID = gsProjectID match {
-          case Some(value) => value
-          case None => throw new IllegalArgumentException(s"Google Cloud Project ID not provided for: ${uri}. Set etl.config.fs.gs.project.id or ETL_CONF_GOOGLE_CLOUD_PROJECT_ID environment variable.")
-        }
-        val keyFilePath = gsKeyfilePath match {
-          case Some(value) => value
-          case None => throw new IllegalArgumentException(s"Google Cloud KeyFile Path not provided for: ${uri}. Set etl.config.fs.google.cloud.auth.service.account.json.keyfile property or ETL_CONF_GOOGLE_CLOUD_AUTH_SERVICE_ACCOUNT_JSON_KEYFILE environment variable.")
+        (gsProjectID, gsKeyfilePath) match {
+          case (Some(projectID), Some(keyFilePath)) =>
+            CloudUtils.setHadoopConfiguration(Some(Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)))
+          case _ =>
         }
 
-        CloudUtils.setHadoopConfiguration(Some(Authentication.GoogleCloudStorageKeyFile(projectID, keyFilePath)))
         val etlConfString = CloudUtils.getTextBlob(uri)
         Right(etlConfString)
       }
@@ -195,130 +191,164 @@ object ConfigUtils {
     val kernelspecName = jsonTree.get("metadata").get("kernelspec").get("name").asText
     if (kernelspecName == "arc") {
 
-      val sources = jsonTree.get("cells").iterator.asScala
-        .zipWithIndex
-        .filter { case (cell, _) =>
+      val cells = jsonTree.get("cells").iterator.asScala
+        .filter { cell =>
           // only include 'code' cells
           cell.get("cell_type").asText == "code"
-        }.map { case (cell, index) =>
+        }.map { cell =>
           // convert the raw 'source' into a string
-          (cell.get("source").iterator.asScala
+          cell.get("source").iterator.asScala
             .map { _.asText }
-            .mkString("")
+            .mkString
             .trim
             .replaceAll(",$", "")
-            , index)
-        }.map { case (cell, index) =>
-          // replace any trailing commas
-          (cell.replaceAll(",$", ""), index)
         }.toList
 
-      // calculate the dynamic config plugins
-      val configs = sources
-        .filter { case (cell, _) =>
-          cell.startsWith("%configplugin")
-        }.map { case (cell, _) =>
-          cell.split("\n").drop(1).mkString("\n")
-        }
+        val (config, lifecycle, stages) = parseIPYNBCells(cells)
 
-      // calculate the lifecycle plugins
-      val lifecycles = sources
-        .filter { case (cell, _) =>
-          cell.startsWith("%lifecycleplugin")
-        }.map { case (cell, _) =>
-          cell.split("\n").drop(1).mkString("\n")
-        }
-
-        // calculate the arc stages
-        val stages = sources
-        .filter { case (cell, _) =>
-          val lines = cell.split("\n")
-          val behavior = lines(0).trim.toLowerCase
-
-          // only cells that are explicitly '%arc' or '%sql' or '%sqlvalidate' and not other magic !'%'
-          (!behavior.startsWith("%") && cell.length > 0) || behavior.startsWith("%arc") || behavior.startsWith("%sql") || behavior.startsWith("%sqlvalidate") || behavior.startsWith("%log")
-        }
-        .map { case (cell, index) =>
-          val lines = cell.split("\n")
-          val behavior = lines(0).trim
-          val command = lines.drop(1).mkString("\n")
-
-          behavior match {
-            case b: String if (b.toLowerCase.startsWith("%arc")) => {
-              command
-            }
-            case b: String if (b.toLowerCase.startsWith("%sql") || b.toLowerCase.startsWith("%sqlvalidate") || b.toLowerCase.startsWith("%log")) => {
-              val args = parseArgs(behavior).map {
-                case (k,v) => (k, v.stripPrefix(""""""").stripSuffix(""""""").trim)
-              }
-              val sqlParams = args.get("sqlParams") match {
-                case Some(sqlParams) => {
-                  parseArgs(sqlParams.replace(",", " ")).map{
-                    case (k, v) => {
-                      if (v.trim().startsWith("${")) {
-                        s""""${k}": ${v}"""
-                      } else {
-                        s""""${k}": "${v}""""
-                      }
-                    }
-                  }.mkString(",")
-                }
-                case None => ""
-              }
-
-              behavior.toLowerCase match {
-                case b if b.startsWith("%sqlvalidate") =>
-                  s"""{
-                  |  "type": "SQLValidate",
-                  |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
-                  |  "description": "${args.getOrElse("description", "")}",
-                  |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
-                  |  "sql": \"\"\"${command}\"\"\",
-                  |  "sqlParams": {${sqlParams}},
-                  |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
-                  |}""".stripMargin
-                case b if b.startsWith("%sql") =>
-                  s"""{
-                  |  "type": "SQLTransform",
-                  |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
-                  |  "description": "${args.getOrElse("description", "")}",
-                  |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
-                  |  "sql": \"\"\"${command}\"\"\",
-                  |  "outputView": "${args.getOrElse("outputView", "")}",
-                  |  "persist": ${args.getOrElse("persist", "false")},
-                  |  "sqlParams": {${sqlParams}},
-                  |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "outputView", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "datasetLabels", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
-                  |}""".stripMargin
-                case b if b.startsWith("%log") =>
-                  s"""{
-                  |  "type": "LogExecute",
-                  |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
-                  |  "description": "${args.getOrElse("description", "")}",
-                  |  "environments": [${args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")}],
-                  |  "sql": \"\"\"${command}\"\"\",
-                  |  "sqlParams": {${sqlParams}},
-                  |  ${args.filterKeys{ !List("name", "description", "sqlParams", "environments", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "streamingDuration").contains(_) }.map{ case (k, v) => s""""${k}": "${v}""""}.mkString(",")}
-                  |}""".stripMargin
-                case _ => ""             
-              }
-            }
-            case _ => cell
-          }
-        }
-
-      val config = s"""
-      |{
-      |"plugins": {
-      |"config": [${configs.mkString("\n", ",\n", "\n")}],
-      |"lifecycle": [${lifecycles.mkString("\n", ",\n", "\n")}]
-      |},
-      |"stages": [${stages.mkString("\n",",\n","\n")}]
-      |}""".stripMargin
-
-      config
+        s"""
+          |{
+          |"plugins": {
+          |"config": [$config],
+          |"lifecycle": [$lifecycle]
+          |},
+          |"stages": [$stages]
+          |}""".stripMargin
     } else {
       throw new Exception(s"""file ${uri} does not appear to be a valid arc notebook. Has kernelspec: '${kernelspecName}'.""")
     }
+  }
+
+  def parseIPYNBCells(cells: List[String]): (String, String, String) = {
+    // calculate the dynamic config plugins
+    val configs = cells
+      .filter { cell =>
+        cell.startsWith("%configplugin")
+      }.map { cell =>
+        cell.split("\n").drop(1).mkString("\n")
+      }
+
+    // calculate the lifecycle plugins
+    val lifecycles = cells
+      .filter { cell =>
+        cell.startsWith("%lifecycleplugin")
+      }.map { cell =>
+        cell.split("\n").drop(1).mkString("\n")
+      }
+
+      // calculate the arc stages
+      val stages = cells
+      .zipWithIndex
+      .filter { case (cell, _) =>
+        val behavior = cell.trim.toLowerCase
+        (
+          (!behavior.startsWith("%") && cell.length > 0) // non-magic, non-empty cells assumed to be arc
+          || behavior.startsWith("%arc") // explicit arc cells
+          || behavior.startsWith("%sql") // explicit sql cells
+          || behavior.startsWith("%sqlvalidate") // explicit sqlvalidate cells
+          || behavior.startsWith("%log") // explicit log cells
+          || behavior.startsWith("%metadatafilter") // explicit log cells
+          || behavior.startsWith("%metadatavalidate") // explicit log cells
+        )
+      }
+      .map { case (cell, index) =>
+        val lines = cell.split("\n")
+        val behavior = lines(0).trim
+        val command = lines.drop(1).mkString("\n")
+
+        behavior match {
+          case b: String if (!b.startsWith("%")) => cell
+          case b: String if (b.toLowerCase.startsWith("%arc")) => command
+          case b: String if (b.toLowerCase.startsWith("%")) => {
+            val args = parseArgs(behavior).map {
+              case (k,v) => (k, v.stripPrefix(""""""").stripSuffix(""""""").trim)
+            }
+
+            val environments = args.getOrElse("environments", "").split(",").mkString(""""""", """","""", """"""")
+
+            val sqlParams = args.get("sqlParams") match {
+              case Some(sqlParams) => {
+                parseArgs(sqlParams.replace(",", " ")).map{
+                  case (k, v) => {
+                    if (v.trim().startsWith("${")) {
+                      s""""${k}": ${v}"""
+                    } else {
+                      s""""${k}": "${v}""""
+                    }
+                  }
+                }.mkString(",")
+              }
+              case None => ""
+            }
+            // these represent other parameters added to the 'behaviour line' which are not jupyter control values
+            val dynamicArguments = args
+              .filterKeys { !List("name", "description", "sqlParams", "outputView", "environments", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "streamingDuration").contains(_) }
+              .map { case (k, v) => s""""${k}": "${v}"""" }
+              .mkString(",")
+
+            behavior.toLowerCase match {
+              case b if b.startsWith("%log") =>
+                s"""{
+                |  "type": "LogExecute",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${environments}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "sqlParams": {${sqlParams}},
+                |  ${dynamicArguments}
+                |}""".stripMargin
+              case b if b.startsWith("%metadatafilter") =>
+                s"""{
+                |  "type": "MetadataFilterTransform",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${environments}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "sqlParams": {${sqlParams}},
+                |  "outputView": "${args.getOrElse("outputView", "")}",
+                |  "persist": ${args.getOrElse("persist", "false")},
+                |  ${dynamicArguments}
+                |}""".stripMargin
+              case b if b.startsWith("%metadatavalidate") =>
+                s"""{
+                |  "type": "MetadataValidate",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${environments}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "sqlParams": {${sqlParams}},
+                |  ${dynamicArguments}
+                |}""".stripMargin
+              case b if b.startsWith("%sqlvalidate") =>
+                s"""{
+                |  "type": "SQLValidate",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${environments}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "sqlParams": {${sqlParams}},
+                |  ${dynamicArguments}
+                |}""".stripMargin
+              case b if b.startsWith("%sql") && !b.startsWith("%sqlvalidate") =>
+                s"""{
+                |  "type": "SQLTransform",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${environments}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "sqlParams": {${sqlParams}},
+                |  "outputView": "${args.getOrElse("outputView", "")}",
+                |  "persist": ${args.getOrElse("persist", "false")},
+                |  ${dynamicArguments}
+                |}""".stripMargin
+              case _ => ""
+            }
+          }
+        }
+      }
+
+
+    (configs.mkString("\n", ",\n", "\n"), lifecycles.mkString("\n", ",\n", "\n"), stages.mkString("\n",",\n","\n"))
   }
 
   // defines rules for parsing arguments from the jupyter notebook
@@ -356,7 +386,7 @@ object ConfigUtils {
     }
   }
 
-  def checkValidKeys(c: Config)(expectedKeys: => Seq[String]): Either[Errors, String] = {
+  def checkValidKeys(c: Config)(expectedKeys: Seq[String]): Either[Errors, String] = {
 
     val diffKeys = c.root().keySet.asScala.toSeq.diff(expectedKeys).toList
 
@@ -377,6 +407,20 @@ object ConfigUtils {
           ConfigError(key, Some(c.getValue(key).origin.lineNumber()), s"""Invalid attribute '${key}'.""")
         }
       }))
+    }
+  }
+
+  def checkOneOf(c: Config)(keys: Seq[String], required: Boolean = true): Either[Errors, Boolean] = {
+    val setKeys = keys.map { key => if (c.hasPath(key)) 1 else 0 }.reduce (_ + _)
+
+    if (setKeys == 0 && required) {
+      Left(List(ConfigError("", None, s"""One of ${keys.map(field => s"'${field}'").mkString("[",", ","]")} must be set.""")))
+    } else if (setKeys == 0 && !required) {
+      Right(true)
+    } else if (setKeys == 1) {
+      Right(true)
+    } else {
+      Left(List(ConfigError("", None, s"""Only one attribute of '${keys.map(field => s"'${field}'").mkString("[",", ","]")} is allowed.""")))
     }
   }
 
@@ -642,16 +686,12 @@ object ConfigUtils {
     }
   }
 
-  def getExtractColumns(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config, arcContext: ARCContext): Either[Errors, List[ExtractColumn]] = {
-    val schema = textContentForURI(uriKey, authentication)(uri).flatMap(text => Right(Option(text)))
+  def getExtractColumns(uriKey: String)(schema: String)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config, arcContext: ARCContext): Either[Errors, List[ExtractColumn]] = {
+    val cols = ArcSchema.parseArcSchema(schema)
 
-    schema.flatMap { sch =>
-      val cols = sch.map{ s => ArcSchema.parseArcSchema(s) }.getOrElse(Right(Nil))
-
-      cols match {
-        case Left(errs) => Left(errs.map( e => ConfigError("schema error", None, Error.pipelineSimpleErrorMsg(e.errors)) ))
-        case Right(extractColumns) => Right(extractColumns)
-      }
+    cols match {
+      case Left(errs) => Left(errs.map( e => ConfigError("schema error", None, Error.pipelineSimpleErrorMsg(e.errors)) ))
+      case Right(extractColumns) => Right(extractColumns)
     }
   }
 
@@ -678,7 +718,6 @@ object ConfigUtils {
       case _ => Left(errors.reverse)
     }
   }
-
 
   def textContentForURI(uriKey: String, authentication: Either[Errors, Option[Authentication]])(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, c: Config, arcContext: ARCContext): Either[Errors, String] = {
     uri.getScheme match {
@@ -812,6 +851,14 @@ object ConfigUtils {
       Left(ConfigError(path, None, s"Inline SQL (use of the 'sql' attribute) has been disabled by policy. SQL statements must be supplied via files located at 'inputURI'.") :: Nil)
     } else {
       Right(sql)
+    }
+  }
+
+  def verifyInlineSchemaPolicy(path: String)(schema: String)(implicit c: Config, arcContext: ARCContext): Either[Errors, String] = {
+    if (!arcContext.inlineSchema) {
+      Left(ConfigError(path, None, s"Inline Schema (use of the '${path}' attribute) has been disabled by policy. The schema must be supplied via other method.") :: Nil)
+    } else {
+      Right(schema)
     }
   }
 

@@ -39,7 +39,8 @@ class DelimitedLoad extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "delimiter" :: "header" :: "numPartitions" :: "partitionBy" :: "quote" :: "saveMode" :: "params"  :: "customDelimiter" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "delimiter" :: "header" :: "numPartitions" :: "partitionBy" :: "quote" :: "saveMode" :: "params"  :: "customDelimiter" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = getValue[String]("inputView")
@@ -58,12 +59,13 @@ class DelimitedLoad extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, outputURI, partitionBy, numPartitions, authentication, saveMode, delimiter, quote, header, customDelimiter, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(partitionBy), Right(numPartitions), Right(authentication), Right(saveMode), Right(delimiter), Right(quote), Right(header), Right(customDelimiter), Right(invalidKeys)) =>
+    (id, name, description, inputView, outputURI, partitionBy, numPartitions, authentication, saveMode, delimiter, quote, header, customDelimiter, invalidKeys) match {
+      case (Right(id), Right(name), Right(description), Right(inputView), Right(outputURI), Right(partitionBy), Right(numPartitions), Right(authentication), Right(saveMode), Right(delimiter), Right(quote), Right(header), Right(customDelimiter), Right(invalidKeys)) =>
         val settings = new Delimited(header=header, sep=delimiter, quote=quote, customDelimiter=customDelimiter)
 
         val stage = DelimitedLoadStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           inputView=inputView,
@@ -86,7 +88,7 @@ class DelimitedLoad extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputURI, partitionBy, numPartitions, authentication, saveMode, delimiter, quote, header, customDelimiter, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, inputView, outputURI, partitionBy, numPartitions, authentication, saveMode, delimiter, quote, header, customDelimiter, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -97,6 +99,7 @@ class DelimitedLoad extends PipelineStagePlugin with JupyterCompleter {
   // case class DelimitedLoad() extends Load { val getType = "DelimitedLoad" }
 case class DelimitedLoadStage(
     plugin: DelimitedLoad,
+    id: Option[String],
     name: String,
     description: Option[String],
     inputView: String,
@@ -124,23 +127,23 @@ object DelimitedLoadStage {
     // set write permissions
     CloudUtils.setHadoopConfiguration(stage.authentication)
 
-    val dropMap = new java.util.HashMap[String, Object]()
-
-    // delimited cannot handle a column of ArrayType
+    // DelimitedLoad cannot handle a column of ArrayType
     val arrays = df.schema.filter( _.dataType.typeName == "array").map(_.name)
-    if (!arrays.isEmpty) {
-      dropMap.put("ArrayType", arrays.asJava)
-    }
-
-    // delimited cannot handle a column of NullType
+    // DelimitedLoad cannot handle a column of NullType
     val nulls = df.schema.filter( _.dataType == NullType).map(_.name)
-    if (!nulls.isEmpty) {
+    val nonNullDF = if (!arrays.isEmpty || !nulls.isEmpty) {
+      val dropMap = new java.util.HashMap[String, Object]()
+      dropMap.put("ArrayType", arrays.asJava)
       dropMap.put("NullType", nulls.asJava)
+      if (arcContext.dropUnsupported) {
+        stage.stageDetail.put("drop", dropMap)
+        df.drop(arrays:_*).drop(nulls:_*)
+      } else {
+        throw new Exception(s"""inputView '${stage.inputView}' contains types ${new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(dropMap)} which are unsupported by DelimitedLoad and 'dropUnsupported' is set to false.""")
+      }
+    } else {
+      df
     }
-
-    stage.stageDetail.put("drop", dropMap)
-
-    val nonNullDF = df.drop(arrays:_*).drop(nulls:_*)
 
     val options = Delimited.toSparkOptions(stage.settings)
 

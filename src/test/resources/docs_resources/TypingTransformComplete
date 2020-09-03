@@ -1,5 +1,6 @@
 {
   "type": "TypingTransform",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "apply data types to customer records",
   "description": "apply data types to customer records",
   "environments": [
@@ -7,7 +8,6 @@
     "test"
   ],
   "schemaURI": "hdfs://datalake/schema/customer.json",
-  "schemaView": "customer_schema",
   "inputView": "customer_untyped",
   "outputView": "customer",
   "authentication": {},

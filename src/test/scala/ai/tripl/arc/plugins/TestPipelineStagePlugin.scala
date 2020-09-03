@@ -25,16 +25,18 @@ class TestPipelineStagePlugin extends PipelineStagePlugin {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "environments" :: "name" :: "description" :: "params" :: Nil
+    val expectedKeys = "type" :: "environments" :: "id" :: "name" :: "description" :: "params" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, invalidKeys) match {
-      case (Right(name), Right(description), Right(invalidKeys)) =>
+    (id, name, description, invalidKeys) match {
+      case (Right(id), Right(name), Right(description), Right(invalidKeys)) =>
         val instance = TestPipelineStageInstance(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           params=params
@@ -42,7 +44,7 @@ class TestPipelineStagePlugin extends PipelineStagePlugin {
 
         Right(instance)
       case _ =>
-        val allErrors: Errors = List(name, description, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val err = StageError(index, this.getClass.getName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
     }
@@ -51,6 +53,7 @@ class TestPipelineStagePlugin extends PipelineStagePlugin {
 
 case class TestPipelineStageInstance(
     plugin: PipelineStagePlugin,
+    id: Option[String],
     name: String,
     description: Option[String],
     params: Map[String, String]

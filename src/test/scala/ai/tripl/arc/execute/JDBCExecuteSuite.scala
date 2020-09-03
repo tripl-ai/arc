@@ -74,11 +74,12 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
       ai.tripl.arc.execute.JDBCExecuteStage(
         plugin=new ai.tripl.arc.execute.JDBCExecute,
+        id=None,
         name=outputView,
         description=None,
         inputURI=new URI(testURI),
@@ -104,12 +105,13 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException] {
       ai.tripl.arc.execute.JDBCExecuteStage.execute(
         ai.tripl.arc.execute.JDBCExecuteStage(
           plugin=new ai.tripl.arc.execute.JDBCExecute,
+          id=None,
           name=outputView,
           description=None,
           inputURI=new URI(testURI),
@@ -127,11 +129,12 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
       ai.tripl.arc.execute.JDBCExecuteStage(
         plugin=new ai.tripl.arc.execute.JDBCExecute,
+        id=None,
         name=outputView,
         description=None,
         inputURI=new URI(testURI),
@@ -157,12 +160,13 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException] {
       ai.tripl.arc.execute.JDBCExecuteStage.execute(
         ai.tripl.arc.execute.JDBCExecuteStage(
           plugin=new ai.tripl.arc.execute.JDBCExecute,
+          id=None,
           name=outputView,
           description=None,
           inputURI=new URI(testURI),
@@ -180,12 +184,13 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException] {
       ai.tripl.arc.execute.JDBCExecuteStage.execute(
         ai.tripl.arc.execute.JDBCExecuteStage(
           plugin=new ai.tripl.arc.execute.JDBCExecute,
+          id=None,
           name=outputView,
           description=None,
           inputURI=new URI(testURI),
@@ -203,12 +208,13 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException] {
       ai.tripl.arc.execute.JDBCExecuteStage.execute(
         ai.tripl.arc.execute.JDBCExecuteStage(
           plugin=new ai.tripl.arc.execute.JDBCExecute,
+          id=None,
           name=outputView,
           description=None,
           inputURI=new URI(testURI),
@@ -224,6 +230,7 @@ class JDBCExecuteSuite extends FunSuite with BeforeAndAfter {
     ai.tripl.arc.execute.JDBCExecuteStage.execute(
       ai.tripl.arc.execute.JDBCExecuteStage(
         plugin=new ai.tripl.arc.execute.JDBCExecute,
+        id=None,
         name=outputView,
         description=None,
         inputURI=new URI(testURI),

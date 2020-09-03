@@ -10,6 +10,7 @@ import collection.JavaConverters._
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 import org.apache.spark.sql._
+import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
@@ -51,7 +52,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
   test("TextExtract: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -79,12 +80,12 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
         assert(df.count == 1)
       }
     }
-  }  
+  }
 
   test("TextExtract: end-to-end inputView") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     spark.sql(s"""
     SELECT 'b' AS notValue, '${targetFile}' AS value
@@ -116,17 +117,18 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
         assert(df.count == 1)
       }
     }
-  }  
+  }
 
   test("TextExtract: multiLine false") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = extract.TextExtractStage.execute(
       extract.TextExtractStage(
         plugin=new extract.TextExtract,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(List.empty),
@@ -151,11 +153,12 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = extract.TextExtractStage.execute(
       extract.TextExtractStage(
         plugin=new extract.TextExtract,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(List.empty),
@@ -180,13 +183,14 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // try with wildcard
     val thrown0 = intercept[Exception with DetailException] {
       extract.TextExtractStage.execute(
         extract.TextExtractStage(
           plugin=new extract.TextExtract,
+          id=None,
           name="dataset",
           description=None,
           schema=Right(List.empty),
@@ -205,6 +209,43 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     }
     assert(thrown0.getMessage.contains("Path '"))
     assert(thrown0.getMessage.contains("empty.text' does not exist and no schema has been provided to create an empty dataframe."))
+  }
+
+  test("TextExtract: _index") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    val actual = extract.TextExtractStage.execute(
+      extract.TextExtractStage(
+        plugin=new extract.TextExtract,
+        id=None,
+        name="dataset",
+        description=None,
+        schema=Right(List.empty),
+        outputView=outputView,
+        input=Right(targetDirectory),
+        authentication=None,
+        persist=false,
+        numPartitions=None,
+        contiguousIndex=true,
+        multiLine=false,
+        basePath=None,
+        params=Map.empty,
+        watermark=None
+      )
+    ).get
+
+    val window = Window.partitionBy("_filename").orderBy("_monotonically_increasing_id")
+    val expected = spark.read.format("text").load(targetDirectory)
+      .withColumn("_monotonically_increasing_id", monotonically_increasing_id())
+      .withColumn("_filename", input_file_name().as("_filename"))
+      .withColumn("_index", row_number().over(window).as("_index"))
+      .drop("_monotonically_increasing_id")
+
+    assert(TestUtils.datasetEquality(expected, actual))
+
   }
 
   test("TextExtract: Structured Streaming") {
@@ -246,6 +287,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.TextExtractStage.execute(
       extract.TextExtractStage(
         plugin=new extract.TextExtract,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),

@@ -38,7 +38,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
                   .getOrCreate()
     spark.sparkContext.setLogLevel("INFO")
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // set for deterministic timezone
     spark.conf.set("spark.sql.session.timeZone", "UTC")
@@ -57,7 +57,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can call TensorflowServing via REST" ) {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -74,6 +74,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
         description=None,
+        id=None,
         name=outputView,
         uri=new URI(uri),
         headers=Map.empty,
@@ -103,7 +104,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can call TensorflowServing via REST: inputField" ) {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -120,6 +121,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
         description=None,
+        id=None,
         name=outputView,
         uri=new URI(uri),
         headers=Map.empty,

@@ -65,12 +65,13 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // load csv
     extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=inputView,
         description=None,
         schema=Right(Nil),
@@ -95,6 +96,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val actual = transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -135,12 +137,13 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
   test("TypingTransform: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // load csv
     extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=inputView,
         description=None,
         schema=Right(Nil),
@@ -194,65 +197,13 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
         """).first.getBoolean(0) == true)
       }
     }
-  }  
-
-  test("TypingTransform: end-to-end complex type failure") {
-    implicit val spark = session
-    implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-    // load csv
-    extract.DelimitedExtractStage.execute(
-      extract.DelimitedExtractStage(
-        plugin=new extract.DelimitedExtract,
-        name=inputView,
-        description=None,
-        schema=Right(Nil),
-        outputView=inputView,
-        input=Right(targetFile),
-        settings=new Delimited(header=false, sep=Delimiter.Comma),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil,
-        contiguousIndex=true,
-        basePath=None,
-        inputField=None,
-        watermark=None
-      )
-    )
-
-    val conf = s"""{
-      "stages": [
-        {
-          "type": "TypingTransform",
-          "name": "test",
-          "description": "test",
-          "environments": [
-            "production",
-            "test"
-          ],
-          "schemaURI": "${getClass.getResource("/conf/schema/").toString}/schema_complex.json",
-          "inputView": "${inputView}",
-          "outputView": "${outputView}"
-        }
-      ]
-    }"""
-
-    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
-
-    pipelineEither match {
-      case Left(err) => assert(err.toString.contains("TypingTransform does not support complex types like column 'group' of type struct."))
-      case Right((pipeline, _)) => fail("should fail")
-    }
-  }   
+  }
 
   test("TypingTransform: failMode - failfast") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // get a corrupt dataset dataset
     // filter for a single row to have deterministic outcome
@@ -270,6 +221,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
       val dataset = transform.TypingTransformStage.execute(
         transform.TypingTransformStage(
           plugin=new transform.TypingTransform,
+          id=None,
           name="dataset",
           description=None,
           schema=Right(schema.right.getOrElse(Nil)),
@@ -292,11 +244,11 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val inputDataFrame = Seq(
       ("textDatum")
-    ).toDF("textDatum") 
+    ).toDF("textDatum")
     inputDataFrame.createOrReplaceTempView(inputView)
 
     val meta = """
@@ -322,6 +274,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
       val dataset = transform.TypingTransformStage.execute(
         transform.TypingTransformStage(
           plugin=new transform.TypingTransform,
+          id=None,
           name="dataset",
           description=None,
           schema=Right(schema.right.getOrElse(Nil)),
@@ -339,13 +292,13 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
 
     assert(thrown0.getMessage.contains("TypingTransform with non-nullable column 'integerDatum' cannot continue due to error: Unable to convert 'textDatum' to integer using formatters ['#,##0;-#,##0']."))
 
-  }  
+  }
 
   test("TypingTransform: metadata bad array") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val meta = """
     [
@@ -386,7 +339,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val meta = """
     [
@@ -425,7 +378,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val meta = """
     [
@@ -466,7 +419,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val meta = """
     [
@@ -508,7 +461,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val meta = """
     [
@@ -543,7 +496,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(meta)
 
     assert(ExtractColumn.toStructField(schema.right.get(0)).metadata.json == """{"nullable":false,"test":{"abc":{"def":true}},"internal":false,"description":"booleanDatum","id":"982cbf60-7ba7-4e50-a09b-d8624a5c49e6"}""")
-  }  
+  }
 
   test("TypingTransform: Execute with Structured Streaming" ) {
     implicit val spark = session
@@ -577,6 +530,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -611,7 +565,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val meta = """
     [
@@ -638,6 +592,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.TypingTransformStage.execute(
       transform.TypingTransformStage(
         plugin=new transform.TypingTransform,
+        id=None,
         name="dataset",
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -662,7 +617,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val meta = """
     [
@@ -690,4 +645,116 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
       case Right(stage) => assert(stage == List(BinaryColumn(Some("982cbf60-7ba7-4e50-a09b-d8624a5c49e6"),"binaryDatum",Some("binaryDatum"),false,None,false,List("", "null"),EncodingTypeBase64,Some("{}"))))
     }
   }
+
+  test("TypingTransform: multiple values") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    // load csv
+    extract.DelimitedExtractStage.execute(
+      extract.DelimitedExtractStage(
+        plugin=new extract.DelimitedExtract,
+        id=None,
+        name=inputView,
+        description=None,
+        schema=Right(Nil),
+        outputView=inputView,
+        input=Right(targetFile),
+        settings=new Delimited(header=false, sep=Delimiter.Comma),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        basePath=None,
+        inputField=None,
+        watermark=None
+      )
+    )
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "TypingTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "schema": ${TestUtils.getKnownDatasetMetadataJson},
+          "schemaURI": "${getClass.getResource("/conf/schema/").toString}/schema_complex.json",
+          "inputView": "${inputView}",
+          "outputView": "${outputView}"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => assert(err.toString.contains("Only one attribute of '['schema', 'schemaURI', 'schemaView'] is allowed."))
+      case Right((pipeline, _)) => fail("should fail")
+    }
+  }
+
+  test("TypingTransform: inline schema") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    // load csv
+    extract.DelimitedExtractStage.execute(
+      extract.DelimitedExtractStage(
+        plugin=new extract.DelimitedExtract,
+        id=None,
+        name=inputView,
+        description=None,
+        schema=Right(Nil),
+        outputView=inputView,
+        input=Right(targetFile),
+        settings=new Delimited(header=false, sep=Delimiter.Comma),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        basePath=None,
+        inputField=None,
+        watermark=None
+      )
+    )
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "TypingTransform",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "schema": ${TestUtils.getKnownDatasetMetadataJson},
+          "inputView": "${inputView}",
+          "outputView": "${outputView}"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString())
+      case Right((pipeline, _)) => {
+        val actual = ARC.run(pipeline)(spark, logger, arcContext).get
+        val expected = TestUtils.getKnownDataset.drop(col("nullDatum"))
+        assert(TestUtils.datasetEquality(expected, actual.drop("_filename").drop("_index").drop("_errors")))
+      }
+    }
+  }
+
 }

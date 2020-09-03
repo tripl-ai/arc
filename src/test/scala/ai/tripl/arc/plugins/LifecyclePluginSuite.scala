@@ -35,7 +35,7 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
   test("Read and execute config with lifecycle configuration plugin") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
     import spark.implicits._
 
     // create single row dataset
@@ -59,7 +59,7 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
   test("lifecycle return result without lifecycle") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -91,7 +91,7 @@ class LifecyclePluginSuite extends FunSuite with BeforeAndAfter {
   test("lifecycle return results and ordering with multiple plugins") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "plugins": {

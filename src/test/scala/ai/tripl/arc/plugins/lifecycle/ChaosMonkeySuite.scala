@@ -48,7 +48,7 @@ class ChaosMonkeySuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "plugins": {
@@ -60,7 +60,7 @@ class ChaosMonkeySuite extends FunSuite with BeforeAndAfter {
             "probability": 0.05,
           }
         ]
-      },  
+      },
       "stages": [
         {
           "type": "SQLTransform",
@@ -81,8 +81,8 @@ class ChaosMonkeySuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(err) => fail(err.toString)
-      case Right((pipeline, arcCtx)) => 
-   
+      case Right((pipeline, arcCtx)) =>
+
       val thrown0 = intercept[Exception with DetailException] {
         for (_ <- 1 to 100) {
           val df = ARC.run(pipeline)(spark, logger, arcCtx).get
@@ -91,6 +91,6 @@ class ChaosMonkeySuite extends FunSuite with BeforeAndAfter {
 
       assert(thrown0.getMessage.contains("ChaosMonkey triggered and exception thrown."))
     }
-  }  
+  }
 
 }

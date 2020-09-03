@@ -43,7 +43,7 @@ class PipelineExecuteSuite extends FunSuite with BeforeAndAfter {
   test("PipelineExecute: Nested Lifecycle Plugins") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
     import spark.implicits._
 
     // create single row dataset
@@ -103,7 +103,7 @@ class PipelineExecuteSuite extends FunSuite with BeforeAndAfter {
   test("PipelineExecute: Test read .ipynb with .ipynb PipelineExecute") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val targetFile = "classpath://conf/job.ipynb"
     val conf = s"""{
@@ -134,7 +134,7 @@ class PipelineExecuteSuite extends FunSuite with BeforeAndAfter {
   test("PipelineExecute: Test read .ipynb with .ipynb PipelineExecute no scheme") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val targetFile = getClass.getResource("/conf/job.ipynb").toString.replace("file:", "")
     val conf = s"""{
@@ -167,7 +167,7 @@ class PipelineExecuteSuite extends FunSuite with BeforeAndAfter {
   test("PipelineExecute: Test read .ipynb with .ipynb PipelineExecute error bubbling") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val targetFile = "classpath://conf/error_job.ipynb"
     val conf = s"""{

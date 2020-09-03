@@ -214,7 +214,7 @@ object MetadataUtils {
     }
   }
 
-  // // a helper function to speed up the creation of a metadata formatted file
+  // a helper function to speed up the creation of a metadata formatted file
   def makeMetadataFromDataframe(input: DataFrame): String = {
     val objectMapper = new ObjectMapper()
     val fields = input.schema.fields.flatMap(fieldAsObjectNode).map(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString)

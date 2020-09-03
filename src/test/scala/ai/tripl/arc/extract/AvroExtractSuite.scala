@@ -65,7 +65,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // parse json schema to List[ExtractColumn]
     val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
@@ -73,6 +73,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -110,12 +111,13 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // no cache
     extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -138,6 +140,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -161,7 +164,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val schema =
       BooleanColumn(
@@ -183,6 +186,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       extract.AvroExtractStage.execute(
         extract.AvroExtractStage(
           plugin=new extract.AvroExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -208,6 +212,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
       extract.AvroExtractStage.execute(
         extract.AvroExtractStage(
           plugin=new extract.AvroExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -232,6 +237,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema),
@@ -260,7 +266,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
   test("AvroExtract: Binary with user.avsc") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -305,11 +311,12 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -334,13 +341,14 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val schema = new Schema.Parser().parse(CloudUtils.getTextBlob(new URI(schemaFile)))
 
     extract.BytesExtractStage.execute(
       extract.BytesExtractStage(
         plugin=new extract.BytesExtract,
+        id=None,
         name="dataset",
         description=None,
         outputView=outputView,
@@ -357,6 +365,7 @@ class AvroExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.AvroExtractStage.execute(
       extract.AvroExtractStage(
         plugin=new extract.AvroExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),

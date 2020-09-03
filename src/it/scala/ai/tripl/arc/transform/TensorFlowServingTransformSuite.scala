@@ -52,7 +52,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Can call TensorFlowServing via REST: integer" ) {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -68,6 +68,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.TensorFlowServingTransformStage.execute(
       transform.TensorFlowServingTransformStage(
         plugin=new transform.TensorFlowServingTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -91,7 +92,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -107,6 +108,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.TensorFlowServingTransformStage.execute(
       transform.TensorFlowServingTransformStage(
         plugin=new transform.TensorFlowServingTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -130,7 +132,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -146,6 +148,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.TensorFlowServingTransformStage.execute(
       transform.TensorFlowServingTransformStage(
         plugin=new transform.TensorFlowServingTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -169,7 +172,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = spark.range(1, 10).toDF
     df.createOrReplaceTempView(inputView)
@@ -185,6 +188,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
       transform.TensorFlowServingTransformStage.execute(
         transform.TensorFlowServingTransformStage(
           plugin=new transform.TensorFlowServingTransform,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(uri),
@@ -206,6 +210,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.TensorFlowServingTransformStage.execute(
       transform.TensorFlowServingTransformStage(
         plugin=new transform.TensorFlowServingTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(uri),
@@ -229,7 +234,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val readStream = spark
       .readStream
@@ -242,6 +247,7 @@ class TensorFlowServingTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.TensorFlowServingTransformStage.execute(
       transform.TensorFlowServingTransformStage(
         plugin=new transform.TensorFlowServingTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(uri),

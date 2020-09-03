@@ -109,7 +109,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // parse json schema to List[ExtractColumn]
     val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
@@ -117,6 +117,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -162,7 +163,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(inputView)
@@ -174,6 +175,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -200,12 +202,13 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // no cache
     extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -229,6 +232,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -253,7 +257,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val schema =
       BooleanColumn(
@@ -274,6 +278,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
       extract.JSONExtractStage.execute(
         extract.JSONExtractStage(
           plugin=new extract.JSONExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -292,14 +297,14 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown0.getMessage.contains("No files matched '"))
-    assert(thrown0.getMessage.contains("*.json.gz' and no schema has been provided to create an empty dataframe."))
+    assert(thrown0.getMessage.contains("*.json.gz' does not exist and no schema has been provided to create an empty dataframe."))
 
     // try with wildcard and basePath
     val thrown1 = intercept[Exception with DetailException] {
       extract.JSONExtractStage.execute(
         extract.JSONExtractStage(
           plugin=new extract.JSONExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -318,7 +323,6 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown1.getMessage.contains("No files matched '"))
     assert(thrown1.getMessage.contains("json' and no schema has been provided to create an empty dataframe."))
 
 
@@ -327,6 +331,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
       extract.JSONExtractStage.execute(
         extract.JSONExtractStage(
           plugin=new extract.JSONExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -345,13 +350,13 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown2.getMessage.contains("Input '"))
-    assert(thrown2.getMessage.contains("empty.json' does not contain any fields and no schema has been provided to create an empty dataframe."))
+    assert(thrown2.getMessage.contains("empty.json' and no schema has been provided to create an empty dataframe."))
 
     // try with column
     val dataset = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema),
@@ -382,32 +387,12 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-    val actual0 = extract.JSONExtractStage.execute(
-      extract.JSONExtractStage(
-        plugin=new extract.JSONExtract,
-        name=outputView,
-        description=None,
-        schema=Right(Nil),
-        outputView=outputView,
-        input=Right(multiLineMatcher),
-        settings=new JSON(multiLine=false),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil,
-        contiguousIndex=true,
-        basePath=None,
-        inputField=None,
-        watermark=None
-      )
-    ).get
+    implicit val arcContext = TestUtils.getARCContext()
 
     val actual1 = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -416,7 +401,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
         settings=new JSON(multiLine=true),
         authentication=None,
         params=Map.empty,
-        persist=false,
+        persist=true,
         numPartitions=None,
         partitionBy=Nil,
         contiguousIndex=true,
@@ -431,20 +416,19 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     assert(actual1.filter($"_filename".contains(multiLineFile1)).count == 1)
 
     // check all fields parsed
-    assert(actual0.schema.map(_.name).contains("_corrupt_record"))
-    assert(!actual1.schema.map(_.name).contains("_corrupt_record"))
-    assert(actual0.count > actual1.count)
+    assert(!actual1.schema.fields.contains("_corrupt_record"))
   }
 
   test("JSONExtract: singleLine Array") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val actual0 = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -474,32 +458,12 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
-
-    val actual0 = extract.JSONExtractStage.execute(
-      extract.JSONExtractStage(
-        plugin=new extract.JSONExtract,
-        name=outputView,
-        description=None,
-        schema=Right(Nil),
-        outputView=outputView,
-        input=Right(arrayFileMatcher),
-        settings=new JSON(multiLine=false),
-        authentication=None,
-        params=Map.empty,
-        persist=false,
-        numPartitions=None,
-        partitionBy=Nil,
-        contiguousIndex=true,
-        basePath=None,
-        inputField=None,
-        watermark=None
-      )
-    ).get
+    implicit val arcContext = TestUtils.getARCContext()
 
     val actual1 = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -519,7 +483,6 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     ).get
 
     // check all fields parsed
-    assert(actual0.schema.map(_.name).contains("_corrupt_record"))
     assert(!actual1.schema.map(_.name).contains("_corrupt_record"))
 
     // check the filenames are both present
@@ -531,7 +494,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val schema =
       BooleanColumn(
@@ -561,6 +524,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema),
@@ -598,6 +562,7 @@ class JSONExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.JSONExtractStage.execute(
       extract.JSONExtractStage(
         plugin=new extract.JSONExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),

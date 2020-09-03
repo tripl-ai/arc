@@ -76,7 +76,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext(dropUnsupported=true)
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
@@ -84,6 +84,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoadStage.execute(
       load.JDBCLoadStage(
         plugin=new load.JDBCLoad,
+        id=None,
         name="dataset",
         description=None,
         inputView=dbtable,
@@ -119,7 +120,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext(dropUnsupported=true)
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(dbtable)
@@ -127,6 +128,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoadStage.execute(
       load.JDBCLoadStage(
         plugin=new load.JDBCLoad,
+        id=None,
         name="dataset",
         description=None,
         inputView=dbtable,
@@ -162,7 +164,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val uuid = s"""a${UUID.randomUUID.toString.replace("-","")}"""
 
@@ -193,6 +195,7 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     load.JDBCLoadStage.execute(
       load.JDBCLoadStage(
         plugin=new load.JDBCLoad,
+        id=None,
         name="dataset",
         description=None,
         inputView=dbtable,

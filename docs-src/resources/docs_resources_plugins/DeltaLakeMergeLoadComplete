@@ -8,6 +8,7 @@
   ],
   "inputView": "customer",
   "outputURI": "/delta/customers",
+  "createTableIfNotExists": true,
   "condition": "source.customerId = target.customerId",
   "whenMatchedDeleteFirst": true,
   "whenMatchedDelete": {

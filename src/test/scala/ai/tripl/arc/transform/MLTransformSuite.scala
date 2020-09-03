@@ -99,7 +99,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val expected = spark.createDataFrame(Seq(
       (4L, "spark i j k", 1.0, 0.8),
@@ -112,6 +112,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MLTransformStage.execute(
       transform.MLTransformStage(
         plugin=new transform.MLTransform,
+        id=None,
         name="MLTransform",
         description=None,
         inputURI=new URI(pipelineModelTargetFile),
@@ -135,7 +136,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val expected = spark.createDataFrame(Seq(
       (4L, "spark i j k", 1.0, 0.8),
@@ -148,6 +149,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MLTransformStage.execute(
       transform.MLTransformStage(
         plugin=new transform.MLTransform,
+        id=None,
         name="MLTransform",
         description=None,
         inputURI=new URI(crossValidatorModelTargetFile),
@@ -193,6 +195,7 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.MLTransformStage.execute(
       transform.MLTransformStage(
         plugin=new transform.MLTransform,
+        id=None,
         name="MLTransform",
         description=None,
         inputURI=new URI(crossValidatorModelTargetFile),

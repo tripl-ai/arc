@@ -45,15 +45,25 @@ class MetadataTransform extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "schemaView" :: "schemaURI" :: "failMode" :: "persist" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "schema" :: "schemaView" :: "schemaURI" :: "failMode" :: "persist" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
     val authentication = readAuthentication("authentication")
-    val extractColumns = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ |> checkSimpleColumnTypes("schemaURI", "MetadataTransform") _ else Right(List.empty)
-    val schemaURI = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") else Right("")
-    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
+
+    val source = checkOneOf(c)(Seq("schema", "schemaURI", "schemaView"))
+    val (schema, schemaURI, schemaView) = if (source.isRight) {
+      (
+        if (c.hasPath("schema")) Right(c.getConfigList("schema").asScala.map { o => o.root().render(ConfigRenderOptions.concise()) }.mkString("[", ",", "]") ) |> verifyInlineSchemaPolicy("schema") _ |> getExtractColumns("schema") _ else Right(List.empty),
+        if (c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> textContentForURI("schemaURI", authentication) |> getExtractColumns("schemaURI") _ else Right(List.empty),
+        if (c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
+      )
+    } else {
+      (Right(List.empty), Right(List.empty), Right(""))
+    }
+
     val failMode = getValue[String]("failMode", default = Some("permissive"), validValues = "permissive" :: "failfast" :: Nil) |> parseFailMode("failMode") _
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
@@ -61,19 +71,24 @@ class MetadataTransform extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, outputView, extractColumns, schemaView, schemaURI, failMode, persist, invalidKeys, numPartitions, partitionBy, authentication) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputView), Right(extractColumns), Right(schemaView), Right(schemaURI), Right(failMode), Right(persist), Right(invalidKeys), Right(numPartitions), Right(partitionBy), Right(authentication)) =>
-        val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
-        val _schemaURI = if(!c.hasPath("schemaView")) Option(schemaURI) else None
+    (id, name, description, inputView, outputView, source, schema, schemaURI, schemaView, failMode, persist, invalidKeys, numPartitions, partitionBy, authentication) match {
+      case (Right(id), Right(name), Right(description), Right(inputView), Right(outputView), Right(source), Right(schema), Right(schemaURI), Right(schemaView), Right(failMode), Right(persist), Right(invalidKeys), Right(numPartitions), Right(partitionBy), Right(authentication)) =>
+        val _schema = if (c.hasPath("schemaView")) {
+          Left(schemaView)
+        } else if (c.hasPath("schemaURI")) {
+          Right(schemaURI)
+        } else {
+          Right(schema)
+        }
 
         val stage = MetadataTransformStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           inputView=inputView,
           outputView=outputView,
-          schemaURI=_schemaURI,
-          schema=schema,
+          schema=_schema,
           failMode=failMode,
           params=params,
           persist=persist,
@@ -81,12 +96,12 @@ class MetadataTransform extends PipelineStagePlugin with JupyterCompleter {
           partitionBy=partitionBy
         )
 
-        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         if (c.hasPath("schemaView")) {
-          stage.stageDetail.put("schemaURI", schemaURI)
-        } else {
-          stage.stageDetail.put("schemaView", schemaView)
+          stage.stageDetail.put("schemaView", c.getString("schemaView"))
+        } else if (c.hasPath("schemaURI")) {
+          stage.stageDetail.put("schemaURI", c.getString("schemaURI"))
         }
+        authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("failMode", failMode.sparkString)
         stage.stageDetail.put("inputView", inputView)
@@ -97,7 +112,7 @@ class MetadataTransform extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputView, extractColumns, schemaView, failMode, persist, invalidKeys, numPartitions, partitionBy, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, inputView, outputView, source, schema, schemaURI, schemaView, failMode, persist, invalidKeys, numPartitions, partitionBy, authentication).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -108,11 +123,11 @@ class MetadataTransform extends PipelineStagePlugin with JupyterCompleter {
 
 case class MetadataTransformStage(
     plugin: MetadataTransform,
+    id: Option[String],
     name: String,
     description: Option[String],
     inputView: String,
     outputView: String,
-    schemaURI: Option[String],
     schema: Either[String, List[ExtractColumn]],
     failMode: FailMode,
     params: Map[String, String],
@@ -151,17 +166,7 @@ object MetadataTransformStage {
           val inputFields = df.columns.toSet
 
           if (schemaFields.diff(inputFields).size != 0 || inputFields.diff(schemaFields).size != 0) {
-            stage.schema match {
-              case Left(schemaView) => {
-                throw new Exception(s"""MetadataTransform with failMode = 'failfast' ensures that the schemaView '${schemaView}' has the same columns as inputView '${stage.inputView}' but schemaView '${schemaView}' has columns: ${schemaFields.map(fieldName => s"'${fieldName}'").mkString("[",", ","]")} and '${stage.inputView}' contains columns: ${inputFields.map(fieldName => s"'${fieldName}'").mkString("[",", ","]")}.""")
-              }
-              case Right(_) => {
-                stage.schemaURI match {
-                  case Some(schemaURI) => throw new Exception(s"""MetadataTransform with failMode = 'failfast' ensures that the schema supplied in schemaURI '${schemaURI}' has the same columns as inputView '${stage.inputView}' but schema supplied in '${schemaURI}' has columns: ${schemaFields.map(fieldName => s"'${fieldName}'").mkString("[",", ","]")} and '${stage.inputView}' contains columns: ${inputFields.map(fieldName => s"'${fieldName}'").mkString("[",", ","]")}.""")
-                  case None => throw new Exception("Invalid state. Please raise issue.")
-                }
-              }
-            }
+            throw new Exception(s"""MetadataTransform with failMode = 'failfast' ensures that the supplied schema has the same columns as inputView '${stage.inputView}' but the supplied schema has columns: ${schemaFields.map(fieldName => s"'${fieldName}'").mkString("[",", ","]")} and '${stage.inputView}' contains columns: ${inputFields.map(fieldName => s"'${fieldName}'").mkString("[",", ","]")}.""")
           }
         }
         // permissive will not throw issue if no columns match by name

@@ -1,5 +1,6 @@
 {
   "type": "JDBCExtract",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "load active customers from postgresql",
   "description": "load active customers from postgresql",
   "environments": [

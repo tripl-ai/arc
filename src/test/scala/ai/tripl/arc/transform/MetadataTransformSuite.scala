@@ -47,10 +47,52 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
+  test("MetadataTransform: schema") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    val df = TestUtils.getKnownDataset.drop("nullDatum")
+    df.createOrReplaceTempView(inputView)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "MetadataTransform",
+          "name": "attach metadata",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${inputView}",
+          "outputView": "${outputView}",
+          "schema": ${TestUtils.getKnownDatasetMetadataJson},
+          "failMode": "failfast"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        ARC.run(pipeline)(spark, logger, arcContext) match {
+          case Some(df) => {
+            // test metadata
+            val timestampDatumMetadata = df.schema.fields(df.schema.fieldIndex("timestampDatum")).metadata
+            assert(timestampDatumMetadata.getLong("securityLevel") == 7)
+          }
+          case None => assert(false)
+        }
+      }
+    }
+  }
+
   test("MetadataTransform: schemaURI") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset.drop("nullDatum")
     df.createOrReplaceTempView(inputView)
@@ -92,7 +134,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
   test("MetadataTransform: schemaView failfast success") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
     import spark.implicits._
 
     val df = TestUtils.getKnownDataset.drop("nullDatum")
@@ -140,7 +182,7 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
   test("MetadataTransform: schemaView failfast failure") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
     import spark.implicits._
 
     val df = TestUtils.getKnownDataset.drop("nullDatum")
@@ -157,12 +199,12 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
       transform.MetadataTransformStage.execute(
         transform.MetadataTransformStage(
           plugin=new transform.MetadataTransform,
+          id=None,
           name="MetadataTransform",
           description=None,
           inputView=inputView,
           outputView=outputView,
           schema=Left(schemaView),
-          schemaURI=None,
           failMode=FailMode.FailFast,
           persist=false,
           params=Map.empty,
@@ -171,13 +213,13 @@ class MetadataTransformSuite extends FunSuite with BeforeAndAfter {
         )
       ).get
     }
-    assert(thrown0.getMessage === "MetadataTransform with failMode = 'failfast' ensures that the schemaView 'schemaView' has the same columns as inputView 'inputView' but schemaView 'schemaView' has columns: ['longDatum', 'dateDatum', 'timestampDatum', 'decimalDatum', 'integerDatum', 'stringDatum', 'timeDatum', 'doubleDatum'] and 'inputView' contains columns: ['longDatum', 'dateDatum', 'timestampDatum', 'booleanDatum', 'decimalDatum', 'integerDatum', 'stringDatum', 'timeDatum', 'doubleDatum'].")
+    assert(thrown0.getMessage === "MetadataTransform with failMode = 'failfast' ensures that the supplied schema has the same columns as inputView 'inputView' but the supplied schema has columns: ['longDatum', 'dateDatum', 'timestampDatum', 'decimalDatum', 'integerDatum', 'stringDatum', 'timeDatum', 'doubleDatum'] and 'inputView' contains columns: ['longDatum', 'dateDatum', 'timestampDatum', 'booleanDatum', 'decimalDatum', 'integerDatum', 'stringDatum', 'timeDatum', 'doubleDatum'].")
   }
 
   test("MetadataTransform: schemaView permissive") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
     import spark.implicits._
 
     val df = TestUtils.getKnownDataset.drop("nullDatum")

@@ -1,5 +1,6 @@
 {
   "type": "HTTPExecute",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "notify the customer api of job completion",
   "description": "notify the customer api of job completion",
   "environments": [

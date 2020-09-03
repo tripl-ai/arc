@@ -39,7 +39,8 @@ class BytesExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "persist" :: "params" :: "failMode" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "persist" :: "params" :: "failMode" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
@@ -53,8 +54,8 @@ class BytesExtract extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, parsedGlob, inputView, outputView, persist, numPartitions, authentication, contiguousIndex, failMode, invalidKeys) match {
-      case (Right(name), Right(description), Right(parsedGlob), Right(inputView), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(failMode), Right(invalidKeys)) =>
+    (id, name, description, parsedGlob, inputView, outputView, persist, numPartitions, authentication, contiguousIndex, failMode, invalidKeys) match {
+      case (Right(id), Right(name), Right(description), Right(parsedGlob), Right(inputView), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(failMode), Right(invalidKeys)) =>
         val input = if(c.hasPath("inputView")) {
           Left(inputView)
         } else {
@@ -63,6 +64,7 @@ class BytesExtract extends PipelineStagePlugin with JupyterCompleter {
 
         val stage = BytesExtractStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           outputView=outputView,
@@ -88,7 +90,7 @@ class BytesExtract extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, parsedGlob, inputView, outputView, persist, numPartitions, authentication, contiguousIndex, failMode, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, parsedGlob, inputView, outputView, persist, numPartitions, authentication, contiguousIndex, failMode, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -98,6 +100,7 @@ class BytesExtract extends PipelineStagePlugin with JupyterCompleter {
 
 case class BytesExtractStage(
     plugin: BytesExtract,
+    id: Option[String],
     name: String,
     description: Option[String],
     outputView: String,

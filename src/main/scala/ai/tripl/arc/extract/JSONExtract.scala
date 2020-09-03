@@ -39,7 +39,8 @@ class JSONExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "inputField" :: "basePath" :: "watermark" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "inputField" :: "basePath" :: "watermark" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
@@ -51,7 +52,7 @@ class JSONExtract extends PipelineStagePlugin with JupyterCompleter {
     val multiLine = getValue[java.lang.Boolean]("multiLine", default = Some(true))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
-    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
+    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> textContentForURI("schemaURI", authentication) |> getExtractColumns("schemaURI") _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val inputField = getOptionalValue[String]("inputField")
     val basePath = getOptionalValue[String]("basePath")
@@ -59,13 +60,14 @@ class JSONExtract extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, inputField, basePath, invalidKeys, watermark) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(inputField), Right(basePath), Right(invalidKeys), Right(watermark)) =>
+    (id, name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, inputField, basePath, invalidKeys, watermark) match {
+      case (Right(id), Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(inputField), Right(basePath), Right(invalidKeys), Right(watermark)) =>
         val input = if(c.hasPath("inputView")) Left(inputView) else Right(parsedGlob)
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
         val stage = JSONExtractStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           schema=schema,
@@ -96,7 +98,7 @@ class JSONExtract extends PipelineStagePlugin with JupyterCompleter {
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("params", params.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        for (watermark <- watermark) {
+        watermark.foreach { watermark =>
           val watermarkMap = new java.util.HashMap[String, Object]()
           watermarkMap.put("eventTime", watermark.eventTime)
           watermarkMap.put("delayThreshold", watermark.delayThreshold)
@@ -105,7 +107,7 @@ class JSONExtract extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, invalidKeys, inputField, basePath, watermark).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, multiLine, authentication, contiguousIndex, partitionBy, invalidKeys, inputField, basePath, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -116,6 +118,7 @@ class JSONExtract extends PipelineStagePlugin with JupyterCompleter {
 
 case class JSONExtractStage(
     plugin: JSONExtract,
+    id: Option[String],
     name: String,
     description: Option[String],
     schema: Either[String, List[ExtractColumn]],
@@ -164,12 +167,11 @@ object JSONExtractStage {
       if (arcContext.isStreaming) {
         stage.input match {
           case Right(glob) => {
-
             optionSchema match {
               case Some(schema) => {
                 stage.watermark match {
-                  case Some(watermark) => Right(spark.readStream.options(options).schema(schema).json(glob).withWatermark(watermark.eventTime, watermark.delayThreshold))
-                  case None => Right(spark.readStream.options(options).schema(schema).json(glob))
+                  case Some(watermark) => Right(spark.readStream.options(options).schema(schema).format("json").load(glob).withWatermark(watermark.eventTime, watermark.delayThreshold))
+                  case None => Right(spark.readStream.options(options).schema(schema).format("json").load(glob))
                 }
               }
               case None => throw new Exception("JSONExtract requires 'schemaURI' or 'schemaView' to be set if Arc is running in streaming mode.")
@@ -190,70 +192,23 @@ object JSONExtractStage {
       } else {
         stage.input match {
           case Right(glob) =>
-            if (stage.basePath.isEmpty) {
-              // spark does not cope well reading many small files into json directly from hadoop file systems
-              // by reading first as text time drops by ~75%
-              // this will not throw an error for empty directory (but will for missing directory)
-              try {
-                if (stage.settings.multiLine) {
-
-                  // if multiLine then remove the crlf delimiter so it is read as a full object per file
-                  val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
-                  val newDelimiter = s"${0x0 : Char}"
-                  // temporarily remove the delimiter so all the data is loaded as a single line
-                  spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)
-
-                  // read the file but do not cache. caching will break the input_file_name() function
-                  val textFile = spark.sparkContext.textFile(glob)
-
-                  val json = optionSchema match {
-                    case Some(schema) => Right(spark.read.options(options).schema(schema).json(textFile.toDS))
-                    case None => Right(spark.read.options(options).json(textFile.toDS))
-                  }
-
-                  // reset delimiter
-                  if (oldDelimiter == null) {
-                    spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")
-                  } else {
-                    spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)
-                  }
-
-                  json
-                } else {
-                  // read the file but do not cache. caching will break the input_file_name() function
-                  val textFile = spark.sparkContext.textFile(glob)
-
-                  val json = optionSchema match {
-                    case Some(schema) => Right(spark.read.options(options).schema(schema).json(textFile.toDS))
-                    case None => Right(spark.read.options(options).json(textFile.toDS))
-                  }
-
-                  json
-                }
-              } catch {
-                case e: org.apache.hadoop.mapred.InvalidInputException if (e.getMessage.contains("matches 0 files")) =>
-                  Left(FileNotFoundExtractError(Option(glob)))
-                case e: Exception => throw e
+            try {
+              optionSchema match {
+                case Some(schema) => Right(spark.read.options(options).schema(schema).format("json").load(glob))
+                case None => Right(spark.read.options(options).format("json").load(glob))
               }
-            } else {
-              // if basePath is defined the textFile hack cannot be used
-              try {
-                optionSchema match {
-                  case Some(schema) => Right(spark.read.options(options + ("multiLine" -> stage.settings.multiLine.toString)).schema(schema).json(glob))
-                  case None => Right(spark.read.options(options + ("multiLine" -> stage.settings.multiLine.toString)).json(glob))
-                }
-              } catch {
-                case e: AnalysisException if (e.getMessage == "Unable to infer schema for JSON. It must be specified manually.;") =>
-                  Left(FileNotFoundExtractError(Option(glob)))
-                case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
-                  Left(PathNotExistsExtractError(Option(glob)))
-                case e: Exception => throw e
-              }
+            } catch {
+              case e: AnalysisException if (e.getMessage == "Unable to infer schema for JSON. It must be specified manually.;") =>
+                Left(FileNotFoundExtractError(Option(glob)))
+              case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
+                Left(PathNotExistsExtractError(Option(glob)))
+              case e: Exception => throw e
             }
           case Left(view) => {
+            val inputView = spark.table(view)
             stage.inputField match {
-              case Some(inputField) => Right(spark.read.options(options).json(spark.table(view).select(col(inputField).as("value")).as[String]))
-              case None => Right(spark.read.options(options).json(spark.table(view).as[String]))
+              case Some(inputField) => Right(spark.read.options(options).json(inputView.select(col(inputField).as("value")).as[String]))
+              case None => Right(spark.read.options(options).json(inputView.as[String]))
             }
           }
         }
@@ -263,7 +218,6 @@ object JSONExtractStage {
         override val detail = stage.stageDetail
       }
     }
-
 
     // if incoming dataset has 0 columns then try to create empty dataset with correct schema
     // or throw enriched error message

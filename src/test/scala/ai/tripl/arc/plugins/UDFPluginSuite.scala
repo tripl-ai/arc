@@ -26,7 +26,7 @@ class UDFPluginSuite extends FunSuite with BeforeAndAfter {
     session = spark
 
     implicit val logger = TestUtils.getLogger()
-    val arcContext = TestUtils.getARCContext(isStreaming=false)
+    val arcContext = TestUtils.getARCContext()
 
     // register udf
     UDF.registerUDFs()(spark,logger,arcContext)
