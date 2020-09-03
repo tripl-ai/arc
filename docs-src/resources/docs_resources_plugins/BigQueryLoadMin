@@ -1,0 +1,11 @@
+{
+  "type": "BigQueryLoad",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "table": "dataset.customer",
+  "temporaryGcsBucket": "bucket-name"
+}

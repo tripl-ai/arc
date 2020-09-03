@@ -1,0 +1,14 @@
+{
+  "type": "BigQueryExecute",
+  "name": "execute the load date table",
+  "description": "execute the load date table",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/update_customer_load_date.sql",
+  "authentication": {},
+  "sqlParams": {
+    "current_timestamp": "2018-11-24 14:48:56"
+  }
+}

@@ -63,6 +63,48 @@ The `AvroExtract` stage reads one or more [Apache Avro](https://avro.apache.org/
 {{< readfile file="/resources/docs_resources/AvroExtractComplete" highlight="json" >}}
 
 
+## BigQueryExtract
+##### Supports Streaming: False
+{{< note title="Plugin" >}}
+The `BigQueryExtract` is provided by the https://github.com/tripl-ai/arc-big-query-pipeline-plugin package.
+{{</note>}}
+
+The `BigQueryExtract` stage reads directly from a BigQuery table and returns a `DataFrame`.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|table|String|true|The BigQuery table in the format `[[project:]dataset.]table.`|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|dataset|String|false*|The dataset containing the table. Required if omitted in table.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
+|maxParallelism|Integer|false|The maximal number of partitions to split the data into.|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|optimizedEmptyProjection|Boolean|false|The connector uses an optimized empty projection (select without any columns) logic, used for `count()` execution.<br><br>Default: `true`.|
+|parentProject|String|false|The Google Cloud Project ID of the table to bill for the export. Defaults to the project of the Service Account being used.|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|project|String|false|The Google Cloud Project ID of the table. Defaults to the project of the Service Account being used.|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
+|viewMaterializationDataset|String|false|The dataset where the materialized view is going to be created. Defaults to view's dataset.|
+|viewMaterializationProject|String|false|The Google Cloud Project ID where the materialized view is going to be created. Defaults to view's project id.|
+|viewsEnabled|Boolean|false|Enables the connector to read from views and not only tables.<br><br>BigQuery views are not materialized by default, which means that the connector needs to materialize them before it can read them. `viewMaterializationProject` and `viewMaterializationDataset` can be used to provide view materialization options.<br><br>Default: `false`.|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/BigQueryExtractMin" highlight="json" >}}
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/BigQueryExtractComplete" highlight="json" >}}
+
+
 ## BytesExtract
 ##### Since: 1.0.9 - Supports Streaming: False
 

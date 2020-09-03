@@ -1,0 +1,23 @@
+{
+  "type": "BigQueryExtract",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "table": "customer",
+  "dataset": "dataset",
+  "outputView": "customer",
+  "maxParallelism": 10,
+  "numPartitions": 10,
+  "partitionBy": [
+    "country"
+  ],
+  "optimizedEmptyProjection": true,
+  "parentProject": "parent-project",
+  "project": "project",
+  "persist": true,
+  "viewMaterializationDataset": "dataset",
+  "viewMaterializationProject": "project",
+  "viewsEnabled": true
+}

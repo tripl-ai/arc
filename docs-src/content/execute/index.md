@@ -6,6 +6,36 @@ type: blog
 
 `*Execute` stages are used to execute arbitrary commands against external systems such as Databases and APIs.
 
+## BigQueryExecute
+##### Supports Streaming: False
+{{< note title="Plugin" >}}
+The `BigQueryExecute` is provided by the https://github.com/tripl-ai/arc-big-query-pipeline-plugin package.
+{{</note>}}
+
+The `BigQueryExecute` executes a SQL statement against BigQuery.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|*true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}} Required if `sql` not provided.|
+|sql|String|*true|{{< readfile file="/content/partials/fields/sql.md" markdown="true" >}} Required if `inputURI` not provided.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
+|sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/BigQueryExecuteMin" highlight="json" >}}
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/BigQueryExecuteComplete" highlight="json" >}}
+
+
 ## CassandraExecute
 ##### Since: 2.0.0 - Supports Streaming: False
 {{< note title="Plugin" >}}

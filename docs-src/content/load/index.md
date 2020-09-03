@@ -40,6 +40,46 @@ The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avr
 {{< readfile file="/resources/docs_resources/AvroLoadComplete" highlight="json" >}}
 
 
+## BigQueryLoad
+##### Supports Streaming: False
+{{< note title="Plugin" >}}
+The `BigQueryLoad` is provided by the https://github.com/tripl-ai/arc-big-query-pipeline-plugin package.
+{{</note>}}
+
+The `BigQueryLoad` stage writes an input `DataFrame` to a target BigQuery table.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|table|String|true|The BigQuery table in the format `[[project:]dataset.]table.`|
+|temporaryGcsBucket|String|true|The GCS bucket that temporarily holds the data before it is loaded to BigQuery.|
+|allowFieldAddition|String|false|Adds the `ALLOW_FIELD_ADDITION` SchemaUpdateOption to the BigQuery LoadJob.<br><br>Default: `false`.|
+|allowFieldRelaxation|String|false|Adds the `ALLOW_FIELD_RELAXATION` SchemaUpdateOption to the BigQuery LoadJob.<br><br>Default: `false`.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|clusteredFields|String|false|Comma separated list of non-repeated, top level columns. Clustering is only supported for partitioned tables.|
+|createDisposition|String|false|Specifies whether the job is allowed to create new tables. Either `CREATE_IF_NEEDED` or `CREATE_NEVER`.<br><br>Default: `CREATE_IF_NEEDED`.|
+|dataset|String|false*|The dataset containing the table. Required if omitted in table.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
+|parentProject|String|false|The Google Cloud Project ID of the table to bill for the export. Defaults to the project of the Service Account being used.|
+|partitionExpirationMs|Integer|false|	Number of milliseconds for which to keep the storage for partitions in the table. The storage in a partition will have an expiration time of its partition time plus this value.|
+|partitionField|String|false|If field is specified together with `partitionType`, the table is partitioned by this field. The field must be a top-level `TIMESTAMP` or `DATE` field.|
+|project|String|false|The Google Cloud Project ID of the table. Defaults to the project of the Service Account being used.|
+|saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/BigQueryLoadMin" highlight="json" >}}
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/BigQueryLoadComplete" highlight="json" >}}
+
+
 ## CassandraLoad
 ##### Since: 2.0.0 - Supports Streaming: False
 {{< note title="Plugin" >}}
@@ -168,7 +208,6 @@ The `DeltaLakeMergeLoad` writes an input `DataFrame` to a target [DeltaLake](htt
 
 #### Complete
 {{< readfile file="/resources/docs_resources_plugins/DeltaLakeMergeLoadComplete" highlight="json" >}}
-
 
 
 ## DelimitedLoad
