@@ -248,6 +248,10 @@
   </url>
   
   <url>
+    <loc>https://arc.tripl.ai/partials/fields/schema/</loc>
+  </url>
+  
+  <url>
     <loc>https://arc.tripl.ai/partials/fields/schemauri/</loc>
   </url>
   
@@ -273,6 +277,10 @@
   
   <url>
     <loc>https://arc.tripl.ai/partials/fields/sqlparams/</loc>
+  </url>
+  
+  <url>
+    <loc>https://arc.tripl.ai/partials/fields/stageid/</loc>
   </url>
   
   <url>

@@ -81,7 +81,7 @@ object TestUtils {
       )
     }
 
-    def datasetEquality(expected: DataFrame, actual: DataFrame)(implicit spark: SparkSession): Boolean = {
+    def datasetEquality(expected: DataFrame, actual: DataFrame, numRows: Int = 20)(implicit spark: SparkSession): Boolean = {
         import spark.implicits._
 
         // if both are empty ignore
@@ -105,10 +105,10 @@ object TestUtils {
             if (expectedExceptActualCount != 0 || actualExceptExpectedCount != 0) {
                 println("EXPECTED")
                 println(expected.schema)
-                expected.show(false)
+                expected.show(numRows, false)
                 println("ACTUAL")
                 println(actual.schema)
-                actual.show(false)
+                actual.show(numRows, false)
 
                 transformedDF.unpersist
                 false

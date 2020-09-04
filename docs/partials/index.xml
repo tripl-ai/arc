@@ -450,6 +450,15 @@ e.g. [&#39;id=1&#39;, &#39;id=2&#39;, &#39;id=3&#39;, &#39;id=4&#39;] would crea
     
     <item>
       <title></title>
+      <link>https://arc.tripl.ai/partials/fields/schema/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://arc.tripl.ai/partials/fields/schema/</guid>
+      <description>Specification of an Arc Schema.</description>
+    </item>
+    
+    <item>
+      <title></title>
       <link>https://arc.tripl.ai/partials/fields/schemauri/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
@@ -465,7 +474,7 @@ e.g. [&#39;id=1&#39;, &#39;id=2&#39;, &#39;id=3&#39;, &#39;id=4&#39;] would crea
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/partials/fields/schemaview/</guid>
-      <description>Similar to schemaURI but allows the schema to be passed in as another DataFrame. It takes precedence over schemaURI if provided.</description>
+      <description>Similar to schemaURI but allows the schema to be passed in as another DataFrame.</description>
     </item>
     
     <item>
@@ -511,6 +520,15 @@ e.g. [&#39;id=1&#39;, &#39;id=2&#39;, &#39;id=3&#39;, &#39;id=4&#39;] would crea
       
       <guid>https://arc.tripl.ai/partials/fields/sqlparams/</guid>
       <description>Parameters to inject into the SQL statement before executing. The parameters use the ${} format.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://arc.tripl.ai/partials/fields/stageid/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://arc.tripl.ai/partials/fields/stageid/</guid>
+      <description>A optional unique identifier for this stage.</description>
     </item>
     
     <item>

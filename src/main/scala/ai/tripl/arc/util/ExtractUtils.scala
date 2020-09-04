@@ -17,6 +17,7 @@ object ExtractUtils {
       partitionId: Integer,
       min: Long,
       max: Long,
+      offset: Long,
   )
 
   def getSchema(schema: Either[String, List[ExtractColumn]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[StructType] = {
@@ -69,17 +70,24 @@ object ExtractUtils {
           // create a map[filename]map[partitionId]Partition
           // Partition holds the actual start and end index for that partition (derived by iterating over the partitions after calculations)
           // summary is then distributed to the executors so a map operation can calculate the new index
+          // becuase one partition can have multiple files an 'offset' is needed to define what the minimum index in that partition to start at
           val summary = {
             enrichedInput
               .groupBy(col("_filename"), col("_partition_id"))
               .agg(min(col("_monotonically_increasing_id")), max(col("_monotonically_increasing_id")))
               .collect
-              .map { row => Partition(filename=row.getString(0), partitionId=row.getInt(1), min=row.getLong(2), max=row.getLong(3)) }
+              .map { row => Partition(filename=row.getString(0), partitionId=row.getInt(1), min=row.getLong(2), max=row.getLong(3), offset=0L) }
               .groupBy { _.filename }
               .map { case (filename, partitions) =>
-                (filename, partitions.sortBy { _.partitionId }.scanLeft(Partition("", 0, 0, 0)) {
+                (filename, partitions.sortBy { _.partitionId }.scanLeft(Partition("", 0, 0, 0, 0)) {
                     case (previousPartition, partition) => {
-                      Partition(partition.filename, partition.partitionId, previousPartition.max + 1, previousPartition.max + 1 + (partition.max - partition.min))
+                      Partition(
+                        partition.filename,
+                        partition.partitionId,
+                        previousPartition.max + 1,
+                        previousPartition.max + 1 + (partition.max - partition.min),
+                        partition.min & (1L << 33) - 1
+                      )
                     }
                   }
                   .drop(1)
@@ -100,15 +108,18 @@ object ExtractUtils {
               case false => partition
               case true => {
                 val head = bufferedPartition.head
-                val filename = head.getString(head.fieldIndex("_filename"))
+                val filenameIndex = head.fieldIndex("_filename")
                 val partitionId = head.getInt(head.fieldIndex("_partition_id"))
-                val monotonically_increasing_id_index = head.fieldIndex("_monotonically_increasing_id")
-                val partitionSummary = summary.get(filename).get.get(partitionId).get
+                val monotonicallyIncreasingIdIndex = head.fieldIndex("_monotonically_increasing_id")
                 bufferedPartition.map { row => {
+                    // get partitionSummary for the current row
+                    // this is required as one partition could contain rows from different files
+                    val partitionSummary = summary.get(row.getString(filenameIndex)).get.get(partitionId).get
+
                     // The current implementation puts the partition ID in the upper 31 bits, and the lower 33 bits represent the record number within each partition.
                     // this code gets the last 33 bits as a long (i.e. the record number portion)
-                    val rowNumber = row.getLong(monotonically_increasing_id_index) & (1L << 33) - 1
-                    Row.fromSeq(row.toSeq.updated(monotonically_increasing_id_index, rowNumber + partitionSummary.min))
+                    val rowNumber = (row.getLong(monotonicallyIncreasingIdIndex) & (1L << 33) - 1) - partitionSummary.offset
+                    Row.fromSeq(row.toSeq.updated(monotonicallyIncreasingIdIndex, rowNumber + partitionSummary.min))
                   }
                 }
               }

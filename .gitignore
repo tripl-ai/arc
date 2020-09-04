@@ -13,4 +13,5 @@ derby.log
 docs-src/hugo
 .metals/
 .bloop/
+.vscode
 metals.sbt
