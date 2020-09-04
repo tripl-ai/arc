@@ -102,7 +102,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
@@ -118,6 +118,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${echo}/"),
@@ -152,7 +153,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
@@ -167,6 +168,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${echo}/"),
@@ -195,7 +197,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     requests = 0
     val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
@@ -211,6 +213,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${echo}/"),
@@ -240,7 +243,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     requests = 0
     val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
@@ -256,6 +259,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${echo}/"),
@@ -286,7 +290,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset.toJSON.toDF.repartition(1)
     df.createOrReplaceTempView(inputView)
@@ -294,6 +298,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${empty}/"),
@@ -319,7 +324,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: Throws exception with 404") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset.toJSON.toDF.repartition(1)
     df.createOrReplaceTempView(inputView)
@@ -328,6 +333,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage.execute(
         transform.HTTPTransformStage(
           plugin=new transform.HTTPTransform,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/fail/"),
@@ -353,7 +359,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: validStatusCodes") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset.toJSON.toDF
     dataset.createOrReplaceTempView(inputView)
@@ -362,6 +368,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage.execute(
         transform.HTTPTransformStage(
           plugin=new transform.HTTPTransform,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/${empty}/"),
@@ -388,7 +395,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
@@ -403,6 +410,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${echo}/"),
@@ -433,7 +441,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
@@ -449,6 +457,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage.execute(
         transform.HTTPTransformStage(
           plugin=new transform.HTTPTransform,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/${echo}/"),
@@ -474,7 +483,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
@@ -490,6 +499,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage.execute(
         transform.HTTPTransformStage(
           plugin=new transform.HTTPTransform,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/${echo}/"),
@@ -515,7 +525,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val cols = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
@@ -533,6 +543,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
       transform.HTTPTransformStage.execute(
         transform.HTTPTransformStage(
           plugin=new transform.HTTPTransform,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/${echo}/"),
@@ -578,6 +589,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     val dataset = transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${echo}/"),
@@ -615,7 +627,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
   test("HTTPTransform: FailMode.Permissive") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset.toJSON.toDF
     df.createOrReplaceTempView(inputView)
@@ -623,6 +635,7 @@ class HTTPTransformSuite extends FunSuite with BeforeAndAfter {
     transform.HTTPTransformStage.execute(
       transform.HTTPTransformStage(
         plugin=new transform.HTTPTransform,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/${empty}/"),

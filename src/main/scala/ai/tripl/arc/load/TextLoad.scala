@@ -41,7 +41,8 @@ class TextLoad extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: "singleFile" :: "prefix" :: "separator" :: "suffix" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "outputURI" :: "authentication" :: "numPartitions" :: "partitionBy" :: "saveMode" :: "params" :: "singleFile" :: "prefix" :: "separator" :: "suffix" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = getValue[String]("inputView")
@@ -61,10 +62,11 @@ class TextLoad extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, singleFileNumPartitions, validOutputURI, invalidKeys) match {
-      case (Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(singleFile), Right(prefix), Right(separator), Right(suffix), Right(singleFileNumPartitions), Right(validOutputURI), Right(invalidKeys)) =>
+    (id, name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, singleFileNumPartitions, validOutputURI, invalidKeys) match {
+      case (Right(id), Right(name), Right(description), Right(inputView), Right(outputURI), Right(numPartitions), Right(authentication), Right(saveMode), Right(singleFile), Right(prefix), Right(separator), Right(suffix), Right(singleFileNumPartitions), Right(validOutputURI), Right(invalidKeys)) =>
         val stage = TextLoadStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           inputView=inputView,
@@ -93,7 +95,7 @@ class TextLoad extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, singleFileNumPartitions, validOutputURI, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, inputView, outputURI, numPartitions, authentication, saveMode, singleFile, prefix, separator, suffix, singleFileNumPartitions, validOutputURI, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -103,6 +105,7 @@ class TextLoad extends PipelineStagePlugin with JupyterCompleter {
 
 case class TextLoadStage(
     plugin: TextLoad,
+    id: Option[String],
     name: String,
     description: Option[String],
     inputView: String,

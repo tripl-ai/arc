@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.1.0</span></strong>
+          <span class="version">3.2.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -519,6 +519,13 @@
 <td>false</td>
 <td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
 </tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
 </tbody>
 </table>
 
@@ -575,17 +582,17 @@
 
 <pre><code class="language-sql">-- ensure that no pii columns are present in the inputView
 SELECT
-    SUM(pii_column) = 0
-    ,TO_JSON(
-        NAMED_STRUCT(
-            'columns', COUNT(*),
-            'pii_columns', SUM(pii_column)
-        )
+  SUM(pii_column) = 0
+  ,TO_JSON(
+    NAMED_STRUCT(
+      'columns', COUNT(*),
+      'pii_columns', SUM(pii_column)
     )
+  )
 FROM (
-    SELECT
-        CASE WHEN metadata.pii THEN 1 ELSE 0 END AS pii_column
-    FROM detail
+  SELECT
+    CASE WHEN metadata.pii THEN 1 ELSE 0 END AS pii_column
+  FROM metadata
 ) valid
 </code></pre>
 
@@ -626,8 +633,15 @@ FROM (
 <tr>
 <td>inputURI</td>
 <td>URI</td>
-<td>true</td>
-<td>URI of the input file containing the SQL statement.</td>
+<td>*true</td>
+<td>URI of the input file containing the SQL statement. Required if <code>sql</code> not provided.</td>
+</tr>
+
+<tr>
+<td>sql</td>
+<td>String</td>
+<td>*true</td>
+<td>A SQL statement to execute. Required if <code>inputURI</code> not provided.</td>
 </tr>
 
 <tr>
@@ -642,6 +656,13 @@ FROM (
 <td>String</td>
 <td>false</td>
 <td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
 </tr>
 
 <tr>
@@ -672,6 +693,7 @@ FROM (
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataValidate&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply integrity rules against metadata&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;ensure no pii fields are in dataset&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -754,6 +776,13 @@ FROM (
 </tr>
 
 <tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
 <td>sqlParams</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -768,8 +797,8 @@ FROM (
 
 <pre><code class="language-sql">%sqlvaildate name=&quot;name&quot; description=&quot;description&quot; environments=production,test sqlParams=inputView=customer,inputField=id
 SELECT
-    ${inputField} = 1 AS valid,
-    &quot;&quot; AS message
+  ${inputField} = 1 AS valid,
+  &quot;&quot; AS message
 FROM ${inputView}
 </code></pre>
 
@@ -791,6 +820,7 @@ FROM ${inputView}
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLValidate&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;apply data integrity rules&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;apply data integrity rules&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -848,17 +878,17 @@ FROM ${inputView}
 <p>With a <code>JSON</code> message (preferred):</p>
 
 <pre><code class="language-sql">SELECT
-    (SUM(errors) / COUNT(errors)) &lt; ${record_error_tolerance_percentage}
-    ,TO_JSON(
-        NAMED_STRUCT(
-            'error', SUM(errors)/ COUNT(errors)
-            ,'threshold', ${record_error_tolerance_percentage}
-        )
+  (SUM(errors) / COUNT(errors)) &lt; ${record_error_tolerance_percentage}
+  ,TO_JSON(
+    NAMED_STRUCT(
+      'error', SUM(errors)/ COUNT(errors)
+      ,'threshold', ${record_error_tolerance_percentage}
     )
+  )
 FROM (
-    SELECT
-        CASE WHEN SIZE(_errors) &gt; 0 THEN 1 ELSE 0 END AS errors
-    FROM detail
+  SELECT
+    CASE WHEN SIZE(_errors) &gt; 0 THEN 1 ELSE 0 END AS errors
+  FROM detail
 ) valid
 </code></pre>
 
@@ -870,15 +900,15 @@ FROM (
 <p>With a text message:</p>
 
 <pre><code class="language-sql">SELECT
-    (SUM(errors) / COUNT(errors)) &lt; ${record_error_tolerance_percentage}
-    ,CASE
-        WHEN (SUM(errors) / COUNT(errors)) &lt; ${record_error_tolerance_percentage} THEN 'number of errors below threshold. success.'
-        ELSE CONCAT('error records ', ROUND((SUM(errors) / COUNT(errors)) * 100, 2), '%. required &lt; ', ${record_error_tolerance_percentage} * 100,'%')
-    END
+  (SUM(errors) / COUNT(errors)) &lt; ${record_error_tolerance_percentage}
+  ,CASE
+    WHEN (SUM(errors) / COUNT(errors)) &lt; ${record_error_tolerance_percentage} THEN 'number of errors below threshold. success.'
+    ELSE CONCAT('error records ', ROUND((SUM(errors) / COUNT(errors)) * 100, 2), '%. required &lt; ', ${record_error_tolerance_percentage} * 100,'%')
+  END
 FROM (
-    SELECT
-        CASE WHEN SIZE(_errors) &gt; 0 THEN 1 ELSE 0 END AS errors
-    FROM detail
+  SELECT
+    CASE WHEN SIZE(_errors) &gt; 0 THEN 1 ELSE 0 END AS errors
+  FROM detail
 ) valid
 </code></pre>
 

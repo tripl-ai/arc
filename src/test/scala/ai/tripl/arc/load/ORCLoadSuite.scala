@@ -7,12 +7,13 @@ import org.scalatest.BeforeAndAfter
 
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
+
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-
+import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.TestUtils
 
 class ORCLoadSuite extends FunSuite with BeforeAndAfter {
@@ -52,14 +53,35 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit var arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(outputView)
 
+    val thrown0 = intercept[Exception with DetailException] {
+      load.ORCLoadStage.execute(
+        load.ORCLoadStage(
+          plugin=new load.ORCLoad,
+          id=None,
+          name=outputView,
+          description=None,
+          inputView=outputView,
+          outputURI=new URI(targetFile),
+          partitionBy=Nil,
+          numPartitions=None,
+          authentication=None,
+          saveMode=SaveMode.Overwrite,
+          params=Map.empty
+        )
+      )
+    }
+    assert(thrown0.getMessage.contains("""inputView 'dataset' contains types {"NullType":["nullDatum"]} which are unsupported by ORCLoad and 'dropUnsupported' is set to false."""))
+
+    arcContext = TestUtils.getARCContext(dropUnsupported=true)
     load.ORCLoadStage.execute(
       load.ORCLoadStage(
         plugin=new load.ORCLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -82,7 +104,7 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext(dropUnsupported=true)
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(outputView)
@@ -91,6 +113,7 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     load.ORCLoadStage.execute(
       load.ORCLoadStage(
         plugin=new load.ORCLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -124,6 +147,7 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
     load.ORCLoadStage.execute(
       load.ORCLoadStage(
         plugin=new load.ORCLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,

@@ -1,0 +1,10 @@
+{
+  "type": "BigQueryExtract",
+  "name": "extract customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "table": "dataset.customer",
+  "outputView": "customer"
+}

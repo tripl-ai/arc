@@ -44,7 +44,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
   test("SQLValidate: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -75,7 +75,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
   test("SQLValidate: end-to-end inline sql") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -106,7 +106,7 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
   test("SQLValidate: end-to-end with json array") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -129,20 +129,21 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => ARC.run(pipeline)(spark, logger, arcContext)
     }
-  }  
+  }
 
   test("SQLValidate: true, null") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
         plugin=new validate.SQLValidate,
+        id=None,
         name=testName,
         description=None,
-        inputURI=new URI(testURI),
+        inputURI=Option(new URI(testURI)),
         sql="SELECT true, null",
         sqlParams=Map.empty,
         params=Map.empty
@@ -154,14 +155,15 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
         plugin=new validate.SQLValidate,
+        id=None,
         name=testName,
         description=None,
-        inputURI=new URI(testURI),
+        inputURI=Option(new URI(testURI)),
         sql="SELECT true, 'message'",
         sqlParams=Map.empty,
         params=Map.empty
@@ -173,14 +175,15 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
         plugin=new validate.SQLValidate,
+        id=None,
         name=testName,
         description=None,
-        inputURI=new URI(testURI),
+        inputURI=Option(new URI(testURI)),
         sql="""SELECT true, '{"stringKey": "stringValue", "numKey": 123}'""",
         sqlParams=Map.empty,
         params=Map.empty
@@ -192,15 +195,16 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException]  {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
-          inputURI=new URI(testURI),
+          inputURI=Option(new URI(testURI)),
           sql="SELECT false, null",
           sqlParams=Map.empty,
           params=Map.empty
@@ -214,15 +218,16 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException]  {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
-          inputURI=new URI(testURI),
+          inputURI=Option(new URI(testURI)),
           sql="SELECT false, 'this is my message'",
           sqlParams=Map.empty,
           params=Map.empty
@@ -236,15 +241,16 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException] {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
-          inputURI=new URI(testURI),
+          inputURI=Option(new URI(testURI)),
           sql="""SELECT false, TO_JSON(NAMED_STRUCT('stringKey', 'stringValue', 'numKey', 123))""",
           sqlParams=Map.empty,
           params=Map.empty
@@ -259,15 +265,16 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException]  {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
-          inputURI=new URI(testURI),
+          inputURI=Option(new URI(testURI)),
           sql="SELECT 'string', true",
           sqlParams=Map.empty,
           params=Map.empty
@@ -281,15 +288,16 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown0 = intercept[Exception with DetailException]  {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
-          inputURI=new URI(testURI),
+          inputURI=Option(new URI(testURI)),
           sql="SELECT true, 'message' WHERE false",
           sqlParams=Map.empty,
           params=Map.empty
@@ -302,9 +310,10 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
-          inputURI=new URI(testURI),
+          inputURI=Option(new URI(testURI)),
           sql="SELECT true, 'message' UNION ALL SELECT true, 'message'",
           sqlParams=Map.empty,
           params=Map.empty
@@ -318,15 +327,16 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown0 = intercept[Exception with DetailException]  {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
-          inputURI=new URI(testURI),
+          inputURI=Option(new URI(testURI)),
           sql="SELECT true",
           sqlParams=Map.empty,
           params=Map.empty
@@ -339,9 +349,10 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
-          inputURI=new URI(testURI),
+          inputURI=Option(new URI(testURI)),
           sql="SELECT true, 'message', true",
           sqlParams=Map.empty,
           params=Map.empty
@@ -355,14 +366,15 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     validate.SQLValidateStage.execute(
       validate.SQLValidateStage(
         plugin=new validate.SQLValidate,
+        id=None,
         name=testName,
         description=None,
-        inputURI=new URI(testURI),
+        inputURI=Option(new URI(testURI)),
         sql="""SELECT 0.1 > ${threshold}, 'message'""",
         sqlParams=Map("threshold" -> "0.05"),
         params=Map.empty
@@ -373,9 +385,10 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
-          inputURI=new URI(testURI),
+          inputURI=Option(new URI(testURI)),
           sql="""SELECT 0.01 > ${threshold}, 'message'""",
           sqlParams=Map("threshold" -> "0.05"),
           params=Map.empty
@@ -389,15 +402,16 @@ class SQLValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException]  {
       validate.SQLValidateStage.execute(
         validate.SQLValidateStage(
           plugin=new validate.SQLValidate,
+          id=None,
           name=testName,
           description=None,
-          inputURI=new URI(testURI),
+          inputURI=Option(new URI(testURI)),
           sql="SELECT CAST(NULL AS BOOLEAN), CAST(NULL AS STRING)",
           sqlParams=Map.empty,
           params=Map.empty

@@ -1,0 +1,21 @@
+{
+  "type": "BigQueryLoad",
+  "name": "load customers",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer",
+  "table": "customer",
+  "dataset": "dataset",
+  "temporaryGcsBucket": "bucket-name",
+  "allowFieldAddition": false,
+  "allowFieldRelaxation": false,
+  "clusteredFields": "field0,field1",
+  "createDisposition": "CREATE_IF_NEEDED",
+  "parentProject": "parent-project",
+  "project": "project",
+  "partitionExpirationMs": 525600000,
+  "partitionField": "load_date",
+  "saveMode": "Overwrite"
+}

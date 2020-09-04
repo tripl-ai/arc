@@ -1,0 +1,9 @@
+{
+  "type": "BigQueryExecute",
+  "name": "execute on bigquery",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://customer.sql",
+}

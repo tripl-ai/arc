@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.1.0</span></strong>
+          <span class="version">3.2.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -457,431 +457,18 @@
 
 <p><code>*Execute</code> stages are used to execute arbitrary commands against external systems such as Databases and APIs.</p>
 
-<h2 id="cassandraexecute">CassandraExecute</h2>
+<h2 id="bigqueryexecute">BigQueryExecute</h2>
 
-<h5 id="since-2-0-0-supports-streaming-false">Since: 2.0.0 - Supports Streaming: False</h5>
+<h5 id="supports-streaming-false">Supports Streaming: False</h5>
 
 <div class="admonition note">
 <p class="admonition-title">Plugin</p>
-<p>The <code>CassandraExecute</code> is provided by the <a href="https://github.com/tripl-ai/arc-cassandra-pipeline-plugin">https://github.com/tripl-ai/arc-cassandra-pipeline-plugin</a> package.</p>
+<p>The <code>BigQueryExecute</code> is provided by the <a href="https://github.com/tripl-ai/arc-big-query-pipeline-plugin">https://github.com/tripl-ai/arc-big-query-pipeline-plugin</a> package.</p>
 </div>
 
-<p>The <code>CassandraExecute</code> executes a CQL statement against an external <a href="https://cassandra.apache.org/">Cassandra</a> cluster.</p>
+<p>The <code>BigQueryExecute</code> executes a SQL statement against BigQuery.</p>
 
 <h3 id="parameters">Parameters</h3>
-
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>name</td>
-<td>String</td>
-<td>true</td>
-<td>Name of the stage for logging.</td>
-</tr>
-
-<tr>
-<td>environments</td>
-<td>Array[String]</td>
-<td>true</td>
-<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
-</tr>
-
-<tr>
-<td>inputURI</td>
-<td>URI</td>
-<td>true</td>
-<td>URI of the input file containing the CQL statement.</td>
-</tr>
-
-<tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
-</tr>
-
-<tr>
-<td>description</td>
-<td>String</td>
-<td>false</td>
-<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters.. Any parameters provided will be added to the Cassandra connection object.</td>
-</tr>
-
-<tr>
-<td>sqlParams</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.</td>
-</tr>
-</tbody>
-</table>
-
-<h3 id="examples">Examples</h3>
-
-<h4 id="minimal">Minimal</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;CassandraExecute&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;create table&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>  
-  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/create_table.cql&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;spark.cassandra.connection.host&#34;</span><span class="p">:</span> <span class="s2">&#34;cassandra&#34;</span>
-  <span class="p">},</span>
-  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;keyspace&#34;</span><span class="p">:</span> <span class="err">$</span><span class="p">{</span><span class="err">ETL_CONF_ENVIRONMENT</span><span class="p">}</span>
-  <span class="p">}</span>                 
-<span class="p">}</span></code></pre></div>
-
-<h4 id="complete">Complete</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;CassandraExecute&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;create table&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>  
-  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/create_table.cql&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;spark.cassandra.connection.host&#34;</span><span class="p">:</span> <span class="s2">&#34;cassandra&#34;</span>
-  <span class="p">},</span>
-  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;keyspace&#34;</span><span class="p">:</span> <span class="err">$</span><span class="p">{</span><span class="err">ETL_CONF_ENVIRONMENT</span><span class="p">}</span>
-  <span class="p">}</span>     
-<span class="p">}</span></code></pre></div>
-
-<h2 id="httpexecute">HTTPExecute</h2>
-
-<h5 id="since-1-0-0-supports-streaming-false">Since: 1.0.0 - Supports Streaming: False</h5>
-
-<p>The <code>HTTPExecute</code> takes an input <code>Map[String, String]</code> from the configuration and executes a <code>POST</code> request against a remote HTTP service. This could be used to initialise another process that depends on the output of data pipeline.</p>
-
-<h3 id="parameters-1">Parameters</h3>
-
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>name</td>
-<td>String</td>
-<td>true</td>
-<td>Name of the stage for logging.</td>
-</tr>
-
-<tr>
-<td>environments</td>
-<td>Array[String]</td>
-<td>true</td>
-<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
-</tr>
-
-<tr>
-<td>uri</td>
-<td>URI</td>
-<td>true</td>
-<td>URI of the HTTP server.</td>
-</tr>
-
-<tr>
-<td>description</td>
-<td>String</td>
-<td>false</td>
-<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
-</tr>
-
-<tr>
-<td>headers</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td><a href="https://en.wikipedia.org/wiki/List_of_HTTP_header_fields">HTTP Headers</a> to set for the HTTP request. These are not limited to the Internet Engineering Task Force standard headers.</td>
-</tr>
-
-<tr>
-<td>payloads</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>A set of Key/Value that will be encoded as JSON and send to the HTTP server.</td>
-</tr>
-
-<tr>
-<td>validStatusCodes</td>
-<td>Array[Integer]</td>
-<td>false</td>
-<td>A list of valid status codes which will result in a successful stage if the list contains the HTTP server response code. If not provided the default values are <code>[200, 201, 202]</code>.</td>
-</tr>
-</tbody>
-</table>
-
-<h3 id="examples-1">Examples</h3>
-
-<h4 id="minimal-1">Minimal</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPExecute&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;notify the customer api of job completion&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>
-  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer&#34;</span>
-<span class="p">}</span></code></pre></div>
-
-<h4 id="complete-1">Complete</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPExecute&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;notify the customer api of job completion&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;notify the customer api of job completion&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>
-  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;headers&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;Authorization&#34;</span><span class="p">:</span> <span class="s2">&#34;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;custom-header&#34;</span><span class="p">:</span> <span class="s2">&#34;payload&#34;</span>
-  <span class="p">},</span>
-  <span class="nt">&#34;payloads&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;jobName&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
-    <span class="nt">&#34;jobStatus&#34;</span><span class="p">:</span> <span class="s2">&#34;complete&#34;</span>
-  <span class="p">},</span>
-  <span class="nt">&#34;validStatusCodes&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="mi">200</span>
-  <span class="p">]</span>
-<span class="p">}</span></code></pre></div>
-
-<h2 id="jdbcexecute">JDBCExecute</h2>
-
-<h5 id="since-1-0-0-supports-streaming-false-1">Since: 1.0.0 - Supports Streaming: False</h5>
-
-<p>The <code>JDBCExecute</code> executes a SQL statement against an external JDBC connection.</p>
-
-<h3 id="parameters-2">Parameters</h3>
-
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>name</td>
-<td>String</td>
-<td>true</td>
-<td>Name of the stage for logging.</td>
-</tr>
-
-<tr>
-<td>environments</td>
-<td>Array[String]</td>
-<td>true</td>
-<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
-</tr>
-
-<tr>
-<td>inputURI</td>
-<td>URI</td>
-<td>true</td>
-<td>URI of the input file containing the SQL statement.</td>
-</tr>
-
-<tr>
-<td>jdbcURL</td>
-<td>String</td>
-<td>true</td>
-<td>The JDBC URL to connect to. e.g., <code>jdbc:mysql://localhost:3306</code>.</td>
-</tr>
-
-<tr>
-<td>authentication</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
-</tr>
-
-<tr>
-<td>description</td>
-<td>String</td>
-<td>false</td>
-<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
-</tr>
-
-<tr>
-<td>params</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Map of configuration parameters.. Any parameters provided will be added to the JDBC connection object. These are not logged so it is safe to put passwords here.</td>
-</tr>
-
-<tr>
-<td>sqlParams</td>
-<td>Map[String, String]</td>
-<td>false</td>
-<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.</td>
-</tr>
-</tbody>
-</table>
-
-<h3 id="examples-2">Examples</h3>
-
-<h4 id="minimal-2">Minimal</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCExecute&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;execute the load date table&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>
-  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/update_customer_load_date.sql&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer&#34;</span>
-<span class="p">}</span></code></pre></div>
-
-<h4 id="complete-2">Complete</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCExecute&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;execute the load date table&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;execute the load date table&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>
-  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/update_customer_load_date.sql&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer?user=fred&amp;password=secret&amp;ssl=true&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
-  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{},</span>
-  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;current_timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2018-11-24 14:48:56&#34;</span>
-  <span class="p">}</span>
-<span class="p">}</span></code></pre></div>
-
-<h2 id="kafkacommitexecute">KafkaCommitExecute</h2>
-
-<h5 id="since-1-0-8-supports-streaming-false">Since: 1.0.8 - Supports Streaming: False</h5>
-
-<div class="admonition note">
-<p class="admonition-title">Plugin</p>
-<p>The <code>KafkaCommitExecute</code> is provided by the <a href="https://github.com/tripl-ai/arc-kafka-pipeline-plugin">https://github.com/tripl-ai/arc-kafka-pipeline-plugin</a> package.</p>
-</div>
-
-<p>The <code>KafkaCommitExecute</code> takes the resulting <code>DataFrame</code> from a <a href="../extract/#kafkaextract">KafkaExtract</a> stage and commits the offsets back to Kafka. This is used so that a user is able to perform a quasi-transaction by specifing a series of stages that must be succesfully executed prior to <code>committing</code> the offset back to Kafka. To use this stage ensure that the <code>autoCommit</code> option on the <a href="../extract/#kafkaextract">KafkaExtract</a> stage is set to <code>false</code>.</p>
-
-<p>For example, if a job reads from a Kafka topic and writes the results to <code>parquet</code> then it would be good to ensure the <a href="../load/#parquetload">ParquetLoad</a> stage had completed successfully before updating the offset in Kafka.</p>
-
-<h3 id="parameters-3">Parameters</h3>
-
-<table>
-<thead>
-<tr>
-<th>Attribute</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>name</td>
-<td>String</td>
-<td>true</td>
-<td>Name of the stage for logging.</td>
-</tr>
-
-<tr>
-<td>environments</td>
-<td>Array[String]</td>
-<td>true</td>
-<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
-</tr>
-
-<tr>
-<td>inputView</td>
-<td>String</td>
-<td>true</td>
-<td>Name of incoming Spark dataset.</td>
-</tr>
-
-<tr>
-<td>bootstrapServers</td>
-<td>String</td>
-<td>true</td>
-<td>A list of host/port pairs to use for establishing the initial connection to the Kafka cluster. e.g. <code>host1:port1,host2:port2,...</code></td>
-</tr>
-
-<tr>
-<td>groupID</td>
-<td>String</td>
-<td>true</td>
-<td>A string that uniquely identifies the group of consumer processes to which this consumer belongs. This will retain the offset of the job between executions.</td>
-</tr>
-
-<tr>
-<td>description</td>
-<td>String</td>
-<td>false</td>
-<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
-</tr>
-</tbody>
-</table>
-
-<h3 id="examples-3">Examples</h3>
-
-<h4 id="minimal-3">Minimal</h4>
-
-<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaCommitExecute&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;update the offsets in kafka after processing data&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
-    <span class="s2">&#34;test&#34;</span>
-  <span class="p">],</span>
-  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;bootstrapServers&#34;</span><span class="p">:</span> <span class="s2">&#34;kafka:29092&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;groupID&#34;</span><span class="p">:</span> <span class="s2">&#34;spark-customer-extract-job&#34;</span>
-<span class="p">}</span></code></pre></div>
-
-<h2 id="logexecute">LogExecute</h2>
-
-<h5 id="since-2-12-0-supports-streaming-true">Since: 2.12.0 - Supports Streaming: True</h5>
-
-<p>The <code>LogExecute</code> takes an input SQL statement which must return a <code>string</code> and will write the output to the Arc logs. <code>LogExecute</code> will try to convert the message from a JSON string manually created in the SQL statement so that logging is easier to parse by log aggregation tools.</p>
-
-<h3 id="parameters-4">Parameters</h3>
 
 <table>
 <thead>
@@ -937,6 +524,13 @@
 </tr>
 
 <tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
 <td>sqlParams</td>
 <td>Map[String, String]</td>
 <td>false</td>
@@ -945,9 +539,565 @@
 </tbody>
 </table>
 
+<h3 id="examples">Examples</h3>
+
+<h4 id="minimal">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;BigQueryExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;execute on bigquery&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://customer.sql&#34;</span><span class="p">,</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;BigQueryExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;execute the load date table&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;execute the load date table&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/update_customer_load_date.sql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;current_timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2018-11-24 14:48:56&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<h2 id="cassandraexecute">CassandraExecute</h2>
+
+<h5 id="since-2-0-0-supports-streaming-false">Since: 2.0.0 - Supports Streaming: False</h5>
+
+<div class="admonition note">
+<p class="admonition-title">Plugin</p>
+<p>The <code>CassandraExecute</code> is provided by the <a href="https://github.com/tripl-ai/arc-cassandra-pipeline-plugin">https://github.com/tripl-ai/arc-cassandra-pipeline-plugin</a> package.</p>
+</div>
+
+<p>The <code>CassandraExecute</code> executes a CQL statement against an external <a href="https://cassandra.apache.org/">Cassandra</a> cluster.</p>
+
+<h3 id="parameters-1">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the input file containing the CQL statement.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Map of configuration parameters.. Any parameters provided will be added to the Cassandra connection object.</td>
+</tr>
+
+<tr>
+<td>sqlParams</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-1">Examples</h3>
+
+<h4 id="minimal-1">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;CassandraExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;create table&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/create_table.cql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;spark.cassandra.connection.host&#34;</span><span class="p">:</span> <span class="s2">&#34;cassandra&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;keyspace&#34;</span><span class="p">:</span> <span class="err">$</span><span class="p">{</span><span class="err">ETL_CONF_ENVIRONMENT</span><span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-1">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;CassandraExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;create table&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>  
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/create_table.cql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;spark.cassandra.connection.host&#34;</span><span class="p">:</span> <span class="s2">&#34;cassandra&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;keyspace&#34;</span><span class="p">:</span> <span class="err">$</span><span class="p">{</span><span class="err">ETL_CONF_ENVIRONMENT</span><span class="p">}</span>
+  <span class="p">}</span>     
+<span class="p">}</span></code></pre></div>
+
+<h2 id="httpexecute">HTTPExecute</h2>
+
+<h5 id="since-1-0-0-supports-streaming-false">Since: 1.0.0 - Supports Streaming: False</h5>
+
+<p>The <code>HTTPExecute</code> takes an input <code>Map[String, String]</code> from the configuration and executes a <code>POST</code> request against a remote HTTP service. This could be used to initialise another process that depends on the output of data pipeline.</p>
+
+<h3 id="parameters-2">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>uri</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the HTTP server.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>headers</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td><a href="https://en.wikipedia.org/wiki/List_of_HTTP_header_fields">HTTP Headers</a> to set for the HTTP request. These are not limited to the Internet Engineering Task Force standard headers.</td>
+</tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
+<td>payloads</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>A set of Key/Value that will be encoded as JSON and send to the HTTP server.</td>
+</tr>
+
+<tr>
+<td>validStatusCodes</td>
+<td>Array[Integer]</td>
+<td>false</td>
+<td>A list of valid status codes which will result in a successful stage if the list contains the HTTP server response code. If not provided the default values are <code>[200, 201, 202]</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-2">Examples</h3>
+
+<h4 id="minimal-2">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;notify the customer api of job completion&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-2">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;notify the customer api of job completion&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;notify the customer api of job completion&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;headers&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;Authorization&#34;</span><span class="p">:</span> <span class="s2">&#34;Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;custom-header&#34;</span><span class="p">:</span> <span class="s2">&#34;payload&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;payloads&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;jobName&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+    <span class="nt">&#34;jobStatus&#34;</span><span class="p">:</span> <span class="s2">&#34;complete&#34;</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;validStatusCodes&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="mi">200</span>
+  <span class="p">]</span>
+<span class="p">}</span></code></pre></div>
+
+<h2 id="jdbcexecute">JDBCExecute</h2>
+
+<h5 id="since-1-0-0-supports-streaming-false-1">Since: 1.0.0 - Supports Streaming: False</h5>
+
+<p>The <code>JDBCExecute</code> executes a SQL statement against an external JDBC connection.</p>
+
+<h3 id="parameters-3">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
+<td>true</td>
+<td>URI of the input file containing the SQL statement.</td>
+</tr>
+
+<tr>
+<td>jdbcURL</td>
+<td>String</td>
+<td>true</td>
+<td>The JDBC URL to connect to. e.g., <code>jdbc:mysql://localhost:3306</code>.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
+<td>params</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Map of configuration parameters.. Any parameters provided will be added to the JDBC connection object. These are not logged so it is safe to put passwords here.</td>
+</tr>
+
+<tr>
+<td>sqlParams</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-3">Examples</h3>
+
+<h4 id="minimal-3">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;execute the load date table&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/update_customer_load_date.sql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-3">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JDBCExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;execute the load date table&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;execute the load date table&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/update_customer_load_date.sql&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;jdbcURL&#34;</span><span class="p">:</span> <span class="s2">&#34;jdbc:postgresql://localhost:5432/customer?user=fred&amp;password=secret&amp;ssl=true&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;authentication&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;current_timestamp&#34;</span><span class="p">:</span> <span class="s2">&#34;2018-11-24 14:48:56&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></div>
+
+<h2 id="kafkacommitexecute">KafkaCommitExecute</h2>
+
+<h5 id="since-1-0-8-supports-streaming-false">Since: 1.0.8 - Supports Streaming: False</h5>
+
+<div class="admonition note">
+<p class="admonition-title">Plugin</p>
+<p>The <code>KafkaCommitExecute</code> is provided by the <a href="https://github.com/tripl-ai/arc-kafka-pipeline-plugin">https://github.com/tripl-ai/arc-kafka-pipeline-plugin</a> package.</p>
+</div>
+
+<p>The <code>KafkaCommitExecute</code> takes the resulting <code>DataFrame</code> from a <a href="../extract/#kafkaextract">KafkaExtract</a> stage and commits the offsets back to Kafka. This is used so that a user is able to perform a quasi-transaction by specifing a series of stages that must be succesfully executed prior to <code>committing</code> the offset back to Kafka. To use this stage ensure that the <code>autoCommit</code> option on the <a href="../extract/#kafkaextract">KafkaExtract</a> stage is set to <code>false</code>.</p>
+
+<p>For example, if a job reads from a Kafka topic and writes the results to <code>parquet</code> then it would be good to ensure the <a href="../load/#parquetload">ParquetLoad</a> stage had completed successfully before updating the offset in Kafka.</p>
+
+<h3 id="parameters-4">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>bootstrapServers</td>
+<td>String</td>
+<td>true</td>
+<td>A list of host/port pairs to use for establishing the initial connection to the Kafka cluster. e.g. <code>host1:port1,host2:port2,...</code></td>
+</tr>
+
+<tr>
+<td>groupID</td>
+<td>String</td>
+<td>true</td>
+<td>A string that uniquely identifies the group of consumer processes to which this consumer belongs. This will retain the offset of the job between executions.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+</tbody>
+</table>
+
 <h3 id="examples-4">Examples</h3>
 
 <h4 id="minimal-4">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;KafkaCommitExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;update the offsets in kafka after processing data&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;bootstrapServers&#34;</span><span class="p">:</span> <span class="s2">&#34;kafka:29092&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;groupID&#34;</span><span class="p">:</span> <span class="s2">&#34;spark-customer-extract-job&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h2 id="logexecute">LogExecute</h2>
+
+<h5 id="since-2-12-0-supports-streaming-true">Since: 2.12.0 - Supports Streaming: True</h5>
+
+<p>The <code>LogExecute</code> takes an input SQL statement which must return a <code>string</code> and will write the output to the Arc logs. <code>LogExecute</code> will try to convert the message from a JSON string manually created in the SQL statement so that logging is easier to parse by log aggregation tools.</p>
+
+<h3 id="parameters-5">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputURI</td>
+<td>URI</td>
+<td>*true</td>
+<td>URI of the input file containing the SQL statement. Required if <code>sql</code> not provided.</td>
+</tr>
+
+<tr>
+<td>sql</td>
+<td>String</td>
+<td>*true</td>
+<td>A SQL statement to execute. Required if <code>inputURI</code> not provided.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
+<td>sqlParams</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>Parameters to inject into the SQL statement before executing. The parameters use the <code>${}</code> format.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-5">Examples</h3>
+
+<h4 id="minimal-5">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;LogExecute&#34;</span><span class="p">,</span>
@@ -959,10 +1109,11 @@
   <span class="nt">&#34;inputURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/sql/customer_error_threshold.sql&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-3">Complete</h4>
+<h4 id="complete-4">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;LogExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;log customer counts&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;log customer counts&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -985,7 +1136,7 @@
 
 <p>An example use case could be a <code>pipeline</code> which defines how your organisation defines active customer records which could then be embedded in multiple downstream <code>pipelines</code> to ensure definition consistency.</p>
 
-<h3 id="parameters-5">Parameters</h3>
+<h3 id="parameters-6">Parameters</h3>
 
 <table>
 <thead>
@@ -1032,12 +1183,19 @@
 <td>false</td>
 <td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
 </tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
 </tbody>
 </table>
 
-<h3 id="examples-5">Examples</h3>
+<h3 id="examples-6">Examples</h3>
 
-<h4 id="minimal-5">Minimal</h4>
+<h4 id="minimal-6">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;PipelineExecute&#34;</span><span class="p">,</span>
@@ -1049,10 +1207,11 @@
   <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/job/active_customers.json&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-4">Complete</h4>
+<h4 id="complete-5">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;PipelineExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;00000000-0000-0000-0000-000000000000&#34;</span><span class="p">,</span>
   <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;embed the active customer pipeline&#34;</span><span class="p">,</span>
   <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;embed the active customer pipeline&#34;</span><span class="p">,</span>
   <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>

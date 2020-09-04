@@ -26,6 +26,7 @@ The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avr
 |outputURI|URI|true|URI of the Avro file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -37,6 +38,46 @@ The `AvroLoad` writes an input `DataFrame` to a target [Apache Avro](https://avr
 
 #### Complete
 {{< readfile file="/resources/docs_resources/AvroLoadComplete" highlight="json" >}}
+
+
+## BigQueryLoad
+##### Supports Streaming: False
+{{< note title="Plugin" >}}
+The `BigQueryLoad` is provided by the https://github.com/tripl-ai/arc-big-query-pipeline-plugin package.
+{{</note>}}
+
+The `BigQueryLoad` stage writes an input `DataFrame` to a target BigQuery table.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|table|String|true|The BigQuery table in the format `[[project:]dataset.]table.`|
+|temporaryGcsBucket|String|true|The GCS bucket that temporarily holds the data before it is loaded to BigQuery.|
+|allowFieldAddition|String|false|Adds the `ALLOW_FIELD_ADDITION` SchemaUpdateOption to the BigQuery LoadJob.<br><br>Default: `false`.|
+|allowFieldRelaxation|String|false|Adds the `ALLOW_FIELD_RELAXATION` SchemaUpdateOption to the BigQuery LoadJob.<br><br>Default: `false`.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|clusteredFields|String|false|Comma separated list of non-repeated, top level columns. Clustering is only supported for partitioned tables.|
+|createDisposition|String|false|Specifies whether the job is allowed to create new tables. Either `CREATE_IF_NEEDED` or `CREATE_NEVER`.<br><br>Default: `CREATE_IF_NEEDED`.|
+|dataset|String|false*|The dataset containing the table. Required if omitted in table.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
+|parentProject|String|false|The Google Cloud Project ID of the table to bill for the export. Defaults to the project of the Service Account being used.|
+|partitionExpirationMs|Integer|false|	Number of milliseconds for which to keep the storage for partitions in the table. The storage in a partition will have an expiration time of its partition time plus this value.|
+|partitionField|String|false|If field is specified together with `partitionType`, the table is partitioned by this field. The field must be a top-level `TIMESTAMP` or `DATE` field.|
+|project|String|false|The Google Cloud Project ID of the table. Defaults to the project of the Service Account being used.|
+|saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/BigQueryLoadMin" highlight="json" >}}
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/BigQueryLoadComplete" highlight="json" >}}
 
 
 ## CassandraLoad
@@ -57,6 +98,7 @@ The `CassandraLoad` writes an input `DataFrame` to a target [Cassandra](https://
 |keyspace|String|true|The name of the Cassandra keyspace to write to.|
 |table|String|true|The name of the Cassandra table to write to.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Any parameters provided will be added to the Cassandra connection object.|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -86,6 +128,7 @@ This stage has been included for testing Structured Streaming jobs as it can be 
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |outputMode|String|false|The output mode of the console writer. Allowed values `Append`, `Complete`, `Update`. See [Output Modes](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#output-modes) for full details.<br><br>Default: `Append`|
 
 ### Examples
@@ -114,6 +157,7 @@ The `DeltaLakeLoad` writes an input `DataFrame` to a target [DeltaLake](https://
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputURI|URI|true|URI of the Delta file to write to.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -148,12 +192,14 @@ The `DeltaLakeMergeLoad` writes an input `DataFrame` to a target [DeltaLake](htt
 |outputURI|URI|true|URI of the Delta file to write to.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |condition|String|true|The `join condition` to perform the data comparison between the `source` (the `inputView` dataset) and `target` (the `outputURI` dataset). Note that the names `source` and `target` must be used.|
+|createTableIfNotExists|Boolean|false|Create an initial `DeltaLake` table if one does not already exist.<br><br>Default: `false`|
 |whenMatchedDeleteFirst|Boolean|false|If `true` the `whenMatchedDelete` operation will happen before `whenMatchedUpdate`.<br><br>If `false` the `whenMatchedUpdate` operation will happen before `whenMatchedDelete`.<br><br>Default: `true`.|
 |whenMatchedDelete|Map[String, String]|false|If specified, `whenMatchedDelete` will delete records where the record exists in both `source` and `target` based on the `join condition`.<br><br>Optionally `condition` may be specified to restrict the records to delete and can only refer to fields in both `source` and `target`.|
 |whenMatchedUpdate|Map[String, Object]|false|If specified, `whenMatchedUpdate` will update records where the record exists in both `source` and `target` based on the `join condition`.<br><br>Optionally `condition` may be specified to restrict the records to update and can only refer to fields in both `source` and `target`.<br><br>Optionally `values` may be specified to define the update rules which can be used to update only selected columns.|
 |whenNotMatchedByTargetInsert|Map[String, Object]|false|If specified, `whenNotMatchedByTargetInsert` will insert records in `source` which do not exist in `target` based on the `join condition`.<br><br>Optionally `condition` may be specified to restrict the records to insert but can only refer to fields in `source`.<br><br>Optionally `values` may be specified to define the insert rules which can be used to insert only selected columns.|
 |whenNotMatchedBySourceDelete|Map[String, Object]|false|If specified, `whenNotMatchedBySourceDelete` will delete records in `target` which do not exist in `source` based on the `join condition`.<br><br>Optionally `condition` may be specified to restrict the records to insert but can only refer to fields in `source`.|
 |generateSymlinkManifest|Boolean|false|Create a manifest file so that the DeltaLakeMergeLoad output can be read by a Presto database.<br><br>Default: `true`|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 
 ### Examples
 
@@ -162,7 +208,6 @@ The `DeltaLakeMergeLoad` writes an input `DataFrame` to a target [DeltaLake](htt
 
 #### Complete
 {{< readfile file="/resources/docs_resources_plugins/DeltaLakeMergeLoadComplete" highlight="json" >}}
-
 
 
 ## DelimitedLoad
@@ -183,6 +228,7 @@ The `DelimitedLoad` writes an input `DataFrame` to a target delimited file.
 |delimiter|String|false|{{< readfile file="/content/partials/fields/delimiter.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |header|Boolean|false|Whether to write a header row.<br><br>Default: `false`.|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |quote|String|false|The type of quoting in the file. Supported values: `None`, `SingleQuote`, `DoubleQuote`.<br><br>Default: `DoubleQuote`.|
@@ -214,6 +260,7 @@ The `ElasticsearchLoad` writes an input `DataFrame` to a target [Elasticsearch](
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |output|String|true|The name of the target Elasticsearch index.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}} Parameters for connecting to the [Elasticsearch](https://www.elastic.co/products/elasticsearch) cluster are detailed [here](https://www.elastic.co/guide/en/elasticsearch/hadoop/master/configuration.html).|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -244,6 +291,7 @@ In the future additional Transform stages (like `ProtoBufTransform`) could be ad
 |outputURI|URI|true|URI of the HTTP server.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}} Note: all request response codes must be contained in this list for the stage to be successful.|
 
 ### Examples
@@ -277,6 +325,7 @@ Whilst it is possible to use `JDBCLoad` to create tables directly in the target 
 |createTableColumnTypes|String|false|{{< readfile file="/content/partials/fields/createTableColumnTypes.md" markdown="true" >}}|
 |createTableOptions|String|false|{{< readfile file="/content/partials/fields/createTableOptions.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |isolationLevel|String|false|{{< readfile file="/content/partials/fields/isolationLevel.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} This also determines the maximum number of concurrent JDBC connections.|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -307,6 +356,7 @@ The `JSONLoad` writes an input `DataFrame` to a target JSON file.
 |outputURI|URI|true|URI of the Delimited file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -343,6 +393,7 @@ In the future additional Transform stages (like `ProtoBufTransform`) may be adde
 |acks|Integer|false|{{< readfile file="/content/partials/fields/acks.md" markdown="true" >}}<br><br>Default: `1`.|
 |batchSize|Integer|false|Number of records to send in single requet to reduce number of requests to Kafka.<br><br>Default: `16384`.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |retries|Integer|false|How many times to try to resend any record whose send fails with a potentially transient error.<br><br>Default: `0`.|
 
@@ -372,6 +423,7 @@ The `MongoDBLoad` writes an input `DataFrame` to a target [MongoDB](https://www.
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |options|Map[String, String]|false|Map of configuration parameters. These parameters are used to provide database connection/collection details.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -400,6 +452,7 @@ The `ORCLoad` writes an input `DataFrame` to a target [Apache ORC](https://orc.a
 |outputURI|URI|true|URI of the ORC file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -428,6 +481,7 @@ The `ParquetLoad` writes an input `DataFrame` to a target [Apache Parquet](https
 |outputURI|URI|true|URI of the Parquet file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -456,6 +510,7 @@ The `TextLoad` writes an input `DataFrame` to a target text file.
 |outputURI|URI|true|URI of the Parquet file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
@@ -488,6 +543,7 @@ The `XMLLoad` writes an input `DataFrame` to a target XML file.
 |outputURI|URI|true|URI of the XML file to write to.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|

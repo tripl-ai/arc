@@ -156,7 +156,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -191,11 +191,12 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Right(new URI(s"${uri}/${get}/")),
@@ -232,11 +233,12 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Right(new URI(s"${uri}/${post}/")),
@@ -272,11 +274,12 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: Can post data (POST)") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Right(new URI(s"${uri}/${payload}/")),
@@ -302,11 +305,12 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Right(new URI(s"${uri}/${empty}/")),
@@ -334,12 +338,13 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: Throws exception with 404") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException] {
       extract.HTTPExtractStage.execute(
         extract.HTTPExtractStage(
           plugin=new extract.HTTPExtract,
+          id=None,
           name=outputView,
           description=None,
           input=Right(new URI(s"${uri}/fail/")),
@@ -364,12 +369,13 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: validStatusCodes") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException] {
       extract.HTTPExtractStage.execute(
         extract.HTTPExtractStage(
           plugin=new extract.HTTPExtract,
+          id=None,
           name=outputView,
           description=None,
           input=Right(new URI(s"${uri}/${empty}/")),
@@ -394,12 +400,13 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: broken url throws exception") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException] {
       extract.HTTPExtractStage.execute(
         extract.HTTPExtractStage(
           plugin=new extract.HTTPExtract,
+         id=None,
           name=outputView,
           description=None,
           input=Right(new URI(badUri)),
@@ -424,7 +431,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val inputDF = Seq(s"${uri}/${get}/", s"${uri}/${get}/").toDF("value")
     inputDF.createOrReplaceTempView(inputView)
@@ -432,6 +439,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Left(inputView),
@@ -460,7 +468,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val inputDF = Seq(("blah", s"${uri}/${echo}/", body0), ("blah", s"${uri}/${echo}/", body1)).toDF("ignore", "uri", "body")
     inputDF.createOrReplaceTempView(inputView)
@@ -468,6 +476,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Left(inputView),
@@ -496,7 +505,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val inputDF = Seq(("blah", s"${uri}/${echo}/", body0), ("blah", s"${uri}/${echo}/", body1)).toDF("ignore", "uri", "body")
     inputDF.createOrReplaceTempView(inputView)
@@ -504,6 +513,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.HTTPExtractStage.execute(
       extract.HTTPExtractStage(
         plugin=new extract.HTTPExtract,
+        id=None,
         name=outputView,
         description=None,
         input=Left(inputView),

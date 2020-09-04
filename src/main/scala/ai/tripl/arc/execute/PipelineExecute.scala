@@ -31,8 +31,9 @@ class PipelineExecute extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "uri" :: "authentication" :: "params" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "uri" :: "authentication" :: "params" :: Nil
 
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val uri = getValue[String]("uri") |> parseURI("uri") _
@@ -40,8 +41,8 @@ class PipelineExecute extends PipelineStagePlugin with JupyterCompleter {
     val textContent = uri |> textContentForURI("uri", authentication) _
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, uri, textContent, invalidKeys) match {
-      case (Right(name), Right(description), Right(uri), Right(textContent), Right(invalidKeys)) =>
+    (id, name, description, uri, textContent, invalidKeys) match {
+      case (Right(id), Right(name), Right(description), Right(uri), Right(textContent), Right(invalidKeys)) =>
 
         // try and read the nested pipeline
         val subPipeline = ai.tripl.arc.config.ArcPipeline.parseConfig(Right(uri), arcContext)
@@ -51,6 +52,7 @@ class PipelineExecute extends PipelineStagePlugin with JupyterCompleter {
 
             val stage = PipelineExecuteStage(
               plugin=this,
+              id=id,
               name=name,
               description=description,
               uri=uri,
@@ -67,7 +69,7 @@ class PipelineExecute extends PipelineStagePlugin with JupyterCompleter {
           }
         }
       case _ =>
-        val allErrors: Errors = List(name, description, uri, textContent, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, uri, textContent, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -77,6 +79,7 @@ class PipelineExecute extends PipelineStagePlugin with JupyterCompleter {
 
 case class PipelineExecuteStage(
     plugin: PipelineExecute,
+    id: Option[String],
     name: String,
     description: Option[String],
     uri: URI,

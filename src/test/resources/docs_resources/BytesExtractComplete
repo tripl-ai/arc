@@ -1,5 +1,6 @@
 {
   "type": "BytesExtract",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "load images from the customer vehicle photos directory",
   "description": "load images from the customer vehicle photos directory",
   "environments": [

@@ -34,7 +34,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), arcContext)
     val configParms = Map[String, String](
@@ -43,7 +43,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     )
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
         assert(params === configParms)
@@ -55,7 +55,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     val commandLineArguments = Map[String, String]("ARGS_MAP_VALUE" -> "before\"${arc.paramvalue}\"after")
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false, commandLineArguments=commandLineArguments)
+    implicit val arcContext = TestUtils.getARCContext(commandLineArguments=commandLineArguments)
 
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/dynamic_config_plugin_precendence.conf"), arcContext)
     val configParms = Map[String, String](
@@ -63,7 +63,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     )
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(name === "custom plugin")
         assert(params === configParms)
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
@@ -78,7 +78,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
 
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false, environment="production")
+    implicit val arcContext = TestUtils.getARCContext(environment="production")
 
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/dynamic_config_plugin.conf"), arcContext)
     val configParms = Map[String, String](
@@ -87,7 +87,7 @@ class DynamicConfigurationPluginSuite extends FunSuite with BeforeAndAfter {
     )
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(name === "custom plugin")
         assert(params === configParms)
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")

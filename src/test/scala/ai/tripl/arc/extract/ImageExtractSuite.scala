@@ -47,11 +47,12 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = extract.ImageExtractStage.execute(
       extract.ImageExtractStage(
         plugin=new extract.ImageExtract,
+        id=None,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -78,12 +79,13 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
   test("ImageExtract: Caching") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // no cache
     extract.ImageExtractStage.execute(
       extract.ImageExtractStage(
         plugin=new extract.ImageExtract,
+        id=None,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -104,6 +106,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ImageExtractStage.execute(
       extract.ImageExtractStage(
         plugin=new extract.ImageExtract,
+        id=None,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -125,11 +128,12 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = extract.ImageExtractStage.execute(
       extract.ImageExtractStage(
         plugin=new extract.ImageExtract,
+        id=None,
         name=outputView,
         description=None,
         outputView=outputView,
@@ -157,6 +161,7 @@ class ImageExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ImageExtractStage.execute(
       extract.ImageExtractStage(
         plugin=new extract.ImageExtract,
+        id=None,
         name=outputView,
         description=None,
         outputView=outputView,

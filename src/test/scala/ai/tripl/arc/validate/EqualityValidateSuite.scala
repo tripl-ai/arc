@@ -49,7 +49,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(leftView)
@@ -59,6 +59,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       validate.EqualityValidateStage.execute(
         validate.EqualityValidateStage(
           plugin=new validate.EqualityValidate,
+          id=None,
           name=testName,
           description=None,
           leftView=leftView,
@@ -75,7 +76,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(leftView)
@@ -85,6 +86,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       validate.EqualityValidateStage.execute(
         validate.EqualityValidateStage(
           plugin=new validate.EqualityValidate,
+          id=None,
           name=testName,
           description=None,
           leftView=leftView,
@@ -101,7 +103,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(leftView)
@@ -111,6 +113,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       validate.EqualityValidateStage.execute(
         validate.EqualityValidateStage(
           plugin=new validate.EqualityValidate,
+          id=None,
           name=testName,
           description=None,
           leftView=leftView,
@@ -127,7 +130,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView(leftView)
@@ -137,6 +140,7 @@ class EqualityValidateSuite extends FunSuite with BeforeAndAfter {
       validate.EqualityValidateStage.execute(
         validate.EqualityValidateStage(
           plugin=new validate.EqualityValidate,
+          id=None,
           name=testName,
           description=None,
           leftView=leftView,

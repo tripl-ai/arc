@@ -37,12 +37,12 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
   test("PipelineStagePlugin: getName") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin.conf"), arcContext)
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
         assert(params === configParms)
@@ -56,12 +56,12 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
   test("PipelineStagePlugin: getSimpleName") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_short.conf"), arcContext)
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
         assert(params === configParms)
@@ -76,7 +76,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
   test("PipelineStagePlugin: Missing") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_missing.conf"), arcContext)
 
@@ -91,12 +91,12 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
   test("PipelineStagePlugin: Version Correct") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_version_correct.conf"), arcContext)
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
         assert(params === configParms)
@@ -110,12 +110,12 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
   test("PipelineStagePlugin: Version Correct Long") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_version_correct_long.conf"), arcContext)
 
     pipeline match {
-      case Right((ETLPipeline(TestPipelineStageInstance(plugin, name, None, params) :: Nil),_)) =>
+      case Right((ETLPipeline(TestPipelineStageInstance(plugin, None, name, None, params) :: Nil),_)) =>
         assert(plugin.getClass.getName === "ai.tripl.arc.plugins.TestPipelineStagePlugin")
         assert(name === "custom plugin")
         assert(params === configParms)
@@ -129,7 +129,7 @@ class PipelineStagePluginSuite extends FunSuite with BeforeAndAfter {
   test("PipelineStagePlugin: Version Incorrect") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val pipeline = ArcPipeline.parsePipeline(Option("classpath://conf/custom_plugin_version_incorrect.conf"), arcContext)
 

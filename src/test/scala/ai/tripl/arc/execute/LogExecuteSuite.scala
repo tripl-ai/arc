@@ -44,7 +44,7 @@ class LogExecuteSuite extends FunSuite with BeforeAndAfter {
   test("LogExecute: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -77,12 +77,13 @@ class LogExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException]  {
       ai.tripl.arc.execute.LogExecuteStage.execute(
         ai.tripl.arc.execute.LogExecuteStage(
           plugin=new ai.tripl.arc.execute.LogExecute,
+          id=None,
           name=testName,
           description=None,
           inputURI=new URI(testURI),
@@ -99,11 +100,12 @@ class LogExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     ai.tripl.arc.execute.LogExecuteStage.execute(
       ai.tripl.arc.execute.LogExecuteStage(
         plugin=new ai.tripl.arc.execute.LogExecute,
+        id=None,
         name=testName,
         description=None,
         inputURI=new URI(testURI),
@@ -118,11 +120,12 @@ class LogExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     ai.tripl.arc.execute.LogExecuteStage.execute(
       ai.tripl.arc.execute.LogExecuteStage(
         plugin=new ai.tripl.arc.execute.LogExecute,
+        id=None,
         name=testName,
         description=None,
         inputURI=new URI(testURI),
@@ -137,12 +140,13 @@ class LogExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception with DetailException]  {
       ai.tripl.arc.execute.LogExecuteStage.execute(
         ai.tripl.arc.execute.LogExecuteStage(
           plugin=new ai.tripl.arc.execute.LogExecute,
+          id=None,
           name=testName,
           description=None,
           inputURI=new URI(testURI),

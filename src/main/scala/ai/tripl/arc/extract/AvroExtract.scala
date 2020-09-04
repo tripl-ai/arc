@@ -43,8 +43,8 @@ class AvroExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "avroSchemaURI" :: "inputField" :: Nil
-    val invalidKeys = checkValidKeys(c)(expectedKeys)
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputURI" :: "inputView" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "avroSchemaURI" :: "inputField" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val params = readMap("params", c)
     val description = getOptionalValue[String]("description")
@@ -56,19 +56,21 @@ class AvroExtract extends PipelineStagePlugin with JupyterCompleter {
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
-    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
+    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> textContentForURI("schemaURI", authentication) |> getExtractColumns("schemaURI") _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val basePath = getOptionalValue[String]("basePath")
     val inputField = getOptionalValue[String]("inputField")
     val avroSchema = if (c.hasPath("avroSchemaURI")) getValue[String]("avroSchemaURI") |> parseURI("avroSchemaURI") _ |> textContentForURI("avroSchemaURI", authentication) _ |> parseAvroSchema("avroSchemaURI") _  else Right(None)
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, invalidKeys, basePath, inputField, avroSchema) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(authentication), Right(contiguousIndex), Right(invalidKeys), Right(basePath), Right(inputField), Right(avroSchema)) =>
+    (id, name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, invalidKeys, basePath, inputField, avroSchema) match {
+      case (Right(id), Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(authentication), Right(contiguousIndex), Right(invalidKeys), Right(basePath), Right(inputField), Right(avroSchema)) =>
         val input = if(c.hasPath("inputView")) Left(inputView) else Right(parsedGlob)
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
         val stage = AvroExtractStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           schema=schema,
@@ -99,7 +101,7 @@ class AvroExtract extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, extractColumns, invalidKeys, basePath, inputField, avroSchema).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, extractColumns, schemaView, inputView, parsedGlob, outputView, persist, numPartitions, partitionBy, authentication, contiguousIndex, invalidKeys, basePath, inputField, avroSchema).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -127,6 +129,7 @@ class AvroExtract extends PipelineStagePlugin with JupyterCompleter {
 
 case class AvroExtractStage(
     plugin: AvroExtract,
+    id: Option[String],
     name: String,
     description: Option[String],
     schema: Either[String, List[ExtractColumn]],

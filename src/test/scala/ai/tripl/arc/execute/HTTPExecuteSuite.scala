@@ -96,11 +96,12 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     ai.tripl.arc.execute.HTTPExecuteStage.execute(
       ai.tripl.arc.execute.HTTPExecuteStage(
         plugin=new ai.tripl.arc.execute.HTTPExecute,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
@@ -116,12 +117,13 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception] {
       ai.tripl.arc.execute.HTTPExecuteStage.execute(
         ai.tripl.arc.execute.HTTPExecuteStage(
           plugin=new ai.tripl.arc.execute.HTTPExecute,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/headers/"), // ensure trailing slash to avoid 302 redirect
@@ -139,11 +141,12 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     ai.tripl.arc.execute.HTTPExecuteStage.execute(
       ai.tripl.arc.execute.HTTPExecuteStage(
         plugin=new ai.tripl.arc.execute.HTTPExecute,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
@@ -159,12 +162,13 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception] {
       ai.tripl.arc.execute.HTTPExecuteStage.execute(
         ai.tripl.arc.execute.HTTPExecuteStage(
           plugin=new ai.tripl.arc.execute.HTTPExecute,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
@@ -182,12 +186,13 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val thrown = intercept[Exception] {
       ai.tripl.arc.execute.HTTPExecuteStage.execute(
         ai.tripl.arc.execute.HTTPExecuteStage(
           plugin=new ai.tripl.arc.execute.HTTPExecute,
+          id=None,
           name=outputView,
           description=None,
           uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect
@@ -205,11 +210,12 @@ class HTTPExecuteSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     ai.tripl.arc.execute.HTTPExecuteStage.execute(
       ai.tripl.arc.execute.HTTPExecuteStage(
         plugin=new ai.tripl.arc.execute.HTTPExecute,
+        id=None,
         name=outputView,
         description=None,
         uri=new URI(s"${uri}/payloads/"), // ensure trailing slash to avoid 302 redirect

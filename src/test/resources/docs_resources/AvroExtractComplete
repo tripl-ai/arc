@@ -1,5 +1,6 @@
 {
   "type": "AvroExtract",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "load customer avro extract",
   "description": "load customer avro extract",
   "environments": [

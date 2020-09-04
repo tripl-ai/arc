@@ -37,8 +37,8 @@ class ParquetExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "watermark" :: Nil
-    val invalidKeys = checkValidKeys(c)(expectedKeys)
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputURI" :: "outputView" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "params" :: "basePath" :: "watermark" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val params = readMap("params", c)
     val description = getOptionalValue[String]("description")
@@ -49,17 +49,19 @@ class ParquetExtract extends PipelineStagePlugin with JupyterCompleter {
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
-    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
+    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> textContentForURI("schemaURI", authentication) |> getExtractColumns("schemaURI") _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val basePath = getOptionalValue[String]("basePath")
     val watermark = readWatermark("watermark")
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys, basePath, watermark) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(invalidKeys), Right(basePath), Right(watermark)) =>
+    (id, name, description, extractColumns, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, partitionBy, invalidKeys, basePath, watermark) match {
+      case (Right(id), Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(parsedGlob), Right(outputView), Right(persist), Right(numPartitions), Right(authentication), Right(contiguousIndex), Right(partitionBy), Right(invalidKeys), Right(basePath), Right(watermark)) =>
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
 
         val stage = ParquetExtractStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           schema=schema,
@@ -82,7 +84,7 @@ class ParquetExtract extends PipelineStagePlugin with JupyterCompleter {
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("params", params.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
-        for (watermark <- watermark) {
+        watermark.foreach { watermark =>
           val watermarkMap = new java.util.HashMap[String, Object]()
           watermarkMap.put("eventTime", watermark.eventTime)
           watermarkMap.put("delayThreshold", watermark.delayThreshold)
@@ -91,7 +93,7 @@ class ParquetExtract extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys, basePath, watermark).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, schemaView, parsedGlob, outputView, persist, numPartitions, authentication, contiguousIndex, extractColumns, partitionBy, invalidKeys, basePath, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -101,6 +103,7 @@ class ParquetExtract extends PipelineStagePlugin with JupyterCompleter {
 
 case class ParquetExtractStage(
     plugin: ParquetExtract,
+    id: Option[String],
     name: String,
     description: Option[String],
     schema: Either[String, List[ExtractColumn]],

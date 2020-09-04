@@ -40,8 +40,8 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: "inputField" :: "basePath" :: "watermark" :: Nil
-    val invalidKeys = checkValidKeys(c)(expectedKeys)
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: "inputField" :: "basePath" :: "watermark" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val params = readMap("params", c)
     val description = getOptionalValue[String]("description")
@@ -53,7 +53,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
-    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ else Right(List.empty)
+    val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> textContentForURI("schemaURI", authentication) |> getExtractColumns("schemaURI") _ else Right(List.empty)
     val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
     val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: "Custom" :: Nil) |> parseDelimiter("delimiter") _
     val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
@@ -65,9 +65,10 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
     val inputField = getOptionalValue[String]("inputField")
     val basePath = getOptionalValue[String]("basePath")
     val watermark = readWatermark("watermark")
+    val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath, watermark) match {
-      case (Right(name), Right(description), Right(inputView), Right(parsedGlob), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(header), Right(authentication), Right(contiguousIndex), Right(delimiter), Right(quote), Right(_), Right(customDelimiter), Right(inputField), Right(basePath), Right(watermark)) =>
+    (id, name, description, inputView, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath, watermark) match {
+      case (Right(id), Right(name), Right(description), Right(inputView), Right(parsedGlob), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(header), Right(authentication), Right(contiguousIndex), Right(delimiter), Right(quote), Right(_), Right(customDelimiter), Right(inputField), Right(basePath), Right(watermark)) =>
         val input = if(c.hasPath("inputView")) {
           Left(inputView)
         } else {
@@ -76,6 +77,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
         val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
         val stage = DelimitedExtractStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           schema=schema,
@@ -108,7 +110,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
           case Left(inputView) => stage.stageDetail.put("inputView", inputView)
           case Right(parsedGlob) => stage.stageDetail.put("inputURI", parsedGlob)
         }
-        for (watermark <- watermark) {
+        watermark.foreach { watermark =>
           val watermarkMap = new java.util.HashMap[String, Object]()
           watermarkMap.put("eventTime", watermark.eventTime)
           watermarkMap.put("delayThreshold", watermark.delayThreshold)
@@ -117,7 +119,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath, watermark).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, inputView, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -128,6 +130,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
 
 case class DelimitedExtractStage(
     plugin: DelimitedExtract,
+    id: Option[String],
     name: String,
     description: Option[String],
     schema: Either[String, List[ExtractColumn]],

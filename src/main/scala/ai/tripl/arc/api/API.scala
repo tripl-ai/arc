@@ -34,10 +34,6 @@ object API {
       */
     environment: Option[String],
 
-    /** the running environment identifier
-      */
-    environmentId: Option[String],
-
     /** the job configuration path
       */
     configUri: Option[String],
@@ -60,11 +56,19 @@ object API {
 
     /** whether to allow ipython notebook configuration files
       */
-    ipynb: Boolean = true,
+    ipynb: Boolean,
 
     /** whether to allow inline sql submitted to stages like SQLTransform and SQLValidate
       */
-    inlineSQL: Boolean = true,
+    inlineSQL: Boolean,
+
+    /** whether to allow inline schema submitted to stages like TypingTransform and MetadataTransform
+      */
+    inlineSchema: Boolean,
+
+    /** whether to allow dropping unsupported column types to meet load target requirements (i.e. Parquet does not support NullType)
+      */
+    dropUnsupported: Boolean,
 
     /** the command line arguments
       */
@@ -261,6 +265,8 @@ object API {
 
     def plugin: PipelineStagePlugin
 
+    def id: Option[String]
+
     def name: String
 
     def description: Option[String]
@@ -269,10 +275,9 @@ object API {
       val detail = new collection.mutable.HashMap[String, Object]()
       detail.put("type", plugin.getClass.getSimpleName)
       detail.put("plugin", s"${plugin.getClass.getName}:${plugin.version}")
+      id.foreach { id => detail.put("id", id) }
       detail.put("name", name)
-      for (d <- description) {
-        detail.put("description", d)
-      }
+      description.foreach { description => detail.put("description", description) }
       detail
     }
 
@@ -602,3 +607,4 @@ object JSON {
     )
   }
 }
+

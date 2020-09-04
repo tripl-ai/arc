@@ -41,7 +41,7 @@ class HTTPExtractSuite extends FunSuite with BeforeAndAfter {
   test("HTTPExtract: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [

@@ -64,7 +64,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedExtract: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -91,13 +91,13 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         assert(df.count != 0)
       }
     }
-  }  
+  }
 
   test("DelimitedExtract") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // parse json schema to List[ExtractColumn]
     val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
@@ -105,6 +105,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -153,7 +154,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val df = TestUtils.getKnownDataset
     df.createOrReplaceTempView("dataset")
@@ -169,6 +170,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -195,12 +197,13 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // no cache
     extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -224,6 +227,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -248,7 +252,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val schema =
       BooleanColumn(
@@ -269,6 +273,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       val dataset = extract.DelimitedExtractStage.execute(
         extract.DelimitedExtractStage(
           plugin=new extract.DelimitedExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -295,6 +300,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
       val dataset = extract.DelimitedExtractStage.execute(
         extract.DelimitedExtractStage(
           plugin=new extract.DelimitedExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -320,6 +326,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema),
@@ -356,12 +363,13 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedExtract: Settings Delimiter") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // incorrect delimiter
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -391,12 +399,13 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // incorrect delimiter
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -438,12 +447,13 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // incorrect header
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -472,12 +482,13 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   test("DelimitedExtract: Settings inferSchema") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // incorrect header
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -515,6 +526,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),

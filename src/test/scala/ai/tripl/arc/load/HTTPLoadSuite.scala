@@ -128,7 +128,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset.toJSON.toDF
     dataset.createOrReplaceTempView(outputView)
@@ -136,6 +136,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoadStage.execute(
       load.HTTPLoadStage(
         plugin=new load.HTTPLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -151,7 +152,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset.toJSON.toDF
     dataset.createOrReplaceTempView(outputView)
@@ -160,6 +161,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
       load.HTTPLoadStage.execute(
         load.HTTPLoadStage(
           plugin=new load.HTTPLoad,
+          id=None,
           name=outputView,
           description=None,
           inputView=outputView,
@@ -177,7 +179,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset.toJSON.toDF
     dataset.createOrReplaceTempView(outputView)
@@ -185,6 +187,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoadStage.execute(
       load.HTTPLoadStage(
         plugin=new load.HTTPLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -200,7 +203,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset.toJSON.toDF
     dataset.createOrReplaceTempView(outputView)
@@ -208,6 +211,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoadStage.execute(
       load.HTTPLoadStage(
         plugin=new load.HTTPLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -223,7 +227,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset.toJSON.toDF
     dataset.createOrReplaceTempView(outputView)
@@ -232,6 +236,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
       load.HTTPLoadStage.execute(
         load.HTTPLoadStage(
           plugin=new load.HTTPLoad,
+          id=None,
           name=outputView,
           description=None,
           inputView=outputView,
@@ -249,7 +254,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val dataset = TestUtils.getKnownDataset
     dataset.createOrReplaceTempView(outputView)
@@ -258,6 +263,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
       load.HTTPLoadStage.execute(
         load.HTTPLoadStage(
           plugin=new load.HTTPLoad,
+          id=None,
           name=outputView,
           description=None,
           inputView=outputView,
@@ -294,6 +300,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoadStage.execute(
       load.HTTPLoadStage(
         plugin=new load.HTTPLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,
@@ -334,6 +341,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
     load.HTTPLoadStage.execute(
       load.HTTPLoadStage(
         plugin=new load.HTTPLoad,
+        id=None,
         name=outputView,
         description=None,
         inputView=outputView,

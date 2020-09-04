@@ -46,7 +46,8 @@ class HTTPExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "body" :: "headers" :: "method" :: "numPartitions" :: "partitionBy" :: "persist" :: "validStatusCodes" :: "uriField" :: "bodyField" :: "params" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "body" :: "headers" :: "method" :: "numPartitions" :: "partitionBy" :: "persist" :: "validStatusCodes" :: "uriField" :: "bodyField" :: "params" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = if(c.hasPath("inputView")) getValue[String]("inputView") else Right("")
@@ -64,12 +65,13 @@ class HTTPExtract extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, inputView, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys, uriField, bodyField) match {
-      case (Right(name), Right(description), Right(inputView), Right(parsedURI), Right(outputView), Right(persist), Right(numPartitions), Right(method), Right(body), Right(partitionBy), Right(validStatusCodes), Right(invalidKeys), Right(uriField), Right(bodyField)) =>
+    (id, name, description, inputView, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys, uriField, bodyField) match {
+      case (Right(id), Right(name), Right(description), Right(inputView), Right(parsedURI), Right(outputView), Right(persist), Right(numPartitions), Right(method), Right(body), Right(partitionBy), Right(validStatusCodes), Right(invalidKeys), Right(uriField), Right(bodyField)) =>
         val input = if(c.hasPath("inputView")) Left(inputView) else Right(parsedURI)
 
         val stage = HTTPExtractStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           input=input,
@@ -101,7 +103,7 @@ class HTTPExtract extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, inputView, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys, uriField, bodyField).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, inputView, parsedURI, outputView, persist, numPartitions, method, body, partitionBy, validStatusCodes, invalidKeys, uriField, bodyField).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -112,6 +114,7 @@ class HTTPExtract extends PipelineStagePlugin with JupyterCompleter {
 
 case class HTTPExtractStage(
     plugin: HTTPExtract,
+    id: Option[String],
     name: String,
     description: Option[String],
     input: Either[String, URI],

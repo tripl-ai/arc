@@ -1,13 +1,24 @@
 package ai.tripl.arc.util
 
+import org.apache.spark.TaskContext
+
 import org.apache.spark.sql._
-import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
 import ai.tripl.arc.api.API._
 
 object ExtractUtils {
+
+  type IndexRow = Row
+
+  case class Partition (
+      filename: String,
+      partitionId: Integer,
+      min: Long,
+      max: Long,
+      offset: Long,
+  )
 
   def getSchema(schema: Either[String, List[ExtractColumn]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Option[StructType] = {
     schema match {
@@ -27,24 +38,99 @@ object ExtractUtils {
     }
   }
 
-  def addInternalColumns(input: DataFrame, contiguousIndex: Boolean)(implicit arcContext: ARCContext): DataFrame = {
+  def addInternalColumns(input: DataFrame, contiguousIndex: Boolean)(implicit spark: SparkSession, arcContext: ARCContext): DataFrame = {
     if (!input.isStreaming && !arcContext.isStreaming) {
       // add meta columns including sequential index
       // if schema already has metadata any columns ignore
       if (input.columns.intersect(List("_filename", "_index", "_monotonically_increasing_id")).isEmpty) {
-        if (contiguousIndex) {
-          // the window function will break partition pushdown
-          val window = Window.partitionBy("_filename").orderBy("_monotonically_increasing_id")
 
+        // add these as they are required for both _monotonically_increasing_id and _index
+        val enrichedInput = input
+          .withColumn("_monotonically_increasing_id", monotonically_increasing_id().as("_monotonically_increasing_id", new MetadataBuilder().putBoolean("internal", true).putString("description", "An Arc internal field describing where in _filename this row was originally sourced from.").build()))
+          .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).putString("description", "An Arc internal field describing where this row was originally sourced from.").build()))
+          .withColumn("_partition_id",spark_partition_id().as("_partition_id", new MetadataBuilder().putBoolean("internal", true).build()))
+
+        if (contiguousIndex) {
+          /*
+          this code logically performs a row_number over filename order by _monotonically_increasing_id
+          it does this the hard way as the window function will force all data to be moved to a single partition and run on a single core
+          so is very slow/inefficient on large datasets.
+
+          simple code:
+
+          val window = Window.partitionBy("_filename").orderBy("_monotonically_increasing_id")
           input
             .withColumn("_monotonically_increasing_id", monotonically_increasing_id())
             .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))
             .withColumn("_index", row_number().over(window).as("_index", new MetadataBuilder().putBoolean("internal", true).build()))
             .drop("_monotonically_increasing_id")
+          */
+
+          // calculate the min and max for each _filename, partition combination
+          // create a map[filename]map[partitionId]Partition
+          // Partition holds the actual start and end index for that partition (derived by iterating over the partitions after calculations)
+          // summary is then distributed to the executors so a map operation can calculate the new index
+          // becuase one partition can have multiple files an 'offset' is needed to define what the minimum index in that partition to start at
+          val summary = {
+            enrichedInput
+              .groupBy(col("_filename"), col("_partition_id"))
+              .agg(min(col("_monotonically_increasing_id")), max(col("_monotonically_increasing_id")))
+              .collect
+              .map { row => Partition(filename=row.getString(0), partitionId=row.getInt(1), min=row.getLong(2), max=row.getLong(3), offset=0L) }
+              .groupBy { _.filename }
+              .map { case (filename, partitions) =>
+                (filename, partitions.sortBy { _.partitionId }.scanLeft(Partition("", 0, 0, 0, 0)) {
+                    case (previousPartition, partition) => {
+                      Partition(
+                        partition.filename,
+                        partition.partitionId,
+                        previousPartition.max + 1,
+                        previousPartition.max + 1 + (partition.max - partition.min),
+                        partition.min & (1L << 33) - 1
+                      )
+                    }
+                  }
+                  .drop(1)
+                  .groupBy { _.partitionId}
+                  .map { case (partitionId, partitionGroup) => (partitionId, partitionGroup.head) }
+                )
+              }
+          }
+
+          // unfortunately using an enriched encoder here with metadata attached loses enriched metadata after the mapPartitions
+          // have to overwrite the fields with .withColumn and .drop below to ensure metadata is correctly attached.
+          implicit val typedEncoder: Encoder[IndexRow] = org.apache.spark.sql.catalyst.encoders.RowEncoder(enrichedInput.schema)
+
+          // map each partition and calculate the actual row_number offset
+          enrichedInput.mapPartitions[IndexRow] {  partition: Iterator[Row] =>
+            val bufferedPartition = partition.buffered
+            bufferedPartition.hasNext match {
+              case false => partition
+              case true => {
+                val head = bufferedPartition.head
+                val filenameIndex = head.fieldIndex("_filename")
+                val partitionId = head.getInt(head.fieldIndex("_partition_id"))
+                val monotonicallyIncreasingIdIndex = head.fieldIndex("_monotonically_increasing_id")
+                bufferedPartition.map { row => {
+                    // get partitionSummary for the current row
+                    // this is required as one partition could contain rows from different files
+                    val partitionSummary = summary.get(row.getString(filenameIndex)).get.get(partitionId).get
+
+                    // The current implementation puts the partition ID in the upper 31 bits, and the lower 33 bits represent the record number within each partition.
+                    // this code gets the last 33 bits as a long (i.e. the record number portion)
+                    val rowNumber = (row.getLong(monotonicallyIncreasingIdIndex) & (1L << 33) - 1) - partitionSummary.offset
+                    Row.fromSeq(row.toSeq.updated(monotonicallyIncreasingIdIndex, rowNumber + partitionSummary.min))
+                  }
+                }
+              }
+            }
+          }
+          .withColumn("_index", col("_monotonically_increasing_id").as("_index", new MetadataBuilder().putBoolean("internal", true).putString("description", "An Arc internal field describing where in _filename this row was originally sourced from.").build()))
+          .withColumn("_filename", col("_filename").as("_filename", new MetadataBuilder().putBoolean("internal", true).putString("description", "An Arc internal field describing where this row was originally sourced from.").build()))
+          .drop("_monotonically_increasing_id")
+          .drop("_partition_id")
         } else {
-          input
-            .withColumn("_monotonically_increasing_id", monotonically_increasing_id().as("_monotonically_increasing_id", new MetadataBuilder().putBoolean("internal", true).build()))
-            .withColumn("_filename", input_file_name().as("_filename", new MetadataBuilder().putBoolean("internal", true).build()))
+          enrichedInput.drop("_partition_id")
         }
       } else {
         input

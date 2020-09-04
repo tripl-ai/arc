@@ -1,5 +1,6 @@
 {
   "type": "JDBCExecute",
+  "id": "00000000-0000-0000-0000-000000000000",
   "name": "execute the load date table",
   "description": "execute the load date table",
   "environments": [

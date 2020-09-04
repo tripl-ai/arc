@@ -106,7 +106,7 @@ object ArcPipeline {
               // flatPipelineInstances is a merge of all the pipeline plugins
               // activeLifecyclePluginInstances is a merge of all the lifecycle plugins
               val (flatPipelineInstances, activeLifecyclePluginInstances) = pipelineInstances.map {
-                case PipelineExecuteStage(_, _, _, _, pipeline, pipelineLifecycleInstances) => (pipeline.stages, pipelineLifecycleInstances)
+                case PipelineExecuteStage(_, _, _, _, _, pipeline, pipelineLifecycleInstances) => (pipeline.stages, pipelineLifecycleInstances)
                 case pipelineStage: PipelineStage => (List(pipelineStage), Nil)
               }.unzip match {
                 case (stages, plugins) => (stages.flatten, lifecycleInstances ::: plugins.flatten)
@@ -117,7 +117,6 @@ object ArcPipeline {
                 jobId=arcContext.jobId,
                 jobName=arcContext.jobName,
                 environment=arcContext.environment,
-                environmentId=arcContext.environmentId,
                 configUri=arcContext.configUri,
                 isStreaming=arcContext.isStreaming,
                 ignoreEnvironments=arcContext.ignoreEnvironments,
@@ -125,6 +124,8 @@ object ArcPipeline {
                 immutableViews=arcContext.immutableViews,
                 ipynb=arcContext.ipynb,
                 inlineSQL=arcContext.inlineSQL,
+                inlineSchema=arcContext.inlineSchema,
+                dropUnsupported=arcContext.dropUnsupported,
                 commandLineArguments=arcContext.commandLineArguments,
                 dynamicConfigurationPlugins=arcContext.dynamicConfigurationPlugins,
                 lifecyclePlugins=arcContext.lifecyclePlugins,

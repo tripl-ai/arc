@@ -43,7 +43,8 @@ class HTTPExecute extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "uri" :: "headers" :: "payloads" :: "validStatusCodes" :: "params" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "uri" :: "headers" :: "payloads" :: "validStatusCodes" :: "params" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val uri = getValue[String]("uri") |> parseURI("uri") _
@@ -53,11 +54,12 @@ class HTTPExecute extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, uri, validStatusCodes, invalidKeys) match {
-      case (Right(name), Right(description), Right(uri), Right(validStatusCodes), Right(invalidKeys)) =>
+    (id, name, description, uri, validStatusCodes, invalidKeys) match {
+      case (Right(id), Right(name), Right(description), Right(uri), Right(validStatusCodes), Right(invalidKeys)) =>
 
         val stage = HTTPExecuteStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
           uri=uri,
@@ -74,7 +76,7 @@ class HTTPExecute extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(uri, description, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, uri, validStatusCodes, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -84,6 +86,7 @@ class HTTPExecute extends PipelineStagePlugin with JupyterCompleter {
 
 case class HTTPExecuteStage(
     plugin: HTTPExecute,
+    id: Option[String],
     name: String,
     description: Option[String],
     uri: URI,

@@ -6,6 +6,36 @@ type: blog
 
 `*Execute` stages are used to execute arbitrary commands against external systems such as Databases and APIs.
 
+## BigQueryExecute
+##### Supports Streaming: False
+{{< note title="Plugin" >}}
+The `BigQueryExecute` is provided by the https://github.com/tripl-ai/arc-big-query-pipeline-plugin package.
+{{</note>}}
+
+The `BigQueryExecute` executes a SQL statement against BigQuery.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|*true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}} Required if `sql` not provided.|
+|sql|String|*true|{{< readfile file="/content/partials/fields/sql.md" markdown="true" >}} Required if `inputURI` not provided.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
+|sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/BigQueryExecuteMin" highlight="json" >}}
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/BigQueryExecuteComplete" highlight="json" >}}
+
+
 ## CassandraExecute
 ##### Since: 2.0.0 - Supports Streaming: False
 {{< note title="Plugin" >}}
@@ -23,6 +53,7 @@ The `CassandraExecute` executes a CQL statement against an external [Cassandra](
 |inputURI|URI|true|URI of the input file containing the CQL statement.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Any parameters provided will be added to the Cassandra connection object.|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
 
@@ -49,6 +80,7 @@ The `HTTPExecute` takes an input `Map[String, String]` from the configuration an
 |uri|URI|true|URI of the HTTP server.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |headers|Map[String, String]|false|{{< readfile file="/content/partials/fields/headers.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |payloads|Map[String, String]|false|{{< readfile file="/content/partials/fields/payloads.md" markdown="true" >}}|
 |validStatusCodes|Array[Integer]|false|{{< readfile file="/content/partials/fields/validStatusCodes.md" markdown="true" >}}|
 
@@ -76,6 +108,7 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
 |jdbcURL|String|true|{{< readfile file="/content/partials/fields/jdbcURL.md" markdown="true" >}}|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |params|Map[String, String]|false|{{< readfile file="/content/partials/fields/params.md" markdown="true" >}}. Any parameters provided will be added to the JDBC connection object. These are not logged so it is safe to put passwords here.|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
 
@@ -108,6 +141,7 @@ For example, if a job reads from a Kafka topic and writes the results to `parque
 |bootstrapServers|String|true|{{< readfile file="/content/partials/fields/bootstrapServers.md" markdown="true" >}}|
 |groupID|String|true|{{< readfile file="/content/partials/fields/groupID.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 
 ### Examples
 
@@ -130,6 +164,7 @@ The `LogExecute` takes an input SQL statement which must return a `string` and w
 |sql|String|*true|{{< readfile file="/content/partials/fields/sql.md" markdown="true" >}} Required if `inputURI` not provided.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
 
 ### Examples
@@ -157,6 +192,7 @@ An example use case could be a `pipeline` which defines how your organisation de
 |uri|String|true|URI of the input file containing the definition of the `pipeline` to include.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 
 ### Examples
 

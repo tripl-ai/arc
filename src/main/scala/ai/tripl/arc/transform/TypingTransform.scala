@@ -11,8 +11,12 @@ import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 import java.time.format.ResolverStyle
 import java.time.format.SignStyle
 import java.time.temporal.ChronoField
-import org.apache.commons.codec.binary.Base64
+import java.util.concurrent.ConcurrentHashMap
+
 import scala.collection.JavaConverters._
+import scala.util.matching.Regex
+
+import org.apache.commons.codec.binary.Base64
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
@@ -27,6 +31,8 @@ import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.DetailException
 import ai.tripl.arc.util.EitherUtils._
 import ai.tripl.arc.util.Utils
+
+import com.typesafe.config._
 
 class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
 
@@ -51,12 +57,23 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "name" :: "description" :: "environments" :: "schemaURI" :: "schemaView" :: "inputView" :: "outputView" :: "authentication" :: "failMode" :: "persist" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "schema" :: "schemaURI" :: "schemaView" :: "inputView" :: "outputView" :: "authentication" :: "failMode" :: "persist" :: "params" :: "numPartitions" :: "partitionBy" :: Nil
+    val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val authentication = readAuthentication("authentication")
-    val extractColumns = if(!c.hasPath("schemaView")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> getExtractColumns("schemaURI", authentication) _ |> checkSimpleColumnTypes("schemaURI", "TypingTransform") _ else Right(List.empty)
-    val schemaView = if(c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
+
+    val source = checkOneOf(c)(Seq("schema", "schemaURI", "schemaView"))
+    val (schema, schemaURI, schemaView) = if (source.isRight) {
+      (
+        if (c.hasPath("schema")) Right(c.getConfigList("schema").asScala.map { o => o.root().render(ConfigRenderOptions.concise()) }.mkString("[", ",", "]") ) |> verifyInlineSchemaPolicy("schema") _ |> getExtractColumns("schema") _ else Right(List.empty),
+        if (c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> textContentForURI("schemaURI", authentication) |> getExtractColumns("schemaURI") _ else Right(List.empty),
+        if (c.hasPath("schemaView")) getValue[String]("schemaView") else Right("")
+      )
+    } else {
+      (Right(List.empty), Right(List.empty), Right(""))
+    }
+
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
@@ -66,15 +83,22 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (name, description, extractColumns, schemaView, inputView, outputView, persist, failMode, numPartitions, partitionBy, invalidKeys, authentication) match {
-      case (Right(name), Right(description), Right(extractColumns), Right(schemaView), Right(inputView), Right(outputView), Right(persist), Right(failMode), Right(numPartitions), Right(partitionBy), Right(invalidKeys), Right(authentication)) =>
-        val schema = if(c.hasPath("schemaView")) Left(schemaView) else Right(extractColumns)
+    (id, name, description, source, schema, schemaURI, schemaView, inputView, outputView, persist, failMode, numPartitions, partitionBy, invalidKeys, authentication) match {
+      case (Right(id), Right(name), Right(description), Right(source), Right(schema), Right(schemaURI), Right(schemaView), Right(inputView), Right(outputView), Right(persist), Right(failMode), Right(numPartitions), Right(partitionBy), Right(invalidKeys), Right(authentication)) =>
+        val _schema = if (c.hasPath("schemaView")) {
+          Left(schemaView)
+        } else if (c.hasPath("schemaURI")) {
+          Right(schemaURI)
+        } else {
+          Right(schema)
+        }
 
         val stage = TypingTransformStage(
           plugin=this,
+          id=id,
           name=name,
           description=description,
-          schema=schema,
+          schema=_schema,
           inputView=inputView,
           outputView=outputView,
           params=params,
@@ -84,6 +108,11 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
           partitionBy=partitionBy
         )
 
+        if (c.hasPath("schemaView")) {
+          stage.stageDetail.put("schemaView", c.getString("schemaView"))
+        } else if (c.hasPath("schemaURI")) {
+          stage.stageDetail.put("schemaURI", c.getString("schemaURI"))
+        }
         authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         numPartitions.foreach { numPartitions => stage.stageDetail.put("numPartitions", Integer.valueOf(numPartitions)) }
         stage.stageDetail.put("failMode", failMode.sparkString)
@@ -94,7 +123,7 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(name, description, extractColumns, schemaView, inputView, outputView, persist, authentication, failMode, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, source, schema, schemaURI, schemaView, inputView, outputView, persist, authentication, failMode, invalidKeys, numPartitions, partitionBy).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -103,6 +132,7 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
 }
 case class TypingTransformStage(
     plugin: TypingTransform,
+    id: Option[String],
     name: String,
     description: Option[String],
     schema: Either[String, List[ExtractColumn]],
@@ -387,9 +417,7 @@ object Typing {
     )
 
   val typedFields: List[StructField] =
-    // TODO: add _index column back
-    //StructField("_index", LongType, false, new MetadataBuilder().putBoolean("internal", true).build()) ::
-    StructField("_errors", ArrayType(errorStructType), true, new MetadataBuilder().putBoolean("internal", true).build()) :: Nil
+    StructField("_errors", ArrayType(errorStructType), true, new MetadataBuilder().putBoolean("internal", true).putString("description", "An Arc internal field detailing any errors when executing TypingTransform against this row.").build()) :: Nil
 
   type TypingResult[S] = (Option[S], Option[TypingError])
 
@@ -400,9 +428,6 @@ object Typing {
   object Typeable {
 
     object StringTypeable extends Typeable[StringColumn, String] {
-
-      import scala.collection.mutable.HashMap
-      import scala.util.matching.Regex
 
       case class ValidationResult(valid: Boolean, errorMessage: Option[String] = None)
 
@@ -443,10 +468,10 @@ object Typing {
         }
       }
 
-      private val validatorMemo: HashMap[StringColumn, Seq[Validator]] = HashMap[StringColumn, Seq[Validator]]()
+      private val memoizedValidators = new ConcurrentHashMap[StringColumn, Seq[Validator]].asScala
 
       def colValidators(col: StringColumn): Seq[Validator] = {
-        validatorMemo.getOrElseUpdate(col, {
+        memoizedValidators.getOrElseUpdate(col, {
           val minLength = col.minLength.map(MinLengthValidator(_) :: Nil).getOrElse(Nil)
           val maxLength = col.maxLength.map(MaxLengthValidator(_) :: Nil).getOrElse(Nil)
           val regexMatch = col.regex.map(RegexValidator(_) :: Nil).getOrElse(Nil)
@@ -473,6 +498,7 @@ object Typing {
           case ValidationResult(true, _) => Option(value) -> None
           case ValidationResult(false, errorMsgs) => None -> errorMsgs.map(TypingError.forCol(col, _))
         }
+
       }
 
     }
@@ -540,7 +566,8 @@ object Typing {
       import NumberUtils._
 
       def typeValue(col: IntegerColumn, value: String): (Option[Int], Option[TypingError]) = {
-        val formatters = col.formatters.getOrElse(List("#,##0;-#,##0"))
+        lazy val formatters = col.formatters.getOrElse(List("#,##0;-#,##0"))
+        lazy val error = Some(TypingError.forCol(col, s"""Unable to convert '${value}' to integer using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
 
         try {
           val v = col.formatters match {
@@ -549,14 +576,22 @@ object Typing {
               val number = parseNumber(fmt, value)
               number.map( num => num.toString.toInt )
             }
-            case None => Option(value.toInt)
+            case None => {
+              if (value.toUpperCase.contains("E+")) {
+                val decimal = new java.math.BigDecimal(value)
+                Option(decimal.intValueExact)
+              } else {
+                Option(value.toInt)
+              }
+            }
           }
-          if(v == None)
-            throw new Exception()
-          v -> None
+          v match {
+            case None => None -> error
+            case _ => v -> None
+          }
         } catch {
           case e: Exception =>
-            None -> Some(TypingError.forCol(col, s"""Unable to convert '${value}' to integer using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
+            None -> error
         }
       }
 
@@ -566,7 +601,8 @@ object Typing {
       import NumberUtils._
 
       def typeValue(col: LongColumn, value: String): (Option[Long], Option[TypingError]) = {
-        val formatters = col.formatters.getOrElse(List("#,##0;-#,##0"))
+        lazy val formatters = col.formatters.getOrElse(List("#,##0;-#,##0"))
+        lazy val error = Some(TypingError.forCol(col, s"""Unable to convert '${value}' to long using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
 
         try {
           val v = col.formatters match {
@@ -575,14 +611,22 @@ object Typing {
               val number = parseNumber(fmt, value)
               number.map( num => num.toString.toLong )
             }
-            case None => Option(value.toLong)
+            case None => {
+              if (value.toUpperCase.contains("E+")) {
+                val decimal = new java.math.BigDecimal(value)
+                Option(decimal.longValueExact)
+              } else {
+                Option(value.toLong)
+              }
+            }
           }
-          if(v == None)
-            throw new Exception()
-          v -> None
+          v match {
+            case None => None -> error
+            case _ => v -> None
+          }
         } catch {
           case e: Exception =>
-            None -> Some(TypingError.forCol(col, s"""Unable to convert '${value}' to long using formatters [${formatters.map(c => s"'${c}'").mkString(", ")}]"""))
+            None -> error
         }
       }
 
@@ -701,7 +745,7 @@ object Typing {
 
     object DateTimeUtils {
       private val memoizedFormatters: collection.mutable.Map[String, DateTimeFormatter] = {
-        val dtf = new collection.mutable.HashMap[String, DateTimeFormatter]()
+        val dtf = new ConcurrentHashMap[String, DateTimeFormatter].asScala
 
         val epochFormatter = new DateTimeFormatterBuilder()
           .appendValue(ChronoField.INSTANT_SECONDS, 10, 10, SignStyle.NEVER)
@@ -764,7 +808,7 @@ object Typing {
           }
           val formatter = strict match {
             case true => dateTimeFormatter.withResolverStyle(ResolverStyle.STRICT)
-            case false =>dateTimeFormatter.withResolverStyle(ResolverStyle.SMART) // smart is default
+            case false => dateTimeFormatter.withResolverStyle(ResolverStyle.SMART) // smart is default
           }
           memoizedFormatters.put(key, formatter)
           formatter

@@ -44,22 +44,33 @@ object TestUtils {
         logger
     }
 
-    def getARCContext(isStreaming: Boolean, environment: String = "test", commandLineArguments: Map[String,String] = Map[String,String](), ipynb: Boolean = true, inlineSQL: Boolean = true)(implicit spark: SparkSession): ARCContext = {
+    def getARCContext(
+        isStreaming: Boolean = false,
+        ignoreEnvironments: Boolean = false,
+        immutableViews: Boolean = false,
+        environment: String = "test",
+        commandLineArguments: Map[String,String] = Map[String,String](),
+        ipynb: Boolean = true,
+        inlineSQL: Boolean = true,
+        inlineSchema: Boolean = true,
+        dropUnsupported: Boolean = false,
+    )(implicit spark: SparkSession): ARCContext = {
       val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
 
       ARCContext(
         jobId=None,
         jobName=None,
         environment=Option(environment),
-        environmentId=None,
         configUri=None,
         isStreaming=isStreaming,
-        ignoreEnvironments=false,
+        ignoreEnvironments=ignoreEnvironments,
         commandLineArguments=commandLineArguments,
         storageLevel=StorageLevel.MEMORY_AND_DISK_SER,
-        immutableViews=false,
+        immutableViews=immutableViews,
         ipynb=ipynb,
         inlineSQL=inlineSQL,
+        inlineSchema=inlineSchema,
+        dropUnsupported=dropUnsupported,
         dynamicConfigurationPlugins=ServiceLoader.load(classOf[DynamicConfigurationPlugin], loader).iterator().asScala.toList,
         lifecyclePlugins=ServiceLoader.load(classOf[LifecyclePlugin], loader).iterator().asScala.toList,
         activeLifecyclePlugins=Nil,
@@ -70,7 +81,7 @@ object TestUtils {
       )
     }
 
-    def datasetEquality(expected: DataFrame, actual: DataFrame)(implicit spark: SparkSession): Boolean = {
+    def datasetEquality(expected: DataFrame, actual: DataFrame, numRows: Int = 20)(implicit spark: SparkSession): Boolean = {
         import spark.implicits._
 
         // if both are empty ignore
@@ -94,10 +105,10 @@ object TestUtils {
             if (expectedExceptActualCount != 0 || actualExceptExpectedCount != 0) {
                 println("EXPECTED")
                 println(expected.schema)
-                expected.show(false)
+                expected.show(numRows, false)
                 println("ACTUAL")
                 println(actual.schema)
-                actual.show(false)
+                actual.show(numRows, false)
 
                 transformedDF.unpersist
                 false

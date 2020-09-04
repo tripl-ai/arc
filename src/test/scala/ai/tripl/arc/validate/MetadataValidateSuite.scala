@@ -20,7 +20,7 @@ class MetadataValidateSuite extends FunSuite with BeforeAndAfter {
   var session: SparkSession = _
   val inputView = "inputView"
   val outputView = "outputView"
-  val schemaView = "schemaView"  
+  val schemaView = "schemaView"
   val signature = "MetadataValidate requires query to return 1 row with [outcome: boolean, message: string] signature."
 
   before {
@@ -45,7 +45,7 @@ class MetadataValidateSuite extends FunSuite with BeforeAndAfter {
   test("MetadataValidate: end-to-end success") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
     import spark.implicits._
 
     val df = TestUtils.getKnownDataset.drop("nullDatum")
@@ -98,7 +98,7 @@ class MetadataValidateSuite extends FunSuite with BeforeAndAfter {
   test("MetadataValidate: end-to-end failure") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
     import spark.implicits._
 
     val df = TestUtils.getKnownDataset.drop("nullDatum")
@@ -144,8 +144,8 @@ class MetadataValidateSuite extends FunSuite with BeforeAndAfter {
 
     pipelineEither match {
       case Left(err) => fail(err.toString)
-      case Right((pipeline, _)) => 
-      val thrown0 = intercept[Exception with DetailException] {      
+      case Right((pipeline, _)) =>
+      val thrown0 = intercept[Exception with DetailException] {
         ARC.run(pipeline)(spark, logger, arcContext)
       }
       assert(thrown0.getMessage === """MetadataValidate failed with message: '{"count":9,"securityLevelGreaterThan1":6}'.""")

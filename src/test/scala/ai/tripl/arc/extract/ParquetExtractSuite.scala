@@ -59,7 +59,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
   test("ParquetExtract: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val conf = s"""{
       "stages": [
@@ -91,7 +91,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // parse json schema to List[ExtractColumn]
     val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
@@ -99,6 +99,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
@@ -133,12 +134,13 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
   test("ParquetExtract: Caching") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     // no cache
     extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -160,6 +162,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(Nil),
@@ -182,7 +185,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext(isStreaming=false)
+    implicit val arcContext = TestUtils.getARCContext()
 
     val schema =
       BooleanColumn(
@@ -203,6 +206,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       extract.ParquetExtractStage.execute(
         extract.ParquetExtractStage(
           plugin=new extract.ParquetExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -227,6 +231,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
       extract.ParquetExtractStage.execute(
         extract.ParquetExtractStage(
           plugin=new extract.ParquetExtract,
+          id=None,
           name=outputView,
           description=None,
           schema=Right(Nil),
@@ -250,6 +255,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema),
@@ -286,6 +292,7 @@ class ParquetExtractSuite extends FunSuite with BeforeAndAfter {
     val dataset = extract.ParquetExtractStage.execute(
       extract.ParquetExtractStage(
         plugin=new extract.ParquetExtract,
+        id=None,
         name=outputView,
         description=None,
         schema=Right(schema.right.getOrElse(Nil)),
