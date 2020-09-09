@@ -2,6 +2,10 @@
 
 **NOTE** Official Docker Images will move to the GitHub Container Registry in future releases.
 
+## 3.3.0
+
+- add `inputLeftKeys` and `inputRightKeys` to `DiffTransform` to support matching on a subset of keys.
+
 ## 3.2.0
 
 - rewrote the code to calculate `_index` (vs `_monotonically_increasing_id`) to be more efficient with large datasets.

@@ -145,6 +145,10 @@ object TestUtils {
         dataset.toDF
     }
 
+    def setNullableStateForAllColumns(df: DataFrame, nullable: Boolean) : DataFrame = {
+        df.sqlContext.createDataFrame(df.rdd, StructType(df.schema.map(_.copy(nullable = nullable))))
+    }
+
     def getKnownStringDataset()(implicit spark: SparkSession): DataFrame = {
         val df = getKnownDataset()
         df.select(df.columns.map(c => col(c).cast(StringType)) : _*)

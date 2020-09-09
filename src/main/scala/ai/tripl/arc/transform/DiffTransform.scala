@@ -6,6 +6,7 @@ import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
 import ai.tripl.arc.api.API._
+import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.Utils
@@ -35,12 +36,14 @@ class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputLeftView" :: "inputRightView" :: "outputIntersectionView" :: "outputLeftView" :: "outputRightView" :: "persist" :: "params" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputLeftView" :: "inputLeftKeys" :: "inputRightView" :: "inputRightKeys" :: "outputIntersectionView" :: "outputLeftView" :: "outputRightView" :: "persist" :: "params" :: Nil
     val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputLeftView = getValue[String]("inputLeftView")
     val inputRightView = getValue[String]("inputRightView")
+    val inputLeftKeys = getValue[StringList]("inputLeftKeys", default = Some(Nil))
+    val inputRightKeys = getValue[StringList]("inputRightKeys", default = Some(Nil))
     val outputIntersectionView = getOptionalValue[String]("outputIntersectionView")
     val outputLeftView = getOptionalValue[String]("outputLeftView")
     val outputRightView = getOptionalValue[String]("outputRightView")
@@ -48,8 +51,8 @@ class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (id, name, description, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys) match {
-      case (Right(id), Right(name), Right(description), Right(inputLeftView), Right(inputRightView), Right(outputIntersectionView), Right(outputLeftView), Right(outputRightView), Right(persist), Right(invalidKeys)) =>
+    (id, name, description, inputLeftView, inputRightView, inputLeftKeys, inputRightKeys, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys) match {
+      case (Right(id), Right(name), Right(description), Right(inputLeftView), Right(inputRightView), Right(inputLeftKeys), Right(inputRightKeys), Right(outputIntersectionView), Right(outputLeftView), Right(outputRightView), Right(persist), Right(invalidKeys)) =>
 
         val stage = DiffTransformStage(
           plugin=this,
@@ -58,6 +61,8 @@ class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
           description=description,
           inputLeftView=inputLeftView,
           inputRightView=inputRightView,
+          inputLeftKeys=inputLeftKeys,
+          inputRightKeys=inputRightKeys,
           outputIntersectionView=outputIntersectionView,
           outputLeftView=outputLeftView,
           outputRightView=outputRightView,
@@ -91,6 +96,8 @@ case class DiffTransformStage(
     description: Option[String],
     inputLeftView: String,
     inputRightView: String,
+    inputLeftKeys: List[String],
+    inputRightKeys: List[String],
     outputIntersectionView: Option[String],
     outputLeftView: Option[String],
     outputRightView: Option[String],
@@ -106,6 +113,8 @@ case class DiffTransformStage(
 
 object DiffTransformStage {
 
+  val HASH_KEY = "__hash__"
+
   def execute(stage: DiffTransformStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     val inputLeftDF = spark.table(stage.inputLeftView)
@@ -113,17 +122,19 @@ object DiffTransformStage {
 
     // do a full join on a calculated hash of all values in row on each dataset
     // trying to calculate the hash value inside the joinWith method produced an inconsistent result
-    val leftHashDF = inputLeftDF.withColumn("_hash", hash(inputLeftDF.columns.map(col _):_*))
-    val rightHashDF = inputRightDF.withColumn("_hash", hash(inputRightDF.columns.map(col _):_*))
-    val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF("_hash") === rightHashDF("_hash"), "full")
+    val leftKeys = if (stage.inputLeftKeys.size == 0) inputLeftDF.columns.map(col _) else stage.inputLeftKeys.toArray.map(col _)
+    val leftHashDF = inputLeftDF.withColumn(HASH_KEY, hash(leftKeys:_*))
+    val rightKeys = if (stage.inputRightKeys.size == 0) inputRightDF.columns.map(col _) else stage.inputRightKeys.toArray.map(col _)
+    val rightHashDF = inputRightDF.withColumn(HASH_KEY, hash(rightKeys:_*))
+    val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF(HASH_KEY) === rightHashDF(HASH_KEY), "full")
 
     if (stage.persist && !transformedDF.isStreaming) {
       transformedDF.persist(arcContext.storageLevel)
     }
 
-    val outputIntersectionDF = transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).select(col("_1.*")).drop("_hash")
-    val outputLeftDF = transformedDF.filter(col("_2").isNull).select(col("_1.*")).drop("_hash")
-    val outputRightDF = transformedDF.filter(col("_1").isNull).select(col("_2.*")).drop("_hash")
+    val outputIntersectionDF = transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).select(col("_1.*")).drop(HASH_KEY)
+    val outputLeftDF = transformedDF.filter(col("_2").isNull).select(col("_1.*")).drop(HASH_KEY)
+    val outputRightDF = transformedDF.filter(col("_1").isNull).select(col("_2.*")).drop(HASH_KEY)
 
     // register views
     for (outputIntersectionView <- stage.outputIntersectionView) {
