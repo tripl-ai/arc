@@ -46,10 +46,6 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  def setNullableStateForAllColumns(df: DataFrame, nullable: Boolean) : DataFrame = {
-    df.sqlContext.createDataFrame(df.rdd, StructType(df.schema.map(_.copy(nullable = nullable))))
-  }
-
   test("DiffTransform") {
     implicit val spark = session
     import spark.implicits._
@@ -66,7 +62,9 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
         name="DiffTransform",
         description=None,
         inputLeftView=inputLeftView,
+        inputLeftKeys=Nil,
         inputRightView=inputRightView,
+        inputRightKeys=Nil,
         outputIntersectionView=Option(outputIntersectionView),
         outputLeftView=Option(outputLeftView),
         outputRightView=Option(outputRightView),
@@ -78,5 +76,61 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
     assert(spark.table(outputIntersectionView).filter($"integerDatum" === 17).count == 1)
     assert(spark.table(outputLeftView).filter($"integerDatum" === 34).count == 1)
     assert(spark.table(outputRightView).filter($"integerDatum" === 35).count == 1)
+  }
+
+  test("DiffTransform: inputKeys") {
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    TestUtils.getKnownDataset.createOrReplaceTempView(inputLeftView)
+    TestUtils.getKnownAlteredDataset.createOrReplaceTempView(inputRightView)
+
+    transform.DiffTransformStage.execute(
+      transform.DiffTransformStage(
+        plugin=new transform.DiffTransform,
+        id=None,
+        name="DiffTransform",
+        description=None,
+        inputLeftView=inputLeftView,
+        inputLeftKeys=List("longDatum"),
+        inputRightView=inputRightView,
+        inputRightKeys=List("longDatum"),
+        outputIntersectionView=Option(outputIntersectionView),
+        outputLeftView=Option(outputLeftView),
+        outputRightView=Option(outputRightView),
+        persist=true,
+        params=Map.empty
+      )
+    )
+
+    assert(spark.table(outputIntersectionView).count == 2)
+    assert(spark.table(outputLeftView).count == 0)
+    assert(spark.table(outputRightView).count == 0)
+
+
+
+    transform.DiffTransformStage.execute(
+      transform.DiffTransformStage(
+        plugin=new transform.DiffTransform,
+        id=None,
+        name="DiffTransform",
+        description=None,
+        inputLeftView=inputLeftView,
+        inputLeftKeys=List("longDatum", "booleanDatum"),
+        inputRightView=inputRightView,
+        inputRightKeys=List("longDatum", "booleanDatum"),
+        outputIntersectionView=Option(outputIntersectionView),
+        outputLeftView=Option(outputLeftView),
+        outputRightView=Option(outputRightView),
+        persist=true,
+        params=Map.empty
+      )
+    )
+
+    assert(spark.table(outputIntersectionView).count == 1)
+    assert(spark.table(outputLeftView).count == 1)
+    assert(spark.table(outputRightView).count == 1)
   }
 }

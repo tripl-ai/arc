@@ -8,7 +8,13 @@
     "test"
   ],
   "inputLeftView": "customer_20180501",
+  "inputLeftKeys": [
+    "customerId"
+  ],
   "inputRightView": "customer_20180502",
+  "inputRightKeys": [
+    "customerId"
+  ],
   "outputIntersectionView": "customer_unchanged",
   "outputLeftView": "customer_removed",
   "outputRightView": "customer_added",

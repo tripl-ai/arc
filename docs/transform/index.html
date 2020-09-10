@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.2.0</span></strong>
+          <span class="version">3.3.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -538,6 +538,20 @@
 </tr>
 
 <tr>
+<td>inputLeftKeys</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>A list of columns to create the join key from the first incoming Spark dataset. If not provided all columns are included.</td>
+</tr>
+
+<tr>
+<td>inputRightKeys</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>A list of columns to create the join key from the second incoming Spark dataset. If not provided all columns are included.</td>
+</tr>
+
+<tr>
 <td>outputIntersectionView</td>
 <td>String</td>
 <td>false</td>
@@ -595,7 +609,13 @@
     <span class="s2">&#34;test&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;inputLeftView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_20180501&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputLeftKeys&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;customerId&#34;</span>
+  <span class="p">],</span>
   <span class="nt">&#34;inputRightView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_20180502&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;inputRightKeys&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;customerId&#34;</span>
+  <span class="p">],</span>
   <span class="nt">&#34;outputIntersectionView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_unchanged&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputLeftView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_removed&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputRightView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_added&#34;</span><span class="p">,</span>

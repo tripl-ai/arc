@@ -36,6 +36,8 @@ This stage performs this 'diffing' operation in a single pass so if multiple of 
 |inputRightView|String|true|Name of second incoming Spark dataset.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
+|inputLeftKeys|Array[String]|false|A list of columns to create the join key from the first incoming Spark dataset. If not provided all columns are included.|
+|inputRightKeys|Array[String]|false|A list of columns to create the join key from the second incoming Spark dataset. If not provided all columns are included.|
 |outputIntersectionView|String|false|Name of output `intersection` view.|
 |outputLeftView|String|false|Name of output `left` view.|
 |outputRightView|String|false|Name of output `right` view.|
