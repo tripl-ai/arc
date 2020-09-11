@@ -191,6 +191,8 @@ The `DeltaLakeExtract` stage reads one or more [DeltaLake](https://delta.io/) fi
 |options|Map[String, String]|false|Time travel options to allow loading previous versions of the data. These values are limited to:<br><br>`versionAsOf` allows travelling to a specific version.<br><br>`timestampAsOf` allows travelling to the state before a specified timestamp.<br><br>`relativeVersion` allows travelling relative to the current version where the current version is `0` and `-1` is the previous version.|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
+|schemaView|String|false|{{< readfile file="/content/partials/fields/schemaView.md" markdown="true" >}}|
 
 
 ### Examples
