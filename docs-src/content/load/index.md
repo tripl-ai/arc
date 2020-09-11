@@ -498,7 +498,7 @@ The `ParquetLoad` writes an input `DataFrame` to a target [Apache Parquet](https
 ## TextLoad
 ##### Since: 1.9.0 - Supports Streaming: False
 
-The `TextLoad` writes an input `DataFrame` to a target text file.
+The `TextLoad` writes an input `DataFrame` to a target text file. It requires the `inputView` to be a single column of data so a preprocessing step in something like a `SQLTransform` or `JSONTransform` is required.
 
 ### Parameters
 
