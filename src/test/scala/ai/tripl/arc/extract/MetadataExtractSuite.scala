@@ -8,9 +8,6 @@ import org.scalatest.BeforeAndAfter
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOUtils
 
-import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.ml.classification.LogisticRegression
-import org.apache.spark.ml.feature.{HashingTF, Tokenizer}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
@@ -77,8 +74,8 @@ class MetadataExtractSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, _)) => {
         ARC.run(pipeline)(spark, logger, arcContext) match {
           case Some(df) => {
-            assert(df.columns.deep == Array("name", "nullable", "type", "metadata").deep)
-            assert(df.count == 10)
+            assert(df.columns.deep == Array("description", "falseValues", "formatters", "name", "nullable", "nullableValues", "precision", "scale", "timezoneId", "trim", "trueValues", "type").deep)
+            assert(df.count == 9)
           }
           case None => assert(false)
         }
@@ -119,6 +116,9 @@ class MetadataExtractSuite extends FunSuite with BeforeAndAfter {
         ARC.run(pipeline)(spark, logger, arcContext) match {
           case Some(df) => {
             assert(df.where("name = 'timestampDatum'").select(col("metadata")("securityLevel")).first.getLong(0) == 7)
+
+            // verify output schema can be re-read
+            assert(ArcSchema.parseArcSchemaDataFrame(df).isRight)
           }
           case None => assert(false)
         }

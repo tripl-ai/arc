@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.3.0</span></strong>
+          <span class="version">3.3.1</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -456,6 +456,13 @@
 			<h1 id="change-log">Change Log</h1>
 
 <p><strong>NOTE</strong> Official Docker Images will move to the GitHub Container Registry in future releases.</p>
+
+<h2 id="3-3-1">3.3.1</h2>
+
+<ul>
+<li><strong>FIX</strong> <code>MetadataExtract</code> to export full Arc schema (a superset of the previous schema) so that it can be used with <code>schemaView</code>.</li>
+<li><strong>FIX</strong> <code>DiffTransform</code> will output the <code>left</code> and <code>right</code> structs in the <code>intersectionView</code> when <code>inputLeftKeys</code> or <code>inputRightKeys</code> are supplied.</li>
+</ul>
 
 <h2 id="3-3-0">3.3.0</h2>
 

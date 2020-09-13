@@ -20,21 +20,14 @@ object MetadataUtils {
     import spark.implicits._
 
     // this is a hack but having to create a StructType using union of all metadata maps is not trivial
-    val schemaDataframe = spark.sparkContext.parallelize(Seq(input.schema.json)).toDF.as[String]
+    val schemaDataframe = spark.sparkContext.parallelize(Seq(s"""{"fields": ${makeMetadataFromDataframe(input)}}""")).toDF.as[String]
     val parsedSchema = spark.read.json(schemaDataframe)
 
     // create schema dataframe
     val schema = parsedSchema.select(explode(col("fields"))).select("col.*")
 
-    // add metadata column if missing
-    val output = if (schema.columns.contains("metadata")) {
-      schema
-    } else {
-      schema.withColumn("metadata", typedLit(Map[String, String]()))
-    }
-
-    output.cache.count
-    output
+    schema.cache.count
+    schema
   }
 
   // a map of full field name strings/metadata

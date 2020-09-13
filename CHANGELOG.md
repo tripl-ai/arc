@@ -2,6 +2,11 @@
 
 **NOTE** Official Docker Images will move to the GitHub Container Registry in future releases.
 
+## 3.3.1
+
+- **FIX** `MetadataExtract` to export full Arc schema (a superset of the previous schema) so that it can be used with `schemaView`.
+- **FIX** `DiffTransform` will output the `left` and `right` structs in the `intersectionView` when `inputLeftKeys` or `inputRightKeys` are supplied.
+
 ## 3.3.0
 
 - bump to Spark [3.0.1](https://spark.apache.org/releases/spark-release-3-0-1.html).
