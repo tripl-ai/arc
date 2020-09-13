@@ -80,7 +80,7 @@ class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(id, name, description, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, inputLeftView, inputRightView, outputIntersectionView, outputLeftView, outputRightView, persist, inputLeftKeys, inputRightKeys, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -122,11 +122,11 @@ object DiffTransformStage {
 
     // do a full join on a calculated hash of all values in row on each dataset
     // trying to calculate the hash value inside the joinWith method produced an inconsistent result
-    val hasLeftKeys = stage.inputLeftKeys.size == 0
-    val leftKeys = if (hasLeftKeys) inputLeftDF.columns.map(col _) else stage.inputLeftKeys.toArray.map(col _)
+    val hasLeftKeys = stage.inputLeftKeys.size != 0
+    val leftKeys = if (hasLeftKeys) stage.inputLeftKeys.toArray.map(col _) else inputLeftDF.columns.map(col _)
     val leftHashDF = inputLeftDF.withColumn(HASH_KEY, hash(leftKeys:_*))
-    val hasRightKeys = stage.inputRightKeys.size == 0
-    val rightKeys = if (hasRightKeys) inputRightDF.columns.map(col _) else stage.inputRightKeys.toArray.map(col _)
+    val hasRightKeys = stage.inputRightKeys.size != 0
+    val rightKeys = if (hasRightKeys) stage.inputRightKeys.toArray.map(col _) else inputRightDF.columns.map(col _)
     val rightHashDF = inputRightDF.withColumn(HASH_KEY, hash(rightKeys:_*))
     val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF(HASH_KEY) === rightHashDF(HASH_KEY), "full")
 
