@@ -122,9 +122,11 @@ object DiffTransformStage {
 
     // do a full join on a calculated hash of all values in row on each dataset
     // trying to calculate the hash value inside the joinWith method produced an inconsistent result
-    val leftKeys = if (stage.inputLeftKeys.size == 0) inputLeftDF.columns.map(col _) else stage.inputLeftKeys.toArray.map(col _)
+    val hasLeftKeys = stage.inputLeftKeys.size == 0
+    val leftKeys = if (hasLeftKeys) inputLeftDF.columns.map(col _) else stage.inputLeftKeys.toArray.map(col _)
     val leftHashDF = inputLeftDF.withColumn(HASH_KEY, hash(leftKeys:_*))
-    val rightKeys = if (stage.inputRightKeys.size == 0) inputRightDF.columns.map(col _) else stage.inputRightKeys.toArray.map(col _)
+    val hasRightKeys = stage.inputRightKeys.size == 0
+    val rightKeys = if (hasRightKeys) inputRightDF.columns.map(col _) else stage.inputRightKeys.toArray.map(col _)
     val rightHashDF = inputRightDF.withColumn(HASH_KEY, hash(rightKeys:_*))
     val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF(HASH_KEY) === rightHashDF(HASH_KEY), "full")
 
@@ -132,7 +134,11 @@ object DiffTransformStage {
       transformedDF.persist(arcContext.storageLevel)
     }
 
-    val outputIntersectionDF = transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).select(col("_1.*")).drop(HASH_KEY)
+    val outputIntersectionDF = if (hasLeftKeys || hasRightKeys) {
+      transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).withColumnRenamed("_1", "left").withColumnRenamed("_2", "right").drop(HASH_KEY)
+    } else {
+      transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).select(col("_1.*")).drop(HASH_KEY)
+    }
     val outputLeftDF = transformedDF.filter(col("_2").isNull).select(col("_1.*")).drop(HASH_KEY)
     val outputRightDF = transformedDF.filter(col("_1").isNull).select(col("_2.*")).drop(HASH_KEY)
 

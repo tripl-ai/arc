@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.3.0</span></strong>
+          <span class="version">3.3.1</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -541,14 +541,14 @@
 <td>inputLeftKeys</td>
 <td>Array[String]</td>
 <td>false</td>
-<td>A list of columns to create the join key from the first incoming Spark dataset. If not provided all columns are included.</td>
+<td>A list of columns to create the join key from the first incoming Spark dataset. If provided, the <code>outputIntersectionView</code> will contain <code>left</code> and <code>right</code> structs. If not provided all columns are included.</td>
 </tr>
 
 <tr>
 <td>inputRightKeys</td>
 <td>Array[String]</td>
 <td>false</td>
-<td>A list of columns to create the join key from the second incoming Spark dataset. If not provided all columns are included.</td>
+<td>A list of columns to create the join key from the second incoming Spark dataset. If provided, the <code>outputIntersectionView</code> will contain <code>left</code> and <code>right</code> structs. If not provided all columns are included.</td>
 </tr>
 
 <tr>

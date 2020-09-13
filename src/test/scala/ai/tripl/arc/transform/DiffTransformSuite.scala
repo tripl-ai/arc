@@ -73,7 +73,7 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
       )
     )
 
-    assert(spark.table(outputIntersectionView).filter($"integerDatum" === 17).count == 1)
+    assert(spark.table(outputIntersectionView).filter($"left.integerDatum" === 17).count == 1)
     assert(spark.table(outputLeftView).filter($"integerDatum" === 34).count == 1)
     assert(spark.table(outputRightView).filter($"integerDatum" === 35).count == 1)
   }
@@ -108,8 +108,6 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
     assert(spark.table(outputIntersectionView).count == 2)
     assert(spark.table(outputLeftView).count == 0)
     assert(spark.table(outputRightView).count == 0)
-
-
 
     transform.DiffTransformStage.execute(
       transform.DiffTransformStage(
