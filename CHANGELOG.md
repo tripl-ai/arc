@@ -2,6 +2,10 @@
 
 **NOTE** Official Docker Images will move to the GitHub Container Registry in future releases.
 
+## 3.3.2
+
+- **FIX** incorrect logic in `DiffTransform` and bad test for changes made in `3.3.1`.
+
 ## 3.3.1
 
 - **FIX** `MetadataExtract` to export full Arc schema (a superset of the previous schema) so that it can be used with `schemaView`.
