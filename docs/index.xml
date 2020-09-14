@@ -151,7 +151,7 @@ Database Inconsistency When writing data to targets like databases using the JDB
       
       <guid>https://arc.tripl.ai/changelog/</guid>
       <description>Change Log NOTE Official Docker Images will move to the GitHub Container Registry in future releases.
-3.3.1  FIX MetadataExtract to export full Arc schema (a superset of the previous schema) so that it can be used with schemaView. FIX DiffTransform will output the left and right structs in the intersectionView when inputLeftKeys or inputRightKeys are supplied.  3.3.0  bump to Spark 3.0.1. add inputLeftKeys and inputRightKeys to DiffTransform to support matching on a subset of keys.</description>
+3.3.2  FIX incorrect logic in DiffTransform and bad test for changes made in 3.3.1.  3.3.1  FIX MetadataExtract to export full Arc schema (a superset of the previous schema) so that it can be used with schemaView. FIX DiffTransform will output the left and right structs in the intersectionView when inputLeftKeys or inputRightKeys are supplied.</description>
     </item>
     
     <item>
