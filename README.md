@@ -211,7 +211,6 @@ Thanks to the following projects:
 - [AGL Energy](https://github.com/aglenergy) for the original development.
 - [Apache Spark](https://spark.apache.org/) for the underlying framework that has made this library possible.
 - [slf4j-json-logger](https://github.com/savoirtech/slf4j-json-logger) Copyright (c) 2016 Savoir Technologies released under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0). We have slightly altered their library to change the default logging format.
-- [azure-sqldb-spark](https://github.com/Azure/azure-sqldb-spark) for their Microsoft SQL Server bulkload driver. Currently included in /lib but will be pulled from Maven once available.
 - [nyc-taxi-data](https://github.com/toddwschneider/nyc-taxi-data) for preparing an easy to use set of real-world data for the tutorial.
 
 ## License
