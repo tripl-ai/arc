@@ -12,7 +12,6 @@ import java.time.format.ResolverStyle
 import java.time.format.SignStyle
 import java.time.temporal.ChronoField
 import java.util.concurrent.ConcurrentHashMap
-import java.util.Locale
 
 import scala.collection.JavaConverters._
 import scala.util.matching.Regex
@@ -750,13 +749,13 @@ object Typing {
 
         val epochFormatter = new DateTimeFormatterBuilder()
           .appendValue(ChronoField.INSTANT_SECONDS, 10, 10, SignStyle.NEVER)
-          .toFormatter(Locale.US)
+          .toFormatter()
           .withZone(ZoneId.of("UTC"))
 
         val epochMillisFormatter = new DateTimeFormatterBuilder()
           .appendValue(ChronoField.INSTANT_SECONDS, 10, 10, SignStyle.NEVER)
           .appendValue(ChronoField.MILLI_OF_SECOND, 3)
-          .toFormatter(Locale.US)
+          .toFormatter()
           .withZone(ZoneId.of("UTC"))
 
         dtf.put("ssssssssss:UTC:false:true", epochFormatter)
@@ -772,12 +771,12 @@ object Typing {
         memoizedFormatters.get(key).getOrElse {
           // by default datetimeformatter is case sensitive which can be hard to use
           val dateTimeFormatter = if (caseSensitive) {
-            DateTimeFormatter.ofPattern(pattern, Locale.US)
+            DateTimeFormatter.ofPattern(pattern)
           } else {
             val builder = new DateTimeFormatterBuilder()
             builder.parseCaseInsensitive()
             builder.appendPattern(pattern)
-            builder.toFormatter(Locale.US)
+            builder.toFormatter()
           }
           // if formatter does not specify zone information use default
           val withZone = Seq("Offset(", "ZoneId(", "ZoneText(", "LocalizedOffset(").forall { part => !dateTimeFormatter.toString.contains(part) } match {
@@ -800,12 +799,12 @@ object Typing {
         memoizedFormatters.get(key).getOrElse {
           // by default datetimeformatter is case sensitive which can be hard to use
           val dateTimeFormatter = if (caseSensitive) {
-            DateTimeFormatter.ofPattern(pattern, Locale.US)
+            DateTimeFormatter.ofPattern(pattern)
           } else {
             val builder = new DateTimeFormatterBuilder()
             builder.parseCaseInsensitive()
             builder.appendPattern(pattern)
-            builder.toFormatter(Locale.US)
+            builder.toFormatter()
           }
           val formatter = strict match {
             case true => dateTimeFormatter.withResolverStyle(ResolverStyle.STRICT)

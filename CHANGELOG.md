@@ -1,7 +1,5 @@
 # Change Log
 
-- **FIX** explicitly set `Locale.US` when parsing `Date` and `Timestamp` fields in `TypingTransform` to ensure consistency on different environments.
-
 ## 3.3.2
 
 - **FIX** incorrect logic in `DiffTransform` and bad test for changes made in `3.3.1`.
