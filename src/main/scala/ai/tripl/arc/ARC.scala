@@ -4,6 +4,7 @@ import ai.tripl.arc.udf.UDF
 import ai.tripl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin, UDFPlugin}
 import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.SerializableConfiguration
+import java.util.Locale
 
 object ARC {
 
@@ -189,6 +190,7 @@ object ARC {
         .field("hadoopVersion", org.apache.hadoop.util.VersionInfo.getVersion)
         .field("scalaVersion", scala.util.Properties.versionNumberString)
         .field("javaVersion", System.getProperty("java.runtime.version"))
+        .field("locale", Locale.getDefault.toString)
         .field("environment", environment.getOrElse(""))
         .field("storageLevel", storageLevelName)
         .field("immutableViews", java.lang.Boolean.valueOf(arcContext.immutableViews))
@@ -221,6 +223,7 @@ object ARC {
           .field("hadoopVersion", org.apache.hadoop.util.VersionInfo.getVersion)
           .field("scalaVersion", scala.util.Properties.versionNumberString)
           .field("javaVersion", System.getProperty("java.runtime.version"))
+          .field("locale", Locale.getDefault.toString)
           .field("environment", environment.getOrElse(""))
           .field("storageLevel", storageLevelName)
           .field("immutableViews", java.lang.Boolean.valueOf(arcContext.immutableViews))
