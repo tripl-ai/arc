@@ -26,6 +26,7 @@ class BinaryTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === Array[Byte](97, 114, 99, 116, 101, 115, 116))
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -37,6 +38,7 @@ class BinaryTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === Array[Byte](97, 114, 99, 116, 101, 115, 116))
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -48,6 +50,7 @@ class BinaryTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === Array[Byte](97, 114, 99, 116, 101, 115, 116))
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }

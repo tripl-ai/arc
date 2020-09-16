@@ -29,6 +29,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -50,6 +51,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -65,6 +67,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -80,6 +83,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -95,6 +99,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -175,6 +180,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -190,6 +196,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -205,6 +212,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res ===timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -250,6 +258,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -267,6 +276,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
           assert(res === timestampValue)
           assert(err === None)
         }
+        case (_,Some(err)) => fail(err.toString)
         case (_,_) => assert(false)
       }
     }
@@ -278,6 +288,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
           assert(res === timestampValue)
           assert(err === None)
         }
+        case (_,Some(err)) => fail(err.toString)
         case (_,_) => assert(false)
       }
     }
@@ -336,6 +347,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -353,6 +365,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -388,6 +401,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
           assert(res === timestampValue)
           assert(err === None)
         }
+        case (_,Some(err)) => fail(err.toString)
         case (_,_) => assert(false)
       }
   }
@@ -404,6 +418,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
           assert(res === timestampValue)
           assert(err === None)
         }
+        case (_,Some(err)) => fail(err.toString)
         case (_,_) => assert(false)
       }
   }
@@ -433,6 +448,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
           assert(res === timestampValue)
           assert(err === None)
         }
+        case (_,Some(err)) => fail(err.toString)
         case (_,_) => assert(false)
       }
   }
@@ -494,6 +510,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -549,6 +566,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
           assert(res === test.expected)
           assert(err === None)
         }
+        case (_,Some(err)) => fail(err.toString)
         case (_,_) => assert(false)
       }
     }
@@ -566,6 +584,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -582,6 +601,7 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === timestampValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -600,6 +620,6 @@ class TimestampTypingSuite extends FunSuite with BeforeAndAfter {
       }
       case (_,_) => assert(false)
     }
-  }  
+  }
 
 }

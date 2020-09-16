@@ -27,6 +27,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 42.2222)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -38,6 +39,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 88.2222)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -49,6 +51,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 88.2222)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -60,6 +63,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 88.2222)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -71,6 +75,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 42.2222)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -99,6 +104,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 42.2222)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -110,6 +116,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 42.2222)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -121,6 +128,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 88.2222)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -159,6 +167,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 42.2222)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -214,6 +223,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === -2)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -243,6 +253,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === -42.22)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -260,6 +271,7 @@ class DoubleTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === -42.22)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }

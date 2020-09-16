@@ -27,6 +27,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 9223372036854775806L)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -38,6 +39,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 9223372036854775806L)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -49,6 +51,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 9223372036854775806L)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -60,6 +63,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 9223372036854775806L)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -71,6 +75,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 9223372036854775806L)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -104,6 +109,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 9223372036854775806L)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -115,6 +121,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 9223372036854775806L)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -126,6 +133,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 9223372036854775806L)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -164,6 +172,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 9223372036854775806L)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -220,6 +229,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === -92233720368547758L)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -300,6 +310,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 7987654321000L)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -311,6 +322,7 @@ class LongTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 987650000000000L)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }

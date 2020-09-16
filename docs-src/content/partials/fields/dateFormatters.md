@@ -1,1 +1,1 @@
-The formatters to try to convert this field based on the Java [DateTimeFormatter](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html) patterns. Try to order this list so the values are arranged from most frequent to least frequent.
+The formatters to try to convert the text value based on the Java [DateTimeFormatter](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html) patterns and are explictly using the `Locale.US` formats. Try to order this list so the values are arranged from most frequent to least frequent.

@@ -1,6 +1,6 @@
 # Change Log
 
-**NOTE** Official Docker Images will move to the GitHub Container Registry in future releases.
+- **FIX** explicitly set `Locale.US` when parsing `Date` and `Timestamp` fields in `TypingTransform` to ensure consistency on different environments.
 
 ## 3.3.2
 
