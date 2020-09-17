@@ -2,3 +2,5 @@
 -J-XX:MaxMetaspaceSize=2G
 -J-XX:+CMSClassUnloadingEnabled
 -J-XX:+UseG1GC
+-J-Duser.language=en
+-J-Duser.country=US

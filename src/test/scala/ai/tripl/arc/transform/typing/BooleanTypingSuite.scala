@@ -21,6 +21,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === true)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -32,6 +33,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === true)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -43,6 +45,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === true)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -54,6 +57,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === true)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -65,6 +69,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === true)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -76,6 +81,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === true)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -131,6 +137,7 @@ class BooleanTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === true)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }

@@ -1,6 +1,8 @@
 # Change Log
 
-**NOTE** Official Docker Images will move to the GitHub Container Registry in future releases.
+## 3.3.3
+
+- **FIX** standardise `persist` behavior logic in `DiffTransform` to match other stages.
 
 ## 3.3.2
 

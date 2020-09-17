@@ -73,7 +73,7 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
           "outputLeftView": "${outputLeftView}",
           "outputIntersectionView": "${outputIntersectionView}",
           "outputRightView": "${outputRightView}",
-          "persist": false
+          "persist": true
         }
       ]
     }"""

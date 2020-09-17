@@ -27,6 +27,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 42)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -38,6 +39,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 88)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -49,6 +51,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 88)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -60,6 +63,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 88)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -71,6 +75,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 42)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -127,6 +132,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 42)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -138,6 +144,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 42)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -149,6 +156,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 88)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -187,6 +195,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 42)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -242,6 +251,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === -2)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -272,6 +282,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === -42)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -289,6 +300,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === -42)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -323,6 +335,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 700)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -334,6 +347,7 @@ class IntegerTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === 98765)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }

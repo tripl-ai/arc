@@ -32,6 +32,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === dateValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -43,6 +44,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === dateValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -54,6 +56,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === dateValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -65,6 +68,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === dateValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -76,6 +80,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === dateValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -151,6 +156,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === dateValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -162,6 +168,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === dateValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -173,6 +180,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === dateValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -213,6 +221,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === dateValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -287,7 +296,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
     // Test multiple formatters
     {
       val dateValue = Date.valueOf("2016-12-18")
-      val fmt = List("yyyy-MM-dd", "dd-MM-yyyy", "dd MMM yyyy")
+      val fmt = List("yyyy-MM-dd", "dd MMM yyyy", "dd-MM-yyyy")
       val col = DateColumn(None, name="date", description=Some("description"), nullable=false, nullReplacementValue=None, trim=false, nullableValues="" :: Nil, formatters=fmt, metadata=None, strict=false, caseSensitive=false)
 
       {
@@ -297,6 +306,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === dateValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -308,6 +318,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === dateValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -319,6 +330,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === dateValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -362,6 +374,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === dateValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }
@@ -377,6 +390,7 @@ class DateTypingSuite extends FunSuite with BeforeAndAfter {
         assert(res === dateValue)
         assert(err === None)
       }
+      case (_,Some(err)) => fail(err.toString)
       case (_,_) => assert(false)
     }
   }

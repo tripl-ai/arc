@@ -29,6 +29,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -40,6 +41,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -51,6 +53,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -62,6 +65,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -73,6 +77,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -119,6 +124,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -130,6 +136,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -141,6 +148,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -180,6 +188,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -218,6 +227,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -275,6 +285,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -309,6 +320,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }
@@ -327,6 +339,7 @@ class DecimalTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === decimalValue)
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_, _) => assert(false)
         }
       }

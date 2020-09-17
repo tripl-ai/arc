@@ -29,6 +29,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "Maurice")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -40,6 +41,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "Wendy")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -51,6 +53,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "Wendy")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -62,6 +65,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "Wendy")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -73,6 +77,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "Maurice")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -114,6 +119,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "     Wendy")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -125,6 +131,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "Wendy     ")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -136,6 +143,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "   Wendy     ")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -147,6 +155,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === " ")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -163,6 +172,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "Maurice")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -174,6 +184,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "Maurice")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -185,6 +196,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "Wendy")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -223,6 +235,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "Wendy")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -239,6 +252,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "ኃይሌ ገብረሥላሴ")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -250,6 +264,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "ኃይሌ ገብረሥላሴ")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -261,6 +276,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "ኃይሌ ገብረሥላሴ")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -272,6 +288,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
             assert(res === "Escócia")
             assert(err === None)
           }
+          case (_,Some(err)) => fail(err.toString)
           case (_,_) => assert(false)
         }
       }
@@ -361,7 +378,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
         }
       }
     }
-  }  
+  }
 
   test("Test maxLength and regex") {
     {
@@ -378,7 +395,7 @@ class StringTypingSuite extends FunSuite with BeforeAndAfter {
         }
       }
     }
-  }  
+  }
 
   test("Test minLength and maxLength and regex") {
     {
