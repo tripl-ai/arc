@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.3.3
+
+- **FIX** standardise `persist` behavior logic in `DiffTransform` to match other stages.
+
 ## 3.3.2
 
 - **FIX** incorrect logic in `DiffTransform` and bad test for changes made in `3.3.1`.
