@@ -133,7 +133,7 @@ The computational cost of adding the _index column in a distributed execution en
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/partials/fields/dateformatters/</guid>
-      <description>The formatters to try to convert this field based on the Java DateTimeFormatter patterns. Try to order this list so the values are arranged from most frequent to least frequent.</description>
+      <description>The formatters to try to convert the text value based on the Java DateTimeFormatter patterns. This uses the default Locale but can be forced by setting JVM options: -J-Duser.language=en -J-Duser.country=US. Try to order this list so the values are arranged from most frequent to least frequent.</description>
     </item>
     
     <item>

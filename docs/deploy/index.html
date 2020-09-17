@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.3.2</span></strong>
+          <span class="version">3.3.3</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -469,7 +469,7 @@
 --env &quot;ETL_CONF_ENV=production&quot; \
 --entrypoint='' \
 --publish 4040:4040 \
-ghcr.io/tripl-ai/arc:arc_3.3.2_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.0.0 \
+ghcr.io/tripl-ai/arc:arc_3.3.3_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.0.0 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory 4g \
@@ -504,7 +504,7 @@ bin/spark-submit \
 --class ai.tripl.arc.ARC \
 --conf spark.executor.instances=1 \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
---conf spark.kubernetes.container.image=ghcr.io/tripl-ai/arc:arc_3.3.2_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.0.0  \
+--conf spark.kubernetes.container.image=ghcr.io/tripl-ai/arc:arc_3.3.3_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.0.0  \
 --conf spark.kubernetes.driverEnv.ETL_CONF_ENV=production \
 --conf spark.kubernetes.driverEnv.ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data \
 --conf spark.kubernetes.driverEnv.ETL_CONF_JOB_URL=https://raw.githubusercontent.com/tripl-ai/arc-starter/master/examples/kubernetes \
