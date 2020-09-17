@@ -130,10 +130,6 @@ object DiffTransformStage {
     val rightHashDF = inputRightDF.withColumn(HASH_KEY, hash(rightKeys:_*))
     val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF(HASH_KEY) === rightHashDF(HASH_KEY), "full")
 
-    if (stage.persist && !transformedDF.isStreaming) {
-      transformedDF.persist(arcContext.storageLevel)
-    }
-
     val outputIntersectionDF = if (hasLeftKeys || hasRightKeys) {
       transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).withColumnRenamed("_1", "left").withColumnRenamed("_2", "right").drop(HASH_KEY)
     } else {
@@ -141,6 +137,15 @@ object DiffTransformStage {
     }
     val outputLeftDF = transformedDF.filter(col("_2").isNull).select(col("_1.*")).drop(HASH_KEY)
     val outputRightDF = transformedDF.filter(col("_1").isNull).select(col("_2.*")).drop(HASH_KEY)
+
+    if (stage.persist && !transformedDF.isStreaming) {
+      transformedDF.persist(arcContext.storageLevel)
+      val recordsMap = new java.util.HashMap[String, Object]()
+      recordsMap.put("intersection", java.lang.Long.valueOf(outputIntersectionDF.count))
+      recordsMap.put("left", java.lang.Long.valueOf(outputLeftDF.count))
+      recordsMap.put("right", java.lang.Long.valueOf(outputRightDF.count))
+      stage.stageDetail.put("records", recordsMap)
+    }
 
     // register views
     for (outputIntersectionView <- stage.outputIntersectionView) {
