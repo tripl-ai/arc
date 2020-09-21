@@ -1,5 +1,9 @@
 # Change Log
 
+## NEXT
+
+- add `lazy` tag to indicate lazily evaluated resolution of stages. This can be used with `ConfigExecute` to generate runtime specific configuration variables.
+
 ## 3.3.3
 
 - **FIX** standardise `persist` behavior logic in `DiffTransform` to match other stages.
