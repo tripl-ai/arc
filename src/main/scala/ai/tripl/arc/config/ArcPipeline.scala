@@ -36,8 +36,6 @@ object ArcPipeline {
   }
 
   def parseConfig(uri: Either[String, URI], arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, ARCContext)] = {
-    val base = ConfigFactory.load()
-
     val etlConfString = uri match {
       case Left(str) => Right(str)
       case Right(uri) => getConfigString(uri)(spark, logger, arcContext)
@@ -79,22 +77,21 @@ object ArcPipeline {
       dynamicConfigsOrErrors match {
         case Left(errors) => Left(errors)
         case Right(dynamicConfigs) => {
-
-          val resolvedConfig = dynamicConfigs match {
-            case Nil =>
-              etlConf.resolveWith(commandLineArgumentsConf.withFallback(etlConf).withFallback(base)).resolve()
+          // calculate the variables used for resolution
+          arcContext.resolutionConfig = dynamicConfigs match {
+            case Nil => commandLineArgumentsConf.withFallback(etlConf).withFallback(arcContext.resolutionConfig)
             case _ =>
               val dynamicConfigsConf = dynamicConfigs.reduceRight[Config]{ case (c1, c2) => c1.withFallback(c2) }
-              etlConf.resolveWith(commandLineArgumentsConf.withFallback(dynamicConfigsConf).withFallback(etlConf).withFallback(base)).resolve()
+              commandLineArgumentsConf.withFallback(dynamicConfigsConf).withFallback(etlConf).withFallback(arcContext.resolutionConfig)
           }
 
           // use resolved config to parse other plugins
-          val lifecyclePluginsOrErrors = resolveConfigPlugins(resolvedConfig, "plugins.lifecycle", arcContext.lifecyclePlugins)(spark, logger, arcContext)
+          val lifecyclePluginsOrErrors = resolveConfigPlugins(etlConf, "plugins.lifecycle", arcContext.lifecyclePlugins)(spark, logger, arcContext)
 
-          if (!resolvedConfig.hasPath("stages")) {
-            throw new Exception(s"""Key 'stages' missing from job configuration. Have keys: [${resolvedConfig.entrySet().asScala.map(_.getKey).toList.mkString(",")}].""")
+          if (!etlConf.hasPath("stages")) {
+            throw new Exception(s"""Key 'stages' missing from job configuration. Have keys: [${etlConf.entrySet().asScala.map(_.getKey).toList.mkString(",")}].""")
           }
-          val pipelinePluginsOrErrors = resolveConfigPlugins(resolvedConfig, "stages", arcContext.pipelineStagePlugins)(spark, logger, arcContext)
+          val pipelinePluginsOrErrors = resolveConfigPlugins(etlConf, "stages", arcContext.pipelineStagePlugins)(spark, logger, arcContext)
 
           (lifecyclePluginsOrErrors, pipelinePluginsOrErrors) match {
             case (Left(lifecycleErrors), Left(pipelineErrors)) => Left(lifecycleErrors.reverse ::: pipelineErrors.reverse)
@@ -133,7 +130,8 @@ object ArcPipeline {
                 pipelineStagePlugins=arcContext.pipelineStagePlugins,
                 udfPlugins=arcContext.udfPlugins,
                 serializableConfiguration=new SerializableConfiguration(spark.sparkContext.hadoopConfiguration),
-                userData=arcContext.userData
+                userData=arcContext.userData,
+                resolutionConfig=arcContext.resolutionConfig,
               )
 
               Right((ETLPipeline(flatPipelineInstances), ctx))

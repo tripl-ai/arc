@@ -15,9 +15,13 @@ import ai.tripl.arc.api.API._
 import ai.tripl.arc.config._
 import ai.tripl.arc.util._
 
-class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
+class ConfigExecuteSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _
+  val signature = "ConfigExecute requires query to return 1 row with [message: string] signature."
+  val inputView = "inputView"
+  val outputView = "outputView"
+  val targetFile = getClass.getResource("/conf/").toString
 
   before {
     implicit val spark = SparkSession
@@ -32,125 +36,102 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
     spark.conf.set("spark.sql.session.timeZone", "UTC")
 
     session = spark
-    import spark.implicits._
   }
 
   after {
     session.stop
   }
 
-  // if sql returns true then delimitedextract will run and try to read inputView which does not exist
-  test("ControlFlowExecute: end-to-end positive") {
+  test("ConfigExecute: end-to-end") {
     implicit val spark = session
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext()
 
-    val conf = s"""
-    {
-      "plugins": {
-        "lifecycle": [
-          {
-            "type": "ai.tripl.arc.plugins.lifecycle.ControlFlow",
-            "environments": [
-              "production",
-              "test"
-            ]
-          }
-        ],
-      },
+    val conf = s"""{
       "stages": [
         {
-          "type": "ControlFlowExecute",
+          "type": "ConfigExecute",
           "name": "test",
           "description": "test",
           "environments": [
             "production",
             "test"
           ],
-          "inputURI": "${getClass.getResource("/conf/sql/").toString}false.sql"
+          "sql": "SELECT TO_JSON(NAMED_STRUCT('FILE_NAME', 'simple.conf'))",
         },
         {
+          "lazy": true,
           "type": "DelimitedExtract",
-          "name": "delimited extract",
+          "name": "file extract 1",
           "environments": [
             "production",
             "test"
           ],
-          "inputView": "inputView",
-          "outputView": "outputView",
-          "delimiter": "Comma",
-          "quote": "DoubleQuote",
-          "header": false
+          "inputURI": "${targetFile}"$${FILE_NAME},
+          "outputView": "${outputView}"
         }
       ]
-    }
-    """
+    }"""
 
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 
     pipelineEither match {
       case Left(err) => fail(err.toString)
-      case Right((pipeline, ctx)) => ARC.run(pipeline)(spark, logger, ctx)
-    }
-  }
-
-  // if sql returns true then delimitedextract will run and try to read inputView which does not exist
-  test("ControlFlowExecute: end-to-end negative") {
-    implicit val spark = session
-    implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext()
-
-    val conf = s"""
-    {
-      "plugins": {
-        "lifecycle": [
-          {
-            "type": "ai.tripl.arc.plugins.lifecycle.ControlFlow",
-            "environments": [
-              "production",
-              "test"
-            ]
-          }
-        ],
-      },
-      "stages": [
-        {
-          "type": "ControlFlowExecute",
-          "name": "test",
-          "description": "test",
-          "environments": [
-            "production",
-            "test"
-          ],
-          "inputURI": "${getClass.getResource("/conf/sql/").toString}true.sql"
-        },
-        {
-          "type": "DelimitedExtract",
-          "name": "delimited extract",
-          "environments": [
-            "production",
-            "test"
-          ],
-          "inputView": "inputView",
-          "outputView": "outputView",
-          "delimiter": "Comma",
-          "quote": "DoubleQuote",
-          "header": false
-        }
-      ]
-    }
-    """
-
-    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
-
-    pipelineEither match {
-      case Left(err) => fail(err.toString)
-      case Right((pipeline, ctx)) => {
-        val thrown = intercept[Exception with DetailException] {
-          ARC.run(pipeline)(spark, logger, ctx)
-        }
-        assert(thrown.getMessage.contains("Table or view not found: inputView"))
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+        assert(df.count == 29)
       }
     }
   }
+
+  test("ConfigExecute: subquery") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    val df = TestUtils.getKnownDataset
+    df.createOrReplaceTempView(inputView)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "ConfigExecute",
+          "name": "test",
+          "description": "test",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "sql": "SELECT TO_JSON(NAMED_STRUCT('ETL_CONF_SUBQUERY', 'SELECT MAKE_DATE(2016,12,18) AS date'))"
+        },
+        {
+          "lazy": true,
+          "type": "SQLTransform",
+          "name": "SQLTransform",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "sql": "SELECT * FROM ${inputView} INNER JOIN ($${ETL_CONF_SUBQUERY}) subquery ON ${inputView}.dateDatum = subquery.date",
+          "sqlParams": {
+            "ETL_CONF_SUBQUERY": $${ETL_CONF_SUBQUERY}
+          },
+          "outputView": "${outputView}"
+        }
+      ]
+    }"""
+
+    println(conf)
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+        assert(df.count == 1)
+      }
+    }
+  }
+
 }

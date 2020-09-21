@@ -11,6 +11,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.types.MetadataBuilder
 import org.apache.spark.storage.StorageLevel
 
+import com.typesafe.config.Config
 import ai.tripl.arc.util.SerializableConfiguration
 import ai.tripl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin, UDFPlugin}
 
@@ -101,7 +102,11 @@ object API {
 
     /** a serialized hadoop configuration object so that executors can access it directly
     */
-    var serializableConfiguration: SerializableConfiguration
+    var serializableConfiguration: SerializableConfiguration,
+
+    /** a mutable Config that can be used to inject additional resolution values prior to lazy stage evaluation
+    */
+    var resolutionConfig: Config,
 
   )
 
