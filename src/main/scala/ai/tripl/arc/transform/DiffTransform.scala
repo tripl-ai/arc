@@ -73,6 +73,8 @@ class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
         outputIntersectionView.foreach { stage.stageDetail.put("outputIntersectionView", _)}
         outputLeftView.foreach { stage.stageDetail.put("outputLeftView", _)}
         outputRightView.foreach { stage.stageDetail.put("outputRightView", _)}
+        stage.stageDetail.put("inputLeftKeys", inputLeftKeys.asJava)
+        stage.stageDetail.put("inputRightKeys", inputRightKeys.asJava)
         stage.stageDetail.put("inputLeftView", inputLeftView)
         stage.stageDetail.put("inputRightView", inputRightView)
         stage.stageDetail.put("params", params.asJava)
@@ -124,14 +126,14 @@ object DiffTransformStage {
     // trying to calculate the hash value inside the joinWith method produced an inconsistent result
     val hasLeftKeys = stage.inputLeftKeys.size != 0
     val leftKeys = if (hasLeftKeys) stage.inputLeftKeys.toArray.map(col _) else inputLeftDF.columns.map(col _)
-    val leftHashDF = inputLeftDF.withColumn(HASH_KEY, hash(leftKeys:_*))
+    val leftHashDF = inputLeftDF.withColumn(HASH_KEY, xxhash64(leftKeys:_*))
     val hasRightKeys = stage.inputRightKeys.size != 0
     val rightKeys = if (hasRightKeys) stage.inputRightKeys.toArray.map(col _) else inputRightDF.columns.map(col _)
-    val rightHashDF = inputRightDF.withColumn(HASH_KEY, hash(rightKeys:_*))
+    val rightHashDF = inputRightDF.withColumn(HASH_KEY, xxhash64(rightKeys:_*))
     val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF(HASH_KEY) === rightHashDF(HASH_KEY), "full")
 
     val outputIntersectionDF = if (hasLeftKeys || hasRightKeys) {
-      transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).withColumnRenamed("_1", "left").withColumnRenamed("_2", "right").drop(HASH_KEY)
+      transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).drop("_1.$HASH_KEY").drop("_2.$HASH_KEY").withColumnRenamed("_1", "left").withColumnRenamed("_2", "right")
     } else {
       transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).select(col("_1.*")).drop(HASH_KEY)
     }
