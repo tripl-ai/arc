@@ -207,9 +207,10 @@ object API {
   sealed trait EncodingType {
     def sparkString(): String
   }
-  case object EncodingTypeBase64 extends EncodingType { val sparkString = "base64" }
-  case object EncodingTypeHexadecimal extends EncodingType { val sparkString = "hexadecimal" }
-
+  object EncodingType {
+    case object Base64 extends EncodingType { val sparkString = "base64" }
+    case object Hexadecimal extends EncodingType { val sparkString = "hexadecimal" }
+  }
 
   /** true / false values are lists of strings that are considered equivalent
     * to true or false e.g. "Y", "yes", "N", "no".
@@ -514,6 +515,13 @@ object API {
 
   case class ErrorRow(row: String, rowIndex: Long, err:String)
 
+  sealed trait Resolution {
+    def sparkString(): String
+  }
+  object Resolution {
+    case object Lazy extends Resolution { val sparkString = "lazy" }
+    case object Strict extends Resolution { val sparkString = "strict" }
+  }
 }
 
 /** Spark file reader options.
@@ -612,4 +620,3 @@ object JSON {
     )
   }
 }
-

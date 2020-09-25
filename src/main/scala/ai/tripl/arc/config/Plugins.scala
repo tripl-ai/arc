@@ -9,6 +9,8 @@ import org.apache.spark.sql._
 
 import ai.tripl.arc.api.API._
 import ai.tripl.arc.config.Error._
+import ai.tripl.arc.config.ConfigUtils.parseResolution
+import ai.tripl.arc.util.EitherUtils._
 
 object Plugins {
 
@@ -27,12 +29,18 @@ object Plugins {
       val (errors, instances) = objectList.asScala.zipWithIndex.foldLeft[(List[StageError], List[T])]( (Nil, Nil) ) { case ( (errors, instances), (plugin, index) ) =>
         import ConfigReader._
         val config = plugin.toConfig
+        implicit var c = config
 
-        val lazyEvaluate = if (config.hasPath("lazy")) config.getBoolean("lazy") else false
-        implicit val c = if (lazyEvaluate) config else config.resolveWith(arcContext.resolutionConfig).resolve()
-
+        // resolve the minimal keys
+        c = config.withOnlyPath("type").resolveWith(arcContext.resolutionConfig).resolve()
         val pluginType = getValue[String]("type")
+        c = config.withOnlyPath("environments").resolveWith(arcContext.resolutionConfig).resolve()
         val environments = if (c.hasPath("environments")) c.getStringList("environments").asScala.toList else Nil
+
+        // read the resolution key
+        c = config.withOnlyPath("resolution").resolveWith(arcContext.resolutionConfig).resolve()
+        val resolution = getValue[String]("resolution", default = Some("strict"), validValues = "strict" :: "lazy" :: Nil) |> parseResolution("resolution") _
+        c = config.withoutPath("resolution")
 
         // skip stage if not in environment
         if (!arcContext.ignoreEnvironments && !environments.contains(arcContext.environment.get)) {
@@ -48,11 +56,11 @@ object Plugins {
 
           (errors, instances)
         } else {
-          val instanceOrError: Either[List[StageError], T] = pluginType match {
-            case Left(errors) => Left(StageError(index, path, plugin.origin.lineNumber, errors) :: Nil)
-            case Right(pluginType) => {
-              if (lazyEvaluate) {
-                resolvePlugin(false, index, "ai.tripl.arc.plugins.pipeline.LazyEvaluator", c.withoutPath("lazy"), plugins) match {
+          val instanceOrError: Either[List[StageError], T] = (resolution, pluginType) match {
+            case (Right(resolution), Right(pluginType)) => {
+              if (resolution == Resolution.Lazy) {
+                // defer resolution of the config
+                resolvePlugin(false, index, "ai.tripl.arc.plugins.pipeline.LazyEvaluator", c, plugins) match {
                   case Left(err) => Left(err)
                   case Right(plugin) => {
                     plugin match {
@@ -73,9 +81,15 @@ object Plugins {
                   }
                 }
               } else {
+                // resolve the config immediately
+                c = config.resolveWith(arcContext.resolutionConfig).resolve()
                 resolvePlugin(path.contains("plugins."), index, pluginType, c, plugins)
               }
             }
+            case _ =>
+              val allErrors: Errors = List(resolution, pluginType).collect{ case Left(errs) => errs }.flatten
+              val err = StageError(index, path, c.origin.lineNumber, allErrors)
+              Left(err :: Nil)
           }
 
           instanceOrError match {
@@ -133,45 +147,5 @@ object Plugins {
       case Right(plugin) => plugin.instantiate(index, config)
     }
   }
-
-  // // resolvePlugin searches a provided list of plugins for a name/version combination
-  // // it then validates only a single plugin exists and if so calls the instantiate method
-  // def resolvePlugin[T](log: Boolean, index: Int, name: String, config: Config, plugins: List[ConfigPlugin[T]])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[StageError], T] = {
-  //   // match on either full class name or just the simple name AND version or not
-  //   val splitPlugin = name.split(":", 2)
-  //   val hasPackage = splitPlugin(0) contains "."
-  //   val hasVersion = splitPlugin.length > 1
-
-  //   val nameFilteredPlugins = if (hasPackage) {
-  //     plugins.filter(plugin => plugin.getClass.getName == splitPlugin(0))
-  //   } else {
-  //     plugins.filter(plugin => plugin.getClass.getSimpleName == splitPlugin(0))
-  //   }
-  //   val filteredPlugins = if (hasVersion) {
-  //     nameFilteredPlugins.filter(plugin => plugin.version == splitPlugin(1))
-  //   } else {
-  //     nameFilteredPlugins
-  //   }
-
-  //   // logging messages
-  //   val availablePluginsMessage = s"""Available plugins: ${plugins.map(c => s"${c.getClass.getName}:${c.version}").mkString("[",",","]")}."""
-  //   val versionMessage = if (hasVersion) s"name:version" else "name"
-
-  //   // return clean error messages if missing or duplicate
-  //   if (filteredPlugins.length == 0) {
-  //     Left(StageError(index, name, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"No plugins found with ${versionMessage} ${name}. ${availablePluginsMessage}") :: Nil) :: Nil)
-  //   } else if (filteredPlugins.length > 1) {
-  //     Left(StageError(index, name, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), s"Multiple plugins found with name ${splitPlugin(0)}. ${availablePluginsMessage}") :: Nil) :: Nil)
-  //   } else {
-  //     if (log) {
-  //       logger.info()
-  //         .field("event", "instantiatePlugin")
-  //         .field("plugin", name)
-  //         .log()
-  //     }
-
-  //     filteredPlugins.head.instantiate(index, config)
-  //   }
-  // }
 
 }

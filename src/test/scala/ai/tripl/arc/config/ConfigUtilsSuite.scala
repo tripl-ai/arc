@@ -625,7 +625,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     val conf = s"""{
       "stages": [
         {
-          "lazy": true,
+          "resolution": "lazy",
           "type": "DelimitedExtract",
           "name": "file extract 1",
           "environments": [
@@ -656,6 +656,35 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         val df = ARC.run(pipeline)(spark, logger, arcCtx).get
         assert(df.count == 29)
       }
+    }
+  }
+
+  test("ConfigUtils: LazyEvaluator - invalid value") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    val conf = s"""{
+      "stages": [
+        {
+          "resolution": "lazee",
+          "type": "DelimitedExtract",
+          "name": "file extract 1",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${targetFile}"$${FILE_NAME},
+          "outputView": "${outputView}"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => assert(ai.tripl.arc.config.Error.pipelineErrorMsg(err).contains("- resolution (Line 4): Invalid value. Valid values are ['strict','lazy']"))
+      case Right((pipeline, arcCtx)) => fail("expected error")
     }
   }
 

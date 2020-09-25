@@ -642,7 +642,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(meta)
     schema match {
       case Left(_) => assert(false)
-      case Right(stage) => assert(stage == List(BinaryColumn(Some("982cbf60-7ba7-4e50-a09b-d8624a5c49e6"),"binaryDatum",Some("binaryDatum"),false,None,false,List("", "null"),EncodingTypeBase64,Some("{}"))))
+      case Right(stage) => assert(stage == List(BinaryColumn(Some("982cbf60-7ba7-4e50-a09b-d8624a5c49e6"),"binaryDatum",Some("binaryDatum"),false,None,false,List("", "null"),EncodingType.Base64,Some("{}"))))
     }
   }
 

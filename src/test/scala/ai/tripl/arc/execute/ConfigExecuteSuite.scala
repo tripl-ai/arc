@@ -60,7 +60,7 @@ class ConfigExecuteSuite extends FunSuite with BeforeAndAfter {
           "sql": "SELECT TO_JSON(NAMED_STRUCT('FILE_NAME', 'simple.conf'))",
         },
         {
-          "lazy": true,
+          "resolution": "lazy",
           "type": "DelimitedExtract",
           "name": "file extract 1",
           "environments": [
@@ -105,7 +105,7 @@ class ConfigExecuteSuite extends FunSuite with BeforeAndAfter {
           "sql": "SELECT TO_JSON(NAMED_STRUCT('ETL_CONF_SUBQUERY', 'SELECT MAKE_DATE(2016,12,18) AS date'))"
         },
         {
-          "lazy": true,
+          "resolution": "lazy",
           "type": "SQLTransform",
           "name": "SQLTransform",
           "environments": [
@@ -120,8 +120,6 @@ class ConfigExecuteSuite extends FunSuite with BeforeAndAfter {
         }
       ]
     }"""
-
-    println(conf)
 
     val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
 

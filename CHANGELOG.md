@@ -1,8 +1,9 @@
 # Change Log
 
-## NEXT
+## 3.4.0
 
-- add `lazy` tag to indicate lazily evaluated resolution of stages. This can be used with `ConfigExecute` to generate runtime specific configuration variables.
+- add `resolution` tag for all stages to indicate `lazy` or `strict` resolution of stage variables. This can be used with `ConfigExecute` to generate runtime specific configuration variables.
+- revert `DiffTransform` and `EqualityValidate` to use `sha2(to_json(struct()))` rather than inbuilt Spark `hash` function due to collisions.
 
 ## 3.3.3
 
