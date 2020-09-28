@@ -135,11 +135,11 @@ object DiffTransformStage {
 
     val outputIntersectionDF = if (hasLeftKeys || hasRightKeys) {
       // join and drop hash keys
-      DataFrameUtils.dropColumn(
-        DataFrameUtils.dropColumn(
+      DataFrameUtils.dropFrom(
+        DataFrameUtils.dropFrom(
           transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).withColumnRenamed("_1", "left").withColumnRenamed("_2", "right")
-        , s"left.${HASH_KEY}")
-      , s"right.${HASH_KEY}")
+        , "left", HASH_KEY :: Nil)
+      ,"right", HASH_KEY :: Nil)
     } else {
       transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).select(col("_1.*")).drop(HASH_KEY)
     }
