@@ -1,0 +1,15 @@
+{
+  "type": "ConfigExecute",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "name": "calculate dynamic variable",
+  "description": "lcalculate dynamic variable",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/calculate_dynamic_variable.sql",
+  "sql": "SELECT TO_JSON(NAMED_STRUCT('ETL_CONF_DYNAMIC', 'SELECT MAKE_DATE(2016,12,18) AS date'))"
+  "authentication": {},
+  "sqlParams": {
+  }
+}

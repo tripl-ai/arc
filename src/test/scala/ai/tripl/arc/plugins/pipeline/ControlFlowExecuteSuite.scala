@@ -24,7 +24,7 @@ class ControlFlowExecuteSuite extends FunSuite with BeforeAndAfter {
                   .builder()
                   .master("local[*]")
                   .config("spark.ui.port", "9999")
-                  .appName("Spark ETL Test")
+                  .appName("Arc Test")
                   .getOrCreate()
     spark.sparkContext.setLogLevel("INFO")
 

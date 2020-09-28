@@ -159,9 +159,10 @@ The `DeltaLakeLoad` writes an input `DataFrame` to a target [DeltaLake](https://
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|options|Map[String, String]|false|A set of optional parameters like `replaceWhere`.|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |saveMode|String|false|{{< readfile file="/content/partials/fields/saveMode.md" markdown="true" >}}|
-|generateSymlinkManifest|Boolean|false|Create a manifest file so that the DeltaLakeLoad output can be read by a Presto database.<br><br>Default: `true`|
+|generateSymlinkManifest|Boolean|false|Create a `_symlink_format_manifest` file so that the DeltaLakeLoad output can be read by other tools like a Presto database.<br><br>Default: `true`|
 
 ### Examples
 

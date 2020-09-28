@@ -750,8 +750,8 @@ object ConfigUtils {
 
   def parseEncoding(path: String)(encoding: String)(implicit c: Config): Either[Errors, EncodingType] = {
     encoding.toLowerCase.trim match {
-      case "base64" => Right(EncodingTypeBase64)
-      case "hexadecimal" => Right(EncodingTypeHexadecimal)
+      case "base64" => Right(EncodingType.Base64)
+      case "hexadecimal" => Right(EncodingType.Hexadecimal)
       case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }
@@ -798,6 +798,14 @@ object ConfigUtils {
       case "doublequote" => Right(QuoteCharacter.DoubleQuote)
       case "singlequote" => Right(QuoteCharacter.SingleQuote)
       case "none" => Right(QuoteCharacter.Disabled)
+      case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
+    }
+  }
+
+  def parseResolution(path: String)(resolve: String)(implicit c: Config): Either[Errors, Resolution] = {
+    resolve.toLowerCase.trim match {
+      case "lazy" => Right(Resolution.Lazy)
+      case "strict" => Right(Resolution.Strict)
       case _ => Left(ConfigError(path, None, s"Invalid state. Please raise issue.") :: Nil)
     }
   }

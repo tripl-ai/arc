@@ -699,7 +699,7 @@ object Typing {
       def binaryOrError(col: BinaryColumn, value: String): TypingResult[Array[Byte]] = {
         try {
           col.encoding match {
-            case EncodingTypeBase64 => {
+            case EncodingType.Base64 => {
               val valueByteArray = value.getBytes
               if (Base64.isBase64(valueByteArray)) {
                 Option(Base64.decodeBase64(value)) -> None
@@ -707,7 +707,7 @@ object Typing {
                 throw new Exception()
               }
             }
-            case EncodingTypeHexadecimal => {
+            case EncodingType.Hexadecimal => {
               // will throw exception if not valid hexadecimal
               java.lang.Long.parseLong(value, 16)
               Option(org.apache.spark.sql.catalyst.expressions.Hex.unhex(value.getBytes)) -> None

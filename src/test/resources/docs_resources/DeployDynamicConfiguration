@@ -1,0 +1,33 @@
+{
+  "type": "ConfigExecute",
+  "name": "test",
+  "description": "test",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "sql": """
+    SELECT TO_JSON(
+      NAMED_STRUCT(
+        'ETL_CONF_DYNAMIC_PUSHDOWN', ARRAY_JOIN(COLLECT_LIST(CONCAT("CAST(\'",DATE_FORMAT(transaction_date,"yyyy-MM-dd"),"\' AS DATE)")), ',')
+      )
+    ) AS parameters
+    FROM (
+      SELECT transaction_date FROM new_transactions GROUP BY transaction_date
+    )
+  """
+},
+{
+  "resolution": "lazy",
+  "type": "SQLTransform",
+  "name": "load the partitions impacted by new records",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "sql": "SELECT * FROM transactions WHERE transaction_date IN (${ETL_CONF_DYNAMIC_PUSHDOWN})",
+  "sqlParams": {
+    "ETL_CONF_DYNAMIC_PUSHDOWN": ${ETL_CONF_DYNAMIC_PUSHDOWN}
+  },
+  "outputView": "outputView"
+}

@@ -16,7 +16,7 @@ class UDFPluginSuite extends FunSuite with BeforeAndAfter {
     implicit val spark = SparkSession
       .builder()
       .master("local[*]")
-      .appName("Spark ETL Test")
+      .appName("Arc Test")
       .getOrCreate()
     spark.sparkContext.setLogLevel("INFO")
 

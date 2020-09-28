@@ -34,7 +34,7 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
                   .builder()
                   .master("local[*]")
                   .config("spark.ui.port", "9999")
-                  .appName("Spark ETL Test")
+                  .appName("Arc Test")
                   .getOrCreate()
     spark.sparkContext.setLogLevel("INFO")
 
@@ -84,11 +84,14 @@ class DiffTransformSuite extends FunSuite with BeforeAndAfter {
       case Left(err) => fail(err.toString)
       case Right((pipeline, _)) =>
         ARC.run(pipeline)(spark, logger, arcContext)
-      assert(spark.table(outputIntersectionView).filter(col("left.integerDatum") === 17).count == 1)
-      assert(spark.table(outputIntersectionView).filter(col("right.integerDatum") === 35).count == 1)
-      assert(spark.table(outputIntersectionView).count == 2)
-      assert(spark.table(outputLeftView).count == 0)
-      assert(spark.table(outputRightView).count == 0)
+        assert(spark.table(outputIntersectionView).filter(col("left.integerDatum") === 17).count == 1)
+        assert(spark.table(outputIntersectionView).filter(col("right.integerDatum") === 35).count == 1)
+        assert(spark.table(outputIntersectionView).count == 2)
+        assert(spark.table(outputLeftView).count == 0)
+        assert(spark.table(outputRightView).count == 0)
+        assert(!spark.table(outputIntersectionView).schema.toString().contains("__HASH__"))
+        assert(!spark.table(outputLeftView).schema.toString().contains("__HASH__"))
+        assert(!spark.table(outputRightView).schema.toString().contains("__HASH__"))
     }
   }
 

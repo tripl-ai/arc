@@ -1,32 +1,32 @@
 package ai.tripl.arc
 
+import java.util.Locale
+import java.util.UUID
+import java.util.ServiceLoader
+
+import scala.annotation.tailrec
+import scala.util.Properties._
+import scala.collection.JavaConverters._
+import scala.util.Try
+
+import org.apache.commons.lang3.exception.ExceptionUtils
+
+import org.slf4j.MDC
+
+import org.apache.spark.sql._
+import org.apache.spark.storage.StorageLevel
+
+import com.typesafe.config.ConfigFactory
+
+import ai.tripl.arc.api.API._
+import ai.tripl.arc.util.{DetailException, Utils, ListenerUtils}
+import ai.tripl.arc.util.log.LoggerFactory
 import ai.tripl.arc.udf.UDF
 import ai.tripl.arc.plugins.{DynamicConfigurationPlugin, LifecyclePlugin, PipelineStagePlugin, UDFPlugin}
 import ai.tripl.arc.util.CloudUtils
 import ai.tripl.arc.util.SerializableConfiguration
-import java.util.Locale
 
 object ARC {
-
-  import java.util.UUID
-  import java.util.ServiceLoader
-  import scala.collection.JavaConverters._
-  import scala.util.Try
-
-  import org.apache.commons.lang3.exception.ExceptionUtils
-
-  import org.slf4j.MDC
-
-  import scala.annotation.tailrec
-  import scala.util.Properties._
-
-  import org.apache.spark.sql._
-  import org.apache.spark.storage.StorageLevel
-
-  import ai.tripl.arc.api.API._
-  import ai.tripl.arc.util.{DetailException, Utils, ListenerUtils}
-  import ai.tripl.arc.util.log.LoggerFactory
-
   def main(args: Array[String]) {
     val startTime = System.currentTimeMillis()
 
@@ -173,7 +173,8 @@ object ARC {
       pipelineStagePlugins=ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList,
       udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList,
       serializableConfiguration=new SerializableConfiguration(spark.sparkContext.hadoopConfiguration),
-      userData=collection.mutable.Map[String, Object]()
+      userData=collection.mutable.Map[String, Object](),
+      resolutionConfig=ConfigFactory.load(),
     )
 
     // add spark listeners and register udfs

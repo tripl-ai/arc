@@ -35,7 +35,7 @@ class TextLoadSuite extends FunSuite with BeforeAndAfter {
                   .master("local[*]")
                   .config("spark.ui.port", "9999")
                   .config("spark.sql.streaming.checkpointLocation", "/tmp/checkpoint")
-                  .appName("Spark ETL Test")
+                  .appName("Arc Test")
                   .getOrCreate()
     spark.sparkContext.setLogLevel("INFO")
 

@@ -10,6 +10,8 @@ import scala.collection.JavaConverters._
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.core._
 
+import com.typesafe.config.ConfigFactory
+
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
@@ -77,7 +79,8 @@ object TestUtils {
         pipelineStagePlugins=ServiceLoader.load(classOf[PipelineStagePlugin], loader).iterator().asScala.toList,
         udfPlugins=ServiceLoader.load(classOf[UDFPlugin], loader).iterator().asScala.toList,
         serializableConfiguration=new SerializableConfiguration(spark.sparkContext.hadoopConfiguration),
-        userData=collection.mutable.Map.empty
+        userData=collection.mutable.Map.empty,
+        resolutionConfig=ConfigFactory.load(),
       )
     }
 

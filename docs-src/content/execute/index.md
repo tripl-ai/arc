@@ -68,6 +68,34 @@ The `CassandraExecute` executes a CQL statement against an external [Cassandra](
 {{< readfile file="/resources/docs_resources_plugins/CassandraExecuteComplete" highlight="json" >}}
 
 
+## ConfigExecute
+##### Since: 3.4.0 - Supports Streaming: True
+
+The `ConfigExecute` takes an input SQL statement which must return a `string` formatted `JSON` object allowing runtime creation of job configuration substitution values. `ConfigExecute` is intended to be used with [Dynamic Variables](deploy/#dynamic-variables) to allow the creation of variables reliant on runtime data.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|*true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}} Required if `sql` not provided.|
+|sql|String|*true|{{< readfile file="/content/partials/fields/sql.md" markdown="true" >}} Required if `inputURI` not provided.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/ConfigExecuteMin" highlight="json" >}}
+
+#### Complete
+{{< readfile file="/resources/docs_resources/ConfigExecuteComplete" highlight="json" >}}
+
+
 ## HTTPExecute
 ##### Since: 1.0.0 - Supports Streaming: False
 

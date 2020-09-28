@@ -10,6 +10,7 @@ import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.plugins.PipelineStagePlugin
 import ai.tripl.arc.util.Utils
+import ai.tripl.arc.util.DataFrameUtils
 
 class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
 
@@ -73,6 +74,8 @@ class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
         outputIntersectionView.foreach { stage.stageDetail.put("outputIntersectionView", _)}
         outputLeftView.foreach { stage.stageDetail.put("outputLeftView", _)}
         outputRightView.foreach { stage.stageDetail.put("outputRightView", _)}
+        stage.stageDetail.put("inputLeftKeys", if (inputLeftKeys.isEmpty) Seq("*").asJava else inputLeftKeys.asJava)
+        stage.stageDetail.put("inputRightKeys", if (inputRightKeys.isEmpty) Seq("*").asJava else inputRightKeys.asJava)
         stage.stageDetail.put("inputLeftView", inputLeftView)
         stage.stageDetail.put("inputRightView", inputRightView)
         stage.stageDetail.put("params", params.asJava)
@@ -124,14 +127,19 @@ object DiffTransformStage {
     // trying to calculate the hash value inside the joinWith method produced an inconsistent result
     val hasLeftKeys = stage.inputLeftKeys.size != 0
     val leftKeys = if (hasLeftKeys) stage.inputLeftKeys.toArray.map(col _) else inputLeftDF.columns.map(col _)
-    val leftHashDF = inputLeftDF.withColumn(HASH_KEY, hash(leftKeys:_*))
+    val leftHashDF = inputLeftDF.withColumn(HASH_KEY, sha2(to_json(struct(leftKeys:_*)), 512))
     val hasRightKeys = stage.inputRightKeys.size != 0
     val rightKeys = if (hasRightKeys) stage.inputRightKeys.toArray.map(col _) else inputRightDF.columns.map(col _)
-    val rightHashDF = inputRightDF.withColumn(HASH_KEY, hash(rightKeys:_*))
+    val rightHashDF = inputRightDF.withColumn(HASH_KEY, sha2(to_json(struct(rightKeys:_*)), 512))
     val transformedDF = leftHashDF.joinWith(rightHashDF, leftHashDF(HASH_KEY) === rightHashDF(HASH_KEY), "full")
 
     val outputIntersectionDF = if (hasLeftKeys || hasRightKeys) {
-      transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).withColumnRenamed("_1", "left").withColumnRenamed("_2", "right").drop(HASH_KEY)
+      // join and drop hash keys
+      DataFrameUtils.dropFrom(
+        DataFrameUtils.dropFrom(
+          transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).withColumnRenamed("_1", "left").withColumnRenamed("_2", "right")
+        , "left", HASH_KEY :: Nil)
+      ,"right", HASH_KEY :: Nil)
     } else {
       transformedDF.filter(col("_1").isNotNull).filter(col("_2").isNotNull).select(col("_1.*")).drop(HASH_KEY)
     }
