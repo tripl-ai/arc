@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.3.3</span></strong>
+          <span class="version">3.4.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -469,7 +469,7 @@
 --env &quot;ETL_CONF_ENV=production&quot; \
 --entrypoint='' \
 --publish 4040:4040 \
-ghcr.io/tripl-ai/arc:arc_3.3.3_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.0.0 \
+ghcr.io/tripl-ai/arc:arc_3.4.0_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.0.0 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory 4g \
@@ -504,7 +504,7 @@ bin/spark-submit \
 --class ai.tripl.arc.ARC \
 --conf spark.executor.instances=1 \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
---conf spark.kubernetes.container.image=ghcr.io/tripl-ai/arc:arc_3.3.3_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.0.0  \
+--conf spark.kubernetes.container.image=ghcr.io/tripl-ai/arc:arc_3.4.0_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.0.0  \
 --conf spark.kubernetes.driverEnv.ETL_CONF_ENV=production \
 --conf spark.kubernetes.driverEnv.ETL_CONF_DATA_URL=s3a://nyc-tlc/trip*data \
 --conf spark.kubernetes.driverEnv.ETL_CONF_JOB_URL=https://raw.githubusercontent.com/tripl-ai/arc-starter/master/examples/kubernetes \
@@ -718,11 +718,55 @@ local:///opt/spark/jars/arc.jar \
 </tbody>
 </table>
 
+<h2 id="dynamic-variables">Dynamic Variables</h2>
+
+<p>Sometimes it is useful to be able to utilise runtime only varaibles in an Arc job (aka. lazy evaluation), for example, dynamically calculating a partition to be read.</p>
+
+<p>By default all stages have an implicit <code>resolution</code> key defaulting to <code>strict</code> which will try to resolve all parameters at the start of the job. By setting <code>resolution</code> to <code>lazy</code> it is possible to defer the resolution of the variables until execution time for that stage.</p>
+
+<h3 id="examples">Examples</h3>
+
+<p>This example calculates a list of distinct dates from the <code>new_transactions</code> dataset (like <code>CAST('2020-01-13' AS DATE),CAST('2020-01-14' AS DATE)</code>) and returns it as a variable named <code>ETL_CONF_DYNAMIC_PUSHDOWN</code> which is then used to read a subset of the <code>transactions</code> dataset. This pattern was used succesfully to force a certain behavior in the Spark SQL optimizer (predicate pushdown). Without the <code>resolution</code> equal to <code>lazy</code> the job would fail as the <code>${ETL_CONF_DYNAMIC_PUSHDOWN}</code> parameter would not be present at the beginning of the job.</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ConfigExecute&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;test&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;description&#34;</span><span class="p">:</span> <span class="s2">&#34;test&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;sql&#34;</span><span class="p">:</span> <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    SELECT TO_JSON(
+</span><span class="s2">      NAMED_STRUCT(
+</span><span class="s2">        &#39;ETL_CONF_DYNAMIC_PUSHDOWN&#39;, ARRAY_JOIN(COLLECT_LIST(CONCAT(&#34;</span><span class="err">CAST(\&#39;</span><span class="s2">&#34;,DATE_FORMAT(transaction_date,&#34;</span><span class="err">yyyy-MM-dd</span><span class="s2">&#34;),&#34;</span><span class="err">\&#39;</span> <span class="err">AS</span> <span class="err">DATE)</span><span class="s2">&#34;)), &#39;,&#39;)
+</span><span class="s2">      )
+</span><span class="s2">    ) AS parameters
+</span><span class="s2">    FROM (
+</span><span class="s2">      SELECT transaction_date FROM new_transactions GROUP BY transaction_date
+</span><span class="s2">    )
+</span><span class="s2">  &#34;&#34;&#34;</span>
+<span class="p">}</span><span class="err">,</span>
+<span class="p">{</span>
+  <span class="nt">&#34;resolution&#34;</span><span class="p">:</span> <span class="s2">&#34;lazy&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;load the partitions impacted by new records&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;sql&#34;</span><span class="p">:</span> <span class="s2">&#34;SELECT * FROM transactions WHERE transaction_date IN (${ETL_CONF_DYNAMIC_PUSHDOWN})&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;sqlParams&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;ETL_CONF_DYNAMIC_PUSHDOWN&#34;</span><span class="p">:</span> <span class="err">$</span><span class="p">{</span><span class="err">ETL_CONF_DYNAMIC_PUSHDOWN</span><span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;outputView&#34;</span>
+<span class="p">}</span></code></pre></div>
+
 <h2 id="environments">Environments</h2>
 
 <p>The <code>Environments</code> list specifies a list of environments under which the stage will be executed. The environments list must contain the value in the <code>ETL_CONF_ENV</code> environment variable or <code>etl.config.environment</code> <code>spark-submit</code> argument for the stage to be executed.</p>
 
-<h3 id="examples">Examples</h3>
+<h3 id="examples-1">Examples</h3>
 
 <p>If a stage is to be executed in both production and testing and the <code>ETL_CONF_ENV</code> environment variable is set to <code>production</code> or <code>test</code> then the <code>DelimitedExtract</code> stage defined here will be executed. If the <code>ETL_CONF_ENV</code> environment variable was set to something else like <code>user_acceptance_testing</code> then this stage will not be executed and a warning message will be logged.</p>
 

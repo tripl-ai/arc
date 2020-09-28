@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.3.3</span></strong>
+          <span class="version">3.4.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -1094,6 +1094,13 @@
 </tr>
 
 <tr>
+<td>options</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>A set of optional parameters like <code>replaceWhere</code>.</td>
+</tr>
+
+<tr>
 <td>partitionBy</td>
 <td>Array[String]</td>
 <td>false</td>
@@ -1111,7 +1118,7 @@
 <td>generateSymlinkManifest</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Create a manifest file so that the DeltaLakeLoad output can be read by a Presto database.<br><br>Default: <code>true</code></td>
+<td>Create a <code>_symlink_format_manifest</code> file so that the DeltaLakeLoad output can be read by other tools like a Presto database.<br><br>Default: <code>true</code></td>
 </tr>
 </tbody>
 </table>
