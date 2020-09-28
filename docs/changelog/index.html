@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.3.3</span></strong>
+          <span class="version">3.4.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -454,6 +454,14 @@
 			
 
 			<h1 id="change-log">Change Log</h1>
+
+<h2 id="3-4-0">3.4.0</h2>
+
+<ul>
+<li>add <code>resolution</code> tag for all stages to indicate <code>lazy</code> or <code>strict</code> resolution of stage variables. This can be used with <code>ConfigExecute</code> to generate runtime specific configuration variables.</li>
+<li>add <code>ConfigExecute</code> stage to allow dynamic creation of runtime variables.</li>
+<li><strong>FIX</strong> revert <code>DiffTransform</code> and <code>EqualityValidate</code> to use <code>sha2(to_json(struct()))</code> rather than inbuilt Spark <code>hash</code> function due to high liklihood of collisions.</li>
+</ul>
 
 <h2 id="3-3-3">3.3.3</h2>
 
