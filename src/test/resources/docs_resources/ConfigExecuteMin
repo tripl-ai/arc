@@ -1,0 +1,10 @@
+{
+  "type": "ConfigExecute",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "name": "calculate dynamic variable",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/calculate_dynamic_variable.sql"
+}

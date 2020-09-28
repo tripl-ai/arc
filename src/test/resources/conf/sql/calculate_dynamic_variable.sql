@@ -1,0 +1,1 @@
+SELECT TO_JSON(NAMED_STRUCT('key', 'value'))
