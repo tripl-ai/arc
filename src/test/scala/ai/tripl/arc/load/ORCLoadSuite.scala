@@ -29,7 +29,7 @@ class ORCLoadSuite extends FunSuite with BeforeAndAfter {
                   .config("spark.ui.port", "9999")
                   .config("spark.sql.streaming.checkpointLocation", "/tmp/checkpoint")
                   .config("spark.sql.orc.impl", "native")
-                  .appName("Spark ETL Test")
+                  .appName("Arc Test")
                   .getOrCreate()
     spark.sparkContext.setLogLevel("INFO")
 

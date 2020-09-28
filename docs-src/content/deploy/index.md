@@ -106,6 +106,19 @@ Permissions arguments can be used to retrieve the job file from cloud storage:
 |ETL_CONF_S3A_KMS_ARN|The Key Management Service Amazon Resource Name when using `SSE-KMS` encryptionAlgorithm e.g. `arn:aws:kms:us-west-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab`.|
 |ETL_CONF_S3A_CUSTOM_KEY|etl.config.fs.s3a.custom.key|The key to use when using Customer-Provided Encryption Keys (`SSE-C`).|
 
+## Dynamic Variables
+
+Sometimes it is useful to be able to utilise runtime only varaibles in an Arc job (aka. lazy evaluation), for example, dynamically calculating a partition to be read.
+
+By default all stages have an implicit `resolution` key defaulting to `strict` which will try to resolve all parameters at the start of the job. By setting `resolution` to `lazy` it is possible to defer the resolution of the variables until execution time for that stage.
+
+### Examples
+
+This example calculates a list of distinct dates from the `new_transactions` dataset (like `CAST('2020-01-13' AS DATE),CAST('2020-01-14' AS DATE)`) and returns it as a variable named `ETL_CONF_DYNAMIC_PUSHDOWN` which is then used to read a subset of the `transactions` dataset. This pattern was used succesfully to force a certain behavior in the Spark SQL optimizer (predicate pushdown). Without the `resolution` equal to `lazy` the job would fail as the `${ETL_CONF_DYNAMIC_PUSHDOWN}` parameter would not be present at the beginning of the job.
+
+{{< readfile file="/resources/docs_resources/DeployDynamicConfiguration" highlight="json" >}}
+
+
 ## Environments
 
 The `Environments` list specifies a list of environments under which the stage will be executed. The environments list must contain the value in the `ETL_CONF_ENV` environment variable or `etl.config.environment` `spark-submit` argument for the stage to be executed.

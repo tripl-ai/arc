@@ -31,7 +31,7 @@ class ORCExtractSuite extends FunSuite with BeforeAndAfter {
                   .master("local[*]")
                   .config("spark.ui.port", "9999")
                   .config("spark.sql.orc.impl", "native")
-                  .appName("Spark ETL Test")
+                  .appName("Arc Test")
                   .getOrCreate()
     spark.sparkContext.setLogLevel("INFO")
 

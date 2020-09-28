@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.4.0
+
+- add `resolution` tag for all stages to indicate `lazy` or `strict` resolution of stage variables. This can be used with `ConfigExecute` to generate runtime specific configuration variables.
+- add `ConfigExecute` stage to allow dynamic creation of runtime variables.
+- **FIX** revert `DiffTransform` and `EqualityValidate` to use `sha2(to_json(struct()))` rather than inbuilt Spark `hash` function due to high liklihood of collisions.
+
 ## 3.3.3
 
 - **FIX** standardise `persist` behavior logic in `DiffTransform` to match other stages.

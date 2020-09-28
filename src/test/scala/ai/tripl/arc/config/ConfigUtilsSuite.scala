@@ -14,24 +14,27 @@ import org.apache.spark.sql._
 import org.scalatest.FunSuite
 import org.scalatest.BeforeAndAfter
 
+import ai.tripl.arc.api._
 import ai.tripl.arc.api.API._
-import ai.tripl.arc.api.{Delimited, Delimiter, QuoteCharacter}
 import ai.tripl.arc.config._
 import ai.tripl.arc.config.Error
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.util.log.LoggerFactory
-import ai.tripl.arc.util.TestUtils
 import ai.tripl.arc.transform.SQLTransformStage
+import ai.tripl.arc.util._
 
 class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
 
   var session: SparkSession = _
 
+  val outputView = "outputView"
+  val targetFile = getClass.getResource("/conf/").toString
+
   before {
     val spark = SparkSession
                   .builder()
                   .master("local[*]")
-                  .appName("Spark ETL Test")
+                  .appName("Arc Test")
                   .getOrCreate()
     spark.sparkContext.setLogLevel("INFO")
 
@@ -611,6 +614,77 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, _)) => {
         println(pipeline.stages(0).asInstanceOf[SQLTransformStage].sql == "SELECT ${hiveconf:test_variable}")
       }
+    }
+  }
+
+  test("ConfigUtils: LazyEvaluator") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    val conf = s"""{
+      "stages": [
+        {
+          "resolution": "lazy",
+          "type": "DelimitedExtract",
+          "name": "file extract 1",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${targetFile}"$${FILE_NAME},
+          "outputView": "${outputView}"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString())
+      case Right((pipeline, arcCtx)) => {
+
+        val thrown0 = intercept[Exception with DetailException] {
+          val df = ARC.run(pipeline)(spark, logger, arcCtx)
+        }
+        assert(thrown0.getMessage.contains("Could not resolve substitution to a value: ${FILE_NAME}"))
+
+        // replace the config
+        val commandLineArgumentsJson = new ObjectMapper().writeValueAsString(Map[String, String]("FILE_NAME" -> "simple.conf").asJava).replace("\\", "")
+        val commandLineArgumentsConf = ConfigFactory.parseString(commandLineArgumentsJson, ConfigParseOptions.defaults().setSyntax(ConfigSyntax.CONF))
+        arcCtx.resolutionConfig = commandLineArgumentsConf.resolveWith(arcCtx.resolutionConfig)
+        val df = ARC.run(pipeline)(spark, logger, arcCtx).get
+        assert(df.count == 29)
+      }
+    }
+  }
+
+  test("ConfigUtils: LazyEvaluator - invalid value") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    val conf = s"""{
+      "stages": [
+        {
+          "resolution": "lazee",
+          "type": "DelimitedExtract",
+          "name": "file extract 1",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "${targetFile}"$${FILE_NAME},
+          "outputView": "${outputView}"
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => assert(ai.tripl.arc.config.Error.pipelineErrorMsg(err).contains("- resolution (Line 4): Invalid value. Valid values are ['strict','lazy']"))
+      case Right((pipeline, arcCtx)) => fail("expected error")
     }
   }
 
