@@ -612,7 +612,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     pipelineEither match {
       case Left(err) => fail(err.toString)
       case Right((pipeline, _)) => {
-        println(pipeline.stages(0).asInstanceOf[SQLTransformStage].sql == "SELECT ${hiveconf:test_variable}")
+        assert(pipeline.stages(0).asInstanceOf[SQLTransformStage].sql == "SELECT ${hiveconf:test_variable}")
       }
     }
   }
