@@ -21,6 +21,7 @@ class ConfigExecuteSuite extends FunSuite with BeforeAndAfter {
   val signature = "ConfigExecute requires query to return 1 row with [message: string] signature."
   val inputView = "inputView"
   val outputView = "outputView"
+  val configExecuteOutputView = "configExecuteOutputView"
   val targetFile = getClass.getResource("/conf/").toString
 
   before {
@@ -57,6 +58,7 @@ class ConfigExecuteSuite extends FunSuite with BeforeAndAfter {
             "production",
             "test"
           ],
+          "outputView": "${configExecuteOutputView}",
           "sql": "SELECT TO_JSON(NAMED_STRUCT('FILE_NAME', 'simple.conf'))",
         },
         {
@@ -80,6 +82,7 @@ class ConfigExecuteSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, _)) => {
         val df = ARC.run(pipeline)(spark, logger, arcContext).get
         assert(df.count == 29)
+        assert(spark.table(configExecuteOutputView).count == 1)
       }
     }
   }

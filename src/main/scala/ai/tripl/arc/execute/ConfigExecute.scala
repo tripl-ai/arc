@@ -39,7 +39,7 @@ class ConfigExecute extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputURI" :: "sql" :: "authentication" :: "sqlParams" :: "params" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputURI" :: "sql" :: "authentication" :: "sqlParams" :: "params" :: "outputView" :: Nil
     val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
@@ -48,6 +48,7 @@ class ConfigExecute extends PipelineStagePlugin with JupyterCompleter {
     // requires 'inputURI' or 'sql'
     val isInputURI = c.hasPath("inputURI")
     val source = if (isInputURI) "inputURI" else "sql"
+    val outputView = getOptionalValue[String]("outputView")
     val parsedURI = if (isInputURI) getValue[String]("inputURI") |> parseURI("inputURI") _ else Right(new URI(""))
     val inputSQL = if (isInputURI) parsedURI |> textContentForURI("inputURI", authentication) _ else Right("")
     val inlineSQL = if (!isInputURI) getValue[String]("sql") |> verifyInlineSQLPolicy("sql") _ else Right("")
@@ -57,8 +58,8 @@ class ConfigExecute extends PipelineStagePlugin with JupyterCompleter {
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (id, name, description, parsedURI, sql, validSQL, invalidKeys, authentication) match {
-      case (Right(id), Right(name), Right(description), Right(parsedURI), Right(sql), Right(validSQL), Right(invalidKeys), Right(authentication)) =>
+    (id, name, description, parsedURI, sql, validSQL, invalidKeys, authentication, outputView) match {
+      case (Right(id), Right(name), Right(description), Right(parsedURI), Right(sql), Right(validSQL), Right(invalidKeys), Right(authentication), Right(outputView)) =>
 
         val uri = if (isInputURI) Option(parsedURI) else None
 
@@ -68,6 +69,7 @@ class ConfigExecute extends PipelineStagePlugin with JupyterCompleter {
           name=name,
           description=description,
           inputURI=parsedURI,
+          outputView=outputView,
           sql=sql,
           sqlParams=sqlParams,
           params=params
@@ -77,10 +79,11 @@ class ConfigExecute extends PipelineStagePlugin with JupyterCompleter {
         stage.stageDetail.put("sql", sql)
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
         uri.foreach { uri => stage.stageDetail.put("inputURI", uri.toString) }
+        outputView.foreach { stage.stageDetail.put("outputView", _) }
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(id, name, description, parsedURI, sql, validSQL, invalidKeys, authentication).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, parsedURI, sql, validSQL, invalidKeys, authentication, outputView).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -94,6 +97,7 @@ case class ConfigExecuteStage(
     name: String,
     description: Option[String],
     inputURI: URI,
+    outputView: Option[String],
     sql: String,
     sqlParams: Map[String, String],
     params: Map[String, String]
@@ -163,6 +167,11 @@ object ConfigExecuteStage {
     }
 
     df.unpersist
+
+    // register view if defined
+    stage.outputView.foreach { outputView =>
+      if (arcContext.immutableViews) df.createTempView(outputView) else df.createOrReplaceTempView(outputView)
+    }
 
     Option(df)
   }
