@@ -4,6 +4,7 @@ import scala.collection.JavaConverters._
 import scala.util.Try
 
 import com.typesafe.config._
+import com.typesafe.config.ConfigException
 
 import org.apache.spark.sql._
 
@@ -36,6 +37,11 @@ object Plugins {
         val pluginType = getValue[String]("type")
         c = config.withOnlyPath("environments").resolveWith(arcContext.resolutionConfig).resolve()
         val environments = if (c.hasPath("environments")) c.getStringList("environments").asScala.toList else Nil
+        // lazy evaluate name
+        val name = Try {
+          c = config.withOnlyPath("name").resolveWith(arcContext.resolutionConfig).resolve()
+          getValue[String]("name")
+        }.getOrElse(Right(""))
 
         // read the resolution key
         c = config.withOnlyPath("resolution").resolveWith(arcContext.resolutionConfig).resolve()
@@ -56,8 +62,8 @@ object Plugins {
 
           (errors, instances)
         } else {
-          val instanceOrError: Either[List[StageError], T] = (resolution, pluginType) match {
-            case (Right(resolution), Right(pluginType)) => {
+          val instanceOrError: Either[List[StageError], T] = (resolution, pluginType, name) match {
+            case (Right(resolution), Right(pluginType), Right(name)) => {
               if (resolution == Resolution.Lazy) {
                 // defer resolution of the config
                 resolvePlugin(false, index, "ai.tripl.arc.plugins.pipeline.LazyEvaluator", c, plugins) match {
@@ -71,6 +77,7 @@ object Plugins {
                             val pluginMap = new java.util.HashMap[String, Object]()
                             pluginMap.put("type", s"${p.getClass.getName}:${p.version}")
                             stage.stageDetail.put("plugin", pluginMap)
+                            stage.stageDetail.put("name", name)
                           }
                         }
 
@@ -82,12 +89,19 @@ object Plugins {
                 }
               } else {
                 // resolve the config immediately
-                c = config.resolveWith(arcContext.resolutionConfig).resolve()
-                resolvePlugin(path.contains("plugins."), index, pluginType, c, plugins)
+                try {
+                  c = config.resolveWith(arcContext.resolutionConfig).resolve()
+                  resolvePlugin(path.contains("plugins."), index, pluginType, c, plugins)
+                } catch {
+                  case e: ConfigException.UnresolvedSubstitution => {
+                    Left(StageError(index, name, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), e.getMessage()) :: Nil) :: Nil)
+                  }
+                }
+
               }
             }
             case _ =>
-              val allErrors: Errors = List(resolution, pluginType).collect{ case Left(errs) => errs }.flatten
+              val allErrors: Errors = List(resolution, pluginType, name).collect{ case Left(errs) => errs }.flatten
               val err = StageError(index, path, c.origin.lineNumber, allErrors)
               Left(err :: Nil)
           }

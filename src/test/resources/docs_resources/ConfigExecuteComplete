@@ -2,7 +2,7 @@
   "type": "ConfigExecute",
   "id": "00000000-0000-0000-0000-000000000000",
   "name": "calculate dynamic variable",
-  "description": "lcalculate dynamic variable",
+  "description": "calculate dynamic variable",
   "environments": [
     "production",
     "test"

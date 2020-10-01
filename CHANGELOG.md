@@ -1,5 +1,9 @@
 # Change Log
 
+## NEXT
+
+- add better error messages to job failure if `lazy` evaluation is set.
+
 ## 3.4.0
 
 - add `resolution` tag for all stages to indicate `lazy` or `strict` resolution of stage variables. This can be used with `ConfigExecute` to generate runtime specific configuration variables.

@@ -21,6 +21,7 @@ import ai.tripl.arc.config.Error
 import ai.tripl.arc.config.Error._
 import ai.tripl.arc.util.log.LoggerFactory
 import ai.tripl.arc.transform.SQLTransformStage
+import ai.tripl.arc.plugins.pipeline.LazyEvaluatorStage
 import ai.tripl.arc.util._
 
 class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
@@ -687,5 +688,39 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, arcCtx)) => fail("expected error")
     }
   }
+
+  test("ConfigUtils: LazyEvaluator - ipynb") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    {
+      val targetFile0 = getClass.getResource("/conf/lazy_job_fail.ipynb").toString
+      val file = spark.read.option("wholetext", true).text(targetFile0)
+      val conf = ConfigUtils.readIPYNB(None, file.first.getString(0))
+      val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+      pipelineEither match {
+        case Left(err) => {
+          println(err)
+          assert(err.toString.contains("Could not resolve substitution to a value: ${LAZY_PARAMETER}"))
+        }
+        case Right((_, _)) => fail("should fail")
+      }
+    }
+
+    {
+      val targetFile = getClass.getResource("/conf/lazy_job_pass.ipynb").toString
+      val file = spark.read.option("wholetext", true).text(targetFile)
+      val conf = ConfigUtils.readIPYNB(None, file.first.getString(0))
+      val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+      pipelineEither match {
+        case Left(err) => fail(err.toString)
+        case Right((pipeline, _)) => {
+          assert(pipeline.stages(1).isInstanceOf[LazyEvaluatorStage])
+        }
+      }
+    }
+  }
+
 
 }
