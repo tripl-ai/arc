@@ -115,7 +115,6 @@ class HTTPTransform extends PipelineStagePlugin with JupyterCompleter {
   }
 }
 
-
 case class HTTPTransformStage(
     plugin: HTTPTransform,
     id: Option[String],
@@ -309,6 +308,8 @@ object HTTPTransformStage {
         }
       }
     }
+
+    if (!arcContext.isStreaming) repartitionedDF.rdd.setName(stage.outputView)
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {

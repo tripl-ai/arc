@@ -295,6 +295,8 @@ object HTTPExtractStage {
         }
       }
     }
+
+    if (!arcContext.isStreaming) repartitionedDF.rdd.setName(stage.outputView)
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))

@@ -170,6 +170,7 @@ object ConfigExecuteStage {
 
     // register view if defined
     stage.outputView.foreach { outputView =>
+      if (!arcContext.isStreaming) df.rdd.setName(outputView)
       if (arcContext.immutableViews) df.createTempView(outputView) else df.createOrReplaceTempView(outputView)
     }
 

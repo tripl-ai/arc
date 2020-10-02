@@ -289,6 +289,8 @@ object DelimitedExtractStage {
         }
       }
     }
+
+    if (!arcContext.isStreaming) repartitionedDF.rdd.setName(stage.outputView)
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {

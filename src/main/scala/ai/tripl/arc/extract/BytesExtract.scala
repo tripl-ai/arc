@@ -178,6 +178,8 @@ object BytesExtractStage {
       case Some(numPartitions) => df.repartition(numPartitions)
       case None => df
     }
+
+    if (!arcContext.isStreaming) repartitionedDF.rdd.setName(stage.outputView)
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     stage.stageDetail.put("inputFiles", java.lang.Integer.valueOf(repartitionedDF.inputFiles.length))
