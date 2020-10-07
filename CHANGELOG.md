@@ -1,6 +1,6 @@
 # Change Log
 
-## NEXT
+## 3.4.1
 
 - set name on Dataframe when `persist=true` to help understand persisted datasets when using the Spark UI.
 - add better error messages to job failure if `lazy` evaluation is set.
