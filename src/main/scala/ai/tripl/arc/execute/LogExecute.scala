@@ -120,16 +120,16 @@ object LogExecuteStage {
         override val detail = stage.stageDetail
       }
     }
-    val count = df.persist(arcContext.storageLevel).count
+    val rows = df.collect
 
-    if (df.count != 1 || df.schema.length != 1) {
-      throw new Exception(s"""${signature} Query returned ${count} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].""") with DetailException {
+    if (rows.length != 1 || rows.head.schema.length != 1) {
+      throw new Exception(s"""${signature} Query returned ${rows.length} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].""") with DetailException {
         override val detail = stage.stageDetail
       }
     }
 
     try {
-      val row = df.first
+      val row = rows.head
       val messageIsNull = row.isNullAt(0)
 
       if (messageIsNull) {
@@ -160,7 +160,7 @@ object LogExecuteStage {
       }
     } catch {
       case e: ClassCastException =>
-        throw new Exception(s"${signature} Query returned ${count} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
+        throw new Exception(s"${signature} Query returned ${rows.length} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
           override val detail = stage.stageDetail
         }
       case e: Exception with DetailException => throw e
@@ -168,8 +168,6 @@ object LogExecuteStage {
         override val detail = stage.stageDetail
       }
     }
-
-    df.unpersist
 
     Option(df)
   }

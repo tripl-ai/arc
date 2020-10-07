@@ -133,7 +133,7 @@ object ConfigExecuteStage {
     val rows = df.collect
 
     if (rows.length != 1 || rows.head.schema.length != 1) {
-      throw new Exception(s"""${signature} Query returned ${rows.length} rows of type [${rows.head.schema.map(f => f.dataType.simpleString).mkString(", ")}].""") with DetailException {
+      throw new Exception(s"""${signature} Query returned ${rows.length} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].""") with DetailException {
         override val detail = stage.stageDetail
       }
     }
@@ -162,7 +162,7 @@ object ConfigExecuteStage {
 
     } catch {
       case e: ClassCastException =>
-        throw new Exception(s"${signature} Query returned ${rows.length} rows of type [${rows.head.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
+        throw new Exception(s"${signature} Query returned ${rows.length} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
           override val detail = stage.stageDetail
         }
       case e: Exception with DetailException => throw e
