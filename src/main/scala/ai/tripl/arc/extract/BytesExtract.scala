@@ -178,6 +178,7 @@ object BytesExtractStage {
       case Some(numPartitions) => df.repartition(numPartitions)
       case None => df
     }
+
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     stage.stageDetail.put("inputFiles", java.lang.Integer.valueOf(repartitionedDF.inputFiles.length))
@@ -185,7 +186,7 @@ object BytesExtractStage {
     stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (stage.persist && !repartitionedDF.isStreaming) {
-      repartitionedDF.persist(arcContext.storageLevel)
+      spark.catalog.cacheTable(stage.outputView, arcContext.storageLevel)
       stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
     }
 
