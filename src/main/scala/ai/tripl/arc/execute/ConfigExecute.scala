@@ -39,7 +39,7 @@ class ConfigExecute extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputURI" :: "sql" :: "authentication" :: "sqlParams" :: "params" :: "outputView" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputURI" :: "sql" :: "authentication" :: "sqlParams" :: "params" :: "outputView" :: "persist" :: Nil
     val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
@@ -55,11 +55,12 @@ class ConfigExecute extends PipelineStagePlugin with JupyterCompleter {
     val sqlParams = readMap("sqlParams", c)
     val sql = if (isInputURI) inputSQL else inlineSQL
     val validSQL = sql |> injectSQLParams(source, sqlParams, false) _ |> validateSQL(source) _
+    val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (id, name, description, parsedURI, sql, validSQL, invalidKeys, authentication, outputView) match {
-      case (Right(id), Right(name), Right(description), Right(parsedURI), Right(sql), Right(validSQL), Right(invalidKeys), Right(authentication), Right(outputView)) =>
+    (id, name, description, parsedURI, sql, validSQL, invalidKeys, authentication, outputView, persist) match {
+      case (Right(id), Right(name), Right(description), Right(parsedURI), Right(sql), Right(validSQL), Right(invalidKeys), Right(authentication), Right(outputView), Right(persist)) =>
 
         val uri = if (isInputURI) Option(parsedURI) else None
 
@@ -72,6 +73,7 @@ class ConfigExecute extends PipelineStagePlugin with JupyterCompleter {
           outputView=outputView,
           sql=sql,
           sqlParams=sqlParams,
+          persist=persist,
           params=params
         )
 
@@ -80,6 +82,7 @@ class ConfigExecute extends PipelineStagePlugin with JupyterCompleter {
         stage.stageDetail.put("sqlParams", sqlParams.asJava)
         uri.foreach { uri => stage.stageDetail.put("inputURI", uri.toString) }
         outputView.foreach { stage.stageDetail.put("outputView", _) }
+        stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
 
         Right(stage)
       case _ =>
@@ -100,6 +103,7 @@ case class ConfigExecuteStage(
     outputView: Option[String],
     sql: String,
     sqlParams: Map[String, String],
+    persist: Boolean,
     params: Map[String, String]
   ) extends PipelineStage {
 
@@ -125,16 +129,17 @@ object ConfigExecuteStage {
         override val detail = stage.stageDetail
       }
     }
-    val count = df.persist(arcContext.storageLevel).count
 
-    if (df.count != 1 || df.schema.length != 1) {
-      throw new Exception(s"""${signature} Query returned ${count} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].""") with DetailException {
+    val rows = df.collect
+
+    if (rows.length != 1 || rows.head.schema.length != 1) {
+      throw new Exception(s"""${signature} Query returned ${rows.length} rows of type [${rows.head.schema.map(f => f.dataType.simpleString).mkString(", ")}].""") with DetailException {
         override val detail = stage.stageDetail
       }
     }
 
     try {
-      val row = df.first
+      val row = rows.head
       val messageIsNull = row.isNullAt(0)
 
       if (messageIsNull) {
@@ -157,7 +162,7 @@ object ConfigExecuteStage {
 
     } catch {
       case e: ClassCastException =>
-        throw new Exception(s"${signature} Query returned ${count} rows of type [${df.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
+        throw new Exception(s"${signature} Query returned ${rows.length} rows of type [${rows.head.schema.map(f => f.dataType.simpleString).mkString(", ")}].") with DetailException {
           override val detail = stage.stageDetail
         }
       case e: Exception with DetailException => throw e
@@ -166,12 +171,14 @@ object ConfigExecuteStage {
       }
     }
 
-    df.unpersist
-
     // register view if defined
     stage.outputView.foreach { outputView =>
-      if (!arcContext.isStreaming) df.rdd.setName(outputView)
       if (arcContext.immutableViews) df.createTempView(outputView) else df.createOrReplaceTempView(outputView)
+
+      if (stage.persist) {
+        spark.catalog.cacheTable(outputView, arcContext.storageLevel)
+        stage.stageDetail.put("records", java.lang.Long.valueOf(df.count))
+      }
     }
 
     Option(df)

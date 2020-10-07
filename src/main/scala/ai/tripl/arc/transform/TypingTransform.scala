@@ -222,7 +222,6 @@ object TypingTransformStage {
       }
     }
 
-    if (!arcContext.isStreaming) repartitionedDF.rdd.setName(stage.outputView)
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
@@ -230,7 +229,7 @@ object TypingTransformStage {
       stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
-        repartitionedDF.persist(arcContext.storageLevel)
+        spark.catalog.cacheTable(stage.outputView, arcContext.storageLevel)
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
         stage.stageDetail.put("values", java.lang.Long.valueOf(valueAccumulator.value))
         stage.stageDetail.put("errors", java.lang.Long.valueOf(errorAccumulator.value))

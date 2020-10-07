@@ -2,7 +2,9 @@
 
 ## NEXT
 
+- set name on Dataframe when `persist=true` to help understand persisted datasets when using the Spark UI.
 - add better error messages to job failure if `lazy` evaluation is set.
+- add support for `%configexecute` from Arc Jupyter notebooks.
 
 ## 3.4.0
 

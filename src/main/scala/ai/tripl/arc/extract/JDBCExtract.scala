@@ -223,14 +223,13 @@ object JDBCExtractStage {
       }
     }
 
-    if (!arcContext.isStreaming) repartitionedDF.rdd.setName(stage.outputView)
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     stage.stageDetail.put("outputColumns", java.lang.Integer.valueOf(repartitionedDF.schema.length))
     stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
     if (stage.persist) {
-      repartitionedDF.persist(arcContext.storageLevel)
+      spark.catalog.cacheTable(stage.outputView, arcContext.storageLevel)
       stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
     }
 
