@@ -221,6 +221,7 @@ object ParquetExtractStage {
         }
       }
     }
+
     if (arcContext.immutableViews) repartitionedDF.createTempView(stage.outputView) else repartitionedDF.createOrReplaceTempView(stage.outputView)
 
     if (!repartitionedDF.isStreaming) {
@@ -229,7 +230,7 @@ object ParquetExtractStage {
       stage.stageDetail.put("numPartitions", Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
-        repartitionedDF.persist(arcContext.storageLevel)
+        spark.catalog.cacheTable(stage.outputView, arcContext.storageLevel)
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
       }
     }

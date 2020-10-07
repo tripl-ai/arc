@@ -150,7 +150,7 @@ Database Inconsistency When writing data to targets like databases using the JDB
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/changelog/</guid>
-      <description>Change Log 3.4.0  add resolution tag for all stages to indicate lazy or strict resolution of stage variables. This can be used with ConfigExecute to generate runtime specific configuration variables. add ConfigExecute stage to allow dynamic creation of runtime variables. FIX revert DiffTransform and EqualityValidate to use sha2(to_json(struct())) rather than inbuilt Spark hash function due to high liklihood of collisions.  3.3.3  FIX standardise persist behavior logic in DiffTransform to match other stages.</description>
+      <description>Change Log 3.4.1  set name on Dataframe when persist=true to help understand persisted datasets when using the Spark UI. add better error messages to job failure if lazy evaluation is set. add support for %configexecute from Arc Jupyter notebooks.  3.4.0  add resolution tag for all stages to indicate lazy or strict resolution of stage variables. This can be used with ConfigExecute to generate runtime specific configuration variables. add ConfigExecute stage to allow dynamic creation of runtime variables.</description>
     </item>
     
     <item>

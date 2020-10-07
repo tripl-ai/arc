@@ -271,7 +271,7 @@ object AvroExtractStage {
       stage.stageDetail.put("numPartitions", java.lang.Integer.valueOf(repartitionedDF.rdd.partitions.length))
 
       if (stage.persist) {
-        repartitionedDF.persist(arcContext.storageLevel)
+        spark.catalog.cacheTable(stage.outputView, arcContext.storageLevel)
         stage.stageDetail.put("records", java.lang.Long.valueOf(repartitionedDF.count))
       }
     }

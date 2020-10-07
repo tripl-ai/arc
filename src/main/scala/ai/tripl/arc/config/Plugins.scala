@@ -4,6 +4,7 @@ import scala.collection.JavaConverters._
 import scala.util.Try
 
 import com.typesafe.config._
+import com.typesafe.config.ConfigException
 
 import org.apache.spark.sql._
 
@@ -36,6 +37,12 @@ object Plugins {
         val pluginType = getValue[String]("type")
         c = config.withOnlyPath("environments").resolveWith(arcContext.resolutionConfig).resolve()
         val environments = if (c.hasPath("environments")) c.getStringList("environments").asScala.toList else Nil
+
+        // try to evaluate name
+        val name = Try {
+          c = config.withOnlyPath("name").resolveWith(arcContext.resolutionConfig).resolve()
+          c.getString("name")
+        }.getOrElse("")
 
         // read the resolution key
         c = config.withOnlyPath("resolution").resolveWith(arcContext.resolutionConfig).resolve()
@@ -70,6 +77,7 @@ object Plugins {
                           case Right(p) => {
                             val pluginMap = new java.util.HashMap[String, Object]()
                             pluginMap.put("type", s"${p.getClass.getName}:${p.version}")
+                            pluginMap.put("name", name)
                             stage.stageDetail.put("plugin", pluginMap)
                           }
                         }
@@ -82,8 +90,13 @@ object Plugins {
                 }
               } else {
                 // resolve the config immediately
-                c = config.resolveWith(arcContext.resolutionConfig).resolve()
-                resolvePlugin(path.contains("plugins."), index, pluginType, c, plugins)
+                try {
+                  c = config.resolveWith(arcContext.resolutionConfig).resolve()
+                  resolvePlugin(path.contains("plugins."), index, pluginType, c, plugins)
+                } catch {
+                  case e: ConfigException.UnresolvedSubstitution => Left(StageError(index, name, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), e.getMessage()) :: Nil) :: Nil)
+                }
+
               }
             }
             case _ =>

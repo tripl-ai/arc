@@ -206,7 +206,7 @@ object ConfigUtils {
 
         val (config, lifecycle, stages) = parseIPYNBCells(cells)
 
-        s"""
+        val conf = s"""
           |{
           |"plugins": {
           |"config": [$config],
@@ -214,6 +214,9 @@ object ConfigUtils {
           |},
           |"stages": [$stages]
           |}""".stripMargin
+
+        // println(conf)
+        conf
     } else {
       throw new Exception(s"""file ${uri} does not appear to be a valid arc notebook. Has kernelspec: '${kernelspecName}'.""")
     }
@@ -244,11 +247,12 @@ object ConfigUtils {
         (
           (!behavior.startsWith("%") && cell.length > 0) // non-magic, non-empty cells assumed to be arc
           || behavior.startsWith("%arc") // explicit arc cells
-          || behavior.startsWith("%sql") // explicit sql cells
-          || behavior.startsWith("%sqlvalidate") // explicit sqlvalidate cells
+          || behavior.startsWith("%configexecute") // explicit log cells
           || behavior.startsWith("%log") // explicit log cells
           || behavior.startsWith("%metadatafilter") // explicit log cells
           || behavior.startsWith("%metadatavalidate") // explicit log cells
+          || behavior.startsWith("%sql") // explicit sql cells
+          || behavior.startsWith("%sqlvalidate") // explicit sqlvalidate cells
         )
       }
       .map { case (cell, index) =>
@@ -295,6 +299,18 @@ object ConfigUtils {
                 |  "environments": [${environments}],
                 |  "sql": \"\"\"${command}\"\"\",
                 |  "sqlParams": {${sqlParams}},
+                |  ${dynamicArguments}
+                |}""".stripMargin
+              case b if b.startsWith("%configexecute") =>
+                s"""{
+                |  "type": "ConfigExecute",
+                |  "name": "${args.getOrElse("name", s"notebook cell ${index}")}",
+                |  "description": "${args.getOrElse("description", "")}",
+                |  "environments": [${environments}],
+                |  "sql": \"\"\"${command}\"\"\",
+                |  "sqlParams": {${sqlParams}},
+                |  "outputView": "${args.getOrElse("outputView", "")}",
+                |  "persist": ${args.getOrElse("persist", "false")},
                 |  ${dynamicArguments}
                 |}""".stripMargin
               case b if b.startsWith("%metadatafilter") =>

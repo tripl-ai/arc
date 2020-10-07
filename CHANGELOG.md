@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.4.1
+
+- set name on Dataframe when `persist=true` to help understand persisted datasets when using the Spark UI.
+- add better error messages to job failure if `lazy` evaluation is set.
+- add support for `%configexecute` from Arc Jupyter notebooks.
+
 ## 3.4.0
 
 - add `resolution` tag for all stages to indicate `lazy` or `strict` resolution of stage variables. This can be used with `ConfigExecute` to generate runtime specific configuration variables.
