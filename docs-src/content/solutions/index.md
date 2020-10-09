@@ -32,109 +32,194 @@ Note that this method will require some cleanup activity to be performed or the 
 
 ## Delta Processing
 
-{{<note title="Delta Processing">}}
-Databricks have open sourced their Spark Delta Processing framework [DeltaLake](https://delta.io) which provides a much safer (transactional) way to perform updates to a dataset which should be used to prevent stale reads or corruption. See [DeltaLakeExtract](../extract/#deltalakeextract) and [DeltaLakeLoad](../load/#deltalakeload) for implementations.
-{{</note>}}
-
-A common pattern is to reduce the amount of computation by processing only new files thereby reducing the amount of processing (and therefore cost) of expensive operations like the [TypingTransform](../transform/#typingtransform).
-
-A simple way to do this is to use the `glob` capabilities of Spark to [extract](../extract) a subset of files and then use a [SQLTransform](../transform/#sqltransform) to merge them with a previous state stored in something like Parquet. It is suggested to have a large date overlap with the previous state dataset to avoid missed data. Be careful with this pattern as it assumes that the previous state is correct/complete and that no input files are late arriving.
+[Databricks DeltaLake](https://delta.io) is an open-source storage layer that brings [ACID transactions](https://en.wikipedia.org/wiki/ACID) to Spark when used with non-transactional file systems like [Amazon S3](https://aws.amazon.com/s3/) or [Google Cloud Storage](https://cloud.google.com/storage/). Better yet, it allows the use of a permission model which makes any written data immutable and fully versioned meaning that it is possible to 'time-travel' back to a previous state at any stage in the future. This example aims to demonstrate how to process only specific partitions of a dataset efficiently so the benefit of fully verisioned data is retained and unnescessary compute/storage is minimised as much as possible.
 
 ### Example
 
-Assuming an input file structure like:
+Because [Databricks DeltaLake](https://delta.io) data is immutable, `updates` can be difficult without re-writing the full dataset each day (which can be very inefficient as data grows). In this example imagine an accounting scenario where transactions are received periodically and can ammend prior transactions:
 
-```bash
-hdfs://datalake/input/customer/customers_2019-02-01.csv
-hdfs://datalake/input/customer/customers_2019-02-02.csv
-hdfs://datalake/input/customer/customers_2019-02-03.csv
-hdfs://datalake/input/customer/customers_2019-02-04.csv
-hdfs://datalake/input/customer/customers_2019-02-05.csv
-hdfs://datalake/input/customer/customers_2019-02-06.csv
-hdfs://datalake/input/customer/customers_2019-02-07.csv
-```
+#### Initial Set (named `intial`):
 
-Add an additional environment variable to the `docker run` command which will calculate the delta processing period. By using GNU [date](https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html) the date maths of crossing month/year boundaries is easy and the formatting can be changed to suit your file naming convention.
+| transaction_date | transaction_id | amount |
+|------|------|------|
+|2016-12-19|064a98f8-0e5f-4312-98ec-9d0b370c259b|14.23|
+|2016-12-19|7721fced-103c-46cc-a205-700f98c018c2|54.00|
+|2016-12-19|adbe4162-4696-4a13-bce5-d1f5a4a91c58|19.99|
+|2016-12-20|7b852e4b-3a80-43e9-a496-7424bc06a1f1|32.98|
+|2016-12-20|e1fa3eca-cd12-43a4-b1a1-b3fd85362ce1|104.00|
+|2016-12-21|859c38b8-902d-41fc-9c73-30ff84865b76|18.20|
 
-```bash
--e ETL_CONF_DELTA_PERIOD="$(date --date='3 days ago' +%Y-%m-%d),$(date --date='2 days ago' +%Y-%m-%d),$(date --date='1 days ago' +%Y-%m-%d),$(date +%Y-%m-%d),$(date --date='1 days' +%Y-%m-%d)"
-```
-
-Which will expose and environment variable that looks like `ETL_CONF_DELTA_PERIOD=2019-02-04,2019-02-05,2019-02-06,2019-02-07,2019-02-08`.
-
-Alternatively, a [Dynamic Configuration Plugin](../extend/#dynamic-configuration-plugins) like the [arc-deltaperiod-config-plugin](https://github.com/tripl-ai/arc-deltaperiod-config-plugin) can be used to generate a similar list of dates.
-
-This can then be used to read just the files which match the `glob` pattern:
+To minimise the amount of work done for each execution we can use partitioning to write only the parititions that are impacted (`2016-12-19`, `2016-12-20`, `2016-12-21`):
 
 ```json
 {
-  "type": "DelimitedExtract",
-  "name": "load customer extract deltas",
+  "type": "DeltaLakeLoad",
+  "name": "write initial data set",
   "environments": [
     "production",
     "test"
   ],
-  "inputURI": "hdfs://datalake/input/customer/customers_{"${ETL_CONF_DELTA_PERIOD}"}.csv",
-  "outputView": "customer_delta_untyped"
-},
-{
-  "type": "TypingTransform",
-  "name": "apply data types to only the delta records",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": "hdfs://datalake/metadata/customer.json",
-  "inputView": "customer_delta_untyped",
-  "outputView": "customer_delta"
-},
-{
-  "type": "ParquetExtract",
-  "name": "load customer snapshot",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": "hdfs://datalake/output/customer/customers.parquet",
-  "outputView": "customer_snapshot"
-},
-{
-  "type": "SQLTransform",
-  "name": "merge the two datasets",
-  "environments": [
-    "production",
-    "test"
-  ],
-  "inputURI": "hdfs://datalake/sql/select_most_recent_customer.sql",
-  "outputView": "customer"
+  "inputView": "initial",
+  "outputURI": "transactions.delta",
+  "partitionBy": ["transaction_date"],
+  "saveMode": "Overwrite"
 }
 ```
 
-In this case the files for dates `2019-02-01,2019-02-02,2019-02-03` will not be read as they are not in the `${ETL_CONF_DELTA_PERIOD}` input array.
+#### Next Set (named `next`):
 
-A SQL `WINDOW` can then be used to find the most recent record:
+| transaction_date | transaction_id | amount |
+|------|------|------|
+|2016-12-20|e1fa3eca-cd12-43a4-b1a1-b3fd85362ce1|103.50|
+|2016-12-21|143f012d-7e7b-4534-beed-74784b91ab9f|42.95|
+|2016-12-21|c553bbd4-9520-44e6-bb44-0d79a7203ca6|300.00|
+|2016-12-21|d4f1cb26-d9f2-4283-9a36-25f3922d3715|1.10|
+|2016-12-22|bec29a0e-a4b5-439c-8414-eb3a35873568|12.90|
+
+The second set data has arrived and contains:
+
+- 0 records for `2016-12-19` so we should do not work on that partition as it will not change.
+- 1 record `2016-12-20` with `transaction_id=e1fa3eca-cd12-43a4-b1a1-b3fd85362ce1` which is an `UPDATE` operation against an existing partition.
+- 4 records for `2016-12-20` and `2016-12-21` which are `INSERT` operations but against existing partitions.
+- 1 record for `2016-12-22` which is an `INSERT` against a new `2016-12-22` partition.
+
+To minimise the amount of work done we first should filter the existing data to only the partitions impacted by the new data. Unfortuntely we only know which partitions are impacted at runtime so we need to calculate a dynamic list of partitions based on the input data:
 
 ```sql
--- select only the most recent update record for each 'customer_id'
-SELECT *
-FROM (
-     -- rank the dataset by the 'last_updated' timestamp for each primary keys of the table ('customer_id')
-    SELECT
-         *
-        ,ROW_NUMBER() OVER (PARTITION BY 'customer_id' ORDER BY COALESCE('last_updated', CAST('1970-01-01 00:00:00' AS TIMESTAMP)) DESC) AS row_number
-    FROM (
-        SELECT *
-        FROM customer_snapshot
-
-        UNION ALL
-
-        SELECT *
-        FROM customer_delta
-    ) customers
-) customers
-WHERE row_number = 1
+%configexecute name="configexecute" environments=production,test
+SELECT
+  TO_JSON(
+    NAMED_STRUCT(
+      'transaction_dates', (SELECT ARRAY_JOIN(COLLECT_LIST(DISTINCT CONCAT('CAST(\'', transaction_date, '\' AS DATE)')), ',') FROM next)
+    )
+  ) AS parameters
 ```
 
+which produces a JSON formatted object like:
+
+```json
+{"transaction_dates":"CAST('2016-12-22' AS DATE),CAST('2016-12-21' AS DATE),CAST('2016-12-20' AS DATE)"}
+```
+
+This `transaction_dates` variable can now be used like any other Arc variable to `push down` the date filter to the `DeltaLakeExtract` reader and only read the affected partitions. First set up the link to the full dataset (from which Spark will infer the partition structure):
+
+```json
+{
+  "type": "DeltaLakeExtract",
+  "name": "create pointer to transactions data",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "transactions.delta",
+  "outputView": "transactions_raw"
+}
+```
+
+Then use a `WHERE` clause to force reading just the three (`2016-12-20,2016-12-21,2016-12-22`) partitions (of which only `2016-12-20,2016-12-21` actually exist).
+
+{{<note title="Lazy Resolution">}}
+By default Arc will try to resolve all variables at the start of the job so the job can fail as early as possible if, for example, the `transaction_dates` variable was not provided. In this case because we don't know the value of `transaction_dates` until we process the data we need to explicitly tell Arc to try to resolve the `transaction_dates` parameter in the `SQLTransform` below until the stage needs to be executed.
+
+To set lazy resolution on any stage set the value `resolution=lazy` (or `"resolution": "lazy"` in JSON).
+{{</note>}}
+
+```sql
+%sql name="transactions_raw" outputView=previous environments=production,test sqlParams=transaction_dates=${transaction_dates} persist=true resolution=lazy
+SELECT
+  *
+FROM transactions_raw
+WHERE transaction_date IN (${transaction_dates})
+ORDER BY transaction_date
+```
+
+Now that we have loaded up the previous data for only the partitions we are interested in we can compare them against the new set to calculate the differences:
+
+```json
+{
+  "type": "DiffTransform",
+  "name": "DiffTransform",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputLeftView": "previous",
+  "inputLeftKeys": ["transaction_date", "transaction_id"],
+  "inputRightView": "next",
+  "inputRightKeys": ["transaction_date", "transaction_id"],
+  "outputLeftView": "outputLeftView",
+  "outputIntersectionView": "outputIntersectionView",
+  "outputRightView": "outputRightView"
+}
+```
+
+Next we are going to reconstruct the output dataset by applying `UNION ALL`. The tricky bit here is that we need to copy forward records that were in the `previous` dataset but not in the `next` dataset (i.e. `outputLeftView`) as we are going to write the full partition back with any `INSERT`/`UPDATE` records included - again due to the immutable nature of `DeltaLake`.
+
+```sql
+%sql name="merge the differences" outputView=merge environments=production,test persist=true
+SELECT
+*
+FROM (
+  -- these records are not impacted by the join but have to be rewritten
+  SELECT *
+  FROM outputLeftView
+
+  UNION ALL
+
+  -- these are the update records
+  SELECT DISTINCT
+    *
+  FROM (
+    SELECT right.* FROM outputIntersectionView
+  )
+
+  UNION ALL
+
+  -- these are the new records
+  SELECT
+    *
+  FROM outputRightView
+)
+ORDER BY transaction_date, transaction_id
+```
+
+Finally we need to write the new version of the `transactions.delta` but only write to the partitions affected. The key here is specifying the `partitionBy` and `options.replaceWhere` keys to instruct `DeltaLakeLoad` to only replace the specified partitions. This also requires `resolution=lazy` as we do not know which partitions will be affected until runtime.
+
+```json
+{
+  "type": "DeltaLakeLoad",
+  "name": "write the updated data set",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "merge",
+  "outputURI": "transactions.delta",
+  "partitionBy": ["transaction_date"],
+  "saveMode": "Overwrite",
+  "options": {
+    "replaceWhere": "transaction_date IN ("${transaction_dates}")",
+  }
+}
+```
+
+This pattern should be able to be used with very large datasets, be able to be run many times with the same input data and time travel is available like:
+
+```json
+{
+  "type": "DeltaLakeExtract",
+  "name": "load the initial dataset",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "transactions.delta",
+  "outputView": "outputView",
+  "options": {
+    "relativeVersion": -1
+  }
+}
+```
 
 ## Duplicate Keys
 
@@ -410,6 +495,112 @@ To produce:
 |success|2  |true  |3         |
 +-------+---+------+----------+
 ```
+
+## Read Optimisation
+
+{{<note title="Read Optimisation">}}
+Databricks have open sourced their Spark Delta Processing framework [DeltaLake](https://delta.io) which provides a much safer (transactional) way to perform updates to a dataset which should be used to prevent stale reads or corruption. See [DeltaLakeExtract](../extract/#deltalakeextract) and [DeltaLakeLoad](../load/#deltalakeload) for implementations.
+{{</note>}}
+
+A common pattern is to reduce the amount of computation by processing only new files thereby reducing the amount of processing (and therefore cost) of expensive operations like the [TypingTransform](../transform/#typingtransform).
+
+A simple way to do this is to use the `glob` capabilities of Spark to [extract](../extract) a subset of files and then use a [SQLTransform](../transform/#sqltransform) to merge them with a previous state stored in something like Parquet. It is suggested to have a large date overlap with the previous state dataset to avoid missed data. Be careful with this pattern as it assumes that the previous state is correct/complete and that no input files are late arriving.
+
+### Example
+
+Assuming an input file structure like:
+
+```bash
+hdfs://datalake/input/customer/customers_2019-02-01.csv
+hdfs://datalake/input/customer/customers_2019-02-02.csv
+hdfs://datalake/input/customer/customers_2019-02-03.csv
+hdfs://datalake/input/customer/customers_2019-02-04.csv
+hdfs://datalake/input/customer/customers_2019-02-05.csv
+hdfs://datalake/input/customer/customers_2019-02-06.csv
+hdfs://datalake/input/customer/customers_2019-02-07.csv
+```
+
+Add an additional environment variable to the `docker run` command which will calculate the delta processing period. By using GNU [date](https://www.gnu.org/software/coreutils/manual/html_node/Examples-of-date.html) the date maths of crossing month/year boundaries is easy and the formatting can be changed to suit your file naming convention.
+
+```bash
+-e ETL_CONF_DELTA_PERIOD="$(date --date='3 days ago' +%Y-%m-%d),$(date --date='2 days ago' +%Y-%m-%d),$(date --date='1 days ago' +%Y-%m-%d),$(date +%Y-%m-%d),$(date --date='1 days' +%Y-%m-%d)"
+```
+
+Which will expose and environment variable that looks like `ETL_CONF_DELTA_PERIOD=2019-02-04,2019-02-05,2019-02-06,2019-02-07,2019-02-08`.
+
+Alternatively, a [Dynamic Configuration Plugin](../extend/#dynamic-configuration-plugins) like the [arc-deltaperiod-config-plugin](https://github.com/tripl-ai/arc-deltaperiod-config-plugin) can be used to generate a similar list of dates.
+
+This can then be used to read just the files which match the `glob` pattern:
+
+```json
+{
+  "type": "DelimitedExtract",
+  "name": "load customer extract deltas",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/input/customer/customers_{"${ETL_CONF_DELTA_PERIOD}"}.csv",
+  "outputView": "customer_delta_untyped"
+},
+{
+  "type": "TypingTransform",
+  "name": "apply data types to only the delta records",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/metadata/customer.json",
+  "inputView": "customer_delta_untyped",
+  "outputView": "customer_delta"
+},
+{
+  "type": "ParquetExtract",
+  "name": "load customer snapshot",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/output/customer/customers.parquet",
+  "outputView": "customer_snapshot"
+},
+{
+  "type": "SQLTransform",
+  "name": "merge the two datasets",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/select_most_recent_customer.sql",
+  "outputView": "customer"
+}
+```
+
+In this case the files for dates `2019-02-01,2019-02-02,2019-02-03` will not be read as they are not in the `${ETL_CONF_DELTA_PERIOD}` input array.
+
+A SQL `WINDOW` can then be used to find the most recent record:
+
+```sql
+-- select only the most recent update record for each 'customer_id'
+SELECT *
+FROM (
+     -- rank the dataset by the 'last_updated' timestamp for each primary keys of the table ('customer_id')
+    SELECT
+         *
+        ,ROW_NUMBER() OVER (PARTITION BY 'customer_id' ORDER BY COALESCE('last_updated', CAST('1970-01-01 00:00:00' AS TIMESTAMP)) DESC) AS row_number
+    FROM (
+        SELECT *
+        FROM customer_snapshot
+
+        UNION ALL
+
+        SELECT *
+        FROM customer_delta
+    ) customers
+) customers
+WHERE row_number = 1
+```
+
 
 ## Testing with Parquet
 
