@@ -15,10 +15,18 @@ import ai.tripl.arc.util.ControlUtils.using
 
 object CloudUtils {
 
+  // com.amazonaws.SDKGlobalConfiguration.AWS_WEB_IDENTITY_ENV_VAR
+  // com.amazonaws.SDKGlobalConfiguration.AWS_ROLE_ARN_ENV_VAR
+  val webIdentityTokenCredentialsProvider = (sys.env.get("AWS_WEB_IDENTITY_TOKEN_FILE"), sys.env.get("AWS_ROLE_ARN")) match {
+    case (Some(_), Some(_)) => ",com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
+    case _ => ""
+  }
+
   // this is the default list of providers with additional providers appended:
   // com.amazonaws.auth.ContainerCredentialsProvider to support Arc inside ECS services with taskRoleArn defined
+  // com.amazonaws.auth.WebIdentityTokenCredentialsProvider to support Arc inside EKS services with roleArn and roleSessionName if the environment variables exist
   // org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider to support anonymous credentials
-  val defaultAWSProvidersOverride = "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider,com.amazonaws.auth.EnvironmentVariableCredentialsProvider,com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider,org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider"
+  val defaultAWSProvidersOverride = s"org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider,com.amazonaws.auth.EnvironmentVariableCredentialsProvider,com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider${webIdentityTokenCredentialsProvider},org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider"
 
   def setHadoopConfiguration(authentication: Option[API.Authentication])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
     import spark.sparkContext.{hadoopConfiguration => hc}
@@ -53,7 +61,7 @@ object CloudUtils {
         bucket.foreach { bucket => hc.set(s"fs.s3a.bucket.$bucket.aws.credentials.provider", "com.amazonaws.auth.EnvironmentVariableCredentialsProvider")}
       }
       case Some(API.Authentication.AmazonIAM(bucket, encType, kmsId, customKey)) => {
-        bucket.foreach { bucket => hc.set(s"fs.s3a.bucket.$bucket.aws.credentials.provider", "com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider")}
+        bucket.foreach { bucket => hc.set(s"fs.s3a.bucket.$bucket.aws.credentials.provider", s"com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider${webIdentityTokenCredentialsProvider}")}
         var algorithm = "None"
         var key = "None"
 
