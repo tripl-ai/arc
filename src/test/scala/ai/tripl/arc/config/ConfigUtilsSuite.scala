@@ -722,5 +722,46 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("Test duplicate stage id") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    val conf = """{
+      "stages": [
+        {
+          "id": "27813955-7e15-49fd-954c-d79fa1b5f976",
+          "type": "SQLTransform",
+          "name": "embedded pipeline",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "sql": "SELECT 'key' AS key, 'value' AS value",
+          "outputView": "outputView"
+        },
+        {
+          "id": "27813955-7e15-49fd-954c-d79fa1b5f976",
+          "type": "SQLTransform",
+          "name": "embedded pipeline",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "sql": "SELECT 'key' AS key, 'value' AS value",
+          "outputView": "outputView",
+          "badkey": ""
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(errors) => assert(errors.toString.contains("List(ConfigError(stages,Some(14),duplicate stage id '27813955-7e15-49fd-954c-d79fa1b5f976' found within job), ConfigError(badkey,Some(24),Invalid attribute 'badkey'.))"))
+      case Right((_, _)) => fail("should fail")
+    }
+  }
+
 
 }
