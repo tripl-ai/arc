@@ -700,10 +700,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       val conf = ConfigUtils.readIPYNB(None, file.first.getString(0))
       val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
       pipelineEither match {
-        case Left(err) => {
-          println(err)
-          assert(err.toString.contains("Could not resolve substitution to a value: ${LAZY_PARAMETER}"))
-        }
+        case Left(err) => assert(err.toString.contains("Could not resolve substitution to a value: ${LAZY_PARAMETER}"))
         case Right((_, _)) => fail("should fail")
       }
     }
