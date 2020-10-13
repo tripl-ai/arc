@@ -46,6 +46,7 @@ object ARC {
     val commandLineArguments = clArgs.toMap
 
     // configurations
+    val lintOnly = Try(commandLineArguments.get("etl.config.lintOnly").orElse(envOrNone("ETL_CONF_LINT_ONLY")).get.toBoolean).getOrElse(false)
     val isStreaming = Try(commandLineArguments.get("etl.config.streaming").orElse(envOrNone("ETL_CONF_STREAMING")).get.toBoolean).getOrElse(false)
     val ignoreEnvironments = Try(commandLineArguments.get("etl.config.ignoreEnvironments").orElse(envOrNone("ETL_CONF_IGNORE_ENVIRONMENTS")).get.toBoolean).getOrElse(false)
     val enableStackTrace = Try(commandLineArguments.get("etl.config.enableStackTrace").orElse(envOrNone("ETL_CONF_ENABLE_STACKTRACE")).get.toBoolean).getOrElse(false)
@@ -108,6 +109,7 @@ object ARC {
           .field("event", "exit")
           .field("status", "failure")
           .field("success", java.lang.Boolean.valueOf(false))
+          .field("lintOnly", java.lang.Boolean.valueOf(lintOnly))
           .field("duration", System.currentTimeMillis() - startTime)
           .field("reason", detail)
           .log()
@@ -194,6 +196,7 @@ object ARC {
         .field("locale", Locale.getDefault.toString)
         .field("environment", environment.getOrElse(""))
         .field("storageLevel", storageLevelName)
+        .field("lintOnly", java.lang.Boolean.valueOf(lintOnly))
         .field("immutableViews", java.lang.Boolean.valueOf(arcContext.immutableViews))
         .field("policyIPYNB", java.lang.Boolean.valueOf(arcContext.ipynb))
         .field("policyInlineSQL", java.lang.Boolean.valueOf(arcContext.inlineSQL))
@@ -227,6 +230,7 @@ object ARC {
           .field("locale", Locale.getDefault.toString)
           .field("environment", environment.getOrElse(""))
           .field("storageLevel", storageLevelName)
+          .field("lintOnly", java.lang.Boolean.valueOf(lintOnly))
           .field("immutableViews", java.lang.Boolean.valueOf(arcContext.immutableViews))
           .field("policyIPYNB", java.lang.Boolean.valueOf(arcContext.ipynb))
           .field("policyInlineSQL", java.lang.Boolean.valueOf(arcContext.inlineSQL))
@@ -292,7 +296,9 @@ object ARC {
     val error: Boolean = pipelineConfig match {
       case Right((pipeline, ctx)) =>
         try {
-          ARC.run(pipeline)(spark, logger, ctx)
+          if (!lintOnly) {
+            ARC.run(pipeline)(spark, logger, ctx)
+          }
           false
         } catch {
           case e: Exception with DetailException =>
@@ -310,6 +316,7 @@ object ARC {
               .field("event", "exit")
               .field("status", "failure")
               .field("success", java.lang.Boolean.valueOf(false))
+              .field("lintOnly", java.lang.Boolean.valueOf(lintOnly))
               .field("duration", System.currentTimeMillis() - startTime)
               .map("stage", e.detail.asJava)
               .log()
@@ -332,6 +339,7 @@ object ARC {
               .field("event", "exit")
               .field("status", "failure")
               .field("success", java.lang.Boolean.valueOf(false))
+              .field("lintOnly", java.lang.Boolean.valueOf(lintOnly))
               .field("duration", System.currentTimeMillis() - startTime)
               .field("reason", detail)
               .log()
@@ -344,6 +352,7 @@ object ARC {
           .field("event", "exit")
           .field("status", "failure")
           .field("success", java.lang.Boolean.valueOf(false))
+          .field("lintOnly", java.lang.Boolean.valueOf(lintOnly))
           .field("duration", System.currentTimeMillis() - startTime)
           .list("reason", ai.tripl.arc.config.Error.pipelineErrorJSON(errors))
           .log()
@@ -360,6 +369,7 @@ object ARC {
           .field("event", "exit")
           .field("status", "success")
           .field("success", java.lang.Boolean.valueOf(true))
+          .field("lintOnly", java.lang.Boolean.valueOf(lintOnly))
           .field("duration", System.currentTimeMillis() - startTime)
           .log()
       }
