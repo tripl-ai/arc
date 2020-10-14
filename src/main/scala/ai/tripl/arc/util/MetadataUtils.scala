@@ -15,7 +15,7 @@ import org.apache.spark.sql.types._
 
 object MetadataUtils {
 
-  // convertes the schema of an input dataframe into a dataframe [name, nullable, type, metadata]
+  // converts the schema of an input dataframe into a dataframe [name, nullable, type, metadata]
   def createMetadataDataframe(input: DataFrame)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
     import spark.implicits._
 
