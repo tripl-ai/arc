@@ -2,6 +2,7 @@
 
 ## NEXT
 
+- add `etl.config.lintOnly` (`ETL_CONF_LINT_ONLY`) option to only validate the configuration and not run the job.
 - add validation that stage `id` values are unique within the job.
 - add `StatisticsExtract` stage.
 
