@@ -2,6 +2,7 @@
 
 ## NEXT
 
+- add validation that stage `id` values are unique within the job.
 - add `StatisticsExtract` stage.
 
 ## 3.4.1
