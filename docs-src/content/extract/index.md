@@ -689,6 +689,39 @@ The `SASExtract` stage reads a collection from SAS `sas7bdat` binary file and re
 {{< readfile file="/resources/docs_resources_plugins/SASExtractComplete" highlight="json" >}}
 
 
+## StatisticsExtract
+##### Since: 3.5.0 - Supports Streaming: True
+
+The `StatisticsExtract` stage extracts the column statistics from to an input `Dataframe` and returns a `DataFrame`.
+
+It differs from the Spark inbuilt `summary` by:
+
+- operates on all data types.
+- returns row-based data rather than column-based (i.e. each input column is one row in the output)
+- `count_distinct` and `null_count` additional metrics
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|approximate|Boolean|false|Whether to calculate `approximate` statistics or full `population` based statistics (longer runtime).<br><br>Default: `true`.|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/StatisticsExtractMin" highlight="json" >}}
+
+#### Complete
+{{< readfile file="/resources/docs_resources/StatisticsExtractComplete" highlight="json" >}}
+
+
 ## TextExtract
 ##### Since: 1.2.0 - Supports Streaming: True
 

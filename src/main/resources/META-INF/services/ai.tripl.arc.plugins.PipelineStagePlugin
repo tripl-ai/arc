@@ -14,6 +14,7 @@ ai.tripl.arc.extract.MetadataExtract
 ai.tripl.arc.extract.ORCExtract
 ai.tripl.arc.extract.ParquetExtract
 ai.tripl.arc.extract.RateExtract
+ai.tripl.arc.extract.StatisticsExtract
 ai.tripl.arc.extract.TextExtract
 ai.tripl.arc.load.AvroLoad
 ai.tripl.arc.load.ConsoleLoad
