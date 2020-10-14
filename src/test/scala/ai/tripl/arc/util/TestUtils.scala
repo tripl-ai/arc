@@ -37,12 +37,12 @@ case class KnownData(
 )
 
 object TestUtils {
-    def getLogger()(implicit spark: SparkSession): ai.tripl.arc.util.log.logger.Logger = {
+    def getLogger(appender: Option[InMemoryLoggerAppender] = None)(implicit spark: SparkSession): ai.tripl.arc.util.log.logger.Logger = {
         val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
         val logger = LoggerFactory.getLogger(spark.sparkContext.applicationId)
         Logger.getLogger("org").setLevel(Level.ERROR)
         Logger.getLogger("breeze").setLevel(Level.ERROR)
-
+        appender.foreach { Logger.getLogger(spark.sparkContext.applicationId).addAppender(_) }
         logger
     }
 
