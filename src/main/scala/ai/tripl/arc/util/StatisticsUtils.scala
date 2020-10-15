@@ -24,7 +24,17 @@ object StatisticsUtils {
   // based heavily on org.apache.spark.sql.execution.stat.StatFunctions.summary
   def createStatisticsDataframe(input: DataFrame, approximate: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
 
-    val inputColumns = input.queryExecution.sparkPlan.output
+    val inputColumns = input.queryExecution.sparkPlan.output.filter(field =>
+      field.dataType.isInstanceOf[BooleanType]
+      || field.dataType.isInstanceOf[DateType]
+      || field.dataType.isInstanceOf[DecimalType]
+      || field.dataType.isInstanceOf[DoubleType]
+      || field.dataType.isInstanceOf[IntegerType]
+      || field.dataType.isInstanceOf[LongType]
+      || field.dataType.isInstanceOf[StringType]
+      || field.dataType.isInstanceOf[TimestampType]
+      || field.dataType.isInstanceOf[NullType]
+    )
 
     // create generic expressions
     val countExpr = (child: Expression) => Count(child).toAggregateExpression()
