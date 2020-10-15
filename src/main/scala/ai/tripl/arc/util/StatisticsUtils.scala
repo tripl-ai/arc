@@ -46,6 +46,9 @@ object StatisticsUtils {
     val approxStddevExpr = (child: Expression) => StddevSamp(child).toAggregateExpression()
     val minExpr = (child: Expression) => Min(child).toAggregateExpression()
     val maxExpr = (child: Expression) => Max(child).toAggregateExpression()
+    val minColLengthExpr = (child: Expression) => Min(Length(child)).toAggregateExpression()
+    val avgColLengthExpr = (child: Expression) => Floor(Average(Length(child)).toAggregateExpression())
+    val maxColLengthExpr = (child: Expression) => Max(Length(child)).toAggregateExpression()
     val percentile25Expr = (child: Expression) => {
       GetArrayItem(
         new Percentile(child,
@@ -100,9 +103,12 @@ object StatisticsUtils {
     val statistics = Seq(
         Statistic("count", countExpr),
         Statistic("distinct_count", if (approximate) approxDistinctCountExpr else distinctCountExpr),
-        Statistic("null_count", nullCountExpr),
+        Statistic("num_nulls", nullCountExpr),
         Statistic("mean", meanExpr),
         Statistic("stddev", if (approximate) approxStddevExpr else stddevExpr),
+        Statistic("min_col_len", minColLengthExpr),
+        Statistic("avg_col_len", avgColLengthExpr),
+        Statistic("max_col_len", maxColLengthExpr),
         Statistic("min", minExpr),
         Statistic("25%", if (approximate) approxPercentile25Expr else percentile25Expr),
         Statistic("50%", if (approximate) approxPercentile50Expr else percentile50Expr),
@@ -119,6 +125,9 @@ object StatisticsUtils {
           // null boolean columns
           case (BooleanType, "mean") => new Column(Cast(nullExpr(column), StringType))
           case (BooleanType, "stddev") => new Column(Cast(nullExpr(column), StringType))
+          case (BooleanType, "min_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (BooleanType, "avg_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (BooleanType, "max_col_len") => new Column(Cast(nullExpr(column), StringType))
           case (BooleanType, "25%") => new Column(Cast(nullExpr(column), StringType))
           case (BooleanType, "50%") => new Column(Cast(nullExpr(column), StringType))
           case (BooleanType, "75%") => new Column(Cast(nullExpr(column), StringType))
@@ -127,12 +136,30 @@ object StatisticsUtils {
           // datetype percentiles can only be approximated
           case (DateType, "mean") => new Column(Cast(nullExpr(column), StringType))
           case (DateType, "stddev") => new Column(Cast(nullExpr(column), StringType))
+          case (DateType, "min_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (DateType, "avg_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (DateType, "max_col_len") => new Column(Cast(nullExpr(column), StringType))
           case (DateType, "25%") => new Column(Cast(approxPercentile25Expr(column), StringType))
           case (DateType, "50%") => new Column(Cast(approxPercentile50Expr(column), StringType))
           case (DateType, "75%") => new Column(Cast(approxPercentile75Expr(column), StringType))
 
+          case (DecimalType(), "min_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (DecimalType(), "avg_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (DecimalType(), "max_col_len") => new Column(Cast(nullExpr(column), StringType))
+
+          case (DoubleType, "min_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (DoubleType, "avg_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (DoubleType, "max_col_len") => new Column(Cast(nullExpr(column), StringType))
+
+          case (IntegerType, "min_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (IntegerType, "avg_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (IntegerType, "max_col_len") => new Column(Cast(nullExpr(column), StringType))
+
           // floor the mean to return 'LongType'
           case (LongType, "mean") => new Column(Cast(Floor(meanExpr(column)), StringType))
+          case (LongType, "min_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (LongType, "avg_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (LongType, "max_col_len") => new Column(Cast(nullExpr(column), StringType))
           case (LongType, "25%") => if (approximate) {
             new Column(Cast(Floor(approxPercentile25Expr(column)), StringType))
           } else {
@@ -152,6 +179,9 @@ object StatisticsUtils {
           // null timestamp columns
           case (TimestampType, "mean") => new Column(Cast(nullExpr(column), StringType))
           case (TimestampType, "stddev") => new Column(Cast(nullExpr(column), StringType))
+          case (TimestampType, "min_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (TimestampType, "avg_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (TimestampType, "max_col_len") => new Column(Cast(nullExpr(column), StringType))
 
           // apply explicit output formatting
           // timestamptype percentiles can only be approximated
@@ -168,6 +198,9 @@ object StatisticsUtils {
           // override strange count behavior
           case (NullType, "count") => new Column(Cast(nullCountExpr(column), StringType))
           case (NullType, "countDistinct") => new Column(Cast(nullExpr(column), StringType))
+          case (NullType, "min_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (NullType, "avg_col_len") => new Column(Cast(nullExpr(column), StringType))
+          case (NullType, "max_col_len") => new Column(Cast(nullExpr(column), StringType))
 
           // otherwise apply generic function
           case _ => new Column(Cast(statistic.expr(column), StringType))
@@ -193,7 +226,7 @@ object StatisticsUtils {
     // adds input column name to first value in row
     val results = (0 to (aggResult.size / statistics.length) - 1).map { rowIndex =>
       Row.fromSeq(
-        Seq(inputColumns(rowIndex).name) ++ (0 to statistics.length - 1).map { columnIndex =>
+        Seq(inputColumns(rowIndex).name, inputColumns(rowIndex).dataType.catalogString) ++ (0 to statistics.length - 1).map { columnIndex =>
           aggResult.getString(rowIndex * statistics.length + columnIndex)
         }
       )
@@ -201,7 +234,7 @@ object StatisticsUtils {
 
     spark.createDataFrame(
       spark.sparkContext.makeRDD(results),
-      StructType(Seq(StructField("column", StringType, true)) ++ statistics.map { statistic => StructField(statistic.name, StringType, true) })
+      StructType(Seq(StructField("col_name", StringType, true), StructField("data_type", StringType, true)) ++ statistics.map { statistic => StructField(statistic.name, StringType, true) })
     )
   }
 
