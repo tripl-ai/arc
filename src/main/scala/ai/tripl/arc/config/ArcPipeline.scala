@@ -24,14 +24,13 @@ import ai.tripl.arc.util.SerializableConfiguration
 object ArcPipeline {
 
   def parsePipeline(configUri: Option[String], arcContext: ARCContext)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): Either[List[Error], (ETLPipeline, ARCContext)] = {
-    arcContext.environment match {
-      case Some(_) => {
-        configUri match {
-          case Some(uri) => parseConfig(Right(new URI(uri)), arcContext)
-          case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
+    configUri match {
+      case Some(uri) =>
+        arcContext.environment match {
+          case Some(_) => parseConfig(Right(new URI(uri)), arcContext)
+          case None => Left(ConfigError("file", None, s"No environment defined as a command line argument --etl.config.environment or ETL_CONF_ENV environment variable.") :: Nil)
         }
-      }
-      case None => Left(ConfigError("file", None, s"No environment defined as a command line argument --etl.config.environment or ETL_CONF_ENV environment variable.") :: Nil)
+      case None => Left(ConfigError("file", None, s"No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") :: Nil)
     }
   }
 
