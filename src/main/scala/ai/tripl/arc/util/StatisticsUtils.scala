@@ -22,7 +22,7 @@ object StatisticsUtils {
   // this is pivoted compared with the spark internal statistics dataframe
   // all output columns are StringType as different data types may be present in the aggregate columns
   // based heavily on org.apache.spark.sql.execution.stat.StatFunctions.summary
-  def createStatisticsDataframe(input: DataFrame, approximate: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
+  def createStatisticsDataframe(input: DataFrame, approximate: Boolean, histogram: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
 
     val inputColumns = input.queryExecution.sparkPlan.output.filter(field =>
       field.dataType.isInstanceOf[BooleanType]
@@ -39,7 +39,7 @@ object StatisticsUtils {
     // create generic expressions
     val countExpr = (child: Expression) => Count(child).toAggregateExpression()
     val distinctCountExpr = (child: Expression) => Count(child).toAggregateExpression(isDistinct = true)
-    val approxDistinctCountExpr = (child: Expression) => HyperLogLogPlusPlus(child).toAggregateExpression()
+    val approxDistinctCountExpr = (child: Expression) => HyperLogLogPlusPlus(child, 0.01).toAggregateExpression()
     val nullCountExpr = (child: Expression) => CountIf(IsNull(child)).toAggregateExpression()
     val meanExpr = (child: Expression) => Average(child).toAggregateExpression()
     val stddevExpr = (child: Expression) => StddevPop(child).toAggregateExpression()
@@ -100,10 +100,11 @@ object StatisticsUtils {
     val nullExpr = (child: Expression) => Literal(null)
 
     // map the expressions to column names
-    val statistics = Seq(
+    val statistics = if (histogram) {
+      Seq(
         Statistic("count", countExpr),
-        Statistic("distinct_count", if (approximate) approxDistinctCountExpr else distinctCountExpr),
         Statistic("num_nulls", nullCountExpr),
+        Statistic("distinct_count", if (approximate) approxDistinctCountExpr else distinctCountExpr),
         Statistic("mean", meanExpr),
         Statistic("stddev", if (approximate) approxStddevExpr else stddevExpr),
         Statistic("min_col_len", minColLengthExpr),
@@ -114,8 +115,21 @@ object StatisticsUtils {
         Statistic("50%", if (approximate) approxPercentile50Expr else percentile50Expr),
         Statistic("75%", if (approximate) approxPercentile75Expr else percentile75Expr),
         Statistic("max", maxExpr),
-    )
-
+      )
+    } else {
+      Seq(
+        Statistic("count", countExpr),
+        Statistic("num_nulls", nullCountExpr),
+        Statistic("distinct_count", if (approximate) approxDistinctCountExpr else distinctCountExpr),
+        Statistic("mean", meanExpr),
+        Statistic("stddev", if (approximate) approxStddevExpr else stddevExpr),
+        Statistic("min_col_len", minColLengthExpr),
+        Statistic("avg_col_len", avgColLengthExpr),
+        Statistic("max_col_len", maxColLengthExpr),
+        Statistic("min", minExpr),
+        Statistic("max", maxExpr),
+      )
+    }
     // generate the aggregate statement
     // override any dataType / statistics that need extra logic
     // this statement will produce a single row dataset with (n statistics * n input columns) columns
@@ -196,7 +210,7 @@ object StatisticsUtils {
           case (StringType, "max") => new Column(Cast(nullExpr(column), StringType))
 
           // override strange count behavior
-          case (NullType, "count") => new Column(Cast(nullCountExpr(column), StringType))
+          case (NullType, "count") => new Column(Cast(nullExpr(column), StringType))
           case (NullType, "countDistinct") => new Column(Cast(nullExpr(column), StringType))
           case (NullType, "min_col_len") => new Column(Cast(nullExpr(column), StringType))
           case (NullType, "avg_col_len") => new Column(Cast(nullExpr(column), StringType))

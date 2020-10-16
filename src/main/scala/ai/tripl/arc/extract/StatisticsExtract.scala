@@ -41,19 +41,20 @@ class StatisticsExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "persist" :: "approximate" :: "params" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "outputView" :: "persist" :: "approximate" :: "histogram" :: "params" :: Nil
     val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val description = getOptionalValue[String]("description")
     val inputView = getValue[String]("inputView")
     val outputView = getValue[String]("outputView")
     val approximate = getValue[java.lang.Boolean]("approximate", default = Some(true))
+    val histogram = getValue[java.lang.Boolean]("histogram", default = Some(false))
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val params = readMap("params", c)
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (id, name, description, inputView, outputView, persist, approximate, invalidKeys) match {
-      case (Right(id), Right(name), Right(description), Right(inputView), Right(outputView), Right(persist), Right(approximate), Right(invalidKeys)) =>
+    (id, name, description, inputView, outputView, persist, approximate, histogram, invalidKeys) match {
+      case (Right(id), Right(name), Right(description), Right(inputView), Right(outputView), Right(persist), Right(approximate), Right(histogram), Right(invalidKeys)) =>
 
         val stage = StatisticsExtractStage(
           plugin=this,
@@ -65,6 +66,7 @@ class StatisticsExtract extends PipelineStagePlugin with JupyterCompleter {
           params=params,
           persist=persist,
           approximate=approximate,
+          histogram=histogram,
         )
 
         stage.stageDetail.put("inputView", inputView)
@@ -72,10 +74,11 @@ class StatisticsExtract extends PipelineStagePlugin with JupyterCompleter {
         stage.stageDetail.put("params", params.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
         stage.stageDetail.put("approximate", java.lang.Boolean.valueOf(approximate))
+        stage.stageDetail.put("histogram", java.lang.Boolean.valueOf(histogram))
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(id, name, description, inputView, outputView, persist, approximate, invalidKeys).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, inputView, outputView, persist, approximate, histogram, invalidKeys).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -94,6 +97,7 @@ case class StatisticsExtractStage(
     params: Map[String, String],
     persist: Boolean,
     approximate: Boolean,
+    histogram: Boolean,
   ) extends ExtractPipelineStage {
 
   override def execute()(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
@@ -108,7 +112,7 @@ object StatisticsExtractStage {
 
     val df = spark.table(stage.inputView)
 
-    val statisticsDF = StatisticsUtils.createStatisticsDataframe(df, stage.approximate)
+    val statisticsDF = StatisticsUtils.createStatisticsDataframe(df, stage.approximate, stage.histogram)
 
     if (arcContext.immutableViews) statisticsDF.createTempView(stage.outputView) else statisticsDF.createOrReplaceTempView(stage.outputView)
 

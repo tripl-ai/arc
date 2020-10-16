@@ -65,7 +65,8 @@ class StatisticsExtractSuite extends FunSuite with BeforeAndAfter {
           "inputView": "${inputView}",
           "outputView": "${outputView}",
           "persist": true,
-          "approximate": true
+          "approximate": true,
+          "histogram": true
         }
       ]
     }"""
@@ -106,7 +107,8 @@ class StatisticsExtractSuite extends FunSuite with BeforeAndAfter {
           "inputView": "${inputView}",
           "outputView": "${outputView}",
           "persist": true,
-          "approximate": false
+          "approximate": false,
+          "histogram": false
         }
       ]
     }"""
@@ -119,7 +121,7 @@ class StatisticsExtractSuite extends FunSuite with BeforeAndAfter {
         val df = ARC.run(pipeline)(spark, logger, arcContext).get
         val rows = df.collect
         assert(rows.length == 10)
-        assert(rows.head.length == 15)
+        assert(rows.head.length == 12)
         assert(inMemoryLoggerAppender.getResult.split("\n").filter { message => message.contains("booleanDatum\":{\"data_type\":\"boolean\",\"count\":2") }.length == 1)
       }
     }

@@ -708,8 +708,9 @@ It differs from the Spark inbuilt `summary` by:
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
-|approximate|Boolean|false|Whether to calculate `approximate` statistics or full `population` based statistics (longer runtime).<br><br>Default: `true`.|
+|approximate|Boolean|false|Whether to calculate `approximate` statistics or full `population` based statistics. Calculating `population` based statistics is a computationally and memory intenstive operation and may result in very long runtime or exceed memory limits.<br><br>Default: `true`.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|histogram|Boolean|false|Whether to calculate distribution statistics (`25%`, `50%`, `75%`).<br><br>Default: `false`.|
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 
