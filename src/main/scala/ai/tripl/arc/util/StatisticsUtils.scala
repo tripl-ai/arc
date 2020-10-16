@@ -205,6 +205,9 @@ object StatisticsUtils {
           case (TimestampType, "75%") => new Column(Cast(new DateFormatClass(approxPercentile75Expr(column), Literal("yyyy-MM-dd HH:mm:ss'Z'")), StringType))
           case (TimestampType, "max") => new Column(Cast(new DateFormatClass(maxExpr(column), Literal("yyyy-MM-dd HH:mm:ss'Z'")), StringType))
 
+          // somehow these are calculated
+          case (StringType, "mean") => new Column(Cast(nullExpr(column), StringType))
+          case (StringType, "stddev") => new Column(Cast(nullExpr(column), StringType))
           // do not leak string data
           case (StringType, "min") => new Column(Cast(nullExpr(column), StringType))
           case (StringType, "max") => new Column(Cast(nullExpr(column), StringType))
