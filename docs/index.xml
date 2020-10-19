@@ -150,7 +150,7 @@ Database Inconsistency When writing data to targets like databases using the JDB
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/changelog/</guid>
-      <description>Change Log 3.4.1  set name on Dataframe when persist=true to help understand persisted datasets when using the Spark UI. add better error messages to job failure if lazy evaluation is set. add support for %configexecute from Arc Jupyter notebooks.  3.4.0  add resolution tag for all stages to indicate lazy or strict resolution of stage variables. This can be used with ConfigExecute to generate runtime specific configuration variables. add ConfigExecute stage to allow dynamic creation of runtime variables.</description>
+      <description>Change Log 3.5.0  add StatisticsExtract stage. add etl.config.lintOnly (ETL_CONF_LINT_ONLY) option to only validate the configuration and not run the job. add validation that stage id values are unique within the job. FIX minor defect relating to order of etl.config.uri vs etl.config.environments error messages.  3.4.1  set name on Dataframe when persist=true to help understand persisted datasets when using the Spark UI. add better error messages to job failure if lazy evaluation is set.</description>
     </item>
     
     <item>
