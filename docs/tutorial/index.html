@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.4.1</span></strong>
+          <span class="version">3.5.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -491,7 +491,7 @@ cd arc-starter
 --entrypoint='' \
 --publish 4040:4040 \
 --publish 8888:8888 \
-ghcr.io/tripl-ai/arc-jupyter:arc-jupyter_3.6.1_scala_2.12_1.0.0 \
+ghcr.io/tripl-ai/arc-jupyter:arc-jupyter_3.7.0_scala_2.12_1.0.0 \
 jupyter notebook \
 --ip=0.0.0.0 \
 --no-browser \
@@ -783,7 +783,7 @@ FROM (
 --env &quot;ETL_CONF_ENV=production&quot; \
 --entrypoint='' \
 --publish 4040:4040 \
-ghcr.io/tripl-ai/arc:arc_3.4.1_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.0.0 \
+ghcr.io/tripl-ai/arc:arc_3.5.0_spark_3.0.1_scala_2.12_hadoop_3.2.0_1.0.0 \
 bin/spark-submit \
 --master local[*] \
 --driver-memory 4g \
