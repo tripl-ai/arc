@@ -2,9 +2,10 @@
 
 ## 3.5.0
 
+- add `StatisticsExtract` stage.
 - add `etl.config.lintOnly` (`ETL_CONF_LINT_ONLY`) option to only validate the configuration and not run the job.
 - add validation that stage `id` values are unique within the job.
-- add `StatisticsExtract` stage.
+- **FIX** minor defect relating to order of `etl.config.uri` vs `etl.config.environments` error messages.
 
 ## 3.4.1
 
