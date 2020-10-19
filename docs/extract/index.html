@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.4.1</span></strong>
+          <span class="version">3.5.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -3658,13 +3658,135 @@
   <span class="p">}</span>
 <span class="p">}</span></code></pre></div>
 
+<h2 id="statisticsextract">StatisticsExtract</h2>
+
+<h5 id="since-3-5-0-supports-streaming-true">Since: 3.5.0 - Supports Streaming: True</h5>
+
+<p>The <code>StatisticsExtract</code> stage extracts the column statistics from to an input <code>Dataframe</code> and returns a <code>DataFrame</code>.</p>
+
+<p>It differs from the Spark inbuilt <code>summary</code> by:</p>
+
+<ul>
+<li>operates on all data types.</li>
+<li>returns row-based data rather than column-based (i.e. each input column is one row in the output)</li>
+<li><code>count_distinct</code> and <code>null_count</code> additional metrics</li>
+</ul>
+
+<h3 id="parameters-18">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>approximate</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to calculate <code>approximate</code> statistics or full <code>population</code> based statistics. Calculating <code>population</code> based statistics is a computationally and memory intenstive operation and may result in very long runtime or exceed memory limits.<br><br>Default: <code>true</code>.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>histogram</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to calculate distribution statistics (<code>25%</code>, <code>50%</code>, <code>75%</code>).<br><br>Default: <code>false</code>.</td>
+</tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples-18">Examples</h3>
+
+<h4 id="minimal-18">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;StatisticsExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;extract column statistics from customer view&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_statistics&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete-18">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;StatisticsExtract&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;extract column statistics from customer view&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_statistics&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;approximate&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span></code></pre></div>
+
 <h2 id="textextract">TextExtract</h2>
 
 <h5 id="since-1-2-0-supports-streaming-true-1">Since: 1.2.0 - Supports Streaming: True</h5>
 
 <p>The <code>TextExtract</code> stage reads either one or more text files and returns a <code>DataFrame</code>.</p>
 
-<h3 id="parameters-18">Parameters</h3>
+<h3 id="parameters-19">Parameters</h3>
 
 <table>
 <thead>
@@ -3798,9 +3920,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-18">Examples</h3>
+<h3 id="examples-19">Examples</h3>
 
-<h4 id="minimal-18">Minimal</h4>
+<h4 id="minimal-19">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TextExtract&#34;</span><span class="p">,</span>
@@ -3813,7 +3935,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-18">Complete</h4>
+<h4 id="complete-19">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TextExtract&#34;</span><span class="p">,</span>
@@ -3855,7 +3977,7 @@ FROM books_xml
 
 <p>The backtick character (`) can be used to address fields with non-alphanumeric names.</p>
 
-<h3 id="parameters-19">Parameters</h3>
+<h3 id="parameters-20">Parameters</h3>
 
 <table>
 <thead>
@@ -3989,9 +4111,9 @@ FROM books_xml
 </tbody>
 </table>
 
-<h3 id="examples-19">Examples</h3>
+<h3 id="examples-20">Examples</h3>
 
-<h4 id="minimal-19">Minimal</h4>
+<h4 id="minimal-20">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLExtract&#34;</span><span class="p">,</span>
@@ -4004,7 +4126,7 @@ FROM books_xml
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-19">Complete</h4>
+<h4 id="complete-20">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;XMLExtract&#34;</span><span class="p">,</span>

@@ -27,7 +27,9 @@ object Plugins {
         case e: Exception => return Left(StageError(0, path, c.origin.lineNumber, ConfigError(path, Some(c.origin.lineNumber), e.getMessage) :: Nil) :: Nil)
       }
 
-      val (errors, instances) = objectList.asScala.zipWithIndex.foldLeft[(List[StageError], List[T])]( (Nil, Nil) ) { case ( (errors, instances), (plugin, index) ) =>
+      val stageIds = scala.collection.mutable.Set[String]()
+
+      val (stageErrors, instances) = objectList.asScala.zipWithIndex.foldLeft[(List[StageError], List[T])]( (Nil, Nil) ) { case ( (stageErrorsAccumulator, instancesAccumulator), (plugin, index) ) =>
         import ConfigReader._
         val config = plugin.toConfig
         implicit var c = config
@@ -43,6 +45,12 @@ object Plugins {
           c = config.withOnlyPath("name").resolveWith(arcContext.resolutionConfig).resolve()
           c.getString("name")
         }.getOrElse("")
+
+        // try to evaluate id
+        val id = Try {
+          c = config.withOnlyPath("id").resolveWith(arcContext.resolutionConfig).resolve()
+          Option(c.getString("id"))
+        }.getOrElse(None)
 
         // read the resolution key
         c = config.withOnlyPath("resolution").resolveWith(arcContext.resolutionConfig).resolve()
@@ -61,9 +69,9 @@ object Plugins {
             .field("skipPlugin", true)
             .log()
 
-          (errors, instances)
+          (stageErrorsAccumulator, instancesAccumulator)
         } else {
-          val instanceOrError: Either[List[StageError], T] = (resolution, pluginType) match {
+          val instanceOrErrors: Either[List[StageError], T] = (resolution, pluginType) match {
             case (Right(resolution), Right(pluginType)) => {
               if (resolution == Resolution.Lazy) {
                 // defer resolution of the config
@@ -78,6 +86,7 @@ object Plugins {
                             val pluginMap = new java.util.HashMap[String, Object]()
                             pluginMap.put("type", s"${p.getClass.getName}:${p.version}")
                             pluginMap.put("name", name)
+                            id.foreach { pluginMap.put("id", _) }
                             stage.stageDetail.put("plugin", pluginMap)
                           }
                         }
@@ -94,9 +103,8 @@ object Plugins {
                   c = config.resolveWith(arcContext.resolutionConfig).resolve()
                   resolvePlugin(path.contains("plugins."), index, pluginType, c, plugins)
                 } catch {
-                  case e: ConfigException.UnresolvedSubstitution => Left(StageError(index, name, config.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), e.getMessage()) :: Nil) :: Nil)
+                  case e: ConfigException.UnresolvedSubstitution => Left(StageError(index, name, c.origin.lineNumber, ConfigError("stages", Some(config.origin.lineNumber), e.getMessage()) :: Nil) :: Nil)
                 }
-
               }
             }
             case _ =>
@@ -105,16 +113,32 @@ object Plugins {
               Left(err :: Nil)
           }
 
-          instanceOrError match {
-            case Left(error) => (error ::: errors, instances)
-            case Right(instance) => (errors, instance :: instances)
+          // test whether the stage id
+          val uniqueInstanceOrError = id match {
+            case Some(id) => {
+              if (stageIds.contains(id)) {
+                instanceOrErrors match {
+                  case Left(stageError) => Left(StageError(stageError(0).idx, stageError(0).stage, stageError(0).lineNumber, ConfigError("stages", Some(c.origin.lineNumber), s"duplicate stage id '${id}' found within job") :: Nil ::: stageError(0).errors) :: Nil)
+                  case Right(instance) => Left(StageError(index, name, c.origin.lineNumber, ConfigError("stages", Some(c.origin.lineNumber), s"duplicate stage id '${id}' found within job") :: Nil) :: Nil)
+                }
+              } else {
+                stageIds.add(id)
+                instanceOrErrors
+              }
+            }
+            case None => instanceOrErrors
+          }
+
+          uniqueInstanceOrError match {
+            case Left(stageError) => (stageError ::: stageErrorsAccumulator, instancesAccumulator)
+            case Right(instance) => (stageErrorsAccumulator, instance :: instancesAccumulator)
           }
         }
       }
 
-      errors match {
+      stageErrors match {
         case Nil => Right(instances.reverse)
-        case _ => Left(errors.reverse)
+        case _ => Left(stageErrors.reverse)
       }
     } else {
       Right(Nil)

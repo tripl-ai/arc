@@ -70,6 +70,7 @@ local:///opt/spark/jars/arc.jar \
 |ETL_CONF_IGNORE_ENVIRONMENTS|etl.config.ignoreEnvironments|Allows skipping the `environments` tests and execute all stages/plugins.|
 |ETL_CONF_JOB_ID|etl.config.job.id|A job identifier added to all the logging messages.|
 |ETL_CONF_JOB_NAME|etl.config.job.name|A job name added to all logging messages and Spark history server.|
+|ETL_CONF_LINT_ONLY|etl.config.lintOnly|Verify the job file and exit with `success`/`failure`.|
 |ETL_CONF_STORAGE_LEVEL|etl.config.storageLevel|The [StorageLevel](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$) used when persisting datasets. String. Default `MEMORY_AND_DISK_SER`.|
 |ETL_CONF_STREAMING|etl.config.streaming|Run in [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html) mode or not. Boolean. Default `false`.|
 |ETL_CONF_TAGS|etl.config.tags|Custom key/value tags separated by space to add to all logging messages.<br><br>E.g. `ETL_CONF_TAGS=cost_center=123456 owner=jovyan`.|

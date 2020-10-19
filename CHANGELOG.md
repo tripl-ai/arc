@@ -1,5 +1,12 @@
 # Change Log
 
+## 3.5.0
+
+- add `StatisticsExtract` stage.
+- add `etl.config.lintOnly` (`ETL_CONF_LINT_ONLY`) option to only validate the configuration and not run the job.
+- add validation that stage `id` values are unique within the job.
+- **FIX** minor defect relating to order of `etl.config.uri` vs `etl.config.environments` error messages.
+
 ## 3.4.1
 
 - set name on Dataframe when `persist=true` to help understand persisted datasets when using the Spark UI.
