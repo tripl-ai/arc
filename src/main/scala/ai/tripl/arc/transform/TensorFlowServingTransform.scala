@@ -41,10 +41,10 @@ class TensorFlowServingTransform extends PipelineStagePlugin with JupyterComplet
     |    "production",
     |    "test"
     |  ],
-    |  "signatureName": "serving_default",
     |  "inputView": "inputView",
-    |  "inputURI": "hdfs://*.sql",
-    |  "outputView": "outputView",
+    |  "uri": "http://",
+    |  "batchSize": 100,
+    |  "outputView": "outputView"
     |}""".stripMargin
 
   val documentationURI = new java.net.URI(s"${baseURI}/transform/#tensorflowservingtransform")
@@ -63,7 +63,7 @@ class TensorFlowServingTransform extends PipelineStagePlugin with JupyterComplet
     val uri = getValue[String]("uri") |> parseURI("uri") _
     val inputField = getValue[String]("inputField", default = Some("value"))
     val signatureName = getOptionalValue[String]("signatureName")
-    val batchSize = getValue[Int]("batchsize", default = Some(1))
+    val batchSize = getValue[Int]("batchSize", default = Some(100))
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val responseType = getValue[String]("responseType", default = Some("object"), validValues = "integer" :: "double" :: "object" :: Nil) |> parseResponseType("responseType") _
     val numPartitions = getOptionalValue[Int]("numPartitions")
@@ -208,16 +208,13 @@ object TensorFlowServingTransformStage {
           val jsonNodeFactory = new JsonNodeFactory(true)
           val node = jsonNodeFactory.objectNode
 
-          // optionally set signature_name
-          for (signatureName <- stageSignatureName) {
-            node.put("signature_name", signatureName)
-          }
-          val instancesArray = node.putArray("instances")
+          stageSignatureName.foreach { node.put("signature_name", _) }
 
           // add payload to array
-          // for StringType first try to deserialise object so it can be properly serialised in the batch
+          val instancesArray = node.putArray("instances")
           groupedRow.foreach(row => {
             dataType match {
+              // for StringType first try to deserialise object so it can be properly serialised in the batch
               case _: StringType => instancesArray.add(objectMapper.readTree(row.getString(fieldIndex)))
               case _: IntegerType => instancesArray.add(row.getInt(fieldIndex))
               case _: LongType => instancesArray.add(row.getLong(fieldIndex))
@@ -255,14 +252,14 @@ object TensorFlowServingTransformStage {
 
           // try to unpack result
           groupedRow.zipWithIndex.map { case (row, index) => {
-            val result = stageResponseType match {
-              case ResponseType.IntegerResponse => Seq(response(index).asInt)
-              case ResponseType.DoubleResponse => Seq(response(index).asDouble)
-              case _ => Seq(response(index).asText)
+              val result = stageResponseType match {
+                case ResponseType.IntegerResponse => Seq(response(index).asInt)
+                case ResponseType.DoubleResponse => Seq(response(index).asDouble)
+                case _ => Seq(response(index).asText)
+              }
+              Row.fromSeq(row.toSeq ++ result).asInstanceOf[TensorFlowResponseRow]
             }
-
-            Row.fromSeq(row.toSeq ++ result).asInstanceOf[TensorFlowResponseRow]
-          }}
+          }
         }
       }
     } catch {

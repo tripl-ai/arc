@@ -1,4 +1,4 @@
-FROM tensorflow/serving:1.12.3
+FROM tensorflow/serving:2.3.0
 
 COPY models /models
 

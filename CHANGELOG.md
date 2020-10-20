@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.5.1
+
+- **FIX** issue with `TensorFlowServingTransform` transform not parsing `batchSize` argument correctly.
+
 ## 3.5.0
 
 - add `StatisticsExtract` stage.
