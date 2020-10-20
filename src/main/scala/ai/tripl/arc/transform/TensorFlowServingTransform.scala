@@ -41,10 +41,10 @@ class TensorFlowServingTransform extends PipelineStagePlugin with JupyterComplet
     |    "production",
     |    "test"
     |  ],
-    |  "signatureName": "serving_default",
     |  "inputView": "inputView",
-    |  "inputURI": "hdfs://*.sql",
-    |  "outputView": "outputView",
+    |  "uri": "http://",
+    |  "batchSize": 100,
+    |  "outputView": "outputView"
     |}""".stripMargin
 
   val documentationURI = new java.net.URI(s"${baseURI}/transform/#tensorflowservingtransform")
@@ -63,7 +63,7 @@ class TensorFlowServingTransform extends PipelineStagePlugin with JupyterComplet
     val uri = getValue[String]("uri") |> parseURI("uri") _
     val inputField = getValue[String]("inputField", default = Some("value"))
     val signatureName = getOptionalValue[String]("signatureName")
-    val batchSize = getValue[Int]("batchsize", default = Some(1))
+    val batchSize = getValue[Int]("batchSize", default = Some(100))
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val responseType = getValue[String]("responseType", default = Some("object"), validValues = "integer" :: "double" :: "object" :: Nil) |> parseResponseType("responseType") _
     val numPartitions = getOptionalValue[Int]("numPartitions")
