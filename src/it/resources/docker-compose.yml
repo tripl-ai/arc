@@ -22,7 +22,7 @@ services:
     working_dir: /app
 
   tensorflow_serving:
-    image: tensorflow_serving/simple:latest
+    image: ghcr.io/tripl-ai/tensorflow-serving-simple:latest
     networks:
       - arc-integration
     ports:
