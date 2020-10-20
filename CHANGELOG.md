@@ -1,6 +1,6 @@
 # Change Log
 
-## NEXT
+## 3.5.1
 
 - **FIX** issue with `TensorFlowServingTransform` transform not parsing `batchSize` argument correctly.
 
