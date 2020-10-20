@@ -8,13 +8,14 @@ from tensorflow.python.saved_model.utils import build_tensor_info
 placeholder_name = 'a'
 operation_name = 'add'
 
-a = tf.placeholder(tf.int32, name=placeholder_name)
-b = tf.constant(10)
+tf.compat.v1.disable_eager_execution()
+
+a = tf.compat.v1.placeholder(tf.int32, name=placeholder_name)
 
 # This is our model
-add = tf.add(a, b, name=operation_name)
+add = tf.add(a, tf.constant(10), name=operation_name)
 
-with tf.Session() as sess:
+with tf.compat.v1.Session() as sess:
     # Run a few operations to make sure our model works
     ten_plus_two = sess.run(add, feed_dict={a: 2})
     print('10 + 2 = {}'.format(ten_plus_two))

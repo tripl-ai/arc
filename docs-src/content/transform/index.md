@@ -382,7 +382,7 @@ https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving
 |inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
 |outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
 |uri|String|true|The `URI` of the TensorFlow Serving REST end point.|
-|batchSize|Integer|false|The number of records to sent to TensorFlow Serving in each call. A higher number will decrease the number of calls to TensorFlow Serving which may be more efficient.|
+|batchSize|Integer|false|The number of records to sent to TensorFlow Serving in each call. A higher number will decrease the number of calls to TensorFlow Serving which may be more efficient.<br><br>Default: `100`.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |inputField|String|false|The field to pass to the model. JSON encoding can be used to pass multiple values (tuples).<br><br>Default: `value`.|
