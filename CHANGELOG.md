@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.5.2
+
+- **FIX** reorder AWS Identity and Access Management providers `com.amazonaws.auth.WebIdentityTokenCredentialsProvider` to allow use of Arc on Amazon Elastic Kubernetes Service with IAM.
+
 ## 3.5.1
 
 - **FIX** issue with `TensorFlowServingTransform` transform not parsing `batchSize` argument correctly.
