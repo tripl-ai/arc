@@ -32,18 +32,15 @@ object ARC {
 
     // read command line arguments into a map
     // must be in --key=value format
-    val clArgs = collection.mutable.Map[String, String]()
-    val (opts, _) = args.partition {
-      _.startsWith("--")
-    }
-    opts.map { x =>
-      // regex split on only single = signs not at start or end of line
-      val pair = x.split("=(?!=)(?!$)", 2)
-      if (pair.length == 2) {
-        clArgs += (pair(0).split("-{1,2}")(1) -> pair(1))
+    val commandLineArguments = args
+      .filter { _.startsWith("--") }
+      .map { _.stripPrefix("--") }
+      .flatMap { arg =>
+        // regex split on only single = signs not at start or end of line
+        val pair = arg.split("=(?!=)(?!$)", 2)
+        if (pair.length == 2) Some(pair(0) -> pair(1)) else None
       }
-    }
-    val commandLineArguments = clArgs.toMap
+      .toMap
 
     // configurations
     val lintOnly = Try(commandLineArguments.get("etl.config.lintOnly").orElse(envOrNone("ETL_CONF_LINT_ONLY")).get.toBoolean).getOrElse(false)

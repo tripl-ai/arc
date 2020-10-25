@@ -18,7 +18,7 @@ object CloudUtils {
   // com.amazonaws.SDKGlobalConfiguration.AWS_WEB_IDENTITY_ENV_VAR
   // com.amazonaws.SDKGlobalConfiguration.AWS_ROLE_ARN_ENV_VAR
   val webIdentityTokenCredentialsProvider = (sys.env.get("AWS_WEB_IDENTITY_TOKEN_FILE"), sys.env.get("AWS_ROLE_ARN")) match {
-    case (Some(_), Some(_)) => ",com.amazonaws.auth.WebIdentityTokenCredentialsProvider"
+    case (Some(_), Some(_)) => "com.amazonaws.auth.WebIdentityTokenCredentialsProvider,"
     case _ => ""
   }
 
@@ -26,7 +26,7 @@ object CloudUtils {
   // com.amazonaws.auth.ContainerCredentialsProvider to support Arc inside ECS services with taskRoleArn defined
   // com.amazonaws.auth.WebIdentityTokenCredentialsProvider to support Arc inside EKS services with roleArn and roleSessionName if the environment variables exist
   // org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider to support anonymous credentials
-  val defaultAWSProvidersOverride = s"org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider,com.amazonaws.auth.EnvironmentVariableCredentialsProvider,com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider${webIdentityTokenCredentialsProvider},org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider"
+  val defaultAWSProvidersOverride = s"${webIdentityTokenCredentialsProvider}org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider,com.amazonaws.auth.EnvironmentVariableCredentialsProvider,com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider,org.apache.hadoop.fs.s3a.AnonymousAWSCredentialsProvider"
 
   def setHadoopConfiguration(authentication: Option[API.Authentication])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext) = {
     import spark.sparkContext.{hadoopConfiguration => hc}
@@ -61,7 +61,7 @@ object CloudUtils {
         bucket.foreach { bucket => hc.set(s"fs.s3a.bucket.$bucket.aws.credentials.provider", "com.amazonaws.auth.EnvironmentVariableCredentialsProvider")}
       }
       case Some(API.Authentication.AmazonIAM(bucket, encType, kmsId, customKey)) => {
-        bucket.foreach { bucket => hc.set(s"fs.s3a.bucket.$bucket.aws.credentials.provider", s"com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider${webIdentityTokenCredentialsProvider}")}
+        bucket.foreach { bucket => hc.set(s"fs.s3a.bucket.$bucket.aws.credentials.provider", s"${webIdentityTokenCredentialsProvider}com.amazonaws.auth.InstanceProfileCredentialsProvider,com.amazonaws.auth.ContainerCredentialsProvider")}
         var algorithm = "None"
         var key = "None"
 
@@ -156,7 +156,6 @@ object CloudUtils {
 
   // using a string filePath so that invalid paths can be used for local files
   def getTextBlob(uri: URI)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): String = {
-
     uri.getScheme match {
       case "http" | "https" => {
         val client = HttpClients.createDefault
@@ -175,40 +174,7 @@ object CloudUtils {
         }
       }
       case _ => {
-        val oldDelimiter = spark.sparkContext.hadoopConfiguration.get("textinputformat.record.delimiter")
-        val newDelimiter = s"${0x0 : Char}"
-
-        // logging as this is a global variable and could cause strange behaviour downstream
-        val newDelimiterMap = new java.util.HashMap[String, String]()
-        newDelimiterMap.put("old", oldDelimiter)
-        newDelimiterMap.put("new", newDelimiter)
-        logger.debug()
-          .field("event", "validateConfig")
-          .field("type", "getTextBlob")
-          .field("textinputformat.record.delimiter", newDelimiterMap)
-          .log()
-
-        // temporarily remove the delimiter so all the data is loaded as a single line
-        spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", newDelimiter)
-        val textFile = spark.sparkContext.textFile(uri.toString).collect()(0)
-
-        // reset delimiter back to original value
-        val oldDelimiterMap = new java.util.HashMap[String, String]()
-        oldDelimiterMap.put("old", newDelimiter)
-        oldDelimiterMap.put("new", oldDelimiter)
-        logger.debug()
-          .field("event", "validateConfig")
-          .field("type", "getTextBlob")
-          .field("textinputformat.record.delimiter", oldDelimiterMap)
-          .log()
-
-        if (oldDelimiter == null) {
-          spark.sparkContext.hadoopConfiguration.unset("textinputformat.record.delimiter")
-        } else {
-          spark.sparkContext.hadoopConfiguration.set("textinputformat.record.delimiter", oldDelimiter)
-        }
-
-        textFile
+        spark.read.option("wholetext", true).text(uri.toString).head.getString(0)
       }
     }
   }
