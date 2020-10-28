@@ -84,7 +84,7 @@ object TestUtils {
       )
     }
 
-    def datasetEquality(expected: DataFrame, actual: DataFrame, numRows: Int = 20)(implicit spark: SparkSession): Boolean = {
+    def datasetEquality(expected: DataFrame, actual: DataFrame)(implicit spark: SparkSession): Boolean = {
         import spark.implicits._
 
         // if both are empty ignore
@@ -100,19 +100,18 @@ object TestUtils {
 
             transformedDF.persist
 
-            val expectedExceptActual = transformedDF.filter(col("actual").isNull)
-            val actualExceptExpected = transformedDF.filter(col("expected").isNull)
+            val expectedExceptActual = DataFrameUtils.dropFrom(transformedDF.filter(col("actual").isNull), "expected", "_hashLeft" :: Nil).select("expected.*")
+            val actualExceptExpected = DataFrameUtils.dropFrom(transformedDF.filter(col("expected").isNull), "actual", "_hashRight" :: Nil).select("actual.*")
             val expectedExceptActualCount = expectedExceptActual.count
             val actualExceptExpectedCount = actualExceptExpected.count
 
             if (expectedExceptActualCount != 0 || actualExceptExpectedCount != 0) {
                 println("EXPECTED")
-                println(expected.schema)
-                expected.show(numRows, false)
+                println(s"differences ${expectedExceptActualCount}: ${expected.schema}")
+                expectedExceptActual.show(false)
                 println("ACTUAL")
-                println(actual.schema)
-                actual.show(numRows, false)
-
+                println(s"differences ${actualExceptExpectedCount}: ${actual.schema}")
+                actualExceptExpected.show(false)
                 transformedDF.unpersist
                 false
             } else {
