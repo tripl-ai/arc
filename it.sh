@@ -1,7 +1,7 @@
 #!/bin/bash
 function finish {
   # stop docker services
-  docker-compose -f src/it/resources/docker-compose.yml down
+  docker-compose -f src/it/resources/docker-compose.yml down -v
 }
 trap finish EXIT
 # start docker services
