@@ -136,7 +136,7 @@ The `JDBCExecute` executes a SQL statement against an external JDBC connection.
 |name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
 |environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
 |inputURI|URI|true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}}|
-|jdbcURL|String|true|{{< readfile file="/content/partials/fields/jdbcURL.md" markdown="true" >}}|
+|jdbcURL|String|true|{{< readfile file="/content/partials/fields/jdbcURL.md" markdown="true" >}} You may be required to set `allowMultiQueries=true` in the connection string to execute multiple statements.|
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|

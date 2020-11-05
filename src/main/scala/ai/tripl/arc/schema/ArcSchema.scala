@@ -454,47 +454,43 @@ object ArcSchema {
   def validateMetadata(name: String, config: Config): List[Either[ConfigError, scala.Boolean]]  = {
     config.entrySet.asScala.toList.map {
       node => {
-        if (node.getKey == name) {
-          List(Left(ConfigError(node.getKey, Some(config.getValue(node.getKey).origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot be the same name as column.")))
-        } else {
-          node.getValue.valueType match {
-            case ConfigValueType.OBJECT => {
-              validateMetadata(node.getKey, node.getValue.atKey(""))
-            }
-            case ConfigValueType.LIST => {
-              val listNode = config.getList(node.getKey)
-              if (listNode.size == 0) {
-                List(Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain empty `arrays`.")))
-              } else {
-                val nodeList = listNode.iterator.asScala.toList
-                val nodeType = nodeList(0).valueType
-                nodeType match {
-                  case ConfigValueType.NULL => List(Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain `null` values inside `array`.")))
-                  case ConfigValueType.OBJECT => validateMetadata(node.getKey, node.getValue.atKey(""))
-                  case ConfigValueType.LIST => List(Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}}' cannot contain nested `arrays` inside `array`.")))
-                  case _ => {
-                    if (nodeList.forall(_.valueType == nodeType)) {
-                      nodeType match {
-                        case ConfigValueType.NUMBER => {
-                          // test all values are of same class as first value (as .valueType does not differentiate between double and integer)
-                          val numberClass = nodeList(0).getClass
-                          if (nodeList.forall(_.getClass == numberClass)) {
-                            List(Right(true))
-                          } else {
-                            List(Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain `number` arrays of different types (all values must be `integers` or all values must be `doubles`).")))
-                          }
+        node.getValue.valueType match {
+          case ConfigValueType.OBJECT => {
+            validateMetadata(node.getKey, node.getValue.atKey(""))
+          }
+          case ConfigValueType.LIST => {
+            val listNode = config.getList(node.getKey)
+            if (listNode.size == 0) {
+              List(Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain empty `arrays`.")))
+            } else {
+              val nodeList = listNode.iterator.asScala.toList
+              val nodeType = nodeList(0).valueType
+              nodeType match {
+                case ConfigValueType.NULL => List(Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain `null` values inside `array`.")))
+                case ConfigValueType.OBJECT => validateMetadata(node.getKey, node.getValue.atKey(""))
+                case ConfigValueType.LIST => List(Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}}' cannot contain nested `arrays` inside `array`.")))
+                case _ => {
+                  if (nodeList.forall(_.valueType == nodeType)) {
+                    nodeType match {
+                      case ConfigValueType.NUMBER => {
+                        // test all values are of same class as first value (as .valueType does not differentiate between double and integer)
+                        val numberClass = nodeList(0).getClass
+                        if (nodeList.forall(_.getClass == numberClass)) {
+                          List(Right(true))
+                        } else {
+                          List(Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain `number` arrays of different types (all values must be `integers` or all values must be `doubles`).")))
                         }
-                        case _ => List(Right(true))
                       }
-                    } else {
-                      List(Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain arrays of different types.")))
+                      case _ => List(Right(true))
                     }
+                  } else {
+                    List(Left(ConfigError(node.getKey, Some(listNode.origin.lineNumber), s"Metadata attribute '${node.getKey}' cannot contain arrays of different types.")))
                   }
                 }
               }
             }
-            case _ => List(Right(true))
           }
+          case _ => List(Right(true))
         }
       }
     }.flatten

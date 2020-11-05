@@ -215,7 +215,6 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     // parse json schema to List[ExtractColumn]
     val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(TestUtils.getKnownDatasetMetadataJson)
 
-
     // try without providing column metadata
     val thrown0 = intercept[Exception with DetailException] {
       val dataset = transform.TypingTransformStage.execute(
@@ -374,7 +373,7 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("TypingTransform: metadata bad type same name as column") {
+  test("TypingTransform: metadata field with same name as column") {
     implicit val spark = session
     import spark.implicits._
     implicit val logger = TestUtils.getLogger()
@@ -384,8 +383,8 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
     [
       {
         "id": "982cbf60-7ba7-4e50-a09b-d8624a5c49e6",
-        "name": "booleanDatum",
-        "description": "booleanDatum",
+        "name": "specificFieldName",
+        "description": "description",
         "type": "boolean",
         "trim": false,
         "nullable": false,
@@ -400,19 +399,36 @@ class TypingTransformSuite extends FunSuite with BeforeAndAfter {
             "false"
         ],
         "metadata": {
-          "booleanDatum": 5
+          "specificFieldName": true
         }
       }
     ]
     """
 
+    val extractDataset = TestUtils.getKnownStringDataset.select("booleanDatum")
+    extractDataset.createOrReplaceTempView(inputView)
+
     val schema = ai.tripl.arc.util.ArcSchema.parseArcSchema(meta)
-    schema match {
-      case Left(stageError) => {
-        assert(stageError == StageError(0, "booleanDatum",2,List(ConfigError("booleanDatum",Some(21),"Metadata attribute 'booleanDatum' cannot be the same name as column."))) :: Nil)
-      }
-      case Right(_) => assert(false)
-    }
+
+    val dataset = transform.TypingTransformStage.execute(
+      transform.TypingTransformStage(
+        plugin=new transform.TypingTransform,
+        id=None,
+        name="dataset",
+        description=None,
+        schema=Right(schema.right.getOrElse(Nil)),
+        inputView=inputView,
+        outputView=outputView,
+        params=Map.empty,
+        persist=false,
+        failMode=FailMode.FailFast,
+        numPartitions=None,
+        partitionBy=Nil
+      )
+    ).get
+
+    assert(dataset.count == 2)
+    assert(MetadataUtils.createMetadataDataframe(dataset).where("name = 'specificFieldName'").select("metadata.specificFieldName").head.getBoolean(0) == true)
   }
 
   test("TypingTransform: metadata bad type multiple") {

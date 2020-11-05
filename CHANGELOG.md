@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.5.3
+
+- **FIX** remove limitation that required field `metadata` names to be different to the field `name`.
+
 ## 3.5.2
 
 - **FIX** reorder AWS Identity and Access Management providers `com.amazonaws.auth.WebIdentityTokenCredentialsProvider` to allow use of Arc on Amazon Elastic Kubernetes Service with IAM.

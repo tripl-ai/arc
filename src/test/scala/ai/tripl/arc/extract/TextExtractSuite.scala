@@ -244,8 +244,7 @@ class TextExtractSuite extends FunSuite with BeforeAndAfter {
       .withColumn("_index", row_number().over(window).as("_index"))
       .drop("_monotonically_increasing_id")
 
-    assert(TestUtils.datasetEquality(expected.orderBy("_filename", "_index"), actual.orderBy("_filename", "_index"), 1000000))
-
+    assert(TestUtils.datasetEquality(expected, actual))
   }
 
   test("TextExtract: Structured Streaming") {
