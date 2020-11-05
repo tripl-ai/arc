@@ -84,7 +84,7 @@ class ChaosMonkeySuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, arcCtx)) =>
 
       val thrown0 = intercept[Exception with DetailException] {
-        for (_ <- 1 to 100) {
+        for (_ <- 1 to 1000) {
           val df = ARC.run(pipeline)(spark, logger, arcCtx).get
         }
       }
