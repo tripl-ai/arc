@@ -80,7 +80,7 @@ class StatisticsExtractSuite extends FunSuite with BeforeAndAfter {
         val rows = df.collect
         assert(rows.length == 10)
         assert(rows.head.length == 15)
-        assert(inMemoryLoggerAppender.getResult.split("\n").filter { message => message.contains("booleanDatum\":{\"data_type\":\"boolean\",\"count\":2") }.length == 1)
+        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("booleanDatum\":{\"data_type\":\"boolean\",\"count\":2") }.length == 1)
       }
     }
   }
@@ -122,7 +122,7 @@ class StatisticsExtractSuite extends FunSuite with BeforeAndAfter {
         val rows = df.collect
         assert(rows.length == 10)
         assert(rows.head.length == 12)
-        assert(inMemoryLoggerAppender.getResult.split("\n").filter { message => message.contains("booleanDatum\":{\"data_type\":\"boolean\",\"count\":2") }.length == 1)
+        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("booleanDatum\":{\"data_type\":\"boolean\",\"count\":2") }.length == 1)
       }
     }
   }
