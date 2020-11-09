@@ -63,7 +63,7 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
     } catch {
       case e: ExitOKException => fail("expected exception")
       case e: ExitErrorException => {
-        assert(inMemoryLoggerAppender.getResult.contains("No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable."))
+        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") }.length == 1)
       }
     }
   }
@@ -80,7 +80,9 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
     } catch {
       case e: ExitOKException => fail("expected exception")
       case e: ExitErrorException => {
-        assert(inMemoryLoggerAppender.getResult.contains("No environment defined as a command line argument --etl.config.environment or ETL_CONF_ENV environment variable."))
+    println(inMemoryLoggerAppender.getResult)
+
+        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("No environment defined as a command line argument --etl.config.environment or ETL_CONF_ENV environment variable.") }.length == 1)
       }
     }
   }
