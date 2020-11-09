@@ -194,13 +194,15 @@ The `DeltaLakeMergeLoad` writes an input `DataFrame` to a target [DeltaLake](htt
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |condition|String|true|The `join condition` to perform the data comparison between the `source` (the `inputView` dataset) and `target` (the `outputURI` dataset). Note that the names `source` and `target` must be used.|
 |createTableIfNotExists|Boolean|false|Create an initial `DeltaLake` table if one does not already exist.<br><br>Default: `false`|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
+|generateSymlinkManifest|Boolean|false|Create a manifest file so that the DeltaLakeMergeLoad output can be read by a Presto database.<br><br>Default: `true`|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}} `spark.databricks.delta.merge.repartitionBeforeWrite.enabled` must be set for this to have effect.|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |whenMatchedDeleteFirst|Boolean|false|If `true` the `whenMatchedDelete` operation will happen before `whenMatchedUpdate`.<br><br>If `false` the `whenMatchedUpdate` operation will happen before `whenMatchedDelete`.<br><br>Default: `true`.|
 |whenMatchedDelete|Map[String, String]|false|If specified, `whenMatchedDelete` will delete records where the record exists in both `source` and `target` based on the `join condition`.<br><br>Optionally `condition` may be specified to restrict the records to delete and can only refer to fields in both `source` and `target`.|
 |whenMatchedUpdate|Map[String, Object]|false|If specified, `whenMatchedUpdate` will update records where the record exists in both `source` and `target` based on the `join condition`.<br><br>Optionally `condition` may be specified to restrict the records to update and can only refer to fields in both `source` and `target`.<br><br>Optionally `values` may be specified to define the update rules which can be used to update only selected columns.|
 |whenNotMatchedByTargetInsert|Map[String, Object]|false|If specified, `whenNotMatchedByTargetInsert` will insert records in `source` which do not exist in `target` based on the `join condition`.<br><br>Optionally `condition` may be specified to restrict the records to insert but can only refer to fields in `source`.<br><br>Optionally `values` may be specified to define the insert rules which can be used to insert only selected columns.|
 |whenNotMatchedBySourceDelete|Map[String, Object]|false|If specified, `whenNotMatchedBySourceDelete` will delete records in `target` which do not exist in `source` based on the `join condition`.<br><br>Optionally `condition` may be specified to restrict the records to insert but can only refer to fields in `source`.|
-|generateSymlinkManifest|Boolean|false|Create a manifest file so that the DeltaLakeMergeLoad output can be read by a Presto database.<br><br>Default: `true`|
-|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 
 ### Examples
 

@@ -1235,6 +1235,34 @@
 </tr>
 
 <tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
+<td>generateSymlinkManifest</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Create a manifest file so that the DeltaLakeMergeLoad output can be read by a Presto database.<br><br>Default: <code>true</code></td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism. <code>spark.databricks.delta.merge.repartitionBeforeWrite.enabled</code> must be set for this to have effect.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
 <td>whenMatchedDeleteFirst</td>
 <td>Boolean</td>
 <td>false</td>
@@ -1267,20 +1295,6 @@
 <td>Map[String, Object]</td>
 <td>false</td>
 <td>If specified, <code>whenNotMatchedBySourceDelete</code> will delete records in <code>target</code> which do not exist in <code>source</code> based on the <code>join condition</code>.<br><br>Optionally <code>condition</code> may be specified to restrict the records to insert but can only refer to fields in <code>source</code>.</td>
-</tr>
-
-<tr>
-<td>generateSymlinkManifest</td>
-<td>Boolean</td>
-<td>false</td>
-<td>Create a manifest file so that the DeltaLakeMergeLoad output can be read by a Presto database.<br><br>Default: <code>true</code></td>
-</tr>
-
-<tr>
-<td>id</td>
-<td>String</td>
-<td>false</td>
-<td>A optional unique identifier for this stage.</td>
 </tr>
 </tbody>
 </table>
