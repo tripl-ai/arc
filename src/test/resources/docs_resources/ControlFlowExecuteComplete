@@ -1,0 +1,13 @@
+{
+  "type": "ControlFlowExecute",
+  "name": "determine whether to execute remainder of job",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/control_flow.sql"
+  "sql": "SELECT TRUE AS valid, 'this message will appear in logs' AS message",
+  "authentication": {},
+  "sqlParams": {
+  }
+}

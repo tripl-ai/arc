@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.6.0
+
+- add `ControlFlowExecute` and `ControlFlow` plugins to support work avoidance.
+
 ## 3.5.3
 
 - **FIX** remove limitation that required field `metadata` names to be different to the field `name`.

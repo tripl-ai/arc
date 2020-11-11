@@ -88,6 +88,7 @@ The `ConfigExecute` takes an input SQL statement which must return a `string` fo
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
 
+
 ### Examples
 
 #### Minimal
@@ -95,6 +96,36 @@ The `ConfigExecute` takes an input SQL statement which must return a `string` fo
 
 #### Complete
 {{< readfile file="/resources/docs_resources/ConfigExecuteComplete" highlight="json" >}}
+
+
+## ControlFlowExecute
+##### Since: 3.6.0 - Supports Streaming: True
+
+The `ControlFlowExecute` provides a way to conditionally exiting a job partway through execution and return success. This functionality is intended to allow *work avoidance* i.e. not executing the certain stages if the work has already been done or is not required. This stage must return [Boolean, Option[String]] and will not run the subsequent job stages if the first return value is `false` or continue as normal if `true`.
+
+It requires the the [ControlFlow](/plugins/#controlflow) plugin to be explicitly enabled to have any effect.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputURI|URI|*true|{{< readfile file="/content/partials/fields/inputURI.md" markdown="true" >}} Required if `sql` not provided.|
+|sql|String|*true|{{< readfile file="/content/partials/fields/sql.md" markdown="true" >}} Required if `inputURI` not provided.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
+|key|Strong|false|The name of the `key` that carries the result of this execution to the [ControlFlow](/plugins/#controlflow) plugin.|
+|sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources/ControlFlowExecuteMin" highlight="json" >}}
+
+#### Complete
+{{< readfile file="/resources/docs_resources/ControlFlowExecuteComplete" highlight="json" >}}
 
 
 ## HTTPExecute
@@ -197,6 +228,18 @@ The `LogExecute` takes an input SQL statement which must return a `string` and w
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
+
+### Magic
+
+The `%log` magic is available via [arc-jupyter](https://github.com/tripl-ai/arc-jupyter) with these available parameters:
+
+```sql
+%log name="name" description="description" environments=production,test sqlParams=inputView=customer,inputField=id
+SELECT
+  "this message will be logged" AS message
+FROM ${inputView}
+```
+
 
 ### Examples
 

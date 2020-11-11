@@ -29,6 +29,21 @@ The `ChaosMonkey` plugin is intended to be used for testing your orchestration d
 |strategy|String|true|The strategy to apply. Supported values: `exception`.<br><br>Default: `exception`.|
 |probability|Double|true|The probability of this strategy being executed. Must be between `0.0` and `1.0`.|
 
+
+#### ControlFlow
+##### Since: 3.6.0 - Supports Streaming: False
+
+The `ControlFlow` plugin is intended to be used with [ControlFlowExecute](/execute/#controlflowexecute) to provide a way to conditionally exiting a job partway through execution and return success. As a `Lifecycle Plugin` it will be executed prior to each stage and will run or skip the stage depending on the result of a prior [ControlFlowExecute](/execute/#controlflowexecute) stage.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|key|Strong|false|The name of the `key` set in [ControlFlowExecute](/execute/#controlflowexecute) that carries the result of the [ControlFlowExecute](/execute/#controlflowexecute) execution.|
+
+
 ### Examples
 
 {{< readfile file="/resources/docs_resources_plugins/ChaosMonkeyComplete" highlight="json" >}}
