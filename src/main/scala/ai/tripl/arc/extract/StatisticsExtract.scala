@@ -122,8 +122,7 @@ object StatisticsExtractStage {
 
         // add the statistics to the logs
         val objectMapper = new ObjectMapper()
-        var statisticsMap = new java.util.HashMap[String, Object]()
-        statisticsMap = objectMapper.readValue(StatisticsUtils.createStatisticsJSON(statisticsDF), classOf[java.util.HashMap[String, Object]])
+        val statisticsMap = objectMapper.readValue(StatisticsUtils.createStatisticsJSON(statisticsDF), classOf[java.util.HashMap[String, Object]])
         stage.stageDetail.put("statistics", statisticsMap)
       }
     }

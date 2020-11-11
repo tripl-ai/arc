@@ -143,14 +143,12 @@ object SQLValidateStage {
       // try to parse to json object or array[json object]
       val objectMapper = new ObjectMapper()
       try {
-        var messageMap = new java.util.HashMap[String, Object]()
-        messageMap = objectMapper.readValue(message, classOf[java.util.HashMap[String, Object]])
+        val messageMap = objectMapper.readValue(message, classOf[java.util.HashMap[String, Object]])
         stage.stageDetail.put("message", messageMap)
       } catch {
         case e: Exception => {
           try {
-            var messageArray = new java.util.ArrayList[java.util.HashMap[String, Object]]
-            messageArray = objectMapper.readValue(message, classOf[java.util.ArrayList[java.util.HashMap[String, Object]]])
+            val messageArray = objectMapper.readValue(message, classOf[java.util.ArrayList[java.util.HashMap[String, Object]]])
             stage.stageDetail.put("message", messageArray)
           } catch {
             case e: Exception =>
