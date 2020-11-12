@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.5.3</span></strong>
+          <span class="version">3.6.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -513,6 +513,48 @@
 <td>Double</td>
 <td>true</td>
 <td>The probability of this strategy being executed. Must be between <code>0.0</code> and <code>1.0</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="controlflow">ControlFlow</h4>
+
+<h5 id="since-3-6-0-supports-streaming-false">Since: 3.6.0 - Supports Streaming: False</h5>
+
+<p>The <code>ControlFlow</code> plugin is intended to be used with <a href="https://arc.tripl.ai/execute/#controlflowexecute">ControlFlowExecute</a> to provide a way to conditionally exiting a job partway through execution and return success. As a <code>Lifecycle Plugin</code> it will be executed prior to each stage and will run or skip the stage depending on the result of a prior <a href="https://arc.tripl.ai/execute/#controlflowexecute">ControlFlowExecute</a> stage.</p>
+
+<h3 id="parameters-1">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>key</td>
+<td>Strong</td>
+<td>false</td>
+<td>The name of the <code>key</code> set in <a href="https://arc.tripl.ai/execute/#controlflowexecute">ControlFlowExecute</a> that carries the result of the <a href="https://arc.tripl.ai/execute/#controlflowexecute">ControlFlowExecute</a> execution.</td>
 </tr>
 </tbody>
 </table>
