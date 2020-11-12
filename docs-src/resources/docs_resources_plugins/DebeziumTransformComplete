@@ -1,0 +1,12 @@
+{
+  "type": "DebeziumTransform",
+  "name": "DebeziumTransform",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputView": "customer_change_data_capture",
+  "outputView": "customer",
+  "schemaURI": "hdfs://datalake/schema/customer.json",
+  "strict": true
+}
