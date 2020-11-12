@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.6.1
+
+- add `JupyterCompleter` to Lifecycle Plugins `ChaosMonkey` and `ControlFlow`.
+
 ## 3.6.0
 
 - add `ControlFlowExecute` and `ControlFlow` plugins to support work avoidance.
