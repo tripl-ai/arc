@@ -1,0 +1,8 @@
+{
+  "type": "ai.tripl.arc.plugins.lifecycle.ControlFlow",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "key": "controlFlowPluginOutcome"
+}

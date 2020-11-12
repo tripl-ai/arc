@@ -89,7 +89,7 @@ Parameters    Attribute Type Required Description     name String true Name of t
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/validate/</guid>
-      <description>*Validate stages are used to perform validation and basic workflow controls. Programmers should think of these stages as assertions in that the job should terminate with error given a certain condition.
+      <description>*Validate stages are used to perform validation and basic workflow controls. Programmers should think of these stages as assertions in that the job should terminate with error if a certain condition is not met.
 EqualityValidate Since: 1.0.0 - Supports Streaming: False The EqualityValidate takes two input DataFrame and will succeed if they are identical or fail if not. This stage is useful to use in automated testing as it can be used to validate a derived dataset equals a known &amp;lsquo;good&amp;rsquo; dataset.</description>
     </item>
     

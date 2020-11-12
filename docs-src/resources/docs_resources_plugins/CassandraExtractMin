@@ -4,8 +4,8 @@
   "environments": [
     "production",
     "test"
-  ],  
+  ],
   "keyspace": "default",
   "table": "customer",
-  "outputView": "customer"      
+  "outputView": "customer"
 }

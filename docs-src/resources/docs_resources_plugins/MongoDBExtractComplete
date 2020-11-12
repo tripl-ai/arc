@@ -18,5 +18,5 @@
   ],
   "persist": false,
   "schemaURI": "hdfs://datalake/metadata/customer.json",
-  "schemaView": "customer_schema"  
-} 
+  "schemaView": "customer_schema"
+}

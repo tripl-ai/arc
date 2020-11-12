@@ -517,6 +517,17 @@
 </tbody>
 </table>
 
+<h3 id="examples">Examples</h3>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ai.tripl.arc.plugins.lifecycle.ChaosMonkey&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;strategy&#34;</span><span class="p">:</span> <span class="s2">&#34;exception&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;probability&#34;</span><span class="p">:</span> <span class="mf">0.05</span>
+<span class="p">}</span></code></pre></div>
+
 <h4 id="controlflow">ControlFlow</h4>
 
 <h5 id="since-3-6-0-supports-streaming-false">Since: 3.6.0 - Supports Streaming: False</h5>
@@ -552,20 +563,22 @@
 
 <tr>
 <td>key</td>
-<td>Strong</td>
+<td>String</td>
 <td>false</td>
 <td>The name of the <code>key</code> set in <a href="https://arc.tripl.ai/execute/#controlflowexecute">ControlFlowExecute</a> that carries the result of the <a href="https://arc.tripl.ai/execute/#controlflowexecute">ControlFlowExecute</a> execution.</td>
 </tr>
 </tbody>
 </table>
 
-<h3 id="examples">Examples</h3>
+<h3 id="examples-1">Examples</h3>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
-  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ai.tripl.arc.plugins.lifecycle.ChaosMonkey&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;test&#34;</span><span class="p">],</span>
-  <span class="nt">&#34;strategy&#34;</span><span class="p">:</span> <span class="s2">&#34;exception&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;probability&#34;</span><span class="p">:</span> <span class="mf">0.05</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;ai.tripl.arc.plugins.lifecycle.ControlFlow&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;controlFlowPluginOutcome&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="user-defined-functions">User Defined Functions</h2>
@@ -723,7 +736,7 @@ FROM (
 
 <p>Plugins are resolved dynamically at runtime and are resolved by name and version.</p>
 
-<h4 id="examples-1">Examples</h4>
+<h4 id="examples-2">Examples</h4>
 
 <p>Assuming we wanted to execute a <code>KafkaExtract</code> <a href="#pipeline-stage-plugins">Pipeline Stage Plugin</a>:</p>
 
@@ -775,7 +788,7 @@ FROM (
 
 <p>The <code>Dynamic Configuration Plugin</code> plugin allow users to inject custom configuration parameters which will be processed before resolving the job configuration file. The plugin must return a Typesafe Config object (which is easily created from a <code>java.util.Map[String, Object]</code> which will be included in the job configuration resolution step.</p>
 
-<h4 id="examples-2">Examples</h4>
+<h4 id="examples-3">Examples</h4>
 
 <p>For example a custom runtime configuration plugin could be used calculate a formatted list of dates to be used with an <a href="../extract">Extract</a> stage to read only a subset of documents:</p>
 
@@ -904,7 +917,7 @@ class DeltaPeriodDynamicConfigurationPlugin extends DynamicConfigurationPlugin {
 
 <p>Custom <code>Lifecycle Plugins</code> allow users to extend the base Arc framework with logic which is executed <code>before</code> or <code>after</code> each Arc stage (lifecycle hooks). These stages are useful for implementing things like dataset logging after each stage execution for debugging.</p>
 
-<h4 id="examples-3">Examples</h4>
+<h4 id="examples-4">Examples</h4>
 
 <pre><code class="language-scala">package ai.tripl.arc.plugins.lifecycle
 
@@ -1003,7 +1016,7 @@ case class DataFramePrinterInstance(
 
 <p>Custom <code>Pipeline Stage Plugins</code> allow users to extend the base Arc framework with custom stages which allow the full use of the Spark <a href="https://spark.apache.org/docs/latest/api/scala/">Scala API</a>. This means that private business logic or code which relies on libraries not included in the base Arc framework can be used - however it is strongly advised to use the inbuilt SQL stages where possible. If stages are general purpose enough for use outside your organisation consider contributing them to <a href="https://github.com/tripl-ai">ai.tripl</a> so that others can benefit.</p>
 
-<h4 id="examples-4">Examples</h4>
+<h4 id="examples-5">Examples</h4>
 
 <pre><code class="language-scala">class ConsoleLoad extends PipelineStagePlugin {
 
@@ -1161,7 +1174,7 @@ val transformedDF = try {
 
 <p>Arc already includes <a href="partials/#user-defined-functions">some addtional functions</a> which are not included in the base <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">Spark SQL</a> dialect so any useful generic functions can be included in the <a href="https://github.com/tripl-ai/arc">Arc repository</a> so that others can benefit.</p>
 
-<h4 id="examples-5">Examples</h4>
+<h4 id="examples-6">Examples</h4>
 
 <p>Write the code to define the custom <code>User Defined Function</code>:</p>
 

@@ -4,7 +4,7 @@
   "environments": [
     "production",
     "test"
-  ],  
+  ],
   "inputView": "customer",
   "keyspace": "default",
   "table": "customer"

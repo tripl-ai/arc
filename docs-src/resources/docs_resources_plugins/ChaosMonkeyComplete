@@ -1,6 +1,8 @@
 {
   "type": "ai.tripl.arc.plugins.lifecycle.ChaosMonkey",
-  "environments": ["test"],
+  "environments": [
+    "test"
+  ],
   "strategy": "exception",
   "probability": 0.05
 }

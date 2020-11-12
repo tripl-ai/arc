@@ -4,7 +4,7 @@ weight: 60
 type: blog
 ---
 
-`*Validate` stages are used to perform validation and basic workflow controls. Programmers should think of these stages as [assertions](https://en.wikipedia.org/wiki/Assertion_(software_development)) in that the job should terminate with error given a certain condition.
+`*Validate` stages are used to perform validation and basic workflow controls. Programmers should think of these stages as [assertions](https://en.wikipedia.org/wiki/Assertion_(software_development)) in that the job should terminate with error if a certain condition is not met.
 
 ## EqualityValidate
 ##### Since: 1.0.0 - Supports Streaming: False

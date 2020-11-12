@@ -4,7 +4,7 @@
   "environments": [
     "production",
     "test"
-  ],  
+  ],
   "keyspace": "default",
   "table": "customer",
   "outputView": "customer",
@@ -15,5 +15,5 @@
   "partitionBy": [
     "country"
   ],
-  "persist": true         
+  "persist": true
 }
