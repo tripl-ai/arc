@@ -11,9 +11,20 @@ import ai.tripl.arc.plugins.LifecyclePlugin
 import ai.tripl.arc.util.Utils
 import ai.tripl.arc.config.Error._
 
-class ControlFlow extends LifecyclePlugin {
+class ControlFlow extends LifecyclePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
+
+  val snippet = """%lifecycleplugin
+    |{
+    |  "type": "ControlFlow",
+    |  "environments": [
+    |    "production",
+    |    "test"
+    |  ]
+    |}""".stripMargin
+
+  val documentationURI = new java.net.URI(s"${baseURI}/plugins/#controlflow")
 
   def instantiate(index: Int, config: com.typesafe.config.Config)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Either[List[ai.tripl.arc.config.Error.StageError], LifecyclePluginInstance] = {
     import ai.tripl.arc.config.ConfigReader._
