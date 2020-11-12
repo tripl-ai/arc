@@ -51,8 +51,11 @@ It is a great dataset as it has a lot of the attributes of real-world data that 
       <guid>https://arc.tripl.ai/transform/</guid>
       <description>*Transform stages apply a single transformation to one or more incoming datasets.
 Transformers should meet this criteria:
- Be logically pure. Perform only a single function. Utilise Spark internal functionality where possible.  DiffTransform Since: 1.0.8 - Supports Streaming: False The DiffTransform stage calculates the difference between two input datasets and produces three datasets:
- A dataset of the intersection of the two datasets - or rows that exist and are the same in both datasets.</description>
+ Be logically pure. Perform only a single function. Utilise Spark internal functionality where possible.  DebeziumTransform Since: 3.6.0 - Supports Streaming: True Plugin
+The DebeziumTransform is provided by the https://github.com/tripl-ai/arc-debezium-pipeline-plugin package.
+ Experimental
+The DebeziumTransform is currently in experimental state whilst the requirements become clearer.
+This means this API is likely to change and feedback is valued.</description>
     </item>
     
     <item>
@@ -86,10 +89,8 @@ Parameters    Attribute Type Required Description     name String true Name of t
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/validate/</guid>
-      <description>*Validate stages are used to perform validation and basic workflow controls.
-EqualityValidate Since: 1.0.0 - Supports Streaming: False The EqualityValidate takes two input DataFrame and will succeed if they are identical or fail if not. This stage is useful to use in automated testing as it can be used to validate a derived dataset equals a known &amp;lsquo;good&amp;rsquo; dataset.
-This stage will validate:
- Same number of columns. Same data type of columns.</description>
+      <description>*Validate stages are used to perform validation and basic workflow controls. Programmers should think of these stages as assertions in that the job should terminate with error given a certain condition.
+EqualityValidate Since: 1.0.0 - Supports Streaming: False The EqualityValidate takes two input DataFrame and will succeed if they are identical or fail if not. This stage is useful to use in automated testing as it can be used to validate a derived dataset equals a known &amp;lsquo;good&amp;rsquo; dataset.</description>
     </item>
     
     <item>
@@ -150,7 +151,7 @@ Database Inconsistency When writing data to targets like databases using the JDB
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/changelog/</guid>
-      <description>Change Log 3.5.3  FIX remove limitation that required field metadata names to be different to the field name.  3.5.2  FIX reorder AWS Identity and Access Management providers com.amazonaws.auth.WebIdentityTokenCredentialsProvider to allow use of Arc on Amazon Elastic Kubernetes Service with IAM.  3.5.1  FIX issue with TensorFlowServingTransform transform not parsing batchSize argument correctly.  3.5.0  add StatisticsExtract stage. add etl.config.lintOnly (ETL_CONF_LINT_ONLY) option to only validate the configuration and not run the job.</description>
+      <description>Change Log 3.6.0  add ControlFlowExecute and ControlFlow plugins to support work avoidance.  3.5.3  FIX remove limitation that required field metadata names to be different to the field name.  3.5.2  FIX reorder AWS Identity and Access Management providers com.amazonaws.auth.WebIdentityTokenCredentialsProvider to allow use of Arc on Amazon Elastic Kubernetes Service with IAM.  3.5.1  FIX issue with TensorFlowServingTransform transform not parsing batchSize argument correctly.  3.5.0  add StatisticsExtract stage.</description>
     </item>
     
     <item>

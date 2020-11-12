@@ -45,7 +45,7 @@ case class ControlFlowInstance(
 
   override def runStage(stage: PipelineStage, index: Int, stages: List[PipelineStage])(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Boolean = {
     arcContext.userData.get(key) match {
-      case Some(controlFlowPayload: ai.tripl.arc.plugins.pipeline.ControlFlowPayload) => {
+      case Some(controlFlowPayload: ai.tripl.arc.execute.ControlFlowPayload) => {
         try {
            controlFlowPayload.outcome match {
             case false => {

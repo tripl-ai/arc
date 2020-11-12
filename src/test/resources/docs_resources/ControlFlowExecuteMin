@@ -1,0 +1,9 @@
+{
+  "type": "ControlFlowExecute",
+  "name": "determine whether to execute remainder of job",
+  "environments": [
+    "production",
+    "test"
+  ],
+  "inputURI": "hdfs://datalake/sql/control_flow.sql"
+}

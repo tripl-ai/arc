@@ -152,8 +152,7 @@ object ConfigExecuteStage {
 
       // try to parse to json object or array[json object]
       val objectMapper = new ObjectMapper()
-      var messageMap = new java.util.HashMap[String, Object]()
-      messageMap = objectMapper.readValue(message, classOf[java.util.HashMap[String, Object]])
+      val messageMap = objectMapper.readValue(message, classOf[java.util.HashMap[String, Object]])
       stage.stageDetail.put("message", messageMap)
 
       // add the key/values to the context

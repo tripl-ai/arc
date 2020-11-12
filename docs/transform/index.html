@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.5.3</span></strong>
+          <span class="version">3.6.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -465,6 +465,150 @@
 <li>Utilise Spark <a href="https://spark.apache.org/docs/latest/sql-programming-guide.html">internal functionality</a> where possible.</li>
 </ul>
 
+<h2 id="debeziumtransform">DebeziumTransform</h2>
+
+<h5 id="since-3-6-0-supports-streaming-true">Since: 3.6.0 - Supports Streaming: True</h5>
+
+<div class="admonition note">
+<p class="admonition-title">Plugin</p>
+<p>The <code>DebeziumTransform</code> is provided by the <a href="https://github.com/tripl-ai/arc-debezium-pipeline-plugin">https://github.com/tripl-ai/arc-debezium-pipeline-plugin</a> package.</p>
+</div>
+
+<div class="admonition note">
+<p class="admonition-title">Experimental</p>
+<p><p>The <code>DebeziumTransform</code> is currently in experimental state whilst the requirements become clearer.</p>
+
+<p>This means this API is likely to change and feedback is valued.</p>
+</p>
+</div>
+
+<p>The <code>DebeziumTransform</code> stage decodes <a href="https://debezium.io/">Debezium</a> change-data-capture <code>JSON</code> formatted messages for <code>MySQL</code>, <code>PostgreSQL</code> and <code>MongoDB</code> databases and creates a DataFrame which represents an eventually consistent view of a source dataset at a point in time. It supports <code>Complete</code> and <code>Append</code> modes <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html">Structured Streaming</a> modes.</p>
+
+<p>It is intended to be used after a <a href="https://arc.tripl.ai/extract/#kafkaextract">KafkaExtract</a> stage.</p>
+
+<h3 id="parameters">Parameters</h3>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>name</td>
+<td>String</td>
+<td>true</td>
+<td>Name of the stage for logging.</td>
+</tr>
+
+<tr>
+<td>environments</td>
+<td>Array[String]</td>
+<td>true</td>
+<td>A list of environments under which this stage will be executed. See <a href="../partials/#environments">environments</a> documentation.</td>
+</tr>
+
+<tr>
+<td>inputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of incoming Spark dataset.</td>
+</tr>
+
+<tr>
+<td>outputView</td>
+<td>String</td>
+<td>true</td>
+<td>Name of outgoing Spark dataset after processing.</td>
+</tr>
+
+<tr>
+<td>schema</td>
+<td>Array</td>
+<td>true*</td>
+<td>An inline Arc <a href="https://arc.tripl.ai/schema">schema</a>. Only one of <code>schema</code>, <code>schemaURI</code>, <code>schemaView</code> can be provided.</td>
+</tr>
+
+<tr>
+<td>schemaURI</td>
+<td>URI</td>
+<td>true*</td>
+<td>URI of the input JSON file containing the Arc <a href="https://arc.tripl.ai/schema">schema</a>. Only one of <code>schema</code>, <code>schemaURI</code>, <code>schemaView</code> can be provided.</td>
+</tr>
+
+<tr>
+<td>schemaView</td>
+<td>String</td>
+<td>true*</td>
+<td>Similar to <code>schemaURI</code> but allows the Arc <a href="https://arc.tripl.ai/schema">schema</a> to be passed in as another <code>DataFrame</code>.  Only one of <code>schema</code>, <code>schemaURI</code>, <code>schemaView</code> can be provided.</td>
+</tr>
+
+<tr>
+<td>authentication</td>
+<td>Map[String, String]</td>
+<td>false</td>
+<td>An authentication map for authenticating with a remote service. See <a href="../security/#authentication">authentication</a> documentation.</td>
+</tr>
+
+<tr>
+<td>description</td>
+<td>String</td>
+<td>false</td>
+<td>An optional stage description to help document job files and print to job logs to assist debugging.</td>
+</tr>
+
+<tr>
+<td>id</td>
+<td>String</td>
+<td>false</td>
+<td>A optional unique identifier for this stage.</td>
+</tr>
+
+<tr>
+<td>strict</td>
+<td>Boolean</td>
+<td>false</td>
+<td>If <code>strict</code> mode is enabled then every change per key is applied in strict sequence and will fail if a prior state is not what is expected. When <code>strict</code> mode is disabled then <code>DebeziumTransform</code> will employ a <code>last-writer wins</code> <a href="https://en.wikipedia.org/wiki/Eventual_consistency#Conflict_resolution">conflict resolution</a> strategy which requires strict ordering from the source but will be quicker.<br><br>Not all sources support non-strict mode due to how they record change events such as <code>MongoDB</code>.<br><br>Default: <code>true</code>.</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="examples">Examples</h3>
+
+<h4 id="minimal">Minimal</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DebeziumTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;DebeziumTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_change_data_capture&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span>
+<span class="p">}</span></code></pre></div>
+
+<h4 id="complete">Complete</h4>
+
+<div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
+  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DebeziumTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;DebeziumTransform&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;environments&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;production&#34;</span><span class="p">,</span>
+    <span class="s2">&#34;test&#34;</span>
+  <span class="p">],</span>
+  <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_change_data_capture&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;strict&#34;</span><span class="p">:</span> <span class="kc">true</span>
+<span class="p">}</span></code></pre></div>
+
 <h2 id="difftransform">DiffTransform</h2>
 
 <h5 id="since-1-0-8-supports-streaming-false">Since: 1.0.8 - Supports Streaming: False</h5>
@@ -482,7 +626,7 @@
 <p>This stage performs this &lsquo;diffing&rsquo; operation in a single pass so if multiple of the output views are going to be used then it is a good idea to set persist = <code>true</code> to reduce the cost of recomputing the difference multiple times.</p>
 </div>
 
-<h3 id="parameters">Parameters</h3>
+<h3 id="parameters-1">Parameters</h3>
 
 <table>
 <thead>
@@ -581,9 +725,9 @@
 </tbody>
 </table>
 
-<h3 id="examples">Examples</h3>
+<h3 id="examples-1">Examples</h3>
 
-<h4 id="minimal">Minimal</h4>
+<h4 id="minimal-1">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DiffTransform&#34;</span><span class="p">,</span>
@@ -597,7 +741,7 @@
   <span class="nt">&#34;outputIntersectionView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_unchanged&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete">Complete</h4>
+<h4 id="complete-1">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;DiffTransform&#34;</span><span class="p">,</span>
@@ -631,7 +775,7 @@
 <p>A good use case of the <code>HTTPTransform</code> stage is to call an external <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">RESTful</a> machine learning model service. To see an example of how to host a simple model as a service see:<br>
 <a href="https://github.com/tripl-ai/arc/tree/master/src/it/resources/flask_serving">https://github.com/tripl-ai/arc/tree/master/src/it/resources/flask_serving</a></p>
 
-<h3 id="parameters-1">Parameters</h3>
+<h3 id="parameters-2">Parameters</h3>
 
 <table>
 <thead>
@@ -758,9 +902,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-1">Examples</h3>
+<h3 id="examples-2">Examples</h3>
 
-<h4 id="minimal-1">Minimal</h4>
+<h4 id="minimal-2">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPTransform&#34;</span><span class="p">,</span>
@@ -774,7 +918,7 @@
   <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://internalserver/api/customer_retention&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-1">Complete</h4>
+<h4 id="complete-2">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;HTTPTransform&#34;</span><span class="p">,</span>
@@ -813,7 +957,7 @@
 
 <p>The <code>JSONTransform</code> stage transforms the incoming dataset to rows of <code>json</code> strings with the column name <code>value</code>. It is intended to be used before stages like <a href="https://arc.tripl.ai/load/#httpload">HTTPLoad</a> or <a href="https://arc.tripl.ai/transform/#httptransform">HTTPTransform</a> to prepare the data for sending externally.</p>
 
-<h3 id="parameters-2">Parameters</h3>
+<h3 id="parameters-3">Parameters</h3>
 
 <table>
 <thead>
@@ -891,9 +1035,9 @@
 </tbody>
 </table>
 
-<h3 id="examples-2">Examples</h3>
+<h3 id="examples-3">Examples</h3>
 
-<h4 id="minimal-2">Minimal</h4>
+<h4 id="minimal-3">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONTransform&#34;</span><span class="p">,</span>
@@ -906,7 +1050,7 @@
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_json&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-2">Complete</h4>
+<h4 id="complete-3">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;JSONTransform&#34;</span><span class="p">,</span>
@@ -930,15 +1074,7 @@
 
 <h5 id="since-1-0-9-supports-streaming-true-1">Since: 1.0.9 - Supports Streaming: True</h5>
 
-<div class="admonition note">
-<p class="admonition-title">Experimental</p>
-<p><p>The <code>MetadataFilterTransform</code> is currently in experimental state whilst the requirements become clearer.</p>
-
-<p>This means this API is likely to change.</p>
-</p>
-</div>
-
-<p>The <code>MetadataFilterTransform</code> stage transforms the incoming dataset by filtering columns using the embedded column <a href="../schema/">metadata</a>.</p>
+<p>The <code>MetadataFilterTransform</code> stage transforms the incoming dataset by filtering columns using the embedded column <a href="https://arc.tripl.ai/schema">metadata</a>.</p>
 
 <p>Underneath Arc will register a table called <code>metadata</code> which contains the metadata of the <code>inputView</code>. This allows complex SQL statements to be executed which returns which columns to retain from the <code>inputView</code> in the <code>outputView</code>. The available columns in the <code>metadata</code> table are:</p>
 
@@ -996,7 +1132,7 @@ WHERE metadata.pii = (
 
 <p>The <code>inputView</code> and <code>outputView</code> can be set to the same name so that downstream stages have no way of accessing the pre-filtered data accidentially.</p>
 
-<h3 id="parameters-3">Parameters</h3>
+<h3 id="parameters-4">Parameters</h3>
 
 <table>
 <thead>
@@ -1109,9 +1245,9 @@ WHERE metadata.pii = (
 </tbody>
 </table>
 
-<h3 id="examples-3">Examples</h3>
+<h3 id="examples-4">Examples</h3>
 
-<h4 id="minimal-3">Minimal</h4>
+<h4 id="minimal-4">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataFilterTransform&#34;</span><span class="p">,</span>
@@ -1125,7 +1261,7 @@ WHERE metadata.pii = (
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_safe&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-3">Complete</h4>
+<h4 id="complete-4">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataFilterTransform&#34;</span><span class="p">,</span>
@@ -1156,7 +1292,7 @@ WHERE metadata.pii = (
 
 <p>The <code>MetadataTransform</code> stage attaches metadata input <code>Dataframe</code> and returns a new <code>DataFrame</code>.</p>
 
-<h3 id="parameters-4">Parameters</h3>
+<h3 id="parameters-5">Parameters</h3>
 
 <table>
 <thead>
@@ -1262,9 +1398,9 @@ WHERE metadata.pii = (
 </tbody>
 </table>
 
-<h3 id="examples-4">Examples</h3>
+<h3 id="examples-5">Examples</h3>
 
-<h4 id="minimal-4">Minimal</h4>
+<h4 id="minimal-5">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataTransform&#34;</span><span class="p">,</span>
@@ -1278,7 +1414,7 @@ WHERE metadata.pii = (
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-4">Complete</h4>
+<h4 id="complete-5">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MetadataTransform&#34;</span><span class="p">,</span>
@@ -1306,7 +1442,7 @@ WHERE metadata.pii = (
 
 <p>The <code>MLTransform</code> stage transforms the incoming dataset with a pretrained Spark ML (Machine Learning) model. This will append one or more predicted columns to the incoming dataset. The incoming model must be a <code>PipelineModel</code> or <code>CrossValidatorModel</code> produced using Spark&rsquo;s Scala, Java, PySpark or SparkR API.</p>
 
-<h3 id="parameters-5">Parameters</h3>
+<h3 id="parameters-6">Parameters</h3>
 
 <table>
 <thead>
@@ -1405,9 +1541,9 @@ WHERE metadata.pii = (
 </tbody>
 </table>
 
-<h3 id="examples-5">Examples</h3>
+<h3 id="examples-6">Examples</h3>
 
-<h4 id="minimal-5">Minimal</h4>
+<h4 id="minimal-6">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MLTransform&#34;</span><span class="p">,</span>
@@ -1421,7 +1557,7 @@ WHERE metadata.pii = (
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_scored&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-5">Complete</h4>
+<h4 id="complete-6">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;MLTransform&#34;</span><span class="p">,</span>
@@ -1449,7 +1585,7 @@ WHERE metadata.pii = (
 
 <p>The <code>SimilarityJoinTransform</code> stage uses <a href="https://en.wikipedia.org/wiki/Approximate_string_matching">Approximate String Matching</a> (a.k.a. Fuzzy Matching) to find similar records between two datasets. It is possible to pass the same dataset into both side of the comparison to find duplicates (ie. both <code>leftView</code> and <code>rightView</code>) to find duplicates (in which case the <code>threshold</code> value should be high (close to <code>1.0</code>) to avoid a potentially very large cross-product resultset).</p>
 
-<h3 id="parameters-6">Parameters</h3>
+<h3 id="parameters-7">Parameters</h3>
 
 <table>
 <thead>
@@ -1583,9 +1719,9 @@ WHERE metadata.pii = (
 </tbody>
 </table>
 
-<h3 id="examples-6">Examples</h3>
+<h3 id="examples-7">Examples</h3>
 
-<h4 id="minimal-6">Minimal</h4>
+<h4 id="minimal-7">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SimilarityJoinTransform&#34;</span><span class="p">,</span>
@@ -1612,7 +1748,7 @@ WHERE metadata.pii = (
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;official_address_compare&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-6">Complete</h4>
+<h4 id="complete-7">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SimilarityJoinTransform&#34;</span><span class="p">,</span>
@@ -1667,7 +1803,7 @@ WHERE metadata.pii = (
 </p>
 </div>
 
-<h3 id="parameters-7">Parameters</h3>
+<h3 id="parameters-8">Parameters</h3>
 
 <table>
 <thead>
@@ -1788,9 +1924,9 @@ SELECT
 FROM ${inputView}
 </code></pre>
 
-<h3 id="examples-7">Examples</h3>
+<h3 id="examples-8">Examples</h3>
 
-<h4 id="minimal-7">Minimal</h4>
+<h4 id="minimal-8">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
@@ -1803,7 +1939,7 @@ FROM ${inputView}
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-7">Complete</h4>
+<h4 id="complete-8">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;SQLTransform&#34;</span><span class="p">,</span>
@@ -1835,20 +1971,12 @@ FROM ${inputView}
 
 <h5 id="since-1-0-0-supports-streaming-true-3">Since: 1.0.0 - Supports Streaming: True</h5>
 
-<div class="admonition note">
-<p class="admonition-title">Experimental</p>
-<p><p>The <code>TensorFlowServingTransform</code> is currently in experimental state whilst the requirements become clearer.</p>
-
-<p>This means this API is likely to change.</p>
-</p>
-</div>
-
 <p>The <code>TensorFlowServingTransform</code> stage transforms the incoming dataset by calling a <a href="https://www.tensorflow.org/serving/">TensorFlow Serving</a> service. Because each call is atomic the TensorFlow Serving instances could be behind a load balancer to increase throughput.</p>
 
 <p>To see how to host a simple model in <a href="https://www.tensorflow.org/serving/">TensorFlow Serving</a> see:<br>
 <a href="https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving">https://github.com/tripl-ai/arc/tree/master/src/it/resources/tensorflow_serving</a></p>
 
-<h3 id="parameters-8">Parameters</h3>
+<h3 id="parameters-9">Parameters</h3>
 
 <table>
 <thead>
@@ -1968,9 +2096,9 @@ FROM ${inputView}
 </tbody>
 </table>
 
-<h3 id="examples-8">Examples</h3>
+<h3 id="examples-9">Examples</h3>
 
-<h4 id="minimal-8">Minimal</h4>
+<h4 id="minimal-9">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TensorFlowServingTransform&#34;</span><span class="p">,</span>
@@ -1984,7 +2112,7 @@ FROM ${inputView}
   <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;http://tfserving:9001/v1/models/customer_segmentation/versions/1:predict&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-8">Complete</h4>
+<h4 id="complete-9">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TensorFlowServingTransform&#34;</span><span class="p">,</span>
@@ -2016,7 +2144,7 @@ FROM ${inputView}
 
 <p>The logical process that is applied to perform the typing on a field-by-field basis is shown below.</p>
 
-<h3 id="parameters-9">Parameters</h3>
+<h3 id="parameters-10">Parameters</h3>
 
 <table>
 <thead>
@@ -2129,9 +2257,9 @@ FROM ${inputView}
 </tbody>
 </table>
 
-<h3 id="examples-9">Examples</h3>
+<h3 id="examples-10">Examples</h3>
 
-<h4 id="minimal-9">Minimal</h4>
+<h4 id="minimal-10">Minimal</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>
@@ -2145,7 +2273,7 @@ FROM ${inputView}
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span>
 <span class="p">}</span></code></pre></div>
 
-<h4 id="complete-9">Complete</h4>
+<h4 id="complete-10">Complete</h4>
 
 <div class="highlight"><pre class="chroma"><code class="language-json" data-lang="json"><span class="p">{</span>
   <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;TypingTransform&#34;</span><span class="p">,</span>

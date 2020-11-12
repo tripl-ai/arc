@@ -1,4 +1,5 @@
 ai.tripl.arc.execute.ConfigExecute
+ai.tripl.arc.execute.ControlFlowExecute
 ai.tripl.arc.execute.HTTPExecute
 ai.tripl.arc.execute.JDBCExecute
 ai.tripl.arc.execute.LogExecute
@@ -25,7 +26,6 @@ ai.tripl.arc.load.JSONLoad
 ai.tripl.arc.load.ORCLoad
 ai.tripl.arc.load.ParquetLoad
 ai.tripl.arc.load.TextLoad
-ai.tripl.arc.plugins.pipeline.ControlFlowExecute
 ai.tripl.arc.plugins.pipeline.LazyEvaluator
 ai.tripl.arc.transform.DiffTransform
 ai.tripl.arc.transform.HTTPTransform

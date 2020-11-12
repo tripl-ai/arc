@@ -12,6 +12,46 @@ Transformers should meet this criteria:
 - Perform only a [single function](https://en.wikipedia.org/wiki/Separation_of_concerns).
 - Utilise Spark [internal functionality](https://spark.apache.org/docs/latest/sql-programming-guide.html) where possible.
 
+## DebeziumTransform
+##### Since: 3.6.0 - Supports Streaming: True
+{{< note title="Plugin" >}}
+The `DebeziumTransform` is provided by the https://github.com/tripl-ai/arc-debezium-pipeline-plugin package.
+{{</note>}}
+
+{{< note title="Experimental" >}}
+The `DebeziumTransform` is currently in experimental state whilst the requirements become clearer.
+
+This means this API is likely to change and feedback is valued.
+{{</note>}}
+
+The `DebeziumTransform` stage decodes [Debezium](https://debezium.io/) change-data-capture `JSON` formatted messages for `MySQL`, `PostgreSQL` and `MongoDB` databases and creates a DataFrame which represents an eventually consistent view of a source dataset at a point in time. It supports `Complete` and `Append` modes [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html) modes.
+
+It is intended to be used after a [KafkaExtract](/extract/#kafkaextract) stage.
+
+### Parameters
+
+| Attribute | Type | Required | Description |
+|-----------|------|----------|-------------|
+|name|String|true|{{< readfile file="/content/partials/fields/stageName.md" markdown="true" >}}|
+|environments|Array[String]|true|{{< readfile file="/content/partials/fields/environments.md" markdown="true" >}}|
+|inputView|String|true|{{< readfile file="/content/partials/fields/inputView.md" markdown="true" >}}|
+|outputView|String|true|{{< readfile file="/content/partials/fields/outputView.md" markdown="true" >}}|
+|schema|Array|true*|An inline Arc [schema](/schema). Only one of `schema`, `schemaURI`, `schemaView` can be provided.|
+|schemaURI|URI|true*|URI of the input JSON file containing the Arc [schema](/schema). Only one of `schema`, `schemaURI`, `schemaView` can be provided.|
+|schemaView|String|true*|Similar to `schemaURI` but allows the Arc [schema](/schema) to be passed in as another `DataFrame`.  Only one of `schema`, `schemaURI`, `schemaView` can be provided.|
+|authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
+|description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
+|id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
+|strict|Boolean|false|If `strict` mode is enabled then every change per key is applied in strict sequence and will fail if a prior state is not what is expected. When `strict` mode is disabled then `DebeziumTransform` will employ a `last-writer wins` [conflict resolution](https://en.wikipedia.org/wiki/Eventual_consistency#Conflict_resolution) strategy which requires strict ordering from the source but will be quicker.<br><br>Not all sources support non-strict mode due to how they record change events such as `MongoDB`.<br><br>Default: `true`.|
+
+### Examples
+
+#### Minimal
+{{< readfile file="/resources/docs_resources_plugins/DebeziumTransformMin" highlight="json" >}}
+
+#### Complete
+{{< readfile file="/resources/docs_resources_plugins/DebeziumTransformComplete" highlight="json" >}}
+
 
 ## DiffTransform
 ##### Since: 1.0.8 - Supports Streaming: False
@@ -121,13 +161,7 @@ The `JSONTransform` stage transforms the incoming dataset to rows of `json` stri
 ## MetadataFilterTransform
 ##### Since: 1.0.9 - Supports Streaming: True
 
-{{< note title="Experimental" >}}
-The `MetadataFilterTransform` is currently in experimental state whilst the requirements become clearer.
-
-This means this API is likely to change.
-{{</note>}}
-
-The `MetadataFilterTransform` stage transforms the incoming dataset by filtering columns using the embedded column [metadata](../schema/).
+The `MetadataFilterTransform` stage transforms the incoming dataset by filtering columns using the embedded column [metadata](/schema).
 
 Underneath Arc will register a table called `metadata` which contains the metadata of the `inputView`. This allows complex SQL statements to be executed which returns which columns to retain from the `inputView` in the `outputView`. The available columns in the `metadata` table are:
 
@@ -361,12 +395,6 @@ The `current_date` and `current_timestamp` can easily be passed in as environmen
 
 ## TensorFlowServingTransform
 ##### Since: 1.0.0 - Supports Streaming: True
-
-{{< note title="Experimental" >}}
-The `TensorFlowServingTransform` is currently in experimental state whilst the requirements become clearer.
-
-This means this API is likely to change.
-{{</note>}}
 
 The `TensorFlowServingTransform` stage transforms the incoming dataset by calling a [TensorFlow Serving](https://www.tensorflow.org/serving/) service. Because each call is atomic the TensorFlow Serving instances could be behind a load balancer to increase throughput.
 
