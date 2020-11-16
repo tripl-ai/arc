@@ -309,7 +309,7 @@ object ConfigUtils {
                 |  "environments": [${environments}],
                 |  "sql": \"\"\"${command}\"\"\",
                 |  "sqlParams": {${sqlParams}},
-                |  "outputView": "${args.getOrElse("outputView", "")}",
+                |  ${args.get("outputView").map { outputView => s""""outputView": "${outputView}","""}.getOrElse("")}
                 |  "persist": ${args.getOrElse("persist", "false")},
                 |  ${dynamicArguments}
                 |}""".stripMargin
@@ -321,7 +321,7 @@ object ConfigUtils {
                 |  "environments": [${environments}],
                 |  "sql": \"\"\"${command}\"\"\",
                 |  "sqlParams": {${sqlParams}},
-                |  "outputView": "${args.getOrElse("outputView", "")}",
+                |  ${args.get("outputView").map { outputView => s""""outputView": "${outputView}","""}.getOrElse("")}
                 |  "persist": ${args.getOrElse("persist", "false")},
                 |  ${dynamicArguments}
                 |}""".stripMargin
@@ -353,7 +353,7 @@ object ConfigUtils {
                 |  "environments": [${environments}],
                 |  "sql": \"\"\"${command}\"\"\",
                 |  "sqlParams": {${sqlParams}},
-                |  "outputView": "${args.getOrElse("outputView", "")}",
+                |  ${args.get("outputView").map { outputView => s""""outputView": "${outputView}","""}.getOrElse("")}
                 |  "persist": ${args.getOrElse("persist", "false")},
                 |  ${dynamicArguments}
                 |}""".stripMargin
@@ -362,7 +362,6 @@ object ConfigUtils {
           }
         }
       }
-
 
     (configs.mkString("\n", ",\n", "\n"), lifecycles.mkString("\n", ",\n", "\n"), stages.mkString("\n",",\n","\n"))
   }
