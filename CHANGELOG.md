@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.6.2
+
+- **FIX** defect where IPYNB `%configexecute` did not provide the optional `outputView` parameter.
+
 ## 3.6.1
 
 - add `JupyterCompleter` to Lifecycle Plugins `ChaosMonkey` and `ControlFlow`.

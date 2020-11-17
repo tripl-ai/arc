@@ -480,9 +480,10 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
       case Right((pipeline, arcCtx)) => {
         assert(arcCtx.activeLifecyclePlugins.length == 1)
         assert(arcCtx.dynamicConfigurationPlugins.length == 1)
-        assert(pipeline.stages.length == 2)
+        assert(pipeline.stages.length == 3)
         assert(pipeline.stages(0).asInstanceOf[extract.RateExtractStage].outputView == "stream")
         assert(pipeline.stages(1).asInstanceOf[extract.RateExtractStage].outputView == "stream2")
+        assert(pipeline.stages(2).asInstanceOf[ai.tripl.arc.execute.ConfigExecuteStage].outputView.isEmpty)
       }
     }
   }
@@ -529,7 +530,7 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
         assert(pipeline.stages.length == 5)
         assert(pipeline.stages(0).asInstanceOf[extract.RateExtractStage].outputView == "stream0")
         val sqlTransformStage0 = pipeline.stages(1).asInstanceOf[transform.SQLTransformStage]
-        assert(sqlTransformStage0.outputView == "stream1")
+        assert(sqlTransformStage0.outputView == "abc_def")
         assert(sqlTransformStage0.sql == "SELECT *\nFROM ${inputView}")
         assert(sqlTransformStage0.sqlParams == Map[String, String]("inputView" -> "stream0"))
         assert(pipeline.stages(2).asInstanceOf[extract.RateExtractStage].outputView == "stream2")
