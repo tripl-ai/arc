@@ -570,10 +570,45 @@
 </tr>
 
 <tr>
+<td>initialStateKey</td>
+<td>String</td>
+<td>false</td>
+<td>Used to set the key to group the <code>initialStateView</code> to merge with the Debezium events.</td>
+</tr>
+
+<tr>
+<td>initialStateView</td>
+<td>String</td>
+<td>false</td>
+<td>Used to inject a previous state into the connector the Debezium events are applied against. Requires <code>initialStateKey</code> to be set.</td>
+</tr>
+
+<tr>
+<td>numPartitions</td>
+<td>Integer</td>
+<td>false</td>
+<td>The number of partitions that will be used for controlling parallelism.</td>
+</tr>
+
+<tr>
+<td>partitionBy</td>
+<td>Array[String]</td>
+<td>false</td>
+<td>Columns to partition the data by.</td>
+</tr>
+
+<tr>
+<td>persist</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
+</tr>
+
+<tr>
 <td>strict</td>
 <td>Boolean</td>
 <td>false</td>
-<td>If <code>strict</code> mode is enabled then every change per key is applied in strict sequence and will fail if a prior state is not what is expected. When <code>strict</code> mode is disabled then <code>DebeziumTransform</code> will employ a <code>last-writer wins</code> <a href="https://en.wikipedia.org/wiki/Eventual_consistency#Conflict_resolution">conflict resolution</a> strategy which requires strict ordering from the source but will be quicker.<br><br>Not all sources support non-strict mode due to how they record change events such as <code>MongoDB</code>.<br><br>Default: <code>true</code>.</td>
+<td>If <code>strict</code> mode is enabled then every change per key is applied in strict sequence and will fail if a prior state is not what is expected. When <code>strict</code> mode is disabled then <code>DebeziumTransform</code> will employ a <code>last-writer wins</code> <a href="https://en.wikipedia.org/wiki/Eventual_consistency#Conflict_resolution">conflict resolution</a> strategy which requires strict ordering from the source but will be quicker.<br><br>Not all sources support non-strict mode d ue to how they record change events such as <code>MongoDB</code>.<br><br>Default: <code>true</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -606,7 +641,12 @@
   <span class="nt">&#34;inputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_change_data_capture&#34;</span><span class="p">,</span>
   <span class="nt">&#34;outputView&#34;</span><span class="p">:</span> <span class="s2">&#34;customer&#34;</span><span class="p">,</span>
   <span class="nt">&#34;schemaURI&#34;</span><span class="p">:</span> <span class="s2">&#34;hdfs://datalake/schema/customer.json&#34;</span><span class="p">,</span>
-  <span class="nt">&#34;strict&#34;</span><span class="p">:</span> <span class="kc">true</span>
+  <span class="nt">&#34;strict&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;initialStateView&#34;</span><span class="p">:</span> <span class="s2">&#34;previous_customer&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;initialStateKey&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_id&#34;</span><span class="p">,</span>
+  <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+  <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_segment&#34;</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="difftransform">DiffTransform</h2>

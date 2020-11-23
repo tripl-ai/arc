@@ -42,7 +42,12 @@ It is intended to be used after a [KafkaExtract](/extract/#kafkaextract) stage.
 |authentication|Map[String, String]|false|{{< readfile file="/content/partials/fields/authentication.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
-|strict|Boolean|false|If `strict` mode is enabled then every change per key is applied in strict sequence and will fail if a prior state is not what is expected. When `strict` mode is disabled then `DebeziumTransform` will employ a `last-writer wins` [conflict resolution](https://en.wikipedia.org/wiki/Eventual_consistency#Conflict_resolution) strategy which requires strict ordering from the source but will be quicker.<br><br>Not all sources support non-strict mode due to how they record change events such as `MongoDB`.<br><br>Default: `true`.|
+|initialStateKey|String|false|Used to set the key to group the `initialStateView` to merge with the Debezium events.|
+|initialStateView|String|false|Used to inject a previous state into the connector the Debezium events are applied against. Requires `initialStateKey` to be set.|
+|numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
+|partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
+|persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|strict|Boolean|false|If `strict` mode is enabled then every change per key is applied in strict sequence and will fail if a prior state is not what is expected. When `strict` mode is disabled then `DebeziumTransform` will employ a `last-writer wins` [conflict resolution](https://en.wikipedia.org/wiki/Eventual_consistency#Conflict_resolution) strategy which requires strict ordering from the source but will be quicker.<br><br>Not all sources support non-strict mode d ue to how they record change events such as `MongoDB`.<br><br>Default: `true`.|
 
 ### Examples
 

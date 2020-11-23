@@ -8,5 +8,10 @@
   "inputView": "customer_change_data_capture",
   "outputView": "customer",
   "schemaURI": "hdfs://datalake/schema/customer.json",
-  "strict": true
+  "strict": true,
+  "initialStateView": "previous_customer",
+  "initialStateKey": "customer_id",
+  "persist": true,
+  "numPartitions": 10,
+  "partitionBy": "customer_segment"
 }
