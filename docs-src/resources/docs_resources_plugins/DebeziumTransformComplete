@@ -13,5 +13,7 @@
   "initialStateKey": "customer_id",
   "persist": true,
   "numPartitions": 10,
-  "partitionBy": "customer_segment"
+  "partitionBy": [
+    "customer_segment"
+  ]
 }
