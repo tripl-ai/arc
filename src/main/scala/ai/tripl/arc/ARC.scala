@@ -295,6 +295,13 @@ object ARC {
         try {
           if (!lintOnly) {
             ARC.run(pipeline)(spark, logger, ctx)
+          } else {
+            pipeline.stages.foreach { stage =>
+              logger.info()
+                .field("event", "lint")
+                .map("stage", stage.stageDetail.asJava)
+                .log()
+            }
           }
           false
         } catch {
