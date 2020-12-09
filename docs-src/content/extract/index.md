@@ -452,6 +452,7 @@ The returned `DataFrame` has the schema:
 |`partition`|Integer|The partition ID.|
 |`offset`|Long|The record offset.|
 |`timestamp`|Long|The record timestamp.|
+|`timestampType`|Int|The record timestamp type.|
 |`key`|Binary|The record key  as a byte array.|
 |`value`|Binary|The record value as a byte array.|
 
@@ -461,8 +462,8 @@ To convert the `key` or `value` from a Binary/byte array to a string it is possi
 
 ```sql
 SELECT
-  DECODE(key, 'utf-8') AS stringKey,
-  DECODE(value, 'utf-8') AS stringValue,
+  CAST(key AS STRING) AS stringKey,
+  CAST(value AS STRING) AS stringValue,
   ...
 ```
 
@@ -476,14 +477,15 @@ SELECT
 |bootstrapServers|String|true|{{< readfile file="/content/partials/fields/bootstrapServers.md" markdown="true" >}}|
 |topic|String|true|{{< readfile file="/content/partials/fields/topic.md" markdown="true" >}}|
 |groupID|String|true|{{< readfile file="/content/partials/fields/groupID.md" markdown="true" >}}|
-|autoCommit|Boolean|false|Whether to update the offsets in Kafka automatically. To be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecute) to allow quasi-transactional behaviour.<br><br>If `autoCommit` is set to `false` this stage will force `persist` equal to `true` so that Spark will not execute the Kafka extract process twice with a potentially different result (e.g. new messages added between extracts).<br><br>Default: false.|
+|autoCommit|Boolean|false|Whether to update the offsets in Kafka automatically. To be used in conjuction with [KafkaCommitExecute](../execute/#kafkacommitexecute) to allow quasi-transactional behaviour.<br><br>If `autoCommit` is set to `false` this stage will force `persist` equal to `true` so that Spark will not execute the Kafka extract process twice with a potentially different result (e.g. new messages added between extracts).<br><br>Default: `false`.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
-|maxPollRecords|Int|false|The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read.<br><br>Default: `10000`.|
+|maxPollRecords|Int|false|The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read.<br><br>Default: `500`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
-|timeout|Long|false|The time, in milliseconds, spent waiting in poll if data is not available in Kafka. Default: 10000.|
+|strict|Boolean|false|Whether to perform record count validation. Will not work with compacted topics. Default: `true`.|
+|timeout|Long|false|The time, in milliseconds, spent waiting in poll if data is not available in Kafka. Default: `10000`.|
 
 ### Examples
 
