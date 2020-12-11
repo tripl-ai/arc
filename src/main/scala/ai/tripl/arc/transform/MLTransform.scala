@@ -25,17 +25,16 @@ class MLTransform extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
 
-  val snippet: String = """{
+  def snippet()(implicit arcContext: ARCContext): String = {
+    s"""{
     |  "type": "MLTransform",
     |  "name": "MLTransform",
-    |  "environments": [
-    |    "production",
-    |    "test"
-    |  ],
+    |  "environments": [${arcContext.completionEnvironments.map { env => s""""${env}""""}.mkString(", ")}],
     |  "inputView": "inputView",
     |  "inputURI": "hdfs://*.model",
     |  "outputView": "outputView"
     |}""".stripMargin
+  }
 
   val documentationURI = new java.net.URI(s"${baseURI}/transform/#mltransform")
 

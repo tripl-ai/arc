@@ -20,15 +20,14 @@ class SQLValidate extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
 
-  val snippet = """{
+  def snippet()(implicit arcContext: ARCContext): String = {
+    s"""{
     |  "type": "SQLValidate",
     |  "name": "SQLValidate",
-    |  "environments": [
-    |    "production",
-    |    "test"
-    |  ],
+    |  "environments": [${arcContext.completionEnvironments.map { env => s""""${env}""""}.mkString(", ")}],
     |  "inputURI": "hdfs://*.sql"
     |}""".stripMargin
+  }
 
   val documentationURI = new java.net.URI(s"${baseURI}/validate/#sqlvalidate")
 

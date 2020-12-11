@@ -22,16 +22,15 @@ class JDBCExecute extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
 
-  val snippet = """{
+  def snippet()(implicit arcContext: ARCContext): String = {
+    s"""{
     |  "type": "JDBCExecute",
     |  "name": "JDBCExecute",
-    |  "environments": [
-    |    "production",
-    |    "test"
-    |  ],
+    |  "environments": [${arcContext.completionEnvironments.map { env => s""""${env}""""}.mkString(", ")}],
     |  "inputURI": "hdfs://*.sql",
     |  "jdbcURL": "jdbc:postgresql://"
     |}""".stripMargin
+  }
 
   val documentationURI = new java.net.URI(s"${baseURI}/execute/#jdbcexecute")
 

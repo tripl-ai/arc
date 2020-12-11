@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.7.0
+
+- refactor `JupyterCompleter` to allow users to specify `etl.config.completion.environments` or `ETL_CONF_COMPLETION_ENVIRONMENTS` with settings specific for their deployment model.
+- log stage details when running in `lintOnly` mode allowing parsing with tools like Open Policy Agent in CICD.
+
 ## 3.6.2
 
 - **FIX** defect where IPYNB `%configexecute` did not provide the optional `outputView` parameter.

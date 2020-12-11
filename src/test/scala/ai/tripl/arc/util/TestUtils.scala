@@ -56,6 +56,7 @@ object TestUtils {
         inlineSQL: Boolean = true,
         inlineSchema: Boolean = true,
         dropUnsupported: Boolean = false,
+        completionEnvironments: List[String] = List("production", "test"),
     )(implicit spark: SparkSession): ARCContext = {
       val loader = ai.tripl.arc.util.Utils.getContextOrSparkClassLoader
 
@@ -81,6 +82,7 @@ object TestUtils {
         serializableConfiguration=new SerializableConfiguration(spark.sparkContext.hadoopConfiguration),
         userData=collection.mutable.Map.empty,
         resolutionConfig=ConfigFactory.load(),
+        completionEnvironments=completionEnvironments,
       )
     }
 

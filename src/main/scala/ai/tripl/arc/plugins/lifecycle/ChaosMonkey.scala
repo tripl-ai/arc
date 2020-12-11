@@ -14,7 +14,8 @@ class ChaosMonkey extends LifecyclePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
 
-  val snippet = """%lifecycleplugin
+  def snippet()(implicit arcContext: ARCContext): String = {
+    s"""%lifecycleplugin
     |{
     |  "type": "ChaosMonkey",
     |  "environments": [
@@ -23,6 +24,7 @@ class ChaosMonkey extends LifecyclePlugin with JupyterCompleter {
     |  "strategy": "exception",
     |  "probability": 0.05
     |}""".stripMargin
+  }
 
   val documentationURI = new java.net.URI(s"${baseURI}/plugins/#chaosmonkey")
 

@@ -21,16 +21,15 @@ class MetadataValidate extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
 
-  val snippet = """{
+  def snippet()(implicit arcContext: ARCContext): String = {
+    s"""{
     |  "type": "MetadataValidate",
     |  "name": "MetadataValidate",
-    |  "environments": [
-    |    "production",
-    |    "test"
-    |  ],
+    |  "environments": [${arcContext.completionEnvironments.map { env => s""""${env}""""}.mkString(", ")}],
     |  "inputView": "inputView",
     |  "inputURI": "hdfs://*.sql"
     |}""".stripMargin
+  }
 
   val documentationURI = new java.net.URI(s"${baseURI}/validate/#metadatavalidate")
 

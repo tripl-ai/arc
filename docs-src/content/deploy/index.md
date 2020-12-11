@@ -65,25 +65,26 @@ local:///opt/spark/jars/arc.jar \
 
 | Environment Variable | Property | Description |
 |----------|----------|-------------|
-|ETL_CONF_ENABLE_STACKTRACE|etl.config.enableStackTrace|Whether to enable stacktraces in the event of exception which can be useful for debugging but is not very intuitive for many users. Boolean. Default `false`.|
+|ETL_CONF_ENABLE_STACKTRACE|etl.config.enableStackTrace|Whether to enable stacktraces in the event of exception which can be useful for debugging but is not very intuitive for many users. Boolean. Default: `false`.|
 |ETL_CONF_ENV|etl.config.environment|The `environment` to run under.<br><br>E.g. if `ETL_CONF_ENV` is set to `production` then a stage with `"environments": ["production", "test"]` would be executed and one with `"environments": ["test"]` would not be executed.|
 |ETL_CONF_IGNORE_ENVIRONMENTS|etl.config.ignoreEnvironments|Allows skipping the `environments` tests and execute all stages/plugins.|
 |ETL_CONF_JOB_ID|etl.config.job.id|A job identifier added to all the logging messages.|
 |ETL_CONF_JOB_NAME|etl.config.job.name|A job name added to all logging messages and Spark history server.|
 |ETL_CONF_LINT_ONLY|etl.config.lintOnly|Verify the job file and exit with `success`/`failure`.|
-|ETL_CONF_STORAGE_LEVEL|etl.config.storageLevel|The [StorageLevel](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$) used when persisting datasets. String. Default `MEMORY_AND_DISK_SER`.|
-|ETL_CONF_STREAMING|etl.config.streaming|Run in [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html) mode or not. Boolean. Default `false`.|
+|ETL_CONF_STORAGE_LEVEL|etl.config.storageLevel|The [StorageLevel](https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$) used when persisting datasets. String. Default: `MEMORY_AND_DISK_SER`.|
+|ETL_CONF_STREAMING|etl.config.streaming|Run in [Structured Streaming](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html) mode or not. Boolean. Default: `false`.|
 |ETL_CONF_TAGS|etl.config.tags|Custom key/value tags separated by space to add to all logging messages.<br><br>E.g. `ETL_CONF_TAGS=cost_center=123456 owner=jovyan`.|
 |ETL_CONF_URI|etl.config.uri|The URI of the job file to execute.|
+|ETL_CONF_COMPLETION_ENVIRONMENTS|etl.config.completion.environments|A comma separated list of enivoronments to be returned when invoking the Completer API. Default: `production,test`.|
 
 ## Policy Parameters
 
 | Environment Variable | Property | Description |
 |----------|----------|-------------|
-|ETL_POLICY_INLINE_SCHEMA|etl.policy.inline.schema|Whether to support inline schemas (such as the `schema` attribute in `TypingTransform`) as opposed to force reading from an external file. Boolean. Default `true`.|
-|ETL_POLICY_INLINE_SQL|etl.policy.inline.sql|Whether to support inline SQL (such as the `sql` attribute in `SQLTransform`) as opposed to force reading from an external file. Boolean. Default `true`.|
-|ETL_POLICY_IPYNB|etl.policy.ipynb|Whether to support submission of IPython Notebook (.ipynb) files as opposed to Arc HOCON format only. Boolean. Default `true`.|
-|ETL_POLICY_DROP_UNSUPPORTED|etl.policy.drop.unsupported|Whether to enable automatic dropping of unsupported types when performing `*Load` stages (e.g. `ParquetLoad` cannot support `NullType` and would be dropped if enabled).<br><br>If `NullType` columns have been created due to a SQL query (like `SELECT NULL AS fieldname`) it is sometimes possible to correctly type the column by `CAST`ing the column like `SELECT CAST(NULL AS INTEGER) AS fieldname` which will treat the column as an `IntegerType` containing only `NULL` values.<br><br>Default `false`.|
+|ETL_POLICY_INLINE_SCHEMA|etl.policy.inline.schema|Whether to support inline schemas (such as the `schema` attribute in `TypingTransform`) as opposed to force reading from an external file. Boolean. Default: `true`.|
+|ETL_POLICY_INLINE_SQL|etl.policy.inline.sql|Whether to support inline SQL (such as the `sql` attribute in `SQLTransform`) as opposed to force reading from an external file. Boolean. Default: `true`.|
+|ETL_POLICY_IPYNB|etl.policy.ipynb|Whether to support submission of IPython Notebook (.ipynb) files as opposed to Arc HOCON format only. Boolean. Default: `true`.|
+|ETL_POLICY_DROP_UNSUPPORTED|etl.policy.drop.unsupported|Whether to enable automatic dropping of unsupported types when performing `*Load` stages (e.g. `ParquetLoad` cannot support `NullType` and would be dropped if enabled).<br><br>If `NullType` columns have been created due to a SQL query (like `SELECT NULL AS fieldname`) it is sometimes possible to correctly type the column by `CAST`ing the column like `SELECT CAST(NULL AS INTEGER) AS fieldname` which will treat the column as an `IntegerType` containing only `NULL` values.<br><br>Default: `false`.|
 
 
 ## Authentication Parameters

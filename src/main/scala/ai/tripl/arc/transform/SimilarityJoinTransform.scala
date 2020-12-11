@@ -25,13 +25,11 @@ class SimilarityJoinTransform extends PipelineStagePlugin with JupyterCompleter 
 
   val version = Utils.getFrameworkVersion
 
-  val snippet = """{
+  def snippet()(implicit arcContext: ARCContext): String = {
+    s"""{
     |  "type": "SimilarityJoinTransform",
     |  "name": "SimilarityJoinTransform",
-    |  "environments": [
-    |    "production",
-    |    "test"
-    |  ],
+    |  "environments": [${arcContext.completionEnvironments.map { env => s""""${env}""""}.mkString(", ")}],
     |  "threshold": 0.75,
     |  "leftView": "leftView",
     |  "leftFields": [],
@@ -39,6 +37,7 @@ class SimilarityJoinTransform extends PipelineStagePlugin with JupyterCompleter 
     |  "rightFields": [],
     |  "outputView": "outputView"
     |}""".stripMargin
+  }
 
   val documentationURI = new java.net.URI(s"${baseURI}/transform/#similarityjointransform")
 
