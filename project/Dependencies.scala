@@ -23,7 +23,7 @@ object Dependencies {
 
   // hadoop
   val hadoopCommon =  "org.apache.hadoop" % "hadoop-common" % hadoopVersion
-  val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % hadoopVersion
+  val hadoopAWS = "org.apache.hadoop" % "hadoop-aws" % hadoopVersion % "provided"
 
   // Project
   val etlDeps = Seq(

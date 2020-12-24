@@ -286,7 +286,7 @@ object ConfigUtils {
             }
             // these represent other parameters added to the 'behaviour line' which are not jupyter control values
             val dynamicArguments = args
-              .filterKeys { !List("name", "description", "sqlParams", "outputView", "environments", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "streamingDuration", "logger").contains(_) }
+              .filterKeys { !List("name", "description", "sqlParams", "outputView", "environments", "numRows", "truncate", "persist", "monospace", "leftAlign", "datasetLabels", "streamingDuration", "showLog").contains(_) }
               .map { case (k, v) => s""""${k}": "${v}"""" }
               .mkString(",")
 

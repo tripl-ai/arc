@@ -715,6 +715,7 @@ It differs from the Spark inbuilt `summary` by:
 |histogram|Boolean|false|Whether to calculate distribution statistics (`25%`, `50%`, `75%`).<br><br>Default: `false`.|
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
+|hllRelativeSD|Double|false|The maximum relative standard deviation for the `distinct_count` output variable. Smaller values will provide greater precision at the expense of runtime.<br><br>Default: `0.05`.|
 
 ### Examples
 
