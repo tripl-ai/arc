@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.6.2</span></strong>
+          <span class="version">3.7.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -646,7 +646,9 @@
   <span class="nt">&#34;initialStateKey&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_id&#34;</span><span class="p">,</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
   <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="s2">&#34;customer_segment&#34;</span>
+  <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&#34;customer_segment&#34;</span>
+  <span class="p">]</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="difftransform">DiffTransform</h2>
@@ -2415,7 +2417,7 @@ FROM ${inputView}
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2020 Released under the MIT license
+				&copy; 2021 Released under the MIT license
 				
 			</aside>
 

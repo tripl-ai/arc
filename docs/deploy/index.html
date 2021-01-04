@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.6.2</span></strong>
+          <span class="version">3.7.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -527,7 +527,7 @@ local:///opt/spark/jars/arc.jar \
 <tr>
 <td>ETL_CONF_ENABLE_STACKTRACE</td>
 <td>etl.config.enableStackTrace</td>
-<td>Whether to enable stacktraces in the event of exception which can be useful for debugging but is not very intuitive for many users. Boolean. Default <code>false</code>.</td>
+<td>Whether to enable stacktraces in the event of exception which can be useful for debugging but is not very intuitive for many users. Boolean. Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -563,13 +563,13 @@ local:///opt/spark/jars/arc.jar \
 <tr>
 <td>ETL_CONF_STORAGE_LEVEL</td>
 <td>etl.config.storageLevel</td>
-<td>The <a href="https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$">StorageLevel</a> used when persisting datasets. String. Default <code>MEMORY_AND_DISK_SER</code>.</td>
+<td>The <a href="https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.storage.StorageLevel$">StorageLevel</a> used when persisting datasets. String. Default: <code>MEMORY_AND_DISK_SER</code>.</td>
 </tr>
 
 <tr>
 <td>ETL_CONF_STREAMING</td>
 <td>etl.config.streaming</td>
-<td>Run in <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html">Structured Streaming</a> mode or not. Boolean. Default <code>false</code>.</td>
+<td>Run in <a href="https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html">Structured Streaming</a> mode or not. Boolean. Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -582,6 +582,12 @@ local:///opt/spark/jars/arc.jar \
 <td>ETL_CONF_URI</td>
 <td>etl.config.uri</td>
 <td>The URI of the job file to execute.</td>
+</tr>
+
+<tr>
+<td>ETL_CONF_COMPLETION_ENVIRONMENTS</td>
+<td>etl.config.completion.environments</td>
+<td>A comma separated list of enivoronments to be returned when invoking the Completer API. Default: <code>production,test</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -601,25 +607,25 @@ local:///opt/spark/jars/arc.jar \
 <tr>
 <td>ETL_POLICY_INLINE_SCHEMA</td>
 <td>etl.policy.inline.schema</td>
-<td>Whether to support inline schemas (such as the <code>schema</code> attribute in <code>TypingTransform</code>) as opposed to force reading from an external file. Boolean. Default <code>true</code>.</td>
+<td>Whether to support inline schemas (such as the <code>schema</code> attribute in <code>TypingTransform</code>) as opposed to force reading from an external file. Boolean. Default: <code>true</code>.</td>
 </tr>
 
 <tr>
 <td>ETL_POLICY_INLINE_SQL</td>
 <td>etl.policy.inline.sql</td>
-<td>Whether to support inline SQL (such as the <code>sql</code> attribute in <code>SQLTransform</code>) as opposed to force reading from an external file. Boolean. Default <code>true</code>.</td>
+<td>Whether to support inline SQL (such as the <code>sql</code> attribute in <code>SQLTransform</code>) as opposed to force reading from an external file. Boolean. Default: <code>true</code>.</td>
 </tr>
 
 <tr>
 <td>ETL_POLICY_IPYNB</td>
 <td>etl.policy.ipynb</td>
-<td>Whether to support submission of IPython Notebook (.ipynb) files as opposed to Arc HOCON format only. Boolean. Default <code>true</code>.</td>
+<td>Whether to support submission of IPython Notebook (.ipynb) files as opposed to Arc HOCON format only. Boolean. Default: <code>true</code>.</td>
 </tr>
 
 <tr>
 <td>ETL_POLICY_DROP_UNSUPPORTED</td>
 <td>etl.policy.drop.unsupported</td>
-<td>Whether to enable automatic dropping of unsupported types when performing <code>*Load</code> stages (e.g. <code>ParquetLoad</code> cannot support <code>NullType</code> and would be dropped if enabled).<br><br>If <code>NullType</code> columns have been created due to a SQL query (like <code>SELECT NULL AS fieldname</code>) it is sometimes possible to correctly type the column by <code>CAST</code>ing the column like <code>SELECT CAST(NULL AS INTEGER) AS fieldname</code> which will treat the column as an <code>IntegerType</code> containing only <code>NULL</code> values.<br><br>Default <code>false</code>.</td>
+<td>Whether to enable automatic dropping of unsupported types when performing <code>*Load</code> stages (e.g. <code>ParquetLoad</code> cannot support <code>NullType</code> and would be dropped if enabled).<br><br>If <code>NullType</code> columns have been created due to a SQL query (like <code>SELECT NULL AS fieldname</code>) it is sometimes possible to correctly type the column by <code>CAST</code>ing the column like <code>SELECT CAST(NULL AS INTEGER) AS fieldname</code> which will treat the column as an <code>IntegerType</code> containing only <code>NULL</code> values.<br><br>Default: <code>false</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -810,7 +816,7 @@ local:///opt/spark/jars/arc.jar \
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2020 Released under the MIT license
+				&copy; 2021 Released under the MIT license
 				
 			</aside>
 

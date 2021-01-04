@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.6.2</span></strong>
+          <span class="version">3.7.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -2571,6 +2571,12 @@
 </tr>
 
 <tr>
+<td><code>timestampType</code></td>
+<td>Int</td>
+<td>The record timestamp type.</td>
+</tr>
+
+<tr>
 <td><code>key</code></td>
 <td>Binary</td>
 <td>The record key  as a byte array.</td>
@@ -2589,8 +2595,8 @@
 <p>To convert the <code>key</code> or <code>value</code> from a Binary/byte array to a string it is possible to use the <a href="https://spark.apache.org/docs/latest/api/sql/index.html#decode">decode</a> SQL Function with a <a href="../transform/#sqltransform">SQLTransform</a> like:</p>
 
 <pre><code class="language-sql">SELECT
-  DECODE(key, 'utf-8') AS stringKey,
-  DECODE(value, 'utf-8') AS stringValue,
+  CAST(key AS STRING) AS stringKey,
+  CAST(value AS STRING) AS stringValue,
   ...
 </code></pre>
 
@@ -2653,7 +2659,7 @@
 <td>autoCommit</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether to update the offsets in Kafka automatically. To be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour.<br><br>If <code>autoCommit</code> is set to <code>false</code> this stage will force <code>persist</code> equal to <code>true</code> so that Spark will not execute the Kafka extract process twice with a potentially different result (e.g. new messages added between extracts).<br><br>Default: false.</td>
+<td>Whether to update the offsets in Kafka automatically. To be used in conjuction with <a href="../execute/#kafkacommitexecute">KafkaCommitExecute</a> to allow quasi-transactional behaviour.<br><br>If <code>autoCommit</code> is set to <code>false</code> this stage will force <code>persist</code> equal to <code>true</code> so that Spark will not execute the Kafka extract process twice with a potentially different result (e.g. new messages added between extracts).<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>
@@ -2674,7 +2680,14 @@
 <td>maxPollRecords</td>
 <td>Int</td>
 <td>false</td>
-<td>The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read.<br><br>Default: <code>10000</code>.</td>
+<td>The maximum number of records returned in a single call to Kafka. Arc will then continue to poll until all records have been read.<br><br>Default: <code>500</code>.</td>
+</tr>
+
+<tr>
+<td>maxRecords</td>
+<td>Int</td>
+<td>false</td>
+<td>The maximum number of records returned in a single execution of this stage when executed in batch mode.</td>
 </tr>
 
 <tr>
@@ -2699,10 +2712,17 @@
 </tr>
 
 <tr>
+<td>strict</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to perform record count validation. Will not work with compacted topics. Default: <code>true</code>.</td>
+</tr>
+
+<tr>
 <td>timeout</td>
 <td>Long</td>
 <td>false</td>
-<td>The time, in milliseconds, spent waiting in poll if data is not available in Kafka. Default: 10000.</td>
+<td>The time, in milliseconds, spent waiting in poll if data is not available in Kafka. Default: <code>10000</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -2739,13 +2759,14 @@
   <span class="nt">&#34;topic&#34;</span><span class="p">:</span> <span class="s2">&#34;customers&#34;</span><span class="p">,</span>
   <span class="nt">&#34;groupID&#34;</span><span class="p">:</span> <span class="s2">&#34;spark-customer-extract-job&#34;</span><span class="p">,</span>
   <span class="nt">&#34;autoCommit&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&#34;maxPollRecords&#34;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+  <span class="nt">&#34;maxPollRecords&#34;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
   <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
   <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&#34;country&#34;</span>
   <span class="p">],</span>
   <span class="nt">&#34;persist&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-  <span class="nt">&#34;timeout&#34;</span><span class="p">:</span> <span class="mi">10000</span>
+  <span class="nt">&#34;timeout&#34;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span>
+  <span class="nt">&#34;strict&#34;</span><span class="p">:</span>  <span class="kc">true</span>
 <span class="p">}</span></code></pre></div>
 
 <h2 id="metadataextract">MetadataExtract</h2>
@@ -3747,6 +3768,13 @@
 <td>false</td>
 <td>Whether to persist dataset to Spark cache. Will also log row count.<br><br>Default: <code>false</code>.</td>
 </tr>
+
+<tr>
+<td>hllRelativeSD</td>
+<td>Double</td>
+<td>false</td>
+<td>The maximum relative standard deviation for the <code>distinct_count</code> output variable. Smaller values will provide greater precision at the expense of runtime.<br><br>Default: <code>0.05</code>.</td>
+</tr>
 </tbody>
 </table>
 
@@ -4155,7 +4183,7 @@ FROM books_xml
 
 			<aside class="copyright" role="note">
 				
-				&copy; 2020 Released under the MIT license
+				&copy; 2021 Released under the MIT license
 				
 			</aside>
 
