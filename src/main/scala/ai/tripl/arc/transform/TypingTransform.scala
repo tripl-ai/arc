@@ -38,17 +38,16 @@ class TypingTransform extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
 
-  val snippet = """{
+  def snippet()(implicit arcContext: ARCContext): String = {
+    s"""{
     |  "type": "TypingTransform",
     |  "name": "TypingTransform",
-    |  "environments": [
-    |    "production",
-    |    "test"
-    |  ],
+    |  "environments": [${arcContext.completionEnvironments.map { env => s""""${env}""""}.mkString(", ")}],
     |  "inputView": "inputView",
     |  "schemaURI": "hdfs://*.json",
     |  "outputView": "outputView"
     |}""".stripMargin
+  }
 
   val documentationURI = new java.net.URI(s"${baseURI}/transform/#typingtransform")
 

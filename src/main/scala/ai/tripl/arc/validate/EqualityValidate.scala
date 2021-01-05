@@ -15,16 +15,15 @@ class EqualityValidate extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
 
-  val snippet = """{
+  def snippet()(implicit arcContext: ARCContext): String = {
+    s"""{
     |  "type": "EqualityValidate",
     |  "name": "EqualityValidate",
-    |  "environments": [
-    |    "production",
-    |    "test"
-    |  ],
+    |  "environments": [${arcContext.completionEnvironments.map { env => s""""${env}""""}.mkString(", ")}],
     |  "leftView": "leftView",
     |  "rightView": "rightView"
     |}""".stripMargin
+  }
 
   val documentationURI = new java.net.URI(s"${baseURI}/validate/#equalityvalidate")
 

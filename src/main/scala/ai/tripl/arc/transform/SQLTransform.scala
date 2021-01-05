@@ -20,16 +20,15 @@ class SQLTransform extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
 
-  val snippet = """{
+  def snippet()(implicit arcContext: ARCContext): String = {
+    s"""{
     |  "type": "SQLTransform",
     |  "name": "SQLTransform",
-    |  "environments": [
-    |    "production",
-    |    "test"
-    |  ],
+    |  "environments": [${arcContext.completionEnvironments.map { env => s""""${env}""""}.mkString(", ")}],
     |  "inputURI": "hdfs://*.sql",
     |  "outputView": "outputView"
     |}""".stripMargin
+  }
 
   val documentationURI = new java.net.URI(s"${baseURI}/transform/#sqltransform")
 

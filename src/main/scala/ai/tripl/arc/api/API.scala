@@ -108,6 +108,10 @@ object API {
     */
     var resolutionConfig: Config,
 
+    /** a list of environments to be used when returning completions
+    */
+    completionEnvironments: List[String],
+
   )
 
   /** ExtractColumns are used to define schemas for typing transforms
@@ -314,7 +318,7 @@ object API {
     def baseURI: String = "https://arc.tripl.ai"
 
     // the raw text to replace in Jupyter
-    def snippet: String
+    def snippet()(implicit arcContext: ARCContext): String
     /* e.g. raw string
     {
        "type": "SQLTransform",

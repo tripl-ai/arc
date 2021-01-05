@@ -22,7 +22,7 @@ object StatisticsUtils {
   // this is pivoted compared with the spark internal statistics dataframe
   // all output columns are StringType as different data types may be present in the aggregate columns
   // based heavily on org.apache.spark.sql.execution.stat.StatFunctions.summary
-  def createStatisticsDataframe(input: DataFrame, approximate: Boolean, histogram: Boolean)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
+  def createStatisticsDataframe(input: DataFrame, approximate: Boolean, histogram: Boolean, hyperLogLogPlusPlusRelativeSD: Double)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger): DataFrame = {
 
     val inputColumns = input.queryExecution.sparkPlan.output.filter(field =>
       field.dataType.isInstanceOf[BooleanType]
@@ -39,7 +39,7 @@ object StatisticsUtils {
     // create generic expressions
     val countExpr = (child: Expression) => Count(child).toAggregateExpression()
     val distinctCountExpr = (child: Expression) => Count(child).toAggregateExpression(isDistinct = true)
-    val approxDistinctCountExpr = (child: Expression) => HyperLogLogPlusPlus(child, 0.01).toAggregateExpression()
+    val approxDistinctCountExpr = (child: Expression) => HyperLogLogPlusPlus(child, hyperLogLogPlusPlusRelativeSD).toAggregateExpression()
     val nullCountExpr = (child: Expression) => CountIf(IsNull(child)).toAggregateExpression()
     val meanExpr = (child: Expression) => Average(child).toAggregateExpression()
     val stddevExpr = (child: Expression) => StddevPop(child).toAggregateExpression()

@@ -761,5 +761,82 @@ class ConfigUtilsSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("Test completions: default") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    val conf = """{
+      "stages": [
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract 1",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "/tmp/test.csv",
+          "outputView": "output",
+          "watermark": {
+            "eventTime": "timecolumn",
+            "delayThreshold": "1 hour"
+          }
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((_, arcCtx)) => {
+        arcCtx.pipelineStagePlugins.collectFirst { stage =>
+          stage match {
+            case s: JupyterCompleter => assert(s.snippet.contains(""""environments": ["production", "test"]"""))
+          }
+        }.orElse(fail("no plugins found"))
+      }
+    }
+  }
+
+  test("Test completions: custom") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+
+    val completionEnvironments = List("completionEnvironments")
+    implicit val arcContext = TestUtils.getARCContext(completionEnvironments=completionEnvironments)
+
+    val conf = """{
+      "stages": [
+        {
+          "type": "DelimitedExtract",
+          "name": "file extract 1",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputURI": "/tmp/test.csv",
+          "outputView": "output",
+          "watermark": {
+            "eventTime": "timecolumn",
+            "delayThreshold": "1 hour"
+          }
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((_, arcCtx)) => {
+        arcCtx.pipelineStagePlugins.collectFirst { stage =>
+          stage match {
+            case s: JupyterCompleter => assert(s.snippet.contains(""""environments": ["completionEnvironments"]"""))
+          }
+        }.orElse(fail("no plugins found"))
+      }
+    }
+  }
 
 }

@@ -16,19 +16,18 @@ class DiffTransform extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
 
-  val snippet = """{
+  def snippet()(implicit arcContext: ARCContext): String = {
+    s"""{
     |  "type": "DiffTransform",
     |  "name": "DiffTransform",
-    |  "environments": [
-    |    "production",
-    |    "test"
-    |  ],
+    |  "environments": [${arcContext.completionEnvironments.map { env => s""""${env}""""}.mkString(", ")}],
     |  "inputLeftView": "inputLeftView",
     |  "inputRightView": "inputRightView",
     |  "outputLeftView": "outputLeftView",
     |  "outputIntersectionView": "outputIntersectionView",
     |  "outputRightView": "outputRightView"
     |}""".stripMargin
+  }
 
   val documentationURI = new java.net.URI(s"${baseURI}/transform/#difftransform")
 

@@ -52,6 +52,8 @@ object ARC {
     val jobId: Option[String] = commandLineArguments.get("etl.config.job.id").orElse(envOrNone("ETL_CONF_JOB_ID"))
     val jobName: Option[String] = commandLineArguments.get("etl.config.job.name").orElse(envOrNone("ETL_CONF_JOB_NAME"))
     val environment: Option[String] = commandLineArguments.get("etl.config.environment").orElse(envOrNone("ETL_CONF_ENV"))
+    val completionEnvironments = commandLineArguments.get("etl.config.completion.environments").orElse(envOrNone("ETL_CONF_COMPLETION_ENVIRONMENTS")).getOrElse("production,test")
+
     val (storageLevel, storageLevelName) = commandLineArguments.get("etl.config.storageLevel").orElse(envOrNone("ETL_CONF_STORAGE_LEVEL")) match {
       case Some(v) if v.trim.toUpperCase == "DISK_ONLY" => (StorageLevel.DISK_ONLY, "DISK_ONLY")
       case Some(v) if v.trim.toUpperCase == "DISK_ONLY_2" => (StorageLevel.DISK_ONLY_2, "DISK_ONLY_2")
@@ -174,6 +176,7 @@ object ARC {
       serializableConfiguration=new SerializableConfiguration(spark.sparkContext.hadoopConfiguration),
       userData=collection.mutable.Map[String, Object](),
       resolutionConfig=ConfigFactory.load(),
+      completionEnvironments=completionEnvironments.split(",").toList,
     )
 
     // add spark listeners and register udfs
@@ -295,6 +298,13 @@ object ARC {
         try {
           if (!lintOnly) {
             ARC.run(pipeline)(spark, logger, ctx)
+          } else {
+            pipeline.stages.foreach { stage =>
+              logger.info()
+                .field("event", "lint")
+                .map("stage", stage.stageDetail.asJava)
+                .log()
+            }
           }
           false
         } catch {

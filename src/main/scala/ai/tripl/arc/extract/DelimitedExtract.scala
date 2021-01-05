@@ -21,17 +21,16 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
 
   val version = Utils.getFrameworkVersion
 
-  val snippet = """{
+  def snippet()(implicit arcContext: ARCContext): String = {
+    s"""{
     |  "type": "DelimitedExtract",
     |  "name": "DelimitedExtract",
-    |  "environments": [
-    |    "production",
-    |    "test"
-    |  ],
+    |  "environments": [${arcContext.completionEnvironments.map { env => s""""${env}""""}.mkString(", ")}],
     |  "inputURI": "hdfs://*.csv",
     |  "outputView": "outputView",
     |  "header": false
     |}""".stripMargin
+  }
 
   val documentationURI = new java.net.URI(s"${baseURI}/extract/#delimitedextract")
 

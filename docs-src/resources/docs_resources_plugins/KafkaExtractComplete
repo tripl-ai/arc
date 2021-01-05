@@ -11,11 +11,12 @@
   "topic": "customers",
   "groupID": "spark-customer-extract-job",
   "autoCommit": false,
-  "maxPollRecords": 10000,
+  "maxPollRecords": 500,
   "numPartitions": 10,
   "partitionBy": [
     "country"
   ],
   "persist": false,
-  "timeout": 10000
+  "timeout": 10000,
+  "strict":  true
 }

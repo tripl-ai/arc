@@ -151,7 +151,7 @@ Database Inconsistency When writing data to targets like databases using the JDB
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/changelog/</guid>
-      <description>Change Log 3.6.2  FIX defect where IPYNB %configexecute did not provide the optional outputView parameter.  3.6.1  add JupyterCompleter to Lifecycle Plugins ChaosMonkey and ControlFlow.  3.6.0  add ControlFlowExecute and ControlFlow plugins to support work avoidance.  3.5.3  FIX remove limitation that required field metadata names to be different to the field name.  3.5.2  FIX reorder AWS Identity and Access Management providers com.amazonaws.auth.WebIdentityTokenCredentialsProvider to allow use of Arc on Amazon Elastic Kubernetes Service with IAM.</description>
+      <description>Change Log 3.7.0  refactor JupyterCompleter to allow users to specify etl.config.completion.environments or ETL_CONF_COMPLETION_ENVIRONMENTS with settings specific for their deployment model. log stage details when running in lintOnly mode allowing parsing with tools like Open Policy Agent in CICD. change org.apache.hadoop:hadoop-aws library to be a provided dependency. add the hllRelativeSD tuning parameter to the HyperLogLogPlusPlus count distinct algorithm used in StatisticsExtract and revert to Spark default of 0.05 from 0.01.  3.</description>
     </item>
     
     <item>

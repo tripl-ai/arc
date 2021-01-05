@@ -108,29 +108,10 @@ object ArcPipeline {
                 case (stages, plugins) => (stages.flatten, lifecycleInstances ::: plugins.flatten)
               }
 
-              // used the resolved config to add registered lifecyclePlugins to context
-              val ctx = ARCContext(
-                jobId=arcContext.jobId,
-                jobName=arcContext.jobName,
-                environment=arcContext.environment,
-                configUri=arcContext.configUri,
-                isStreaming=arcContext.isStreaming,
-                ignoreEnvironments=arcContext.ignoreEnvironments,
-                storageLevel=arcContext.storageLevel,
-                immutableViews=arcContext.immutableViews,
-                ipynb=arcContext.ipynb,
-                inlineSQL=arcContext.inlineSQL,
-                inlineSchema=arcContext.inlineSchema,
-                dropUnsupported=arcContext.dropUnsupported,
-                commandLineArguments=arcContext.commandLineArguments,
-                dynamicConfigurationPlugins=arcContext.dynamicConfigurationPlugins,
-                lifecyclePlugins=arcContext.lifecyclePlugins,
+              // update the context to add registered lifecyclePlugins and hadoopConfiguration
+              val ctx = arcContext.copy(
                 activeLifecyclePlugins=activeLifecyclePluginInstances,
-                pipelineStagePlugins=arcContext.pipelineStagePlugins,
-                udfPlugins=arcContext.udfPlugins,
-                serializableConfiguration=new SerializableConfiguration(spark.sparkContext.hadoopConfiguration),
-                userData=arcContext.userData,
-                resolutionConfig=arcContext.resolutionConfig,
+                serializableConfiguration = new SerializableConfiguration(spark.sparkContext.hadoopConfiguration),
               )
 
               Right((ETLPipeline(flatPipelineInstances), ctx))

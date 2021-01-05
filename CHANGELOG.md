@@ -1,5 +1,12 @@
 # Change Log
 
+## 3.7.0
+
+- refactor `JupyterCompleter` to allow users to specify `etl.config.completion.environments` or `ETL_CONF_COMPLETION_ENVIRONMENTS` with settings specific for their deployment model.
+- log stage details when running in `lintOnly` mode allowing parsing with tools like Open Policy Agent in CICD.
+- change `org.apache.hadoop:hadoop-aws` library to be a `provided` dependency.
+- add the `hllRelativeSD` tuning parameter to the `HyperLogLogPlusPlus` count distinct algorithm used in `StatisticsExtract` and revert to Spark default of `0.05` from `0.01`.
+
 ## 3.6.2
 
 - **FIX** defect where IPYNB `%configexecute` did not provide the optional `outputView` parameter.

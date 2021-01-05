@@ -82,6 +82,7 @@ object TestUtils {
         serializableConfiguration=new SerializableConfiguration(spark.sparkContext.hadoopConfiguration),
         userData=collection.mutable.Map.empty,
         resolutionConfig=ConfigFactory.load(),
+        completionEnvironments=List("production", "test"),
       )
     }
 
