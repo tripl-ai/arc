@@ -158,7 +158,7 @@ object ParquetExtractStage {
         }
       }
     } catch {
-      case e: AnalysisException if (e.getMessage == "Unable to infer schema for Parquet. It must be specified manually.;") =>
+      case e: AnalysisException if (e.getMessage == "Unable to infer schema for Parquet. It must be specified manually.") =>
         Left(FileNotFoundExtractError(Option(stage.input)))
       case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
         Left(PathNotExistsExtractError(Option(stage.input)))
