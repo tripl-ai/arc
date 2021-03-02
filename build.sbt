@@ -29,7 +29,7 @@ lazy val root = (project in file(".")).
 resolvers += Resolver.mavenLocal
 publishM2Configuration := publishM2Configuration.value.withOverwrite(true)
 
-resolvers += "Spark Staging" at "https://repository.apache.org/content/repositories/orgapachespark-1367/"
+// resolvers += "Spark Staging" at "https://repository.apache.org/content/repositories/orgapachespark-1367/"
 
 fork in run := true
 
