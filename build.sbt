@@ -1,6 +1,6 @@
 import Dependencies._
 
-lazy val scala212 = "2.12.12"
+lazy val scala212 = "2.12.13"
 lazy val supportedScalaVersions = List(scala212)
 
 lazy val root = (project in file(".")).
@@ -29,7 +29,7 @@ lazy val root = (project in file(".")).
 resolvers += Resolver.mavenLocal
 publishM2Configuration := publishM2Configuration.value.withOverwrite(true)
 
-// resolvers += "Spark Staging" at "https://repository.apache.org/content/repositories/orgapachespark-1345/"
+// resolvers += "Spark Staging" at "https://repository.apache.org/content/repositories/orgapachespark-1367/"
 
 fork in run := true
 

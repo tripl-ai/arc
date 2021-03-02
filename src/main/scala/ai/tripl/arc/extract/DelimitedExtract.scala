@@ -209,7 +209,7 @@ object DelimitedExtractStage {
               Right(spark.read.options(options).csv(glob))
             } catch {
               // the file that is read is empty
-              case e: AnalysisException if (e.getMessage == "Unable to infer schema for CSV. It must be specified manually.;") =>
+              case e: AnalysisException if (e.getMessage == "Unable to infer schema for CSV. It must be specified manually.") =>
                 Left(FileNotFoundExtractError(Option(glob)))
               // the file does not exist at all
               case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>

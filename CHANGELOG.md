@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.8.0
+
+- bump to Spark [3.1.1](https://spark.apache.org/releases/spark-release-3-1-1.html).
+
 ## 3.7.0
 
 - refactor `JupyterCompleter` to allow users to specify `etl.config.completion.environments` or `ETL_CONF_COMPLETION_ENVIRONMENTS` with settings specific for their deployment model.

@@ -27,6 +27,7 @@ The `BigQueryExecute` executes a SQL statement against BigQuery.
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
 |jobName|String|false|BigQuery Job name useful for identifying events in log messages.|
 |location|String|false|Location in which to invoke the BigQuery job.|
+|projectId|String|false|The Google Cloud Project ID of the table. Defaults to the project of the Service Account being used.|
 |sqlParams|Map[String, String]|false|{{< readfile file="/content/partials/fields/sqlParams.md" markdown="true" >}}|
 
 ### Examples
