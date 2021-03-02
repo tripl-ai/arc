@@ -1,6 +1,6 @@
 import Dependencies._
 
-lazy val scala212 = "2.12.12"
+lazy val scala212 = "2.12.13"
 lazy val supportedScalaVersions = List(scala212)
 
 lazy val root = (project in file(".")).
