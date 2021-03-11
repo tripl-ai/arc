@@ -14,7 +14,7 @@ Arc is an **opinionated** framework for defining **predictable**, **repeatable**
 
 ## Getting Started
 
-![Notebook](/img/arc-starter.png)
+![Notebook](/img/arc.gif)
 
 Arc has an interactive [Jupyter Notebook](https://jupyter.org/) extension to help with rapid development of data pipelines. Start by cloning [https://github.com/tripl-ai/arc-starter](https://github.com/tripl-ai/arc-starter) and running through the [tutorial](https://arc.tripl.ai/tutorial/).
 
