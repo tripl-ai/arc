@@ -4,7 +4,7 @@ weight: 80
 type: blog
 ---
 
-Arc has been packaged as a [Docker](https://hub.docker.com/u/triplai) image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the [https://hub.docker.com/u/triplai](https://hub.docker.com/u/triplai) for the relevant version. The Arc container is built using the offical Spark Kubernetes images so running locally requires overriding the Docker `entrypoint`.
+Arc has been packaged as a [Docker](https://github.com/orgs/tripl-ai/packages) image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the [https://hub.docker.com/u/triplai](https://hub.docker.com/u/triplai) for the relevant version. The Arc container is built on top of the offical Spark Kubernetes image.
 
 The [deploy](https://github.com/tripl-ai/deploy) repository has examples of how to run Arc jobs on common cloud environments.
 

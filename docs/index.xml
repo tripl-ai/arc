@@ -110,8 +110,9 @@ It is designed to:
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/deploy/</guid>
-      <description>Arc has been packaged as a Docker image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the https://hub.docker.com/u/triplai for the relevant version. The Arc container is built using the offical Spark Kubernetes images so running locally requires overriding the Docker entrypoint.
-The deploy repository has examples of how to run Arc jobs on common cloud environments.</description>
+      <description>Arc has been packaged as a Docker image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the https://hub.docker.com/u/triplai for the relevant version. The Arc container is built on top of the offical Spark Kubernetes image.
+The deploy repository has examples of how to run Arc jobs on common cloud environments.
+Arc Local An example command to start a job from the Arc Starter base directory:</description>
     </item>
     
     <item>

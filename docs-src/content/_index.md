@@ -12,11 +12,22 @@ Arc is an **opinionated** framework for defining **predictable**, **repeatable**
 - **repeatable** in that if a job is executed multiple times it will produce the same result.
 - **manageable** in that execution considerations and logging have been baked in from the start.
 
-## Getting Started
+## Pipeline Development
+
+Arc provides a [Jupyter Notebook](https://jupyter.org/) based Interactive Development Environment (IDE) for building jobs: [Arc Jupyter](https://github.com/orgs/tripl-ai/packages/container/package/arc-jupyter).
 
 ![Notebook](/img/arc.gif)
 
+## Pipeline Execution
+
+Once a job has been built the notebook can be executed using the provided [Docker](https://github.com/orgs/tripl-ai/packages) container for parameterized, repeatable and manageable execution.
+
+![Execution](/img/arc-execute.gif)
+
+## Getting Started
+
 Arc has an interactive [Jupyter Notebook](https://jupyter.org/) extension to help with rapid development of data pipelines. Start by cloning [https://github.com/tripl-ai/arc-starter](https://github.com/tripl-ai/arc-starter) and running through the [tutorial](https://arc.tripl.ai/tutorial/).
+
 
 ## Principles
 
