@@ -138,5 +138,21 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("ARCSuite: test lazy logging") {
+    val inMemoryLoggerAppender = new InMemoryLoggerAppender()
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
+
+    try {
+      ARC.main(Array(s"--etl.config.uri=${getClass.getResource("/conf/jdbc_pipeline_bad.conf").toString}", "--etl.config.environment=production"))
+    } catch {
+      case e: ExitOKException => fail("expected exception")
+      case e: ExitErrorException => {
+        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"status\":\"failure\"") && message.contains("\"child\":{") }.length == 1)
+        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"status\":\"failure\"") && message.contains("jdbc:postgresql://:5432/customer") }.length == 1)
+      }
+    }
+  }
+
 }
 
