@@ -84,10 +84,11 @@ object Plugins {
                           case Left(err) => Left(err)
                           case Right(p) => {
                             val pluginMap = new java.util.HashMap[String, Object]()
-                            pluginMap.put("type", s"${p.getClass.getName}:${p.version}")
+                            pluginMap.put("plugin", s"${p.getClass.getName}:${p.version}")
+                            pluginMap.put("type", pluginType)
                             pluginMap.put("name", name)
                             id.foreach { pluginMap.put("id", _) }
-                            stage.stageDetail.put("plugin", pluginMap)
+                            stage.stageDetail.put("child", pluginMap)
                           }
                         }
 
