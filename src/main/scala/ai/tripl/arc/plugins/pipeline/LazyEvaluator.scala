@@ -68,7 +68,7 @@ case class LazyEvaluatorStage(
 
 object LazyEvaluatorStage {
 
-  def execute(stage: LazyEvaluatorStage)(implicit spark: SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
+  def execute(stage: LazyEvaluatorStage)(implicit spark:  SparkSession, logger: ai.tripl.arc.util.log.logger.Logger, arcContext: ARCContext): Option[DataFrame] = {
 
     try {
       val config = stage.config.resolveWith(arcContext.resolutionConfig).resolve()
@@ -77,8 +77,9 @@ object LazyEvaluatorStage {
       resolvedOrError match {
         case Left(errors) => throw new Exception(ai.tripl.arc.config.Error.pipelineErrorMsg(errors))
         case Right(s) => {
+          stage.stageDetail.put("child", s.stageDetail.asJava)
           val df = s.execute
-          stage.stageDetail.put("plugin", s.stageDetail.asJava)
+          stage.stageDetail.put("child", s.stageDetail.asJava)
           df
         }
       }

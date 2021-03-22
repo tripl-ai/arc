@@ -197,7 +197,7 @@ object JSONExtractStage {
                 case None => Right(spark.read.options(options).format("json").load(glob))
               }
             } catch {
-              case e: AnalysisException if (e.getMessage == "Unable to infer schema for JSON. It must be specified manually.") =>
+              case e: AnalysisException if (e.getMessage.contains("Unable to infer schema for JSON")) =>
                 Left(FileNotFoundExtractError(Option(glob)))
               case e: AnalysisException if (e.getMessage.contains("Path does not exist")) =>
                 Left(PathNotExistsExtractError(Option(glob)))
