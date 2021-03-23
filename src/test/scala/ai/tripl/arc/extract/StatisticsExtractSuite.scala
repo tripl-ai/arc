@@ -43,7 +43,49 @@ class StatisticsExtractSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  test("StatisticsExtractSuite: end-to-end approximate") {
+  test("StatisticsExtractSuite: approximate/no histogram") {
+    val inMemoryLoggerAppender = new InMemoryLoggerAppender()
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
+    implicit val arcContext = TestUtils.getARCContext()
+
+    val df = TestUtils.getKnownDataset
+    df.createOrReplaceTempView(inputView)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "StatisticsExtract",
+          "name": "StatisticsExtract",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${inputView}",
+          "outputView": "${outputView}",
+          "persist": true,
+          "approximate": true,
+          "histogram": false
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+        val rows = df.collect
+        assert(rows.length == 10)
+        assert(rows.head.length == 12)
+        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("booleanDatum\":{\"data_type\":\"boolean\",\"count\":2") }.length == 1)
+      }
+    }
+  }
+
+  test("StatisticsExtractSuite: approximate/histogram") {
     val inMemoryLoggerAppender = new InMemoryLoggerAppender()
     implicit val spark = session
     import spark.implicits._
@@ -85,7 +127,49 @@ class StatisticsExtractSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("StatisticsExtractSuite: end-to-end population") {
+  test("StatisticsExtractSuite: no approximate/histogram") {
+    val inMemoryLoggerAppender = new InMemoryLoggerAppender()
+    implicit val spark = session
+    import spark.implicits._
+    implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
+    implicit val arcContext = TestUtils.getARCContext()
+
+    val df = TestUtils.getKnownDataset
+    df.createOrReplaceTempView(inputView)
+
+    val conf = s"""{
+      "stages": [
+        {
+          "type": "StatisticsExtract",
+          "name": "StatisticsExtract",
+          "environments": [
+            "production",
+            "test"
+          ],
+          "inputView": "${inputView}",
+          "outputView": "${outputView}",
+          "persist": true,
+          "approximate": false,
+          "histogram": true
+        }
+      ]
+    }"""
+
+    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+
+    pipelineEither match {
+      case Left(err) => fail(err.toString)
+      case Right((pipeline, _)) => {
+        val df = ARC.run(pipeline)(spark, logger, arcContext).get
+        val rows = df.collect
+        assert(rows.length == 10)
+        assert(rows.head.length == 15)
+        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("booleanDatum\":{\"data_type\":\"boolean\",\"count\":2") }.length == 1)
+      }
+    }
+  }
+
+  test("StatisticsExtractSuite: no approximate/no histogram") {
     val inMemoryLoggerAppender = new InMemoryLoggerAppender()
     implicit val spark = session
     import spark.implicits._

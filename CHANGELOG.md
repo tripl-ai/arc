@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.8.2
+
+- **FIX** revert to Spark [3.0.2](https://spark.apache.org/news/spark-3-0-2-released.html) until Delta supports Spark [3.1.1](https://spark.apache.org/releases/spark-release-3-1-1.html).
+
 ## 3.8.1
 
 - **FIX** changes to allow execution with both Spark [3.0.2](https://spark.apache.org/news/spark-3-0-2-released.html) and Spark [3.1.1](https://spark.apache.org/releases/spark-release-3-1-1.html).
