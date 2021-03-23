@@ -12,7 +12,7 @@ networks:
 services:
   sbt:
     container_name: sbt
-    image: mozilla/sbt:8u232_1.3.13
+    image: mozilla/sbt:8u232_1.4.5
     networks:
       - arc-integration
     command: tail -f /dev/null
@@ -45,7 +45,7 @@ services:
     networks:
       - arc-integration
     environment:
-      ACCEPT_EULA: Y
+      ACCEPT_EULA: "Y"
       SA_PASSWORD: "SecretPass!2018"
       MSSQL_PID: Express
 
