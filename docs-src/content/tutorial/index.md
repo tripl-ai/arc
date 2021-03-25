@@ -69,7 +69,7 @@ The first stage we are going to add is a `DelimitedExtract` stage because the so
 }
 ```
 
-By executing this stage (`SHIFT-ENTER`) you should be able to see a result set. 
+By executing this stage (`SHIFT-ENTER`) you should be able to see a result set.
 
 |VendorID|lpep_pickup_datetime|Lpep_dropoff_datetime|Store_and_fwd_flag|RateCodeID|Pickup_longitude|Pickup_latitude|Dropoff_longitude|Dropoff_latitude|Passenger_count|Trip_distance|Fare_amount|Extra|MTA_tax|Tip_amount|Tolls_amount|Ehail_fee|Total_amount|Payment_type|Trip_type|_filename|_index|
 |--------|--------------------|---------------------|------------------|----------|----------------|---------------|-----------------|----------------|---------------|-------------|-----------|-----|-------|----------|------------|---------|------------|------------|---------|---------|---------|
@@ -150,7 +150,7 @@ Picking one of the more interesting fields, `lpep_pickup_datetime`, we can highl
 
 - this is a [timestamp](/schema/#timestamp) field which means it must be generated from a valid combination of date and time.
 - the `formatters` key specifies an `array` rather than a simple `string`. This is because real world data often has multiple date/datetime formats used in a single column. By allowing an `array` Arc will try to apply each of the formats specified in sequence and only fail if *none* of the formatters can be successfully applied.
-- a mandatory `timezoneId` must be specified. This is required as the only way to reliably work with dates and times across systems is to convert them all to [Coordinated Universal Time](https://en.wikipedia.org/wiki/Coordinated_Universal_Time) (UTC) so they can be placed as point on a universally continuous timeline. Additionally `timezoneId` is specified at a column level meaning that it is possible to have multiple timezones for different columns in the same dataset.
+- a mandatory `timezoneId` must be specified. This is required as the only way to reliably work with dates and times across systems is to know when they happened relative to [Coordinated Universal Time](https://en.wikipedia.org/wiki/Coordinated_Universal_Time) (UTC) so they can be placed as point on a universally continuous timeline. Additionally `timezoneId` is specified at a column level meaning that it is possible to have multiple timezones for different columns in the same dataset.
 - the `nullableValues` key also specifies an `array` which allows you to specify multiple values which will be converted to a true `null` when loading. If these values are present and the `nullable` key is set to `true` then the job will fail with a clear error message.
 - the `description` field is saved with the data some formats like when using [ORCLoad](/load/#orcload), [ParquetLoad](/load/#parquetload) or [DeltaLakeLoad](/load/#deltalakeload) into the underlying metadata and will be restored automatically if those files are re-injested by Arc.
 
