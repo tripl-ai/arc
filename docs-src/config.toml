@@ -108,6 +108,11 @@ pygmentsUseClasses=true
 	weight = 95
 
 [[menu.main]]
+	name   = "Arc Jupyter"
+	url    = "jupyter/"
+	weight = 96
+
+[[menu.main]]
 	name   = "Change Log"
 	url    = "changelog/"
 	weight = 97

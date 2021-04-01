@@ -679,7 +679,7 @@ Replace the three `%sqlvalidate` statements with `SQLValidate` stages which refe
 
 In this case before the SQL statement is executed the named parameter `${inputView}` in the SQL statement will be replaced with `green_tripdata0` so it will validate the `green_tripdata0` dataset. The benefit of this is that the same SQL statement can be used for any dataset after the `TypingTransformation` stage to ensure there are no data typing errors and all we have to do is specify a different `inputView` substitution value. Now if the business rule changed only the `sqlvalidate_errors.sql` would need to be updated.
 
-This method also works for the `%sql` stage used to merge the data where we can define a `SQLTransform` stage to execute an external SQL statement.
+This method also works for the `%sql` stage used to merge the data where we can define a [SQLTransform](/transform/#sqltransform) stage to execute an external SQL statement.
 
 ```json
 {
@@ -726,7 +726,7 @@ Arc allows for pattern matching of file names including the standard wildcard (`
 Use the patterns above to add the `yellow_tripdata` datasets to the Arc job.
 
 - add the file loading for the `yellow_tripdata`. There should be 3 stages for each schema load (`DelimitedExtract`, `TypingTransform`, `SQLValidate`) and a total of 6 schema versions (3 `green_tripdata` and 3 `yellow_tripdata`) for a total of 18 stages just to read and safely type the data.
-- modify the `trips` `SQLTransform` to include the new datasets (and handle the merge rules).
+- modify the `trips` [SQLTransform](/transform/#sqltransform) to include the new datasets (and handle the merge rules).
 
 ## Data Quality Reporting
 
@@ -867,7 +867,7 @@ As the business problem is better understood it is common to see [normalization 
 }
 ```
 
-The main culprit of non-normalized data is the `yellow_tripdata0` dataset so add a `SQLTransform` stage which will do a `LEFT JOIN` to the new reference data then a `SQLValidate` stage to check that all of our refrence table lookups were successful (foreign key integrity). The use of a `LEFT JOIN` over an `INNER JOIN` is that we don't want to filter out data from `yellow_tripdata0` that doesn't have a lookup value.
+The main culprit of non-normalized data is the `yellow_tripdata0` dataset so add a [SQLTransform](/transform/#sqltransform) stage which will do a `LEFT JOIN` to the new reference data then a `SQLValidate` stage to check that all of our refrence table lookups were successful (foreign key integrity). The use of a `LEFT JOIN` over an `INNER JOIN` is that we don't want to filter out data from `yellow_tripdata0` that doesn't have a lookup value.
 
 ```sql
 %sql name="look up reference data" outputView=yellow_tripdata0_enriched environments=production,test
@@ -1009,7 +1009,7 @@ AND dropoff_latitude IS NOT NULL
 
 To execute the training load the `examples/tutorial/5/New York City Taxi Fare Prediction SparkML.ipynb` notebook. It is commented and will describe the process to execute the SQL above to prepare the training dataset and train a model.
 
-Once done the model can be executed in the notebook by first executing the feature generation `SQLTransform` then executing the model via `MLTransform`:
+Once done the model can be executed in the notebook by first executing the feature generation [SQLTransform](/transform/#sqltransform) then executing the model via `MLTransform`:
 
 ```json
 {

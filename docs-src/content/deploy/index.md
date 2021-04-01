@@ -4,9 +4,11 @@ weight: 80
 type: blog
 ---
 
-Arc has been packaged as a [Docker](https://github.com/orgs/tripl-ai/packages) image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the [https://hub.docker.com/u/triplai](https://hub.docker.com/u/triplai) for the relevant version. The Arc container is built on top of the offical Spark Kubernetes image.
+Arc has been packaged as a [Docker](https://github.com/orgs/tripl-ai/packages) image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the [https://github.com/orgs/tripl-ai/packages](https://github.com/orgs/tripl-ai/packages) for the relevant version. The Arc container is built on top of the offical [Spark Kubernetes](https://spark.apache.org/docs/latest/running-on-kubernetes.html#docker-images) Docker image.
 
-The [deploy](https://github.com/tripl-ai/deploy) repository has examples of how to run Arc jobs on common cloud environments.
+## Deploy Repository
+
+The [deploy](https://github.com/tripl-ai/deploy) repository has examples of how to run Arc jobs on common cloud environments and includes examples how to set up on Kubernetes with permissions.
 
 ## Arc Local
 
@@ -23,7 +25,7 @@ docker run \
 bin/spark-submit \
 --master local[*] \
 --driver-memory 4g \
---driver-java-options "-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap" \
+--driver-java-options "-XX:+UseG1GC" \
 --conf spark.authenticate=true \
 --conf spark.authenticate.secret=$(openssl rand -hex 64) \
 --conf spark.io.encryption.enabled=true \

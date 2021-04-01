@@ -36,7 +36,7 @@ The `authentication` object defines the authentication parameters for connecting
 }
 ```
 
-It is strongly discouraged to use simple authentication like above and in favor of mechaisms like `AmazonIAM` which do not risk exposing secrets.
+It is strongly discouraged to use simple authentication like above and in favor of mechanisms like `AmazonIAM` which do not risk exposing secrets.
 
 {{< note title="Authentication Scope" >}}
 Currently these options are defined at a global level meaning that if an `authentication` object is supplied for one stage it will apply to all stages after that.

@@ -399,6 +399,24 @@
 
 
 
+<a  title="Arc Jupyter" href="https://arc.tripl.ai/jupyter/">
+	
+	Arc Jupyter
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="Change Log" href="https://arc.tripl.ai/changelog/">
 	
 	Change Log
@@ -455,9 +473,11 @@
 
 			
 
-<p>Arc has been packaged as a <a href="https://github.com/orgs/tripl-ai/packages">Docker</a> image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the <a href="https://hub.docker.com/u/triplai">https://hub.docker.com/u/triplai</a> for the relevant version. The Arc container is built on top of the offical Spark Kubernetes image.</p>
+<p>Arc has been packaged as a <a href="https://github.com/orgs/tripl-ai/packages">Docker</a> image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the <a href="https://github.com/orgs/tripl-ai/packages">https://github.com/orgs/tripl-ai/packages</a> for the relevant version. The Arc container is built on top of the offical <a href="https://spark.apache.org/docs/latest/running-on-kubernetes.html#docker-images">Spark Kubernetes</a> Docker image.</p>
 
-<p>The <a href="https://github.com/tripl-ai/deploy">deploy</a> repository has examples of how to run Arc jobs on common cloud environments.</p>
+<h2 id="deploy-repository">Deploy Repository</h2>
+
+<p>The <a href="https://github.com/tripl-ai/deploy">deploy</a> repository has examples of how to run Arc jobs on common cloud environments and includes examples how to set up on Kubernetes with permissions.</p>
 
 <h2 id="arc-local">Arc Local</h2>
 
@@ -473,7 +493,7 @@ ghcr.io/tripl-ai/arc:latest \
 bin/spark-submit \
 --master local[*] \
 --driver-memory 4g \
---driver-java-options &quot;-XX:+UseG1GC -XX:-UseGCOverheadLimit -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap&quot; \
+--driver-java-options &quot;-XX:+UseG1GC&quot; \
 --conf spark.authenticate=true \
 --conf spark.authenticate.secret=$(openssl rand -hex 64) \
 --conf spark.io.encryption.enabled=true \

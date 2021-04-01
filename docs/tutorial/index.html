@@ -399,6 +399,24 @@
 
 
 
+<a  title="Arc Jupyter" href="https://arc.tripl.ai/jupyter/">
+	
+	Arc Jupyter
+</a>
+
+
+
+  
+</li>
+
+
+
+<li>
+  
+    
+
+
+
 <a  title="Change Log" href="https://arc.tripl.ai/changelog/">
 	
 	Change Log
@@ -1195,7 +1213,7 @@ FROM (
 
 <p>In this case before the SQL statement is executed the named parameter <code>${inputView}</code> in the SQL statement will be replaced with <code>green_tripdata0</code> so it will validate the <code>green_tripdata0</code> dataset. The benefit of this is that the same SQL statement can be used for any dataset after the <code>TypingTransformation</code> stage to ensure there are no data typing errors and all we have to do is specify a different <code>inputView</code> substitution value. Now if the business rule changed only the <code>sqlvalidate_errors.sql</code> would need to be updated.</p>
 
-<p>This method also works for the <code>%sql</code> stage used to merge the data where we can define a <code>SQLTransform</code> stage to execute an external SQL statement.</p>
+<p>This method also works for the <code>%sql</code> stage used to merge the data where we can define a <a href="https://arc.tripl.ai/transform/#sqltransform">SQLTransform</a> stage to execute an external SQL statement.</p>
 
 <pre><code class="language-json">{
   &quot;type&quot;: &quot;SQLTransform&quot;,
@@ -1334,7 +1352,7 @@ FROM (
 
 <ul>
 <li>add the file loading for the <code>yellow_tripdata</code>. There should be 3 stages for each schema load (<code>DelimitedExtract</code>, <code>TypingTransform</code>, <code>SQLValidate</code>) and a total of 6 schema versions (3 <code>green_tripdata</code> and 3 <code>yellow_tripdata</code>) for a total of 18 stages just to read and safely type the data.</li>
-<li>modify the <code>trips</code> <code>SQLTransform</code> to include the new datasets (and handle the merge rules).</li>
+<li>modify the <code>trips</code> <a href="https://arc.tripl.ai/transform/#sqltransform">SQLTransform</a> to include the new datasets (and handle the merge rules).</li>
 </ul>
 
 <h2 id="data-quality-reporting">Data Quality Reporting</h2>
@@ -1471,7 +1489,7 @@ FROM (
 }
 </code></pre>
 
-<p>The main culprit of non-normalized data is the <code>yellow_tripdata0</code> dataset so add a <code>SQLTransform</code> stage which will do a <code>LEFT JOIN</code> to the new reference data then a <code>SQLValidate</code> stage to check that all of our refrence table lookups were successful (foreign key integrity). The use of a <code>LEFT JOIN</code> over an <code>INNER JOIN</code> is that we don&rsquo;t want to filter out data from <code>yellow_tripdata0</code> that doesn&rsquo;t have a lookup value.</p>
+<p>The main culprit of non-normalized data is the <code>yellow_tripdata0</code> dataset so add a <a href="https://arc.tripl.ai/transform/#sqltransform">SQLTransform</a> stage which will do a <code>LEFT JOIN</code> to the new reference data then a <code>SQLValidate</code> stage to check that all of our refrence table lookups were successful (foreign key integrity). The use of a <code>LEFT JOIN</code> over an <code>INNER JOIN</code> is that we don&rsquo;t want to filter out data from <code>yellow_tripdata0</code> that doesn&rsquo;t have a lookup value.</p>
 
 <pre><code class="language-sql">%sql name=&quot;look up reference data&quot; outputView=yellow_tripdata0_enriched environments=production,test
 SELECT
@@ -1612,7 +1630,7 @@ AND dropoff_latitude IS NOT NULL
 
 <p>To execute the training load the <code>examples/tutorial/5/New York City Taxi Fare Prediction SparkML.ipynb</code> notebook. It is commented and will describe the process to execute the SQL above to prepare the training dataset and train a model.</p>
 
-<p>Once done the model can be executed in the notebook by first executing the feature generation <code>SQLTransform</code> then executing the model via <code>MLTransform</code>:</p>
+<p>Once done the model can be executed in the notebook by first executing the feature generation <a href="https://arc.tripl.ai/transform/#sqltransform">SQLTransform</a> then executing the model via <code>MLTransform</code>:</p>
 
 <pre><code class="language-json">{
   &quot;type&quot;: &quot;SQLTransform&quot;,

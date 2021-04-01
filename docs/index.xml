@@ -110,9 +110,8 @@ It is designed to:
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://arc.tripl.ai/deploy/</guid>
-      <description>Arc has been packaged as a Docker image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the https://hub.docker.com/u/triplai for the relevant version. The Arc container is built on top of the offical Spark Kubernetes image.
-The deploy repository has examples of how to run Arc jobs on common cloud environments.
-Arc Local An example command to start a job from the Arc Starter base directory:</description>
+      <description>Arc has been packaged as a Docker image to simplify deployment as a stateless process on cloud infrastructure. As there are multiple versions of Arc, Spark, Scala and Hadoop see the https://github.com/orgs/tripl-ai/packages for the relevant version. The Arc container is built on top of the offical Spark Kubernetes Docker image.
+Deploy Repository The deploy repository has examples of how to run Arc jobs on common cloud environments and includes examples how to set up on Kubernetes with permissions.</description>
     </item>
     
     <item>
@@ -144,6 +143,16 @@ Arc can be exended in four ways by registering:
       <guid>https://arc.tripl.ai/solutions/</guid>
       <description>This section describes some common solutions to problems encountered when building ETL jobs. If this does not answer your question or you want to make an addition you can raise an issue in the questions repository.
 Database Inconsistency When writing data to targets like databases using the JDBCLoad raises a risk of stale reads where a client is reading a dataset which is either old or one which is in the process of being updated and so is internally inconsistent.</description>
+    </item>
+    
+    <item>
+      <title>Arc Jupyter</title>
+      <link>https://arc.tripl.ai/jupyter/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://arc.tripl.ai/jupyter/</guid>
+      <description>Arc Jupyter is a custom kernel for Jupyter Notebooks (via the plugin API) which allows users to build Arc jobs in an interactive manner. This page aims to document some of the functionality of the plugin. Due to the startup time of the Java Virtual Machine that Spark requires some of these features can take a while to become active.
+ Magics Arc Jupyter provides some magic commands to make developing notebooks easier.</description>
     </item>
     
     <item>
