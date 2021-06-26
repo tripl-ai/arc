@@ -15,6 +15,7 @@
   "customDelimiter": "#",
   "header": false,
   "inputField": "csvdata",
+  "multiLine": false,
   "numPartitions": 10,
   "partitionBy": [
     "country"

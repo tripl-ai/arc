@@ -39,7 +39,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: "inputField" :: "basePath" :: "watermark" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: "inputField" :: "basePath" :: "watermark" :: Nil
     val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val params = readMap("params", c)
@@ -50,6 +50,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
     val persist = getValue[java.lang.Boolean]("persist", default = Some(false))
     val numPartitions = getOptionalValue[Int]("numPartitions")
     val partitionBy = getValue[StringList]("partitionBy", default = Some(Nil))
+    val multiLine = getValue[java.lang.Boolean]("multiLine", default = Some(false))
     val authentication = readAuthentication("authentication")
     val contiguousIndex = getValue[java.lang.Boolean]("contiguousIndex", default = Some(true))
     val extractColumns = if(c.hasPath("schemaURI")) getValue[String]("schemaURI") |> parseURI("schemaURI") _ |> textContentForURI("schemaURI", authentication) |> getExtractColumns("schemaURI") _ else Right(List.empty)
@@ -66,8 +67,8 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
     val watermark = readWatermark("watermark")
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (id, name, description, inputView, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath, watermark) match {
-      case (Right(id), Right(name), Right(description), Right(inputView), Right(parsedGlob), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(header), Right(authentication), Right(contiguousIndex), Right(delimiter), Right(quote), Right(_), Right(customDelimiter), Right(inputField), Right(basePath), Right(watermark)) =>
+    (id, name, description, inputView, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, multiLine, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath, watermark) match {
+      case (Right(id), Right(name), Right(description), Right(inputView), Right(parsedGlob), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(header), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(delimiter), Right(quote), Right(_), Right(customDelimiter), Right(inputField), Right(basePath), Right(watermark)) =>
         val input = if(c.hasPath("inputView")) {
           Left(inputView)
         } else {
@@ -83,6 +84,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
           outputView=outputView,
           input=input,
           settings=new Delimited(header=header, sep=delimiter, quote=quote, customDelimiter=customDelimiter),
+          multiLine=multiLine,
           authentication=authentication,
           params=params,
           persist=persist,
@@ -97,6 +99,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
         authentication.foreach { authentication => stage.stageDetail.put("authentication", authentication.method) }
         inputField.foreach { stage.stageDetail.put("inputField", _) }
         stage.stageDetail.put("contiguousIndex", java.lang.Boolean.valueOf(contiguousIndex))
+        stage.stageDetail.put("multiLine", java.lang.Boolean.valueOf(multiLine))
         stage.stageDetail.put("outputView", outputView)
         stage.stageDetail.put("params", params.asJava)
         stage.stageDetail.put("persist", java.lang.Boolean.valueOf(persist))
@@ -118,7 +121,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(id, name, description, inputView, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath, watermark).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, inputView, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, multiLine, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
@@ -136,6 +139,7 @@ case class DelimitedExtractStage(
     outputView: String,
     input: Either[String, String],
     settings: Delimited,
+    multiLine: Boolean,
     authentication: Option[Authentication],
     params: Map[String, String],
     persist: Boolean,
