@@ -586,7 +586,8 @@ case class Delimited(
   quote: QuoteCharacter = QuoteCharacter.DoubleQuote,
   header: Boolean = false,
   inferSchema: Boolean = false,
-  customDelimiter: String = ""
+  customDelimiter: String = "",
+  multiLine: Boolean = false,
 ) extends SourceType {
   val getDescription = "Delimited"
 }
@@ -601,7 +602,8 @@ object Delimited {
           "sep" -> customDelimiter,
           "quote" -> quote.value,
           "header" -> header.toString,
-          "inferSchema" -> inferSchema.toString
+          "inferSchema" -> inferSchema.toString,
+          "multiLine" -> multiLine.toString,
         )
       }
       case _ => {
@@ -609,7 +611,8 @@ object Delimited {
           "sep" -> sep.value,
           "quote" -> quote.value,
           "header" -> header.toString,
-          "inferSchema" -> inferSchema.toString
+          "inferSchema" -> inferSchema.toString,
+          "multiLine" -> multiLine.toString,
         )
       }
     }

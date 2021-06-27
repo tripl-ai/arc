@@ -155,7 +155,7 @@
       
       <div class="name">
         <strong>Arc 
-          <span class="version">3.8.2</span></strong>
+          <span class="version">3.9.0</span></strong>
         
         <br> tripl-ai/arc 
       </div>
@@ -1489,6 +1489,13 @@
 </tr>
 
 <tr>
+<td>multiLine</td>
+<td>Boolean</td>
+<td>false</td>
+<td>Whether to load multiple lines as a single record or as individual records split by newline.<br><br>Default: <code>false</code>.</td>
+</tr>
+
+<tr>
 <td>inputField</td>
 <td>String</td>
 <td>false</td>
@@ -1586,6 +1593,7 @@
   <span class="nt">&#34;delimiter&#34;</span><span class="p">:</span> <span class="s2">&#34;Custom&#34;</span><span class="p">,</span>
   <span class="nt">&#34;customDelimiter&#34;</span><span class="p">:</span> <span class="s2">&#34;#&#34;</span><span class="p">,</span>
   <span class="nt">&#34;header&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+  <span class="nt">&#34;multiLine&#34;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
   <span class="nt">&#34;inputField&#34;</span><span class="p">:</span> <span class="s2">&#34;csvdata&#34;</span><span class="p">,</span>
   <span class="nt">&#34;numPartitions&#34;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
   <span class="nt">&#34;partitionBy&#34;</span><span class="p">:</span> <span class="p">[</span>
@@ -3919,7 +3927,7 @@
 <td>multiLine</td>
 <td>Boolean</td>
 <td>false</td>
-<td>Whether the to load the file as a single record or as individual records split by newline.<br><br>Default: <code>false</code>.</td>
+<td>Whether to load the file as a single record or as individual records split by newline.<br><br>Default: <code>false</code>.</td>
 </tr>
 
 <tr>

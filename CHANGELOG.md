@@ -1,5 +1,11 @@
 # Change Log
 
+
+## 3.9.0
+
+- add `multiLine` option to `DelimitedExtract`.
+- bump to Spark [3.0.3](https://spark.apache.org/news/spark-3-0-3-released.html).
+
 ## 3.8.2
 
 - **FIX** revert to Spark [3.0.2](https://spark.apache.org/news/spark-3-0-2-released.html) until Delta supports Spark [3.1.1](https://spark.apache.org/releases/spark-release-3-1-1.html).

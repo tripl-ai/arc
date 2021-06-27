@@ -226,6 +226,7 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |header|Boolean|false|Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named `_col1`, `_col2` ... `_colN`.<br><br>Default: `false`.|
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
+|multiLine|Boolean|false|Whether to load multiple lines as a single record or as individual records split by newline.<br><br>Default: `false`.|
 |inputField|String|false|If using `inputView` this option allows you to specify the name of the field which contains the delimited data.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |partitionBy|Array[String]|false|{{< readfile file="/content/partials/fields/partitionBy.md" markdown="true" >}}|
@@ -746,7 +747,7 @@ The `TextExtract` stage reads either one or more text files and returns a `DataF
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|
-|multiLine|Boolean|false|Whether the to load the file as a single record or as individual records split by newline.<br><br>Default: `false`.|
+|multiLine|Boolean|false|Whether to load the file as a single record or as individual records split by newline.<br><br>Default: `false`.|
 |numPartitions|Integer|false|{{< readfile file="/content/partials/fields/numPartitions.md" markdown="true" >}}|
 |persist|Boolean|false|{{< readfile file="/content/partials/fields/persist.md" markdown="true" >}}|
 |schemaURI|URI|false|{{< readfile file="/content/partials/fields/schemaURI.md" markdown="true" >}}|
