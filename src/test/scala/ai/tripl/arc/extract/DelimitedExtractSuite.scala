@@ -20,6 +20,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   // currently assuming local file system
   var session: SparkSession = _
   val targetFile = FileUtils.getTempDirectoryPath() + "extract.csv"
+  val multiLineTargetFile = getClass.getResource("/binary/multiLine.csv").toString
   val customDelimiterTargetFile = FileUtils.getTempDirectoryPath() + "extract_custom.csv"
   val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.csv"
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.csv"
@@ -512,6 +513,41 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
 
     // try to read boolean which will fail if not inferSchema
     actual.first.getBoolean(0)
+  }
+
+  test("DelimitedExtract: Settings multiLine") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    // incorrect delimiter
+    val dataset = extract.DelimitedExtractStage.execute(
+      extract.DelimitedExtractStage(
+        plugin=new extract.DelimitedExtract,
+        id=None,
+        name=outputView,
+        description=None,
+        schema=Right(Nil),
+        outputView=outputView,
+        input=Right(multiLineTargetFile),
+        settings=new Delimited(header=true, sep=Delimiter.Comma, inferSchema=false, multiLine=true),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        basePath=None,
+        inputField=None,
+        watermark=None
+      )
+    ).get
+
+    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = dataset.drop(internal:_*)
+
+    assert(actual.count == 3)
+    assert(actual.columns.length == 5)
   }
 
   test("DelimitedExtract: Structured Streaming") {
