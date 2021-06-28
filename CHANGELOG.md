@@ -1,5 +1,8 @@
 # Change Log
 
+## 3.10.0
+
+- add `escape` option to `DelimitedExtract`.
 
 ## 3.9.0
 

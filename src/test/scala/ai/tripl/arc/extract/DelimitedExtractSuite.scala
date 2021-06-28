@@ -21,6 +21,7 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
   var session: SparkSession = _
   val targetFile = FileUtils.getTempDirectoryPath() + "extract.csv"
   val multiLineTargetFile = getClass.getResource("/binary/multiLine.csv").toString
+  val multiLineEscapeTargetFile = getClass.getResource("/binary/multiLineEscape.csv").toString
   val customDelimiterTargetFile = FileUtils.getTempDirectoryPath() + "extract_custom.csv"
   val targetFileGlob = FileUtils.getTempDirectoryPath() + "ex{t,a,b,c}ract.csv"
   val emptyDirectory = FileUtils.getTempDirectoryPath() + "empty.csv"
@@ -402,7 +403,6 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext()
 
-    // incorrect delimiter
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
@@ -450,7 +450,6 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext()
 
-    // incorrect header
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
@@ -485,7 +484,6 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext()
 
-    // incorrect header
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
@@ -520,7 +518,6 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
     implicit val logger = TestUtils.getLogger()
     implicit val arcContext = TestUtils.getARCContext()
 
-    // incorrect delimiter
     val dataset = extract.DelimitedExtractStage.execute(
       extract.DelimitedExtractStage(
         plugin=new extract.DelimitedExtract,
@@ -531,6 +528,40 @@ class DelimitedExtractSuite extends FunSuite with BeforeAndAfter {
         outputView=outputView,
         input=Right(multiLineTargetFile),
         settings=new Delimited(header=true, sep=Delimiter.Comma, inferSchema=false, multiLine=true),
+        authentication=None,
+        params=Map.empty,
+        persist=false,
+        numPartitions=None,
+        partitionBy=Nil,
+        contiguousIndex=true,
+        basePath=None,
+        inputField=None,
+        watermark=None
+      )
+    ).get
+
+    val internal = dataset.schema.filter(field => { field.metadata.contains("internal") && field.metadata.getBoolean("internal") == true }).map(_.name)
+    val actual = dataset.drop(internal:_*)
+
+    assert(actual.count == 3)
+    assert(actual.columns.length == 5)
+  }
+
+  test("DelimitedExtract: Settings escape") {
+    implicit val spark = session
+    implicit val logger = TestUtils.getLogger()
+    implicit val arcContext = TestUtils.getARCContext()
+
+    val dataset = extract.DelimitedExtractStage.execute(
+      extract.DelimitedExtractStage(
+        plugin=new extract.DelimitedExtract,
+        id=None,
+        name=outputView,
+        description=None,
+        schema=Right(Nil),
+        outputView=outputView,
+        input=Right(multiLineEscapeTargetFile),
+        settings=new Delimited(header=true, sep=Delimiter.Comma, inferSchema=false, multiLine=true, escape="\""),
         authentication=None,
         params=Map.empty,
         persist=false,

@@ -588,6 +588,7 @@ case class Delimited(
   inferSchema: Boolean = false,
   customDelimiter: String = "",
   multiLine: Boolean = false,
+  escape: String = "\\"
 ) extends SourceType {
   val getDescription = "Delimited"
 }
@@ -603,7 +604,7 @@ object Delimited {
           "quote" -> quote.value,
           "header" -> header.toString,
           "inferSchema" -> inferSchema.toString,
-          "multiLine" -> multiLine.toString,
+          "escape" -> escape,
         )
       }
       case _ => {
@@ -613,6 +614,7 @@ object Delimited {
           "header" -> header.toString,
           "inferSchema" -> inferSchema.toString,
           "multiLine" -> multiLine.toString,
+          "escape" -> escape,
         )
       }
     }

@@ -39,7 +39,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
     import ai.tripl.arc.config.ConfigUtils._
     implicit val c = config
 
-    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: "inputField" :: "basePath" :: "watermark" :: Nil
+    val expectedKeys = "type" :: "id" :: "name" :: "description" :: "environments" :: "inputView" :: "inputURI" :: "outputView" :: "delimiter" :: "quote" :: "header" :: "authentication" :: "contiguousIndex" :: "multiLine" :: "numPartitions" :: "params" :: "partitionBy" :: "persist" :: "schemaURI" :: "schemaView" :: "customDelimiter" :: "inputField" :: "basePath" :: "watermark" :: "escape" :: Nil
     val id = getOptionalValue[String]("id")
     val name = getValue[String]("name")
     val params = readMap("params", c)
@@ -58,6 +58,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
     val delimiter = getValue[String]("delimiter", default = Some("Comma"), validValues = "Comma" :: "Pipe" :: "DefaultHive" :: "Custom" :: Nil) |> parseDelimiter("delimiter") _
     val quote = getValue[String]("quote", default =  Some("DoubleQuote"), validValues = "DoubleQuote" :: "SingleQuote" :: "None" :: Nil) |> parseQuote("quote") _
     val header = getValue[java.lang.Boolean]("header", Some(false))
+    val escape = getValue[String]("escape", default=Some("\\"))
     val customDelimiter = delimiter match {
       case Right(Delimiter.Custom) => getValue[String]("customDelimiter")
       case _ => Right("")
@@ -67,8 +68,8 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
     val watermark = readWatermark("watermark")
     val invalidKeys = checkValidKeys(c)(expectedKeys)
 
-    (id, name, description, inputView, parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, multiLine, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath, watermark) match {
-      case (Right(id), Right(name), Right(description), Right(inputView), Right(parsedGlob), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(header), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(delimiter), Right(quote), Right(_), Right(customDelimiter), Right(inputField), Right(basePath), Right(watermark)) =>
+    ((id, name, description, inputView), parsedGlob, extractColumns, schemaView, outputView, persist, numPartitions, partitionBy, header, multiLine, authentication, contiguousIndex, delimiter, quote, escape, invalidKeys, customDelimiter, inputField, basePath, watermark) match {
+      case ((Right(id), Right(name), Right(description), Right(inputView)), Right(parsedGlob), Right(extractColumns), Right(schemaView), Right(outputView), Right(persist), Right(numPartitions), Right(partitionBy), Right(header), Right(multiLine), Right(authentication), Right(contiguousIndex), Right(delimiter), Right(quote), Right(escape), Right(_), Right(customDelimiter), Right(inputField), Right(basePath), Right(watermark)) =>
         val input = if(c.hasPath("inputView")) {
           Left(inputView)
         } else {
@@ -83,7 +84,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
           schema=schema,
           outputView=outputView,
           input=input,
-          settings=new Delimited(header=header, sep=delimiter, quote=quote, customDelimiter=customDelimiter, multiLine=multiLine),
+          settings=new Delimited(header=header, sep=delimiter, quote=quote, customDelimiter=customDelimiter, multiLine=multiLine, escape=escape),
           authentication=authentication,
           params=params,
           persist=persist,
@@ -119,7 +120,7 @@ class DelimitedExtract extends PipelineStagePlugin with JupyterCompleter {
 
         Right(stage)
       case _ =>
-        val allErrors: Errors = List(id, name, description, inputView, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, multiLine, authentication, contiguousIndex, delimiter, quote, invalidKeys, customDelimiter, inputField, basePath, watermark).collect{ case Left(errs) => errs }.flatten
+        val allErrors: Errors = List(id, name, description, inputView, parsedGlob, extractColumns, outputView, persist, numPartitions, partitionBy, header, multiLine, authentication, contiguousIndex, delimiter, quote, escape, invalidKeys, customDelimiter, inputField, basePath, watermark).collect{ case Left(errs) => errs }.flatten
         val stageName = stringOrDefault(name, "unnamed stage")
         val err = StageError(index, stageName, c.origin.lineNumber, allErrors)
         Left(err :: Nil)
