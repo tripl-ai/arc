@@ -223,6 +223,7 @@ The `DelimitedExtract` stage reads either one or more delimited text files or an
 |contiguousIndex|Boolean|false|{{< readfile file="/content/partials/fields/contiguousIndex.md" markdown="true" >}}|
 |delimiter|String|false|{{< readfile file="/content/partials/fields/delimiter.md" markdown="true" >}}|
 |customDelimiter|String|true*|{{< readfile file="/content/partials/fields/customDelimiter.md" markdown="true" >}}|
+|escape|String|false|A single character used for escaping quotes inside an already quoted value. Default: `\`.|
 |description|String|false|{{< readfile file="/content/partials/fields/description.md" markdown="true" >}}|
 |header|Boolean|false|Whether or not the dataset contains a header row. If available the output dataset will have named columns otherwise columns will be named `_col1`, `_col2` ... `_colN`.<br><br>Default: `false`.|
 |id|String|false|{{< readfile file="/content/partials/fields/stageId.md" markdown="true" >}}|

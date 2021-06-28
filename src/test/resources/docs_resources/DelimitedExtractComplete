@@ -13,6 +13,7 @@
   "contiguousIndex": true,
   "delimiter": "Custom",
   "customDelimiter": "#",
+  "escape": "\"",
   "header": false,
   "multiLine": false,
   "inputField": "csvdata",
