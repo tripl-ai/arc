@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.11.0
+
+- bump to Spark [3.1.2](https://spark.apache.org/news/spark-3-1-2-released.html).
+
 ## 3.10.0
 
 - add `escape` option to `DelimitedExtract`.
