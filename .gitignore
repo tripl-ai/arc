@@ -11,9 +11,10 @@ spark/
 *~
 derby.log
 docs-src/hugo
-.metals/
-.bloop/
+.metals
+.bloop
 .vscode
+.bsp
 metals.sbt
 io
 com

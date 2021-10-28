@@ -12,7 +12,7 @@ networks:
 services:
   sbt:
     container_name: sbt
-    image: mozilla/sbt:8u232_1.4.5
+    image: mozilla/sbt:8u292_1.5.4
     networks:
       - arc-integration
     command: tail -f /dev/null
