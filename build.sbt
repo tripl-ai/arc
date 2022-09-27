@@ -1,6 +1,6 @@
 import Dependencies._
 
-lazy val scala212 = "2.12.15"
+lazy val scala212 = "2.12.17"
 lazy val supportedScalaVersions = List(scala212)
 
 lazy val root = (project in file(".")).
@@ -37,7 +37,7 @@ scalacOptions := Seq(
   "-deprecation",
   "-encoding", "utf-8",
   "-explaintypes",
-  "-target:jvm-1.8",
+  "-target:jvm-11",
   "-unchecked",
   "-feature",
 

@@ -4,3 +4,5 @@
 -J-XX:+UseG1GC
 -J-Duser.language=en
 -J-Duser.country=US
+-J-XX:+UnlockExperimentalVMOptions
+-J-XX:-UseJVMCICompiler
