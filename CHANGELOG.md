@@ -2,7 +2,7 @@
 
 ## 3.12.0
 
-- update to Spark 3.3.0 and compile for Java 11
+- update to Spark 3.3.0
 
 ## 3.11.1
 
