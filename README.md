@@ -1,219 +1,122 @@
-Arc is an opinionated framework for defining data pipelines which are predictable, repeatable and manageable.
+![Hugo](https://raw.githubusercontent.com/gohugoio/hugoDocs/master/static/img/hugo-logo.png)
 
-## Documentation
+A Fast and Flexible Static Site Generator built with love by [bep](https://github.com/bep), [spf13](http://spf13.com/) and [friends](https://github.com/gohugoio/hugo/graphs/contributors) in [Go][].
 
-Full documentation is available here: https://arc.tripl.ai
+[Website](https://gohugo.io) |
+[Forum](https://discourse.gohugo.io) |
+[Developer Chat (no support)](https://gitter.im/spf13/hugo) |
+[Documentation](https://gohugo.io/getting-started/) |
+[Installation Guide](https://gohugo.io/getting-started/installing/) |
+[Contribution Guide](CONTRIBUTING.md) |
+[Twitter](https://twitter.com/gohugoio)
 
-## Index
+[![GoDoc](https://godoc.org/github.com/gohugoio/hugo?status.svg)](https://godoc.org/github.com/gohugoio/hugo)
+[![Linux and macOS Build Status](https://api.travis-ci.org/gohugoio/hugo.svg?branch=master&label=Linux+and+macOS+build "Linux and macOS Build Status")](https://travis-ci.org/gohugoio/hugo)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/a5mr220vsd091kua?svg=true&label=Windows+build "Windows Build Status")](https://ci.appveyor.com/project/bep/hugo/branch/master)
+[![Dev chat at https://gitter.im/spf13/hugo](https://img.shields.io/badge/gitter-developer_chat-46bc99.svg)](https://gitter.im/spf13/hugo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gohugoio/hugo)](https://goreportcard.com/report/github.com/gohugoio/hugo)
 
-- [What is Arc?](#what-is-spark-etl-pipeline)
-- [Getting Started](#getting-started)
-- [Principles](#principles)
-- [Not just for data engineers](#not-just-for-data-engineers)
-- [Why abstract from code?](#why-abstract-from-code)
-- [Why SQL first?](#why-sql-first)
-- [Example pipeline](#example-pipeline)
-- [Building](#building)
-- [Contributing](#contributing)
-- [License](#license)
+## Overview
 
-## What is Arc?
+Hugo is a static HTML and CSS website generator written in [Go][].
+It is optimized for speed, ease of use, and configurability.
+Hugo takes a directory with content and templates and renders them into a full HTML website.
 
-Arc is an **opinionated** framework for defining **predictable**, **repeatable** and **manageable** data transformation pipelines;
+Hugo relies on Markdown files with front matter for metadata, and you can run Hugo from any directory.
+This works well for shared hosts and other systems where you don’t have a privileged account.
 
-- **predictable** in that data is used to define transformations - not code.
-- **repeatable** in that if a job is executed multiple times it will produce the same result.
-- **manageable** in that execution considerations and logging have been baked in from the start.
+Hugo renders a typical website of moderate size in a fraction of a second.
+A good rule of thumb is that each piece of content renders in around 1 millisecond.
 
-## Getting Started
+Hugo is designed to work well for any kind of website including blogs, tumbles, and docs.
 
-![Notebook](/docs-src/static/img/arc-starter.png)
+#### Supported Architectures
 
-Arc has an interactive [Jupyter Notebook](https://jupyter.org/) extension to help with rapid development of jobs. Start by cloning [https://github.com/tripl-ai/arc-starter](https://github.com/tripl-ai/arc-starter) and running through the [tutorial](https://arc.tripl.ai/tutorial/).
+Currently, we provide pre-built Hugo binaries for Windows, Linux, FreeBSD, NetBSD, macOS (Darwin), and [Android](https://gist.github.com/bep/a0d8a26cf6b4f8bc992729b8e50b480b) for x64, i386 and ARM architectures.
 
-This extension is available at [https://github.com/tripl-ai/arc-jupyter](https://github.com/tripl-ai/arc-jupyter).
+Hugo may also be compiled from source wherever the Go compiler tool chain can run, e.g. for other operating systems including DragonFly BSD, OpenBSD, Plan 9, and Solaris.
 
-## Principles
+**Complete documentation is available at [Hugo Documentation](https://gohugo.io/getting-started/).**
 
-Many of these principles have come from [12factor](https://12factor.net/) with the aim of deploying **predictable**, **repeatable** and **manageable** data transformation pipelines:
+## Choose How to Install
 
-- **[single responsibility](https://en.wikipedia.org/wiki/Single_responsibility_principle)** components/stages with first-class support for [extending](https://arc.tripl.ai/extend/).
-- **stateless** jobs where possible and use of [immutable](https://en.wikipedia.org/wiki/Immutable_object) datasets.
-- **precise logging** to allow management of jobs at scale.
-- **library dependencies** limited or avoided where possible.
+If you want to use Hugo as your site generator, simply install the Hugo binaries.
+The Hugo binaries have no external dependencies.
 
-## Not just for data engineers
+To contribute to the Hugo source code or documentation, you should [fork the Hugo GitHub project](https://github.com/gohugoio/hugo#fork-destination-box) and clone it to your local machine.
 
-The intent of the pipeline is to provide a simple way of creating Extract-Transform-Load (ETL) pipelines which are able to be maintained in production, and captures the answers to simple operational questions transparently to the user.
+Finally, you can install the Hugo source code with `go`, build the binaries yourself, and run Hugo that way.
+Building the binaries is an easy task for an experienced `go` getter.
 
-- **monitoring**: is it working each time it's run? and how much resource was consumed in creating it?
-- **devops**: is packaged as a Docker image to allow rapid deployment on ephemeral compute.
+### Install Hugo as Your Site Generator (Binary Install)
 
-These concerns are supported at run time to ensure that as deployment grows in uses and complexity it does not become opaque and unmanageable.
+Use the [installation instructions in the Hugo documentation](https://gohugo.io/getting-started/installing/).
 
-## Why abstract from code?
+### Build and Install the Binaries from Source (Advanced Install)
 
-From experience a very high proportion of data pipelines perform very similar extract, transform and load actions on datasets. Unfortunately, whilst the desired outcomes are largely similar, the implementations are vastly varied resulting in higher maintenance costs, lower test-coverage and high levels of rework.
+#### Prerequisite Tools
 
-The intention of this project is to define and implement an **opinionated** standard approach for declaring data pipelines which is open and extensible. Abstraction from underlying code allows rapid deployment, a consistent way of defining transformation tasks (such as data typing) and allows abstraction of the pipeline definition from the pipeline execution (to support changing of the underlying execution engines) - see [declarative programming](https://en.wikipedia.org/wiki/Declarative_programming).
+* [Git](https://git-scm.com/)
+* [Go (at least Go 1.11)](https://golang.org/dl/)
 
-Currently it is tightly coupled to [Apache Spark](https://spark.apache.org) due to its fault-tolerance, performance and solid API for standard data engineering tasks but the definitions are human and machine readable [HOCON](https://github.com/lightbend/config/blob/master/HOCON.md) (a JSON derivative) allowing the transformation definitions to be implemented against future execution engines.
+#### Fetch from GitHub
 
-## Why SQL first?
-
-SQL first (copied from the Mobile First UX principle) is an approach where, if possible, transformations are done using Structured Query Language (SQL) as a preference. This is because SQL is a very good way of expressing standard data transformation intent in a [declarative](https://en.wikipedia.org/wiki/Declarative_programming) way. SQL is so widely known and taught that finding people who are able to understand the business context and able to write basic SQL is much easier than finding a Scala developer who also understands the business context (for example).
-
-Currently the [HIVE](https://cwiki.apache.org/confluence/display/Hive/LanguageManual) dialect of SQL is supported as [Spark SQL](https://spark.apache.org/docs/latest/sql-programming-guide.html) uses the same SQL dialect and has a lot of the same [functions](https://spark.apache.org/docs/latest/api/sql/) that would be expected from other SQL dialects. This could change in the future.
-
-## Example pipeline
-
-This is an example of a fairly standard pipeline:
-
-1. First load a set of CSV files from an input directory. Separator is a comma and the file has a header.
-
-2. Convert the data to the correct datatypes using metadata defined in a separate JSON.
-
-3. Execute a SQL statement that will perform custom validation to ensure the data conversion in the previous step resulted in an acceptable data conversion error rate. If not successful the job will terminate.
-
-4. Write out the aggreate resultset to a Parquet target.
-
-```json
-{
-  "stages": [
-    {
-      "type": "DelimitedExtract",
-      "name": "extract data from green_tripdata/0",
-      "environments": [
-        "production",
-        "test"
-      ],
-      "inputURI": ${ETL_CONF_BASE_URL}"/data/green_tripdata/0/*",
-      "outputView": "green_tripdata0_raw",
-      "delimiter": "Comma",
-      "quote": "DoubleQuote",
-      "header": true
-    },
-    {
-      "type": "TypingTransform",
-      "name": "apply green_tripdata/0 data types",
-      "environments": [
-        "production",
-        "test"
-      ],
-      "inputURI": ${ETL_CONF_BASE_URL}"/meta/green_tripdata/0/green_tripdata.json",
-      "inputView": "green_tripdata0_raw",
-      "outputView": "green_tripdata0",
-      "persist": true
-    },
-    {
-      "type": "SQLValidate",
-      "name": "ensure no errors exist after data typing",
-      "environments": [
-        "production",
-        "test"
-      ],
-      "inputURI": ${ETL_CONF_BASE_URL}"/job/0/sqlvalidate_errors.sql",
-      "sqlParams": {
-        "table_name": "green_tripdata0"
-      }
-    },
-    {
-      "type": "ParquetLoad",
-      "name": "write trips back to filesystem",
-      "environments": [
-        "production",
-        "test"
-      ],
-      "inputView": "green_tripdata0",
-      "outputURI": ${ETL_CONF_BASE_URL}"/data/output/green_tripdata0.parquet",
-      "saveMode": "Overwrite"
-    }
-  ]
-}
-```
-
-A full worked example job is available [here](https://github.com/tripl-ai/arc/tree/master/tutorial/gnaf/job/0). It is for the Australian Geocoded National Address File [G-NAF](https://data.gov.au/dataset/geocoded-national-address-file-g-naf) and will load the pipe-separated data, apply data types, ensure there are no errors in applying data types and write the output to Parquet. This could easily be modified to write to a JDBC target.
-
-## Building
-
-### Library
-
-To compile the main library run:
+Since Hugo 0.48, Hugo uses the Go Modules support built into Go 1.11 to build. The easiest is to clone Hugo in a directory outside of `GOPATH`, as in the following example:
 
 ```bash
-sbt +package
+mkdir $HOME/src
+cd $HOME/src
+git clone https://github.com/gohugoio/hugo.git
+cd hugo
+go install
 ```
 
-To build a library to use with a [Databricks Runtime](https://databricks.com/product/databricks-runtime) environment it is easiest to `assembly` Arc with all the dependencies into a single JAR to simplify the deployment.
+**If you are a Windows user, substitute the `$HOME` environment variable above with `%USERPROFILE%`.**
+	
+## The Hugo Documentation
 
-Example:
+The Hugo documentation now lives in its own repository, see https://github.com/gohugoio/hugoDocs. But we do keep a version of that documentation as a `git subtree` in this repository. To build the sub folder `/docs` as a Hugo site, you need to clone this repo:
 
 ```bash
-sbt assembly
+git clone git@github.com:gohugoio/hugo.git
 ```
+## Contributing to Hugo
 
-If you are having problems compiling it is likely due to environment setup. This command is executed in CICD and uses a predictable build environment pulled from Dockerhub:
+For a complete guide to contributing to Hugo, see the [Contribution Guide](CONTRIBUTING.md).
 
-```bash
-docker run --rm -v $(pwd):/app -w /app mozilla/sbt:8u212_1.2.8 sbt +package
-```
+We welcome contributions to Hugo of any kind including documentation, themes,
+organization, tutorials, blog posts, bug reports, issues, feature requests,
+feature implementations, pull requests, answering questions on the forum,
+helping to manage issues, etc.
 
-### Tests
+The Hugo community and maintainers are [very active](https://github.com/gohugoio/hugo/pulse/monthly) and helpful, and the project benefits greatly from this activity.
 
-To run unit tests:
+### Asking Support Questions
 
-```bash
-sbt +test
-```
+We have an active [discussion forum](https://discourse.gohugo.io) where users and developers can ask questions.
+Please don't use the GitHub issue tracker to ask questions.
 
-To run integration tests (which have external service depenencies):
+### Reporting Issues
 
-```bash
-./it.sh
-```
+If you believe you have found a defect in Hugo or its documentation, use
+the GitHub issue tracker to report the problem to the Hugo maintainers.
+If you're not sure if it's a bug or not, start by asking in the [discussion forum](https://discourse.gohugo.io).
+When reporting the issue, please provide the version of Hugo in use (`hugo version`).
 
-### License Report
+### Submitting Patches
 
-To rebuild the license report run:
+The Hugo project welcomes all contributors and contributions regardless of skill or experience level.
+If you are interested in helping with the project, we will help you with your contribution.
+Hugo is a very active project with many contributions happening daily.
 
-```bash
-sbt dumpLicenseReport
-```
+Because we want to create the best possible product for our users and the best contribution experience for our developers,
+we have a set of guidelines which ensure that all contributions are acceptable.
+The guidelines are not intended as a filter or barrier to participation.
+If you are unfamiliar with the contribution process, the Hugo team will help you and teach you how to bring your contribution in accordance with the guidelines.
 
-### Documentation
+For a complete guide to contributing code to Hugo, see the [Contribution Guide](CONTRIBUTING.md).
 
-To generate the documentation you need to download [Hugo](https://gohugo.io/) to `/docs-src` and run `./hugo` in that  directory. The `/docs` directory is the output of the docuementation generation and should not be edited by hand. The `/docs` directory is automatically published by the Github Pages process on commit.
+[![Analytics](https://ga-beacon.appspot.com/UA-7131036-6/hugo/readme)](https://github.com/igrigorik/ga-beacon)
 
-You can also generate documentation for previous version by checking out a previous tag (`git checkout tags/1.3.0`) and running `hugo server` from the `/docs-src` directory.
-
-## Contributing
-
-If you have suggestions of additional components or find issues that you believe need fixing then please raise an issue. An issue with a test case is even more appreciated.
-
-When you contribute code, you affirm that the contribution is your original work and that you license the work to the project under the project’s open source license. Whether or not you state this explicitly, by submitting any copyrighted material via pull request, email, or other means you agree to license the material under the project’s open source license and warrant that you have the legal authority to do so.
-
-## Support
-
-For questions around use (which are not clear from the documentation) post a new 'issue' in the [questions](https://github.com/tripl-ai/questions/issues) repository. This repository acts as a forum where questions can be posted, discussed and searched.
-
-For commercial support requests please [contact us](mailto:contact@tripl.ai) via email.
-
-## Authors/Contributors
-
-- [Mike Seddon](https://github.com/seddonm1)
-- [John Bruce](https://github.com/jbruce)
-
-
-## Attribution
-
-Thanks to the following projects:
-
-- [AGL Energy](https://github.com/aglenergy) for the original development.
-- [Apache Spark](https://spark.apache.org/) for the underlying framework that has made this library possible.
-- [slf4j-json-logger](https://github.com/savoirtech/slf4j-json-logger) Copyright (c) 2016 Savoir Technologies released under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0). We have slightly altered their library to change the default logging format.
-- [nyc-taxi-data](https://github.com/toddwschneider/nyc-taxi-data) for preparing an easy to use set of real-world data for the tutorial.
-
-## License
-
-Arc is released under the [MIT License](https://opensource.org/licenses/MIT).
-
+[Go]: https://golang.org/
+[Hugo Documentation]: https://gohugo.io/overview/introduction/

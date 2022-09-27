@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.12.0
+
+- update to Spark 3.3.0 and compile for Java 11
+
 ## 3.11.1
 
 - change `ETL_POLICY_DROP_UNSUPPORTED` default to `true`.
