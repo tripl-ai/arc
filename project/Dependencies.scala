@@ -9,9 +9,9 @@ object Dependencies {
   val typesafeConfig = "com.typesafe" % "config" % "1.4.0"
 
   // testing
-  val scalaTest = "org.scalatest" %% "scalatest" % "3.0.7" % "test,it"
+  val scalaTest = "org.scalatest" %% "scalatest" % "3.0.9" % "test,it"
   val jetty = "org.mortbay.jetty" % "jetty" % "6.1.26" % "test,it"
-  val postgresJDBC = "org.postgresql" % "postgresql" % "42.2.8" % "test,it"
+  val postgresJDBC = "org.postgresql" % "postgresql" % "42.5.0" % "test,it"
   val sqlServerJDBC = "com.microsoft.sqlserver" % "mssql-jdbc" % "7.4.1.jre8" % "it"
 
   // spark

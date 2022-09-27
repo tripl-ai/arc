@@ -37,7 +37,7 @@ scalacOptions := Seq(
   "-deprecation",
   "-encoding", "utf-8",
   "-explaintypes",
-  "-target:jvm-11",
+  "-target:jvm-1.8",
   "-unchecked",
   "-feature",
 

@@ -102,8 +102,8 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext()
 
     val expected = spark.createDataFrame(Seq(
-      (4L, "spark i j k", 1.0, 0.8),
-      (5L, "l m n", 0.0, 0.8),
+      (4L, "spark i j k", 0.0, 0.6),
+      (5L, "l m n", 0.0, 1.0),
       (6L, "spark hadoop spark", 1.0, 0.9),
       (7L, "apache hadoop", 0.0, 1.0)
     )).toDF("id", "text", "prediction", "probability")
@@ -139,8 +139,8 @@ class MLTransformSuite extends FunSuite with BeforeAndAfter {
     implicit val arcContext = TestUtils.getARCContext()
 
     val expected = spark.createDataFrame(Seq(
-      (4L, "spark i j k", 1.0, 0.8),
-      (5L, "l m n", 0.0, 0.8),
+      (4L, "spark i j k", 0.0, 0.6),
+      (5L, "l m n", 0.0, 1.0),
       (6L, "spark hadoop spark", 1.0, 0.9),
       (7L, "apache hadoop", 0.0, 1.0)
     )).toDF("id", "text", "prediction", "probability")
