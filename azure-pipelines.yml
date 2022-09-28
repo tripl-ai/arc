@@ -38,10 +38,10 @@ steps:
     -d
   displayName: 'Create a docker-compose based testing environment (including idle mozilla/sbt:8u212_1.2.8)'
 
-- script: |
-    docker ps && \
-    docker compose -f src/it/resources/docker-compose.yml logs
-  displayName: 'docker ps'
+# - script: |
+#     docker ps && \
+#     docker compose -f src/it/resources/docker-compose.yml logs
+#   displayName: 'docker ps'
 
 - script: |
     docker exec \
@@ -61,7 +61,7 @@ steps:
     -e SONATYPE_PASSWORD=$(SONATYPE_PASSWORD) \
     -e PGP_PASSPHRASE=$(PGP_PASSPHRASE) \
     sbt \
-    sbt "+publishSigned"
+    ./sbt "+publishSigned"
   displayName: 'sbt publishSigned (push to https://oss.sonatype.org/content/groups/staging/ai/tripl/)'
   condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'refs/heads/release'))
 
@@ -71,6 +71,13 @@ steps:
     -e SONATYPE_PASSWORD=$(SONATYPE_PASSWORD) \
     -e PGP_PASSPHRASE=$(PGP_PASSPHRASE) \
     sbt \
-    sbt "sonatypeRelease"
+    ./sbt "sonatypeRelease"
   displayName: 'sbt sonatypeRelease (push to https://repo1.maven.org/maven2/ai/tripl/)'
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))  
+
+- script: |
+    docker-compose \
+    -f src/it/resources/docker-compose.yml \
+    down
+  displayName: 'Stop docker env'
+

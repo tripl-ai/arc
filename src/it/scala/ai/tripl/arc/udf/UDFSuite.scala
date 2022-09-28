@@ -175,40 +175,41 @@ class UDFSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("UDFSuite: get_uri - batch remote s3a://") {
-    implicit val spark = session
-    implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext()
+  // nyc taxi data no longer available
+  // test("UDFSuite: get_uri - batch remote s3a://") {
+  //   implicit val spark = session
+  //   implicit val logger = TestUtils.getLogger()
+  //   implicit val arcContext = TestUtils.getARCContext()
 
-    val conf = s"""{
-      "stages": [
-        {
-          "type": "SQLTransform",
-          "name": "test",
-          "description": "test",
-          "environments": [
-            "production",
-            "test"
-          ],
-          "authentication": {
-            "method": "AmazonAnonymous"
-          },
-          "sql": "SELECT DECODE(GET_URI('s3a://nyc-tlc/trip*data/green_tripdata_2013-08.csv'), 'UTF-8')",
-          "outputView": "outputView",
-          "persist": true
-        }
-      ]
-    }"""
+  //   val conf = s"""{
+  //     "stages": [
+  //       {
+  //         "type": "SQLTransform",
+  //         "name": "test",
+  //         "description": "test",
+  //         "environments": [
+  //           "production",
+  //           "test"
+  //         ],
+  //         "authentication": {
+  //           "method": "AmazonAnonymous"
+  //         },
+  //         "sql": "SELECT DECODE(GET_URI('s3a://nyc-tlc/trip*data/green_tripdata_2013-08.csv'), 'UTF-8')",
+  //         "outputView": "outputView",
+  //         "persist": true
+  //       }
+  //     ]
+  //   }"""
 
-    val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
-    pipelineEither match {
-      case Left(err) => fail(err.toString)
-      case Right((pipeline, _)) => {
-        val df = ARC.run(pipeline).get
-        assert(df.first.getString(0).startsWith("VendorID,lpep_pickup_datetime"))
-      }
-    }
-  }
+  //   val pipelineEither = ArcPipeline.parseConfig(Left(conf), arcContext)
+  //   pipelineEither match {
+  //     case Left(err) => fail(err.toString)
+  //     case Right((pipeline, _)) => {
+  //       val df = ARC.run(pipeline).get
+  //       assert(df.first.getString(0).startsWith("VendorID,lpep_pickup_datetime"))
+  //     }
+  //   }
+  // }
 
   test("UDFSuite: get_uri - batch remote https://") {
     implicit val spark = session

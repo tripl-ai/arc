@@ -20,7 +20,6 @@ services:
       - ${PWD}:/app
       - /tmp/pgp:/pgp
     working_dir: /app
-    tty: true
 
   tensorflow_serving:
     image: ghcr.io/tripl-ai/tensorflow-serving-simple:latest
