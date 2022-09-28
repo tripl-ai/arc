@@ -1,5 +1,13 @@
 # Change Log
 
+## 3.12.0
+
+- update to Spark 3.3.0
+
+## 3.11.1
+
+- change `ETL_POLICY_DROP_UNSUPPORTED` default to `true`.
+
 ## 3.11.0
 
 - bump to Spark [3.1.2](https://spark.apache.org/news/spark-3-1-2-released.html).

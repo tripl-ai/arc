@@ -325,8 +325,7 @@ class SQLTransformSuite extends FunSuite with BeforeAndAfter {
 
     val dataFilters = QueryExecutionUtils.getDataFilters(dataset.queryExecution.executedPlan).toArray.mkString(",")
     assert(dataFilters.contains("isnotnull(booleanDatum"))
-    assert(dataFilters.contains("),(booleanDatum"))
-    assert(dataFilters.contains(" = false)"))
+    assert(dataFilters.contains("),NOT booleanDatum"))
   }
 
   test("SQLTransform: Execute with Structured Streaming" ) {

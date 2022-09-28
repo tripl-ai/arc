@@ -71,7 +71,7 @@ object ARC {
     val policyInlineSchema = Try(commandLineArguments.get("etl.policy.inline.schema").orElse(envOrNone("ETL_POLICY_INLINE_SCHEMA")).get.toBoolean).getOrElse(true)
     val policyInlineSQL = Try(commandLineArguments.get("etl.policy.inline.sql").orElse(envOrNone("ETL_POLICY_INLINE_SQL")).get.toBoolean).getOrElse(true)
     val policyIPYNB = Try(commandLineArguments.get("etl.policy.ipynb").orElse(envOrNone("ETL_POLICY_IPYNB")).get.toBoolean).getOrElse(true)
-    val policyDropUnsupported = Try(commandLineArguments.get("etl.policy.drop.unsupported").orElse(envOrNone("ETL_POLICY_DROP_UNSUPPORTED")).get.toBoolean).getOrElse(false)
+    val policyDropUnsupported = Try(commandLineArguments.get("etl.policy.drop.unsupported").orElse(envOrNone("ETL_POLICY_DROP_UNSUPPORTED")).get.toBoolean).getOrElse(true)
 
     // set global logging
     MDC.put("streaming", isStreaming.toString)
