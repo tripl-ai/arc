@@ -12,7 +12,7 @@ networks:
 services:
   sbt:
     container_name: sbt
-    image: mozilla/sbt:11.0.13_1.6.2
+    image: amazoncorretto:11
     networks:
       - arc-integration
     command: tail -F anything
