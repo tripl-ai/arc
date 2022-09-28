@@ -160,74 +160,74 @@ class JDBCLoadSuite extends FunSuite with BeforeAndAfter {
     assert(actual.first.getLong(0) == 2)
   }
 
-  test("JDBCLoad: Structured Streaming") {
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = TestUtils.getLogger()
-    implicit val arcContext = TestUtils.getARCContext()
+  // test("JDBCLoad: Structured Streaming") {
+  //   implicit val spark = session
+  //   import spark.implicits._
+  //   implicit val logger = TestUtils.getLogger()
+  //   implicit val arcContext = TestUtils.getARCContext(isStreaming = true)
 
-    val uuid = s"""a${UUID.randomUUID.toString.replace("-","")}"""
+  //   val uuid = s"""a${UUID.randomUUID.toString.replace("-","")}"""
 
-    try {
-      connection = DriverManager.getConnection(postgresurl, connectionProperties)
-      connection.createStatement.execute(s"""
-      DROP TABLE IF EXISTS sa.public.${uuid}
-      """)
-      connection.createStatement.execute(s"""
-      CREATE TABLE sa.public.${uuid} (
-        timestamp timestamp NULL,
-        value bigint NOT NULL
-      )
-      """)
-    } finally {
-      connection.close
-    }
+  //   try {
+  //     connection = DriverManager.getConnection(postgresurl, connectionProperties)
+  //     connection.createStatement.execute(s"""
+  //     DROP TABLE IF EXISTS sa.public.${uuid}
+  //     """)
+  //     connection.createStatement.execute(s"""
+  //     CREATE TABLE sa.public.${uuid} (
+  //       timestamp timestamp NULL,
+  //       value bigint NOT NULL
+  //     )
+  //     """)
+  //   } finally {
+  //     connection.close
+  //   }
 
-    val readStream = spark
-      .readStream
-      .format("rate")
-      .option("rowsPerSecond", "2")
-      .option("numPartitions", "3")
-      .load
+  //   val readStream = spark
+  //     .readStream
+  //     .format("rate")
+  //     .option("rowsPerSecond", "2")
+  //     .option("numPartitions", "3")
+  //     .load
 
-    readStream.createOrReplaceTempView(dbtable)
+  //   readStream.createOrReplaceTempView(dbtable)
 
-    load.JDBCLoadStage.execute(
-      load.JDBCLoadStage(
-        plugin=new load.JDBCLoad,
-        id=None,
-        name="dataset",
-        description=None,
-        inputView=dbtable,
-        jdbcURL=postgresurl,
-        driver=DriverManager.getDriver(postgresurl),
-        tableName=s"sa.public.${uuid}",
-        partitionBy=Nil,
-        numPartitions=None,
-        isolationLevel=IsolationLevel.ReadCommitted,
-        batchsize=1000,
-        truncate=false,
-        createTableOptions=None,
-        createTableColumnTypes=None,
-        saveMode=SaveMode.Overwrite,
-        tablock=true,
-        params=Map("user" -> user, "password" -> password)
-      )
-    )
+  //   load.JDBCLoadStage.execute(
+  //     load.JDBCLoadStage(
+  //       plugin=new load.JDBCLoad,
+  //       id=None,
+  //       name="dataset",
+  //       description=None,
+  //       inputView=dbtable,
+  //       jdbcURL=postgresurl,
+  //       driver=DriverManager.getDriver(postgresurl),
+  //       tableName=s"sa.public.${uuid}",
+  //       partitionBy=Nil,
+  //       numPartitions=None,
+  //       isolationLevel=IsolationLevel.ReadCommitted,
+  //       batchsize=1000,
+  //       truncate=false,
+  //       createTableOptions=None,
+  //       createTableColumnTypes=None,
+  //       saveMode=SaveMode.Overwrite,
+  //       tablock=true,
+  //       params=Map("user" -> user, "password" -> password)
+  //     )
+  //   )
 
-    Thread.sleep(2000)
-    spark.streams.active.foreach(streamingQuery => streamingQuery.stop)
+  //   Thread.sleep(2000)
+  //   spark.streams.active.foreach(streamingQuery => streamingQuery.stop)
 
-    val actual = { spark.read
-      .format("jdbc")
-      .option("url", postgresurl)
-      .option("user", user)
-      .option("password", password)
-      .option("dbtable", s"(SELECT * FROM sa.public.${uuid}) result")
-      .load()
-    }
+  //   val actual = { spark.read
+  //     .format("jdbc")
+  //     .option("url", postgresurl)
+  //     .option("user", user)
+  //     .option("password", password)
+  //     .option("dbtable", s"(SELECT * FROM sa.public.${uuid}) result")
+  //     .load()
+  //   }
 
-    assert(actual.count > 0)
-  }
+  //   assert(actual.count > 0)
+  // }
 
 }
