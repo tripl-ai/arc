@@ -28,14 +28,14 @@ steps:
     mkdir -p /tmp/pgp && \
     mv $(DownloadSecureFile1.secureFilePath) /tmp/pgp && \
     mv $(DownloadSecureFile2.secureFilePath) /tmp/pgp
-  displayName: 'Move pgp keys'  
+  displayName: 'Move pgp keys'
 
 - script: |
     docker-compose \
     -f src/it/resources/docker-compose.yml \
     up \
     --build \
-    -d
+    -d &&
   displayName: 'Create a docker-compose based testing environment (including idle mozilla/sbt:8u212_1.2.8)'
 
 - script: |
