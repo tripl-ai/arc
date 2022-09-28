@@ -40,7 +40,7 @@ steps:
 
 - script: |
     docker ps && \
-    docker compose logs
+    docker compose -f src/it/resources/docker-compose.yml logs
   displayName: 'docker ps'
 
 - script: |
