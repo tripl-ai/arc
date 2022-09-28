@@ -15,7 +15,7 @@ services:
     image: mozilla/sbt:11.0.13_1.6.2
     networks:
       - arc-integration
-    command: tail -f /dev/null
+    command: tail -F anything
     volumes:
       - ${PWD}:/app
       - /tmp/pgp:/pgp
