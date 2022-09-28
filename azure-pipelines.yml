@@ -35,7 +35,7 @@ steps:
     -f src/it/resources/docker-compose.yml \
     up \
     --build \
-    -d &&
+    -d
   displayName: 'Create a docker-compose based testing environment (including idle mozilla/sbt:8u212_1.2.8)'
 
 - script: |
