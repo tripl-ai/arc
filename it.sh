@@ -11,4 +11,4 @@ docker exec \
 -it \
 -w /app \
 sbt \
-sbt "+it:test"
+./sbt "+it:test"

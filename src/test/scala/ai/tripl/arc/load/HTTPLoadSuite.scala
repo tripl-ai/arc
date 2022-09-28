@@ -274,7 +274,7 @@ class HTTPLoadSuite extends FunSuite with BeforeAndAfter {
         )
       )
     }
-    assert(thrown.getMessage == "HTTPLoad requires inputView to be dataset with [value: string] signature. inputView 'dataset' has 10 columns of type [boolean, date, decimal(38,18), double, int, bigint, string, string, timestamp, null].")
+    assert(thrown.getMessage == "HTTPLoad requires inputView to be dataset with [value: string] signature. inputView 'dataset' has 10 columns of type [boolean, date, decimal(38,18), double, int, bigint, string, string, timestamp, void].")
   }
 
   test("HTTPLoad: Structured Streaming: Success") {
