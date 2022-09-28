@@ -39,7 +39,8 @@ steps:
   displayName: 'Create a docker-compose based testing environment (including idle mozilla/sbt:8u212_1.2.8)'
 
 - script: |
-    docker ps
+    docker ps && \
+    docker compose logs
   displayName: 'docker ps'
 
 - script: |
