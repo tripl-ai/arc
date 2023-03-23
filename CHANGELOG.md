@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.13.0
+
+- update to Spark 3.3.2
+
 ## 3.12.0
 
 - update to Spark 3.3.0
