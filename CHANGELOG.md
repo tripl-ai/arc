@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.13.2
+
+- Java 8 build
+
 ## 3.13.1
 
 - release fix
