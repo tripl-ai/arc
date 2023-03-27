@@ -1,5 +1,10 @@
 # Change Log
 
+## 4.0.0
+
+- Hadoop-Common changed to provided. It is expected that Arc will run in an environment where those libraries are provided.
+- Switched to Spark 3.3.1 and Hadoop 3.3.3 to align to latest EMR image
+
 ## 3.13.2
 
 - Java 8 build
