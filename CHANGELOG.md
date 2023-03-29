@@ -1,5 +1,11 @@
 # Change Log
 
+## 4.1.0
+
+- Hadoop-Common removed.
+- Hadoop-AWS changed to it. It is expected that Arc will run in an environment where those libraries are provided, if needed.
+- Switched to Spark 3.3.2 and Hadoop 3.3.2
+
 ## 4.0.0
 
 - Hadoop-Common changed to provided. It is expected that Arc will run in an environment where those libraries are provided.

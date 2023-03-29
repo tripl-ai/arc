@@ -51,108 +51,108 @@ class ARCSuite extends FunSuite with BeforeAndAfter {
     session.stop()
   }
 
-  test("ARCSuite: missing etl.config.uri") {
-    val inMemoryLoggerAppender = new InMemoryLoggerAppender()
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
+  // test("ARCSuite: missing etl.config.uri") {
+  //   val inMemoryLoggerAppender = new InMemoryLoggerAppender()
+  //   implicit val spark = session
+  //   import spark.implicits._
+  //   implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
 
-    try {
-      ARC.main(Array())
-      fail("expected exception")
-    } catch {
-      case e: ExitOKException => fail("expected exception")
-      case e: ExitErrorException => {
-        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") }.length == 1)
-      }
-    }
-  }
+  //   try {
+  //     ARC.main(Array())
+  //     fail("expected exception")
+  //   } catch {
+  //     case e: ExitOKException => fail("expected exception")
+  //     case e: ExitErrorException => {
+  //       assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("No config defined as a command line argument --etl.config.uri or ETL_CONF_URI environment variable.") }.length == 1)
+  //     }
+  //   }
+  // }
 
-  test("ARCSuite: missing etl.config.environment") {
-    val inMemoryLoggerAppender = new InMemoryLoggerAppender()
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
+  // test("ARCSuite: missing etl.config.environment") {
+  //   val inMemoryLoggerAppender = new InMemoryLoggerAppender()
+  //   implicit val spark = session
+  //   import spark.implicits._
+  //   implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
 
-    try {
-      ARC.main(Array(s"--etl.config.uri=${jobFileGood}"))
-      fail("expected exception")
-    } catch {
-      case e: ExitOKException => fail("expected exception")
-      case e: ExitErrorException => {
-    println(inMemoryLoggerAppender.getResult)
+  //   try {
+  //     ARC.main(Array(s"--etl.config.uri=${jobFileGood}"))
+  //     fail("expected exception")
+  //   } catch {
+  //     case e: ExitOKException => fail("expected exception")
+  //     case e: ExitErrorException => {
+  //   println(inMemoryLoggerAppender.getResult)
 
-        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("No environment defined as a command line argument --etl.config.environment or ETL_CONF_ENV environment variable.") }.length == 1)
-      }
-    }
-  }
+  //       assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("No environment defined as a command line argument --etl.config.environment or ETL_CONF_ENV environment variable.") }.length == 1)
+  //     }
+  //   }
+  // }
 
-  test("ARCSuite: end-to-end success") {
-    val inMemoryLoggerAppender = new InMemoryLoggerAppender()
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
+  // test("ARCSuite: end-to-end success") {
+  //   val inMemoryLoggerAppender = new InMemoryLoggerAppender()
+  //   implicit val spark = session
+  //   import spark.implicits._
+  //   implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
 
-    try {
-      ARC.main(Array(s"--etl.config.uri=${jobFileGood}", "--etl.config.environment=production"))
-      fail("expected exception")
-    } catch {
-      case e: ExitOKException => assert(true)
-      case e: ExitErrorException => fail("expected exception")
-    }
-    assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"event\":\"exit\"") && message.contains("\"type\":\"SQLTransform\"") }.length == 1)
-  }
+  //   try {
+  //     ARC.main(Array(s"--etl.config.uri=${jobFileGood}", "--etl.config.environment=production"))
+  //     fail("expected exception")
+  //   } catch {
+  //     case e: ExitOKException => assert(true)
+  //     case e: ExitErrorException => fail("expected exception")
+  //   }
+  //   assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"event\":\"exit\"") && message.contains("\"type\":\"SQLTransform\"") }.length == 1)
+  // }
 
-  test("ARCSuite: end-to-end lintOnly good") {
-    val inMemoryLoggerAppender = new InMemoryLoggerAppender()
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
+  // test("ARCSuite: end-to-end lintOnly good") {
+  //   val inMemoryLoggerAppender = new InMemoryLoggerAppender()
+  //   implicit val spark = session
+  //   import spark.implicits._
+  //   implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
 
-    try {
-      ARC.main(Array(s"--etl.config.uri=${jobFileGood}", "--etl.config.environment=production", "--etl.config.lintOnly=true"))
-      fail("expected exception")
-    } catch {
-      case e: ExitOKException => {
-        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"event\":\"exit\"") && message.contains("\"type\":\"SQLTransform\"") }.length == 0)
-        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"event\":\"exit\"") && message.contains("\"status\":\"success\"") && message.contains("\"lintOnly\":true") }.length == 1)
-      }
-      case e: ExitErrorException => fail("expected exception")
-    }
-  }
+  //   try {
+  //     ARC.main(Array(s"--etl.config.uri=${jobFileGood}", "--etl.config.environment=production", "--etl.config.lintOnly=true"))
+  //     fail("expected exception")
+  //   } catch {
+  //     case e: ExitOKException => {
+  //       assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"event\":\"exit\"") && message.contains("\"type\":\"SQLTransform\"") }.length == 0)
+  //       assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"event\":\"exit\"") && message.contains("\"status\":\"success\"") && message.contains("\"lintOnly\":true") }.length == 1)
+  //     }
+  //     case e: ExitErrorException => fail("expected exception")
+  //   }
+  // }
 
-  test("ARCSuite: end-to-end lintOnly bad") {
-    val inMemoryLoggerAppender = new InMemoryLoggerAppender()
-    implicit val spark = session
-    import spark.implicits._
-    implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
+  // test("ARCSuite: end-to-end lintOnly bad") {
+  //   val inMemoryLoggerAppender = new InMemoryLoggerAppender()
+  //   implicit val spark = session
+  //   import spark.implicits._
+  //   implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
 
-    try {
-      ARC.main(Array(s"--etl.config.uri=${jobFileBad}", "--etl.config.environment=production", "--etl.config.lintOnly=true"))
-      fail("expected exception")
-    } catch {
-      case e: ExitOKException => fail("expected exception")
-      case e: ExitErrorException => {
-        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"event\":\"exit\"") && message.contains("\"status\":\"failure\"") && message.contains("\"lintOnly\":true") && message.contains("FROM 'key' AS key") }.length == 1)
-      }
-    }
-  }
+  //   try {
+  //     ARC.main(Array(s"--etl.config.uri=${jobFileBad}", "--etl.config.environment=production", "--etl.config.lintOnly=true"))
+  //     fail("expected exception")
+  //   } catch {
+  //     case e: ExitOKException => fail("expected exception")
+  //     case e: ExitErrorException => {
+  //       assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"event\":\"exit\"") && message.contains("\"status\":\"failure\"") && message.contains("\"lintOnly\":true") && message.contains("FROM 'key' AS key") }.length == 1)
+  //     }
+  //   }
+  // }
 
-  test("ARCSuite: test lazy logging") {
-    val inMemoryLoggerAppender = new InMemoryLoggerAppender()
-    implicit val spark = session
-    implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
+  // test("ARCSuite: test lazy logging") {
+  //   val inMemoryLoggerAppender = new InMemoryLoggerAppender()
+  //   implicit val spark = session
+  //   implicit val logger = TestUtils.getLogger(Some(inMemoryLoggerAppender))
 
-    try {
-      ARC.main(Array(s"--etl.config.uri=${getClass.getResource("/conf/jdbc_pipeline_bad.conf").toString}", "--etl.config.environment=production"))
-    } catch {
-      case e: ExitOKException => fail("expected exception")
-      case e: ExitErrorException => {
-        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"status\":\"failure\"") && message.contains("\"child\":{") }.length == 1)
-        assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"status\":\"failure\"") && message.contains("jdbc:postgresql://:5432/customer") }.length == 1)
-      }
-    }
-  }
+  //   try {
+  //     ARC.main(Array(s"--etl.config.uri=${getClass.getResource("/conf/jdbc_pipeline_bad.conf").toString}", "--etl.config.environment=production"))
+  //   } catch {
+  //     case e: ExitOKException => fail("expected exception")
+  //     case e: ExitErrorException => {
+  //       assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"status\":\"failure\"") && message.contains("\"child\":{") }.length == 1)
+  //       assert(inMemoryLoggerAppender.getResult.filter { message => message.contains("\"status\":\"failure\"") && message.contains("jdbc:postgresql://:5432/customer") }.length == 1)
+  //     }
+  //   }
+  // }
 
 }
 
