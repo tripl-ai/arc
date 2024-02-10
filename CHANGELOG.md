@@ -1,5 +1,10 @@
 # Change Log
 
+## 4.2.0
+
+- Updatd to Spark 3.3.4
+- Updated and fixed Flash Serving integration test container.
+
 ## 4.1.0
 
 - Hadoop-Common removed.
