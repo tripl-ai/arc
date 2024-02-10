@@ -7,19 +7,21 @@
 #	python simple_request.py
 
 # import the necessary packages
-from keras.applications import ResNet50
+import keras
+from keras.applications.resnet50 import ResNet50
+from keras.applications.resnet50 import preprocess_input, decode_predictions
 from keras.preprocessing.image import img_to_array
 from keras.applications import imagenet_utils
 from PIL import Image
 import numpy as np
 import flask
 import io
-import tensorflow as tf
+# import tensorflow as tf
+# import tensorflow.compat.v1 as tf
 
 # initialize our Flask application and the Keras model
 app = flask.Flask(__name__)
 model = None
-
 
 def load_model():
 	# load the pre-trained Keras model (here we are using a model
@@ -27,8 +29,8 @@ def load_model():
 	# substitute in your own networks just as easily)
 	global model
 	model = ResNet50(weights="imagenet")
-	global graph
-	graph = tf.compat.v1.get_default_graph()
+	# global graph
+	# graph = tf.get_default_graph()
 
 
 def prepare_image(image, target):
@@ -38,9 +40,9 @@ def prepare_image(image, target):
 
 	# resize the input image and preprocess it
 	image = image.resize(target)
-	image = img_to_array(image)
+	image = keras.utils.img_to_array(image)
 	image = np.expand_dims(image, axis=0)
-	image = imagenet_utils.preprocess_input(image)
+	image = preprocess_input(image)
 
 	# return the processed image
 	return image
@@ -65,20 +67,20 @@ def predict():
 
 		# classify the input image and then initialize the list
 		# of predictions to return to the client
-		with graph.as_default():
-			preds = model.predict(image)
-			results = imagenet_utils.decode_predictions(preds)
-			data["predictions"] = []
+		# with graph.as_default():
+		preds = model.predict(image)
+		results = imagenet_utils.decode_predictions(preds)
+		data["predictions"] = []
 
-			# loop over the results and add them to the list of
-			# returned predictions
-			for (imagenetID, label, prob) in results[0]:
-				r = {"label": label, "probability": float(prob)}
-				data["predictions"].append(r)
+		# loop over the results and add them to the list of
+		# returned predictions
+		for (imagenetID, label, prob) in results[0]:
+			r = {"label": label, "probability": float(prob)}
+			data["predictions"].append(r)
 
-			# indicate that the request was a success
-			data["success"] = True
-			status = 200
+		# indicate that the request was a success
+		data["success"] = True
+		status = 200
 
 	# return the data dictionary as a JSON response
 	return flask.jsonify(data), status
