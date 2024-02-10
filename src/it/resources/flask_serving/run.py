@@ -28,7 +28,7 @@ def load_model():
 	global model
 	model = ResNet50(weights="imagenet")
 	global graph
-	graph = tf.get_default_graph()
+	graph = tf.compat.v1.get_default_graph()
 
 
 def prepare_image(image, target):
